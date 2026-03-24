@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import List, Optional
+from dataclasses import dataclass, field
+from typing import Optional
 import math
 import numpy as np
 import networkx as nx
@@ -13,23 +13,23 @@ def normalized_cosine_distance(a, b):
 @dataclass
 class MicroClusters:
     id: int
-    mean: float
+    mean: np.ndarray
     type_distance: str
     variance_limit: float = 0.01
     num_samples: int = 1
-    variance: float = 0
-    life: float = 1
-    decay: Optional[float] = 100
+    variance: float = 0.0
+    life: float = 1.0
+    decay: float = 100.0
     debug: bool = False
     active: bool = True
     update: bool = True
-    last_eccentricity: Optional[float] = None
-    last_normalized_eccentricity: Optional[float] = None
-    last_tipicality: Optional[float] = None
-    last_normalized_tipicality: Optional[float] = None
-    last_density: Optional[float] = None
+    last_eccentricity: float = 0.0
+    last_normalized_eccentricity: float = 0.0
+    last_typicality: float = 0.0
+    last_normalized_typicality: float = 0.0
+    last_density: float = 0.0
 
-    def compute_new_mean(self, x: np.ndarray):
+    def compute_new_mean(self, x: np.ndarray) -> np.ndarray:
         if self.type_distance == "Euclidean_distance":
             return (self.num_samples / (self.num_samples + 1)) * self.mean + (
                 x / (self.num_samples + 1)
@@ -38,29 +38,36 @@ class MicroClusters:
             return (self.num_samples / (self.num_samples + 1)) * self.mean + (
                 (1 / (self.num_samples + 1)) * (x / norm(x))
             )
+        raise ValueError(f"Unsupported type_distance: {self.type_distance}")
 
-    def compute_new_variance(self, x: np.ndarray, new_mean: np.ndarray):
+    def compute_new_variance(self, x: np.ndarray, new_mean: np.ndarray) -> float:
         if self.type_distance == "Euclidean_distance":
-            return (self.num_samples / (self.num_samples + 1)) * self.variance + (
-                1 / (self.num_samples)
-            ) * ((norm(x - new_mean) * 2 / len(x)) ** 2)
+            return float(
+                (self.num_samples / (self.num_samples + 1)) * self.variance
+                + (1 / self.num_samples) * ((norm(x - new_mean) * 2 / len(x)) ** 2)
+            )
         if self.type_distance == "Cosine_distance":
-            return (self.num_samples / (self.num_samples + 1)) * self.variance + (
-                1 / (self.num_samples)
-            ) * ((norm(normalized_cosine_distance(x, new_mean)) * 2 / len(x)) ** 2)
+            return float(
+                (self.num_samples / (self.num_samples + 1)) * self.variance
+                + (1 / self.num_samples)
+                * ((norm(normalized_cosine_distance(x, new_mean)) * 2 / len(x)) ** 2)
+            )
+        raise ValueError(f"Unsupported type_distance: {self.type_distance}")
 
-    def compute_eccentricity(self, x, new_mean: np.ndarray, new_variance: float):
+    def compute_eccentricity(self, x: np.ndarray, new_mean: np.ndarray, new_variance: float) -> float:
         if self.type_distance == "Euclidean_distance":
             if new_variance > self.variance_limit and self.num_samples <= 3:
                 return 1e3
             if new_variance == 0 and self.num_samples + 1 > 1:
                 return 1 / (self.num_samples + 1)
-            return 1 / (self.num_samples + 1) + (
-                np.inner((new_mean - x).T, (new_mean - x))
-            ) / ((self.num_samples + 1) * new_variance)
+            return float(
+                1 / (self.num_samples + 1)
+                + np.inner((new_mean - x).T, (new_mean - x))
+                / ((self.num_samples + 1) * new_variance)
+            )
 
         if self.type_distance == "Cosine_distance":
-            return (
+            return float(
                 (
                     (1 + np.dot(new_mean, (x / norm(x))))
                     / (1 + self.num_samples * np.dot(new_mean, new_mean))
@@ -69,23 +76,27 @@ class MicroClusters:
                 else 0
             )
 
-    def compute_normalized_eccentricity(self):
-        return self.last_eccentricity / 2
+        raise ValueError(f"Unsupported type_distance: {self.type_distance}")
 
-    def compute_last_tipicality(self):
-        return 1 - self.last_eccentricity if (self.num_samples + 1) >= 2 else 0
+    def compute_normalized_eccentricity(self) -> float:
+        if self.last_eccentricity is None:
+            return 0.0
+        return float(self.last_eccentricity / 2)
 
-    def compute_normalized_tipicality(self):
-        return (
-            self.last_tipicality / (self.num_samples + 1 - 2)
-            if (self.num_samples + 1) > 2
-            else 0
-        )
+    def compute_last_typicality(self) -> float:
+        value = self.last_eccentricity if self.last_eccentricity is not None else 0.0
+        return float(1 - value) if (self.num_samples + 1) >= 2 else 0.0
+
+    def compute_normalized_typicality(self) -> float:
+        if (self.num_samples + 1) > 2:
+            value = self.last_typicality if self.last_typicality is not None else 0.0
+            return float(value / (self.num_samples + 1 - 2))
+        return 0.0
 
     def compute_mik_sik(self, s_ik):
         return 3 / (1 + math.exp(-0.007 * (s_ik - 100)))
 
-    def is_outlier_eucludean_distance(self, new_variance: float):
+    def is_outlier_euclidean_distance(self, new_variance: float):
         s_ik = self.num_samples + 1
 
         if s_ik < 3:
@@ -128,35 +139,36 @@ class MicroClusters:
             )
         return outlier
 
-    def _is_outlier(self, x, new_mean: np.ndarray, new_variance: float):
+    def _is_outlier(self, x: np.ndarray, new_mean: np.ndarray, new_variance: float) -> bool:
         if self.type_distance == "Euclidean_distance":
-            return self.is_outlier_eucludean_distance(new_variance)
+            return self.is_outlier_euclidean_distance(new_variance)
         if self.type_distance == "Cosine_distance":
             return self.is_outlier_cosine_distance(x, new_mean, new_variance)
+        raise ValueError(f"Unsupported type_distance: {self.type_distance}")
 
     def decline_life_linear(self):
         return self.life - 1 / self.decay
 
     def _update_microcluster(
-        self, _is_oulier: bool, new_mean: np.ndarray, new_variance: float
+        self, _is_outlier: bool, new_mean: np.ndarray, new_variance: float
     ):
-        self.num_samples = self.num_samples + 1 if not _is_oulier else self.num_samples
-        self.mean = new_mean if not _is_oulier else self.mean
-        self.variance = new_variance if not _is_oulier else self.variance
-        self.life = 1 if not _is_oulier else self.decline_life_linear()
-        self.update = not _is_oulier
+        self.num_samples = self.num_samples + 1 if not _is_outlier else self.num_samples
+        self.mean = new_mean if not _is_outlier else self.mean
+        self.variance = new_variance if not _is_outlier else self.variance
+        self.life = 1 if not _is_outlier else self.decline_life_linear()
+        self.update = not _is_outlier
 
     def update_microcluster(self, x: np.ndarray, update=True):
         new_mean = self.compute_new_mean(x)
         new_variance = self.compute_new_variance(x, new_mean)
         self.last_eccentricity = self.compute_eccentricity(x, new_mean, new_variance)
         self.last_normalized_eccentricity = self.compute_normalized_eccentricity()
-        self.last_tipicality = self.compute_last_tipicality()
-        self.last_normalized_tipicality = self.compute_normalized_tipicality()
+        self.last_typicality = self.compute_last_typicality()
+        self.last_normalized_typicality = self.compute_normalized_typicality()
         self.last_density = 1 / self.last_normalized_eccentricity
-        is_oulier = self._is_outlier(x, new_mean, new_variance)
+        is_outlier = self._is_outlier(x, new_mean, new_variance)
         if update:
-            self._update_microcluster(is_oulier, new_mean, new_variance)
+            self._update_microcluster(is_outlier, new_mean, new_variance)
 
     def has_intersection(self, mi):
         if self.type_distance == "Euclidean_distance":
@@ -171,20 +183,20 @@ class MicroClusters:
 
 @dataclass
 class EvolvingMicroTEDA:
-    type_distance: Optional[str] = "Euclidean_distance"
-    microclusters: Optional[List[MicroClusters]] = None
-    macroclusters: Optional[List[int]] = None
+    type_distance: str = "Euclidean_distance"
+    microclusters: list[MicroClusters] = field(default_factory=list)
+    macroclusters: list[list[int]] = field(default_factory=list)
     debug: bool = False
-    variance_limit: Optional[float] = 0.01
-    decay: Optional[float] = 1000
-    graph: nx.Graph = nx.Graph()
-    counter_microclisters: int = 0
+    variance_limit: float = 0.01
+    decay: float = 1000.0
+    graph: nx.Graph = field(default_factory=nx.Graph)
+    counter_microclusters: int = 0
 
     def create_microcluster(self, x: np.ndarray):
         if self.debug:
             print("NEW MICROCLUSTER!!!!")
         new_microcluster = MicroClusters(
-            id=self.counter_microclisters,
+            id=self.counter_microclusters,
             debug=self.debug,
             mean=x,
             type_distance=self.type_distance,
@@ -197,7 +209,7 @@ class EvolvingMicroTEDA:
         else:
             self.microclusters = self.microclusters + [new_microcluster]
 
-        self.counter_microclisters += 1
+        self.counter_microclusters += 1
 
     def remove_microcluster(self):
         delete_microclusters_ids = [mi.id for mi in self.microclusters if mi.life <= 0]
@@ -224,13 +236,15 @@ class EvolvingMicroTEDA:
         # remove cluster by decay
         self.remove_microcluster()
 
-    def get_microcluster(self, _id):
-        microclusters = [mi for mi in self.microclusters if mi.id == _id]
-        if microclusters:
-            return [mi for mi in self.microclusters if mi.id == _id][0]
+    def get_microcluster(self, _id) -> Optional[MicroClusters]:
+        for mi in self.microclusters:
+            if mi.id == _id:
+                return mi
+        return None
 
     def disable_microclusters(self, microclusters_ids):
         microclusters = [self.get_microcluster(mi) for mi in microclusters_ids]
+        microclusters = [mi for mi in microclusters if mi is not None]
         if microclusters:
             mean_density = np.mean([mi.last_density for mi in microclusters])
 
@@ -278,8 +292,12 @@ class EvolvingMicroTEDA:
             self.update_microclusters(x)
         self.update_macroclusters()
 
-    def compute_sum_nomalized_tipicalities(self, x: np.ndarray, microclusters_ids):
+    def compute_sum_nomalized_typicalities(self, x: np.ndarray, microclusters_ids):
         microclusters = [self.get_microcluster(mi) for mi in microclusters_ids]
+        microclusters = [mi for mi in microclusters if mi is not None]
+        if not microclusters:
+            return 0.0
+
         sum_density = np.sum([mi.last_density for mi in microclusters])
 
         # Compute microclusters
@@ -288,26 +306,26 @@ class EvolvingMicroTEDA:
 
         return np.sum(
             [
-                (mi.last_normalized_tipicality / sum_density) * mi.last_density
+                (mi.last_normalized_typicality / sum_density) * mi.last_density
                 for mi in microclusters
             ]
         )
 
-    #         if mi.last_normalized_tipicality else None])
+    #         if mi.last_normalized_typicality else None])
 
     def _predict_macrocluster(self, x: np.ndarray):
-        sum_nomalized_tipicalities = [
-            (label, self.compute_sum_nomalized_tipicalities(x, macrocluster))
+        sum_nomalized_typicalities = [
+            (label, self.compute_sum_nomalized_typicalities(x, macrocluster))
             for label, macrocluster in enumerate(self.macroclusters)
         ]
 
-        _sum_nomalized_tipicalities = [
-            x for x in sum_nomalized_tipicalities if x is not None
+        _sum_nomalized_typicalities = [
+            x for x in sum_nomalized_typicalities if x is not None
         ]
-        if len(_sum_nomalized_tipicalities) == 0:
-            print(_sum_nomalized_tipicalities)
+        if len(_sum_nomalized_typicalities) == 0:
+            print(_sum_nomalized_typicalities)
         return max(
-            [x for x in _sum_nomalized_tipicalities if x is not None],
+            [x for x in _sum_nomalized_typicalities if x is not None],
             key=lambda item: item[1],
         )[0]
 

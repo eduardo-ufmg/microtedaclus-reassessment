@@ -1,14 +1,15 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import time
 import optuna
 from sklearn.metrics import adjusted_rand_score
 
 from EvolvingMicroTEDA import EvolvingMicroTEDA
 
 DATASETS_PARAMS = {
-    "chamaleon-ds7-clean": {"variance_limit": 0.0007, "decay": 2000},
-    "chamaleon-ds8-clean": {"variance_limit": 0.0003, "decay": 2000},
+    "chameleon-ds7-clean": {"variance_limit": 0.0007, "decay": 2000},
+    "chameleon-ds8-clean": {"variance_limit": 0.0003, "decay": 2000},
 }
 
 
@@ -46,8 +47,17 @@ def main():
         model = EvolvingMicroTEDA(
             variance_limit=best_params["variance_limit"], decay=best_params["decay"]
         )
+
+        fit_start = time.perf_counter()
         model.fit(X)
+        fit_time = time.perf_counter() - fit_start
+        print(f"Fit time for {dataset}: {fit_time:.4f} seconds")
+
+        predict_start = time.perf_counter()
         y_pred = model.predict(X)
+        predict_time = time.perf_counter() - predict_start
+        print(f"Predict time for {dataset}: {predict_time:.4f} seconds")
+
         score = adjusted_rand_score(y_true, y_pred)
         print(f"Adjusted Rand Score for {dataset}: {score}")
 
@@ -56,6 +66,16 @@ def main():
         plt.title(f"{dataset} - Adjusted Rand Score: {score:.4f}")
         plt.savefig(f"{dataset}_predictions.png")
         plt.close()
+
+        results_df = pd.DataFrame({
+            "dataset": [dataset],
+            "ari_score": [score],
+            "variance_limit": [best_params["variance_limit"]],
+            "decay": [best_params["decay"]],
+            "fit_time": [fit_time],
+            "predict_time": [predict_time]
+        })
+        results_df.to_csv(f"{dataset}_results.csv", index=False)
 
 
 if __name__ == "__main__":

@@ -52,7 +52,7 @@ def _jit_has_intersection(mean1, mean2, var1, var2):
 
 
 @dataclass
-class MicroClusterFixed:
+class MicroClusterClean:
     id: int
     mean: np.ndarray
     variance_limit: float = 0.01
@@ -149,8 +149,8 @@ class MicroClusterFixed:
         return _jit_has_intersection(self.mean, mi.mean, self.variance, mi.variance)
 
 
-def _clone_microcluster_for_prediction(mi: MicroClusterFixed) -> MicroClusterFixed:
-    clone = MicroClusterFixed(
+def _clone_microcluster_for_prediction(mi: MicroClusterClean) -> MicroClusterClean:
+    clone = MicroClusterClean(
         id=mi.id,
         mean=mi.mean.copy(),
         variance_limit=mi.variance_limit,
@@ -169,9 +169,9 @@ def _clone_microcluster_for_prediction(mi: MicroClusterFixed) -> MicroClusterFix
 
 
 @dataclass
-class EvolvingMicroTEDAFixed:
-    microclusters: list[MicroClusterFixed] = field(default_factory=list)
-    microclusters_by_id: dict[int, MicroClusterFixed] = field(default_factory=dict)
+class EvolvingMicroTEDAClean:
+    microclusters: list[MicroClusterClean] = field(default_factory=list)
+    microclusters_by_id: dict[int, MicroClusterClean] = field(default_factory=dict)
     macroclusters: list[list[int]] = field(default_factory=list)
     variance_limit: float = 0.01
     decay: float = 1000
@@ -179,7 +179,7 @@ class EvolvingMicroTEDAFixed:
     counter_microclusters: int = 0
 
     def create_microcluster(self, x: np.ndarray):
-        new_microcluster = MicroClusterFixed(
+        new_microcluster = MicroClusterClean(
             id=self.counter_microclusters,
             mean=x,
             variance_limit=self.variance_limit,
@@ -282,7 +282,7 @@ class EvolvingMicroTEDAFixed:
     def _compute_sum_normalized_typicalities_with(
         self, x: np.ndarray, microclusters_ids, microclusters_by_id
     ):
-        microclusters: list[MicroClusterFixed] = []
+        microclusters: list[MicroClusterClean] = []
         densities: list[float] = []
         for mi_id in microclusters_ids:
             mi = microclusters_by_id.get(mi_id)
