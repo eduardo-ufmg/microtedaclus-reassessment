@@ -1,0 +1,53 @@
+\documentclass[12pt, a4paper]{article}
+
+% Pacotes essenciais
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{setspace}
+
+% Metadados do documento
+\title{\vspace{-2cm}\textbf{Proposta de Projeto de Fim de Curso I}\\ \large Reavaliação do Algoritmo de Agrupamento \textit{microTEDAclus} e Proposta de um Modelo Aprimorado}
+\author{\textbf{Aluno:} Eduardo Henrique Basilio de Carvalho \\ \textbf{Orientador:} Prof. Janier Arias Garcia}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\onehalfspacing
+
+\section{Objetivo}
+Investigar e expor formalmente as inconsistências teóricas e algorítmicas do modelo \textit{microTEDAclus}, propondo uma arquitetura alternativa fundamentada nos mesmos princípios estatísticos e matemáticos, porém com uma aplicação analítica corrigida e distinta.
+
+\section{Justificativa}
+A motivação para este estudo fundamenta-se na constatação empírica de divergências na literatura recente. Tanto a replicação da metodologia proposta no artigo \textit{Evolving clustering algorithm based on mixture of typicalities for stream data mining}, quanto a auditoria dos arquivos de implementação referentes ao trabalho \textit{Mineração de dados aplicada a problemas de last-mile na logística}, revelaram incompatibilidade estrita entre os resultados reportados pelos autores e o comportamento observado em experimentação independente. Faz-se necessária uma correção formal do modelo para garantir a confiabilidade de sua aplicação.
+
+\section{Metodologia}
+A execução do projeto ocorrerá por meio das seguintes etapas sistemáticas:
+\begin{enumerate}
+    \item \textbf{Revisão Bibliográfica:} Mapeamento do estado da arte e análise da fundamentação matemática pertinente aos modelos derivados do \textit{TEDAclus}.
+    \item \textbf{Experimentos Sistemáticos nos Modelos Originais:} Condução de testes padronizados e testes de estresse nas implementações originais para isolamento e prova das falhas supracitadas.
+    \item \textbf{Desenvolvimento do Modelo Alternativo:} Estruturação matemática e algorítmica da nova proposta.
+    \item \textbf{Comparação Sistemática:} Avaliação de desempenho e estabilidade estatística, contrastando o modelo aprimorado com seus predecessores.
+\end{enumerate}
+
+\section{Cronograma de Entregas}
+As metas estabelecidas para a primeira fase do projeto respeitarão o cronograma estipulado na Tabela \ref{tab:cronograma}.
+
+\begin{table}[h!]
+\centering
+\caption{Cronograma de entregas da primeira fase do Projeto de Fim de Curso.}
+\vspace{0.2cm}
+\label{tab:cronograma}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Data (2026)} & \textbf{Marco de Entrega / Artefato} \\ \midrule
+06 de Abril & Relatório de Revisão Bibliográfica. \\
+11 de Maio  & Relatório de Testes e Análise Crítica dos Modelos Originais. \\
+08 de Junho & Descrição Formal e Modelagem Matemática do Modelo Alternativo. \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
