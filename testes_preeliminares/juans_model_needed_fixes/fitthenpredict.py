@@ -38,8 +38,8 @@ def main():
     for dataset, first_guess_params in DATASETS_PARAMS.items():
         print(f"Processing dataset: {dataset}")
         data = pd.read_csv(f"{dataset}.csv")
-        X = data.drop(columns=["class"]).to_numpy()
-        y_true = data["class"].to_numpy()
+        X = data.drop(columns=["y"]).to_numpy()
+        y_true = data["y"].to_numpy()
 
         best_params = tune_hyperparameters(
             X, y_true, first_guess_params["variance_limit"]
@@ -89,7 +89,7 @@ def main():
 
     # Convert results to DataFrame and save to CSV file
     final_results = pd.DataFrame(results_global)
-    final_results.to_csv("final_results.csv", index=False, mode="a")
+    final_results.to_csv("fitthenpredict.csv", index=False, mode="a")
 
 if __name__ == "__main__":
     main()

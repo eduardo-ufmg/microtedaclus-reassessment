@@ -322,12 +322,10 @@ class EvolvingMicroTEDA:
         _sum_nomalized_typicalities = [
             x for x in sum_nomalized_typicalities if x is not None
         ]
-        if len(_sum_nomalized_typicalities) == 0:
-            print(_sum_nomalized_typicalities)
         return max(
             [x for x in _sum_nomalized_typicalities if x is not None],
             key=lambda item: item[1],
-        )[0]
+        )[0] if len(_sum_nomalized_typicalities) > 0 else -1
 
     def predict(self, x_data: np.ndarray):
         y = []
