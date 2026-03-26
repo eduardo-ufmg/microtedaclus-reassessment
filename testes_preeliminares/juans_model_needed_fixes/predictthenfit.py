@@ -8,7 +8,12 @@ from sklearn.metrics import adjusted_rand_score
 
 from EvolvingMicroTEDA import EvolvingMicroTEDA
 
-DATASETS = {"chameleon-ds7-clean", "chameleon-ds8-clean"}
+DATASETS = {
+    "chameleon-ds7-clean": (0.0001, 0.01),
+    "chameleon-ds8-clean": (0.0001, 0.01),
+    "std-DS7": (10, 1000),
+    "std-DS8": (10, 1000),
+}
 
 BATCH_SIZES = [32, 64, 128, 256, 512, 1024]
 
@@ -107,7 +112,7 @@ def run(
 
 
 def tune_hyperparameters(
-    X: np.ndarray, y: np.ndarray, batch_size: int
+    X: np.ndarray, y: np.ndarray, batch_size: int, range: tuple[float, float]
 ) -> tuple[float, float, float, float]:
     """
     Tune the variance_limit and decay hyperparameters using Optuna.
@@ -125,7 +130,7 @@ def tune_hyperparameters(
     """
 
     def objective(trial):
-        variance_limit = trial.suggest_float("variance_limit", 0.0001, 0.1)
+        variance_limit = trial.suggest_float("variance_limit", *range)
 
         ari_wm, fit_t_wm, pred_t_wm = run(
             X, y, batch_size, variance_limit, decay=batch_size
@@ -146,7 +151,10 @@ def tune_hyperparameters(
 
 
 def process_batch(
-    dataset_name: str, batch_size: int, result_file: str = "predictthenfit_results.csv"
+    dataset_name: str,
+    batch_size: int,
+    tune_range: tuple[float, float],
+    result_file: str = "predictthenfit_results.csv",
 ) -> None:
     """
     Process the given dataset with the specified batch size, tuning hyperparameters and evaluating the model.
@@ -154,6 +162,8 @@ def process_batch(
     Parameters:
     - dataset_name: The name of the dataset to process.
     - batch_size: The size of each batch.
+    - tune_range: The range of variance limits to tune.
+    - result_file: The file to save the results.
 
     Returns:
     - None
@@ -168,7 +178,7 @@ def process_batch(
     (X_tune, y_tune), (X_eval, y_eval) = get_subsets(X, y, TUNE_SUBSET_SIZE_FACTOR)
 
     best_variance_limit, tune_ari_wm, tune_fit_t_wm, tune_pred_t_wm = (
-        tune_hyperparameters(X_tune, y_tune, batch_size)
+        tune_hyperparameters(X_tune, y_tune, batch_size, tune_range)
     )
 
     test_ari_wm, test_fit_t_wm, test_pred_t_wm = run(
@@ -196,20 +206,24 @@ def process_batch(
 
 
 def process_dataset(
-    dataset_name: str, result_file: str = "predictthenfit_results.csv"
+    dataset_name: str,
+    tune_range: tuple[float, float],
+    result_file: str = "predictthenfit_results.csv",
 ) -> None:
     """
     Process the given dataset for all batch sizes and aggregate the results.
 
     Parameters:
     - dataset_name: The name of the dataset to process.
+    - tune_range: The range of variance limits to tune.
+    - result_file: The file to save the results.
 
     Returns:
     - None
     """
 
     for batch_size in BATCH_SIZES:
-        process_batch(dataset_name, batch_size, result_file)
+        process_batch(dataset_name, batch_size, tune_range, result_file)
 
 
 def main():
@@ -231,8 +245,8 @@ def main():
         "predictthenfit_results.csv", index=False, mode="a"
     )
 
-    for dataset_name in DATASETS:
-        process_dataset(dataset_name, "predictthenfit_results.csv")
+    for dataset_name, tune_range in DATASETS.items():
+        process_dataset(dataset_name, tune_range=tune_range)
 
 
 if __name__ == "__main__":
