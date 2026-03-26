@@ -37,7 +37,7 @@ def plot_results(csv_path: Path, output_dir: Path, ref_csv_path: Path):
         raise ValueError("No dataset values found in CSV")
 
     # Plot 1: times (fit and predict) by dataset
-    fig1, axs1 = plt.subplots(1, n, figsize=(6 * n, 5), squeeze=False)
+    fig1, axs1 = plt.subplots(1, n, figsize=(6 * n, 5), squeeze=False, sharey=True)
     for i, dataset in enumerate(datasets):
         sub = axs1[0][i]
         ds = df[df["dataset"] == dataset].sort_values("batch_size")
@@ -54,13 +54,13 @@ def plot_results(csv_path: Path, output_dir: Path, ref_csv_path: Path):
                 ref_row["fit_time"].iloc[0],
                 color="red",
                 linestyle="--",
-                label="ref_fit_time",
+                label="max_fit_time",
             )
             sub.axhline(
                 ref_row["predict_time"].iloc[0],
                 color="purple",
                 linestyle="--",
-                label="ref_predict_time",
+                label="max_predict_time",
             )
 
         sub.set_title(f"{dataset} - times")
@@ -78,7 +78,7 @@ def plot_results(csv_path: Path, output_dir: Path, ref_csv_path: Path):
     print(f"Saved times figure to: {fig1_path}")
 
     # Plot 2: ARI scores by dataset
-    fig2, axs2 = plt.subplots(1, n, figsize=(6 * n, 5), squeeze=False)
+    fig2, axs2 = plt.subplots(1, n, figsize=(6 * n, 5), squeeze=False, sharey=True)
     for i, dataset in enumerate(datasets):
         sub = axs2[0][i]
         ds = df[df["dataset"] == dataset].sort_values("batch_size")
@@ -89,7 +89,7 @@ def plot_results(csv_path: Path, output_dir: Path, ref_csv_path: Path):
             ref_row["ari_score"].iloc[0],
             color="green",
             linestyle="--",
-            label="ref_ari_score",
+            label="max_ari_score",
         )
 
         sub.set_title(f"{dataset} - ARI")
