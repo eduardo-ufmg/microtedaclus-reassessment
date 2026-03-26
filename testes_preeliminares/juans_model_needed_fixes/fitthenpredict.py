@@ -17,16 +17,16 @@ def tune_hyperparameters(X, y_true, first_guess_variance_limit):
     def objective(trial):
         variance_limit = trial.suggest_float("variance_limit", 0.0001, 0.001)
 
-        model = EvolvingMicroTEDA(variance_limit=variance_limit, decay=len(y_true)) # see (1)
+        model = EvolvingMicroTEDA(
+            variance_limit=variance_limit, decay=len(y_true)
+        )  # see (1)
         model.fit(X)
         y_pred = model.predict(X)
         score = adjusted_rand_score(y_true, y_pred)
         return score
 
     study = optuna.create_study(direction="maximize")
-    study.enqueue_trial(
-        {"variance_limit": first_guess_variance_limit}
-    )
+    study.enqueue_trial({"variance_limit": first_guess_variance_limit})
     study.optimize(objective, n_trials=64, timeout=300)
     return study.best_params
 
@@ -47,18 +47,19 @@ def main():
 
         print(f"Best parameters for {dataset}: {best_params}")
         model = EvolvingMicroTEDA(
-            variance_limit=best_params["variance_limit"], decay=len(y_true)) # 1: Juan artificially cleared
-                                                                                    # the datasets to remove noise
-                                                                                    # which is totally dishonest
-                                                                                    # but will be repeated here
-                                                                                    # to have a baseline
-                                                                                    # Because of that and the fact
-                                                                                    # that those are static datasets, 
-                                                                                    # the best decay is the one that
-                                                                                    # keeps all the data
-                                                                                    # Unfortunately, the implementation
-                                                                                    # is also very slow,
-                                                                                    # so each trial takes a long time
+            variance_limit=best_params["variance_limit"], decay=len(y_true)
+        )  # 1: Juan artificially cleared
+        # the datasets to remove noise
+        # which is totally dishonest
+        # but will be repeated here
+        # to have a baseline
+        # Because of that and the fact
+        # that those are static datasets,
+        # the best decay is the one that
+        # keeps all the data
+        # Unfortunately, the implementation
+        # is also very slow,
+        # so each trial takes a long time
 
         fit_start = time.perf_counter()
         model.fit(X)
@@ -79,17 +80,20 @@ def main():
         plt.savefig(f"{dataset}_predictions.png")
         plt.close()
 
-        results_global.append({
-            "dataset": dataset,
-            "ari_score": score,
-            "variance_limit": best_params["variance_limit"],
-            "fit_time": fit_time,
-            "predict_time": predict_time
-        })
+        results_global.append(
+            {
+                "dataset": dataset,
+                "ari_score": score,
+                "variance_limit": best_params["variance_limit"],
+                "fit_time": fit_time,
+                "predict_time": predict_time,
+            }
+        )
 
     # Convert results to DataFrame and save to CSV file
     final_results = pd.DataFrame(results_global)
     final_results.to_csv("fitthenpredict.csv", index=False, mode="a")
+
 
 if __name__ == "__main__":
     main()

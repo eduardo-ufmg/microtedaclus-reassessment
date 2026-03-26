@@ -8,16 +8,16 @@ from sklearn.metrics import adjusted_rand_score
 
 from EvolvingMicroTEDA import EvolvingMicroTEDA
 
-DATASETS = {
-    "chameleon-ds7-clean",
-    "chameleon-ds8-clean"
-}
+DATASETS = {"chameleon-ds7-clean", "chameleon-ds8-clean"}
 
 BATCH_SIZES = [32, 64, 128, 256, 512, 1024]
 
 TUNE_SUBSET_SIZE_FACTOR = 0.5
 
-def get_subsets(X: np.ndarray, y: np.ndarray, factor: float, random_state: int = 0) -> tuple[tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray]]:
+
+def get_subsets(
+    X: np.ndarray, y: np.ndarray, factor: float, random_state: int = 0
+) -> tuple[tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray]]:
     """
     Select two random subsets of the data. Sample order is preserved.
     """
@@ -35,7 +35,10 @@ def get_subsets(X: np.ndarray, y: np.ndarray, factor: float, random_state: int =
 
     return (X_subset, y_subset), (X_remaining, y_remaining)
 
-def run(X: np.ndarray, y: np.ndarray, batch_size: int, variance_limit: float, decay: float) -> tuple[float, float, float]:
+
+def run(
+    X: np.ndarray, y: np.ndarray, batch_size: int, variance_limit: float, decay: float
+) -> tuple[float, float, float]:
     """
     Do the following:
     1. Instantiate the model with the given parameters.
@@ -91,7 +94,10 @@ def run(X: np.ndarray, y: np.ndarray, batch_size: int, variance_limit: float, de
         fit_times.append(fit_time)
         pred_times.append(pred_time)
 
-    w = [len(X_batch) / n_samples for X_batch in [X[start_idx:end_idx] for i in range(n_batches - 1)]]
+    w = [
+        len(X_batch) / n_samples
+        for X_batch in [X[start_idx:end_idx] for i in range(n_batches - 1)]
+    ]
 
     ari_wm = np.sum(np.array(ari_scores) * np.array(w))
     fit_t_wm = np.sum(np.array(fit_times) * np.array(w))
@@ -99,7 +105,10 @@ def run(X: np.ndarray, y: np.ndarray, batch_size: int, variance_limit: float, de
 
     return ari_wm, fit_t_wm, pred_t_wm
 
-def tune_hyperparameters(X: np.ndarray, y: np.ndarray, batch_size: int) -> tuple[float, float, float, float]:
+
+def tune_hyperparameters(
+    X: np.ndarray, y: np.ndarray, batch_size: int
+) -> tuple[float, float, float, float]:
     """
     Tune the variance_limit and decay hyperparameters using Optuna.
 
@@ -118,7 +127,9 @@ def tune_hyperparameters(X: np.ndarray, y: np.ndarray, batch_size: int) -> tuple
     def objective(trial):
         variance_limit = trial.suggest_float("variance_limit", 0.0001, 0.1)
 
-        ari_wm, fit_t_wm, pred_t_wm = run(X, y, batch_size, variance_limit, decay=batch_size)
+        ari_wm, fit_t_wm, pred_t_wm = run(
+            X, y, batch_size, variance_limit, decay=batch_size
+        )
 
         return ari_wm
 
@@ -127,11 +138,16 @@ def tune_hyperparameters(X: np.ndarray, y: np.ndarray, batch_size: int) -> tuple
 
     best_variance_limit = study.best_params["variance_limit"]
 
-    tune_ari_wm, tune_fit_t_wm, tune_pred_t_wm = run(X, y, batch_size, best_variance_limit, decay=batch_size)
+    tune_ari_wm, tune_fit_t_wm, tune_pred_t_wm = run(
+        X, y, batch_size, best_variance_limit, decay=batch_size
+    )
 
     return best_variance_limit, tune_ari_wm, tune_fit_t_wm, tune_pred_t_wm
 
-def process_batch(dataset_name: str, batch_size: int, result_file: str = "predictthenfit_results.csv") -> None:
+
+def process_batch(
+    dataset_name: str, batch_size: int, result_file: str = "predictthenfit_results.csv"
+) -> None:
     """
     Process the given dataset with the specified batch size, tuning hyperparameters and evaluating the model.
 
@@ -151,28 +167,37 @@ def process_batch(dataset_name: str, batch_size: int, result_file: str = "predic
 
     (X_tune, y_tune), (X_eval, y_eval) = get_subsets(X, y, TUNE_SUBSET_SIZE_FACTOR)
 
-    best_variance_limit, tune_ari_wm, tune_fit_t_wm, tune_pred_t_wm = tune_hyperparameters(X_tune, y_tune, batch_size)
+    best_variance_limit, tune_ari_wm, tune_fit_t_wm, tune_pred_t_wm = (
+        tune_hyperparameters(X_tune, y_tune, batch_size)
+    )
 
-    test_ari_wm, test_fit_t_wm, test_pred_t_wm = run(X_eval, y_eval, batch_size, best_variance_limit, decay=batch_size)
+    test_ari_wm, test_fit_t_wm, test_pred_t_wm = run(
+        X_eval, y_eval, batch_size, best_variance_limit, decay=batch_size
+    )
 
-    results_df = pd.DataFrame({
-        "dataset": [dataset_name],
-        "batch_size": [batch_size],
-        "best_variance_limit": [best_variance_limit],
-        "fixed_decay": [batch_size],
-        "tune_ari_wm": [tune_ari_wm],
-        "tune_fit_t_wm": [tune_fit_t_wm],
-        "tune_pred_t_wm": [tune_pred_t_wm],
-        "test_ari_wm": [test_ari_wm],
-        "test_fit_t_wm": [test_fit_t_wm],
-        "test_pred_t_wm": [test_pred_t_wm]
-    })
+    results_df = pd.DataFrame(
+        {
+            "dataset": [dataset_name],
+            "batch_size": [batch_size],
+            "best_variance_limit": [best_variance_limit],
+            "fixed_decay": [batch_size],
+            "tune_ari_wm": [tune_ari_wm],
+            "tune_fit_t_wm": [tune_fit_t_wm],
+            "tune_pred_t_wm": [tune_pred_t_wm],
+            "test_ari_wm": [test_ari_wm],
+            "test_fit_t_wm": [test_fit_t_wm],
+            "test_pred_t_wm": [test_pred_t_wm],
+        }
+    )
 
     results_df.to_csv(result_file, mode="a", header=False, index=False)
 
     print(f"Finished processing dataset: {dataset_name}, batch size: {batch_size}")
 
-def process_dataset(dataset_name: str, result_file: str = "predictthenfit_results.csv") -> None:
+
+def process_dataset(
+    dataset_name: str, result_file: str = "predictthenfit_results.csv"
+) -> None:
     """
     Process the given dataset for all batch sizes and aggregate the results.
 
@@ -188,7 +213,7 @@ def process_dataset(dataset_name: str, result_file: str = "predictthenfit_result
 
 
 def main():
-    
+
     header = [
         "dataset",
         "batch_size",
@@ -199,14 +224,16 @@ def main():
         "tune_pred_t_wm",
         "test_ari_wm",
         "test_fit_t_wm",
-        "test_pred_t_wm"
+        "test_pred_t_wm",
     ]
 
-    pd.DataFrame(columns=header).to_csv("predictthenfit_results.csv", index=False, mode="a")
+    pd.DataFrame(columns=header).to_csv(
+        "predictthenfit_results.csv", index=False, mode="a"
+    )
 
     for dataset_name in DATASETS:
         process_dataset(dataset_name, "predictthenfit_results.csv")
 
+
 if __name__ == "__main__":
     main()
-

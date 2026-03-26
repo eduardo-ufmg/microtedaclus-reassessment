@@ -54,7 +54,9 @@ class MicroClusters:
             )
         raise ValueError(f"Unsupported type_distance: {self.type_distance}")
 
-    def compute_eccentricity(self, x: np.ndarray, new_mean: np.ndarray, new_variance: float) -> float:
+    def compute_eccentricity(
+        self, x: np.ndarray, new_mean: np.ndarray, new_variance: float
+    ) -> float:
         if self.type_distance == "Euclidean_distance":
             if new_variance > self.variance_limit and self.num_samples <= 3:
                 return 1e3
@@ -139,7 +141,9 @@ class MicroClusters:
             )
         return outlier
 
-    def _is_outlier(self, x: np.ndarray, new_mean: np.ndarray, new_variance: float) -> bool:
+    def _is_outlier(
+        self, x: np.ndarray, new_mean: np.ndarray, new_variance: float
+    ) -> bool:
         if self.type_distance == "Euclidean_distance":
             return self.is_outlier_euclidean_distance(new_variance)
         if self.type_distance == "Cosine_distance":
@@ -322,10 +326,14 @@ class EvolvingMicroTEDA:
         _sum_nomalized_typicalities = [
             x for x in sum_nomalized_typicalities if x is not None
         ]
-        return max(
-            [x for x in _sum_nomalized_typicalities if x is not None],
-            key=lambda item: item[1],
-        )[0] if len(_sum_nomalized_typicalities) > 0 else -1
+        return (
+            max(
+                [x for x in _sum_nomalized_typicalities if x is not None],
+                key=lambda item: item[1],
+            )[0]
+            if len(_sum_nomalized_typicalities) > 0
+            else -1
+        )
 
     def predict(self, x_data: np.ndarray):
         y = []
