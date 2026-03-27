@@ -1,101 +1,137 @@
+import time
+import optuna
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import math
-import time
-import optuna
 from sklearn.metrics import adjusted_rand_score
 
 from EvolvingMicroTEDA import EvolvingMicroTEDA
 
-DATASETS_PARAMS = {
-    "chameleon-ds7-clean": {"variance_limit": 0.0007, "decay": np.nan},
-    "chameleon-ds8-clean": {"variance_limit": 0.0003, "decay": np.nan},
-    "std-DS7": {"variance_limit": 500 * 600 * 0.0007, "decay": np.nan},
-    "std-DS8": {"variance_limit": 500 * 600 * 0.0003, "decay": np.nan},
+DATASETS = {
+    "chameleon-ds7-clean": (0.0001, 0.01),
+    "chameleon-ds8-clean": (0.0001, 0.01),
+    "std-DS7": (10, 1000),
+    "std-DS8": (10, 1000),
 }
 
+TUNE_SUBSET_SIZE_FACTOR = 0.5
 
-def tune_hyperparameters(X, y_true, first_guess_variance_limit):
 
-    floor_tenth_power = 10 ** math.floor(math.log10(first_guess_variance_limit))
-    ceil_tenth_power = 10 ** math.ceil(math.log10(first_guess_variance_limit))
-    var_lim_range = (floor_tenth_power * 0.1, ceil_tenth_power * 10)
+def get_subsets(
+    X: np.ndarray, y: np.ndarray, factor: float, random_state: int = 0
+) -> tuple[tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray]]:
+    np.random.seed(random_state)
+    n_samples = X.shape[0]
+    subset_size = int(n_samples * factor)
+
+    indices = np.random.choice(n_samples, size=subset_size, replace=False)
+
+    X_subset = X[indices]
+    y_subset = y[indices]
+
+    X_remaining = np.delete(X, indices, axis=0)
+    y_remaining = np.delete(y, indices, axis=0)
+
+    return (X_subset, y_subset), (X_remaining, y_remaining)
+
+
+def tune_hyperparameters(
+    X: np.ndarray, y_true: np.ndarray, tune_range: tuple[float, float]
+):
+    n_samples = len(X)
 
     def objective(trial):
-        variance_limit = trial.suggest_float("variance_limit", *var_lim_range)
+        variance_limit = trial.suggest_float(
+            "variance_limit", tune_range[0], tune_range[1], log=True
+        )
+        decay = trial.suggest_float("decay", 1.0, float(n_samples))
 
-        model = EvolvingMicroTEDA(
-            variance_limit=variance_limit, decay=len(y_true) / 2
-        )  # see (1), but we assume that half of the data is good enough to tune the variance limit
+        model = EvolvingMicroTEDA(variance_limit=variance_limit, decay=decay)
         model.fit(X)
         y_pred = model.predict(X)
         score = adjusted_rand_score(y_true, y_pred)
         return score
 
+    optuna.logging.set_verbosity(optuna.logging.WARNING)
     study = optuna.create_study(direction="maximize")
-    study.enqueue_trial({"variance_limit": first_guess_variance_limit})
+
     study.optimize(objective, n_trials=64, timeout=len(y_true) * 100 / 1000)
     return study.best_params
 
 
-def main():
+def run_offline(X: np.ndarray, y: np.ndarray, variance_limit: float, decay: float):
+    model = EvolvingMicroTEDA(variance_limit=variance_limit, decay=decay)
+    n_samples = len(X)
 
-    headers = ["dataset", "ari_score", "variance_limit", "fit_time", "predict_time"]
+    fit_start = time.perf_counter()
+    model.fit(X)
+    total_fit_time = time.perf_counter() - fit_start
+
+    predict_start = time.perf_counter()
+    y_pred = model.predict(X)
+    total_pred_time = time.perf_counter() - predict_start
+
+    score = adjusted_rand_score(y, y_pred)
+
+    return score, y_pred, total_fit_time / n_samples, total_pred_time / n_samples
+
+
+def main():
+    headers = [
+        "dataset",
+        "best_variance_limit",
+        "best_decay",
+        "tune_ari_global",
+        "test_ari_global",
+        "test_fit_lat_sec",
+        "test_pred_lat_sec",
+    ]
     pd.DataFrame(columns=headers).to_csv(
-        "fitthenpredict_results.csv", index=False, mode="a"
+        "fitthenpredict_results.csv", index=False, mode="w"
     )
 
-    for dataset, first_guess_params in DATASETS_PARAMS.items():
-        print(f"Processing dataset: {dataset}")
+    for dataset, tune_range in DATASETS.items():
+        print(f"Processing dataset: {dataset} (Offline Baseline)")
         data = pd.read_csv(f"{dataset}.csv")
         X = data.drop(columns=["y"]).to_numpy()
         y_true = data["y"].to_numpy()
 
-        best_params = tune_hyperparameters(
-            X, y_true, first_guess_params["variance_limit"]
+        (X_tune, y_tune), (X_eval, y_eval) = get_subsets(
+            X, y_true, TUNE_SUBSET_SIZE_FACTOR
+        )
+
+        best_params = tune_hyperparameters(X_tune, y_tune, tune_range)
+
+        tune_score, _, _, _ = run_offline(
+            X_tune, y_tune, best_params["variance_limit"], best_params["decay"]
         )
 
         print(f"Best parameters for {dataset}: {best_params}")
-        model = EvolvingMicroTEDA(
-            variance_limit=best_params["variance_limit"], decay=len(y_true)
-        )  # 1: Juan artificially cleared
-        # the datasets to remove noise
-        # which is totally dishonest
-        # but will be repeated here
-        # to have a baseline
-        # Because of that and the fact
-        # that those are static datasets,
-        # the best decay is the one that
-        # keeps all the data
 
-        fit_start = time.perf_counter()
-        model.fit(X)
-        fit_time = time.perf_counter() - fit_start
-        print(f"Fit time for {dataset}: {fit_time:.4f} seconds")
+        test_score, y_pred_test, fit_lat, pred_lat = run_offline(
+            X_eval, y_eval, best_params["variance_limit"], best_params["decay"]
+        )
 
-        predict_start = time.perf_counter()
-        y_pred = model.predict(X)
-        predict_time = time.perf_counter() - predict_start
-        print(f"Predict time for {dataset}: {predict_time:.4f} seconds")
-
-        score = adjusted_rand_score(y_true, y_pred)
-        print(f"Adjusted Rand Score for {dataset}: {score}")
+        print(f"Test Fit Latency: {fit_lat:.6f} sec/sample")
+        print(f"Test Predict Latency: {pred_lat:.6f} sec/sample")
+        print(f"Test Adjusted Rand Score: {test_score:.4f}")
 
         plt.figure()
-        plt.scatter(X[:, 0], X[:, 1], c=y_pred)
-        plt.title(f"{dataset} - Adjusted Rand Score: {score:.4f}")
-        plt.savefig(f"{dataset}_predictions.png")
+        plt.scatter(X_eval[:, 0], X_eval[:, 1], c=y_pred_test)
+        plt.title(f"{dataset} (Eval) - ARI: {test_score:.4f}")
+        plt.savefig(f"{dataset}_eval_predictions.png")
         plt.close()
 
         results_df = pd.DataFrame(
             [
                 {
                     "dataset": dataset,
-                    "ari_score": score,
-                    "variance_limit": best_params["variance_limit"],
-                    "fit_time": fit_time,
-                    "predict_time": predict_time,
+                    "best_variance_limit": best_params["variance_limit"],
+                    "best_decay": best_params["decay"],
+                    "tune_ari_global": tune_score,
+                    "test_ari_global": test_score,
+                    "test_fit_lat_sec": fit_lat,
+                    "test_pred_lat_sec": pred_lat,
                 }
             ]
         )
