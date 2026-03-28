@@ -93,12 +93,11 @@ def tune_hyperparameters(
         variance_limit = trial.suggest_float(
             "variance_limit", tune_range[0], tune_range[1], log=True
         )
-        decay = trial.suggest_float("decay", 1.0, float(n_samples))
+        decay = trial.suggest_float("decay", float(n_samples) / 20, float(n_samples))
 
         ari, _, _ = run(X, y, batch_size, variance_limit, decay)
         return ari
 
-    optuna.logging.set_verbosity(optuna.logging.WARNING)
     study = optuna.create_study(direction="maximize")
     study.optimize(objective, n_trials=64, timeout=600)
 

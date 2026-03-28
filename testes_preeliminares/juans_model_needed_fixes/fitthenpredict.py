@@ -44,7 +44,7 @@ def tune_hyperparameters(
         variance_limit = trial.suggest_float(
             "variance_limit", tune_range[0], tune_range[1], log=True
         )
-        decay = trial.suggest_float("decay", 1.0, float(n_samples))
+        decay = trial.suggest_float("decay", float(n_samples) / 20, float(n_samples))
 
         model = EvolvingMicroTEDA(variance_limit=variance_limit, decay=decay)
         model.fit(X)
@@ -52,7 +52,6 @@ def tune_hyperparameters(
         score = adjusted_rand_score(y_true, y_pred)
         return score
 
-    optuna.logging.set_verbosity(optuna.logging.WARNING)
     study = optuna.create_study(direction="maximize")
 
     study.optimize(objective, n_trials=64, timeout=len(y_true) * 100 / 1000)

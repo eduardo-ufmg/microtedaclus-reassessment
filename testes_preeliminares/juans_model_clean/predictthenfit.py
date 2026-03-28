@@ -43,7 +43,7 @@ def infer_bounds(X: np.ndarray) -> tuple[tuple[float, float], tuple[int, int]]:
     else:
         res_bounds = (float(np.min(distances)), float(np.max(distances)))
 
-    mem_bounds = (1, n_samples)
+    mem_bounds = (max(n_samples // 20, 10), n_samples)
     return res_bounds, mem_bounds
 
 
@@ -108,7 +108,6 @@ def tune_hyperparameters(
         ari, _, _ = run(X, y, batch_size, resolution, memory)
         return ari
 
-    optuna.logging.set_verbosity(optuna.logging.WARNING)
     study = optuna.create_study(direction="maximize")
     study.optimize(objective, n_trials=64, timeout=600)
 
