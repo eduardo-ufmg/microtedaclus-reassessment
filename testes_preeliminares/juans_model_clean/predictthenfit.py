@@ -7,7 +7,7 @@ from sklearn.metrics import adjusted_rand_score
 
 from EvolvingMicroTEDAClean import EvolvingMicroTEDAClean
 
-DATASETS = ["chameleon-ds7-clean", "chameleon-ds8-clean", "std-DS7", "std-DS8"]
+DATASETS = ["juan-DS7", "juan-DS8", "std-DS7", "std-DS8"]
 BATCH_SIZES = [32, 64, 128, 256, 512, 1024]
 TUNE_SUBSET_SIZE_FACTOR = 0.5
 
