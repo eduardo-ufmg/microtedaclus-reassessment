@@ -101,7 +101,9 @@ def plot_all(primary_df: pd.DataFrame, compare_df: pd.DataFrame, output_dir: Pat
         rows, cols, figsize=(6 * cols, 5 * rows), squeeze=False, sharey=True
     )
     for i, ds_name in enumerate(datasets):
-        ax = axs_ari[0][i]
+        r = i // cols
+        c = i % cols
+        ax = axs_ari[r][c]
 
         p_df = primary_df[primary_df["dataset"] == ds_name].sort_values("batch_size")
         c_df = compare_df[compare_df["dataset"] == ds_name].sort_values("batch_size")

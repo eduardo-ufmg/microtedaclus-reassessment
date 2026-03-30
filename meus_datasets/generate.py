@@ -1,3 +1,4 @@
+import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -72,6 +73,22 @@ def generate_birthdeath(n_samples, noise):
     return X, y, t
 
 
+def generate_rotating_blobs(n_samples, noise):
+    # Three blobs rotating around the origin over the same circular trajectory
+    t = np.random.uniform(0, 1, n_samples)
+    y = np.random.randint(0, 3, n_samples)
+    X = np.zeros((n_samples, 2))
+    R = 2.0
+
+    for i in range(3):
+        mask = y == i
+        angles = 2 * np.pi * t[mask] + (i * 2 * np.pi / 3)
+        X[mask, 0] = R * np.cos(angles) + np.random.normal(0, noise, mask.sum())
+        X[mask, 1] = R * np.sin(angles) + np.random.normal(0, noise, mask.sum())
+
+    return X, y, t
+
+
 def save_dataset(X, y, filename):
     df = pd.DataFrame(
         {
@@ -118,43 +135,76 @@ def plot_dynamic(X, y, t, title, filename):
 
 
 def main():
-    print("Generating and plotting static dataset...")
-    X_stat, y_stat = generate_static_moons(N_SAMPLES, NOISE_STD)
-    save_dataset(X_stat, y_stat, "static_moons.csv")
-    plot_static(X_stat, y_stat, "Static Moons Dataset", "static_moons.png")
-
-    print("Generating and plotting dynamic dataset 1 (Linear/Parallel)...")
-    X_dyn1, y_dyn1, t_dyn1 = generate_nonoverlap_movingblobs(N_SAMPLES, NOISE_STD)
-    save_dataset(X_dyn1, y_dyn1, "dynamic_nonoverlap_movingblobs.csv")
-    plot_dynamic(
-        X_dyn1,
-        y_dyn1,
-        t_dyn1,
-        "Dynamic 1: Linear Parallel Trajectories",
-        "dynamic_nonoverlap_movingblobs.png",
+    parser = argparse.ArgumentParser(description="Generate synthetic datasets.")
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        choices=[
+            "static_moons",
+            "nonoverlap_movingblobs",
+            "crossing_movingblobs",
+            "birthdeath",
+            "rotating_blobs",
+            "all",
+        ],
+        default="all",
+        help="Which dataset to generate",
     )
+    args = parser.parse_args()
 
-    print("Generating and plotting dynamic dataset 2 (Radial Crossing)...")
-    X_dyn2, y_dyn2, t_dyn2 = generate_crossing_movingblobs(N_SAMPLES, NOISE_STD)
-    save_dataset(X_dyn2, y_dyn2, "dynamic_crossing_movingblobs.csv")
-    plot_dynamic(
-        X_dyn2,
-        y_dyn2,
-        t_dyn2,
-        "Dynamic 2: Radial Crossing",
-        "dynamic_crossing_movingblobs.png",
-    )
+    if args.dataset in ("static_moons", "all"):
+        print("Generating and plotting static dataset...")
+        X_stat, y_stat = generate_static_moons(N_SAMPLES, NOISE_STD)
+        save_dataset(X_stat, y_stat, "static_moons.csv")
+        plot_static(X_stat, y_stat, "Static Moons Dataset", "static_moons.png")
 
-    print("Generating and plotting dynamic dataset 3 (Appearance/Disappearance)...")
-    X_dyn3, y_dyn3, t_dyn3 = generate_birthdeath(N_SAMPLES, NOISE_STD)
-    save_dataset(X_dyn3, y_dyn3, "dynamic_birthdeath.csv")
-    plot_dynamic(
-        X_dyn3,
-        y_dyn3,
-        t_dyn3,
-        "Dynamic 3: Concept Drift via Addition/Deletion",
-        "dynamic_birthdeath.png",
-    )
+    if args.dataset in ("nonoverlap_movingblobs", "all"):
+        print("Generating and plotting dynamic dataset 1 (Linear/Parallel)...")
+        X_dyn1, y_dyn1, t_dyn1 = generate_nonoverlap_movingblobs(N_SAMPLES, NOISE_STD)
+        save_dataset(X_dyn1, y_dyn1, "dynamic_nonoverlap_movingblobs.csv")
+        plot_dynamic(
+            X_dyn1,
+            y_dyn1,
+            t_dyn1,
+            "Dynamic 1: Linear Parallel Trajectories",
+            "dynamic_nonoverlap_movingblobs.png",
+        )
+
+    if args.dataset in ("crossing_movingblobs", "all"):
+        print("Generating and plotting dynamic dataset 2 (Radial Crossing)...")
+        X_dyn2, y_dyn2, t_dyn2 = generate_crossing_movingblobs(N_SAMPLES, NOISE_STD)
+        save_dataset(X_dyn2, y_dyn2, "dynamic_crossing_movingblobs.csv")
+        plot_dynamic(
+            X_dyn2,
+            y_dyn2,
+            t_dyn2,
+            "Dynamic 2: Radial Crossing",
+            "dynamic_crossing_movingblobs.png",
+        )
+
+    if args.dataset in ("birthdeath", "all"):
+        print("Generating and plotting dynamic dataset 3 (Appearance/Disappearance)...")
+        X_dyn3, y_dyn3, t_dyn3 = generate_birthdeath(N_SAMPLES, NOISE_STD)
+        save_dataset(X_dyn3, y_dyn3, "dynamic_birthdeath.csv")
+        plot_dynamic(
+            X_dyn3,
+            y_dyn3,
+            t_dyn3,
+            "Dynamic 3: Concept Drift via Addition/Deletion",
+            "dynamic_birthdeath.png",
+        )
+
+    if args.dataset in ("rotating_blobs", "all"):
+        print("Generating and plotting rotating blobs dataset...")
+        X_dyn4, y_dyn4, t_dyn4 = generate_rotating_blobs(N_SAMPLES, NOISE_STD)
+        save_dataset(X_dyn4, y_dyn4, "dynamic_rotating_blobs.csv")
+        plot_dynamic(
+            X_dyn4,
+            y_dyn4,
+            t_dyn4,
+            "Dynamic 4: Rotating Blobs",
+            "dynamic_rotating_blobs.png",
+        )
 
 
 if __name__ == "__main__":

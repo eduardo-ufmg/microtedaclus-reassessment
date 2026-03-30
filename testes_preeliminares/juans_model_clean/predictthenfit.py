@@ -7,7 +7,13 @@ from sklearn.metrics import adjusted_rand_score
 
 from EvolvingMicroTEDAClean import EvolvingMicroTEDAClean
 
-DATASETS = ["juan-DS7", "juan-DS8", "std-DS7", "std-DS8"]
+DATASETS = [
+    "static_moons",
+    "dynamic_nonoverlap_movingblobs",
+    "dynamic_rotating_blobs",
+    "dynamic_crossing_movingblobs",
+    "dynamic_birthdeath",
+]
 BATCH_SIZES = [32, 64, 128, 256, 512, 1024]
 TUNE_SUBSET_SIZE_FACTOR = 0.5
 
@@ -175,7 +181,7 @@ def main():
     ]
 
     pd.DataFrame(columns=header).to_csv(
-        "predictthenfit_results.csv", index=False, mode="w"
+        "predictthenfit_results.csv", index=False, mode="a"
     )
 
     for dataset_name in DATASETS:

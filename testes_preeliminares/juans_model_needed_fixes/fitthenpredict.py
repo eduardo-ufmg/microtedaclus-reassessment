@@ -8,10 +8,7 @@ from sklearn.metrics import adjusted_rand_score
 from EvolvingMicroTEDA import EvolvingMicroTEDA
 
 DATASETS = {
-    "static_moons": (0.01, 3.0),
-    "dynamic_nonoverlap_movingblobs": (0.01, 3.0),
-    "dynamic_crossing_movingblobs": (0.01, 3.0),
-    "dynamic_birthdeath": (0.01, 3.0),
+    "dynamic_rotating_blobs": (0.0001, 5.0),
 }
 
 TUNE_SUBSET_SIZE_FACTOR = 0.5
@@ -86,7 +83,7 @@ def main():
         "test_pred_lat_sec",
     ]
     pd.DataFrame(columns=headers).to_csv(
-        "fitthenpredict_results.csv", index=False, mode="w"
+        "fitthenpredict_results.csv", index=False, mode="a"
     )
 
     for dataset, tune_range in DATASETS.items():

@@ -7,10 +7,7 @@ from sklearn.metrics import adjusted_rand_score
 from EvolvingMicroTEDA import EvolvingMicroTEDA
 
 DATASETS = {
-    "static_moons": (0.01, 3.0),
-    "dynamic_nonoverlap_movingblobs": (0.01, 3.0),
-    "dynamic_crossing_movingblobs": (0.01, 3.0),
-    "dynamic_birthdeath": (0.01, 3.0),
+    "dynamic_rotating_blobs": (0.0001, 5.0),
 }
 
 BATCH_SIZES = [32, 64, 128, 256, 512, 1024]
@@ -168,7 +165,7 @@ def main():
     ]
 
     pd.DataFrame(columns=header).to_csv(
-        "predictthenfit_results.csv", index=False, mode="w"
+        "predictthenfit_results.csv", index=False, mode="a"
     )
 
     for dataset_name, tune_range in DATASETS.items():
