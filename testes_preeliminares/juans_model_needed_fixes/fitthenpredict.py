@@ -8,10 +8,10 @@ from sklearn.metrics import adjusted_rand_score
 from EvolvingMicroTEDA import EvolvingMicroTEDA
 
 DATASETS = {
-    "juan-DS7": (0.0001, 0.01),
-    "juan-DS8": (0.0001, 0.01),
-    "std-DS7": (10, 1000),
-    "std-DS8": (10, 1000),
+    "static_moons": (0.01, 3.0),
+    "dynamic_nonoverlap_movingblobs": (0.01, 3.0),
+    "dynamic_crossing_movingblobs": (0.01, 3.0),
+    "dynamic_birthdeath": (0.01, 3.0),
 }
 
 TUNE_SUBSET_SIZE_FACTOR = 0.5

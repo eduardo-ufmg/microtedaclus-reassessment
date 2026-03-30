@@ -36,11 +36,15 @@ def plot_all(primary_df: pd.DataFrame, compare_df: pd.DataFrame, output_dir: Pat
         raise ValueError("No dataset values found for plotting")
 
     # Latency comparison: fit and predict, and test
+    cols = 4
+    rows = (n + cols - 1) // cols
     fig_lat, axs_lat = plt.subplots(
-        1, n, figsize=(6 * n, 5), squeeze=False, sharey=True
+        rows, cols, figsize=(6 * cols, 5 * rows), squeeze=False, sharey=True
     )
     for i, ds_name in enumerate(datasets):
-        ax = axs_lat[0][i]
+        r = i // cols
+        c = i % cols
+        ax = axs_lat[r][c]
 
         p_df = primary_df[primary_df["dataset"] == ds_name].sort_values("batch_size")
         c_df = compare_df[compare_df["dataset"] == ds_name].sort_values("batch_size")
@@ -83,6 +87,10 @@ def plot_all(primary_df: pd.DataFrame, compare_df: pd.DataFrame, output_dir: Pat
         ax.grid(True, which="both", linestyle="--", alpha=0.5)
 
     fig_lat.suptitle("Compare test fit/pred latency")
+    for j in range(n, rows * cols):
+        r = j // cols
+        c = j % cols
+        axs_lat[r][c].axis("off")
     fig_lat.tight_layout(rect=(0, 0.03, 1, 0.95))
     lat_path = output_dir / "compare_latency.png"
     fig_lat.savefig(lat_path, dpi=150)
@@ -90,7 +98,7 @@ def plot_all(primary_df: pd.DataFrame, compare_df: pd.DataFrame, output_dir: Pat
 
     # ARI comparison
     fig_ari, axs_ari = plt.subplots(
-        1, n, figsize=(6 * n, 5), squeeze=False, sharey=True
+        rows, cols, figsize=(6 * cols, 5 * rows), squeeze=False, sharey=True
     )
     for i, ds_name in enumerate(datasets):
         ax = axs_ari[0][i]
@@ -121,6 +129,10 @@ def plot_all(primary_df: pd.DataFrame, compare_df: pd.DataFrame, output_dir: Pat
         ax.grid(True, which="both", linestyle="--", alpha=0.5)
 
     fig_ari.suptitle("Compare test ARI")
+    for j in range(n, rows * cols):
+        r = j // cols
+        c = j % cols
+        axs_ari[r][c].axis("off")
     fig_ari.tight_layout(rect=(0, 0.03, 1, 0.95))
     ari_path = output_dir / "compare_ari.png"
     fig_ari.savefig(ari_path, dpi=150)

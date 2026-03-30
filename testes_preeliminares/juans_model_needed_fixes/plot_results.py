@@ -42,9 +42,15 @@ def plot_results(csv_path: Path, output_dir: Path, ref_csv_path: Path):
         raise ValueError("No dataset values found in CSV")
 
     # Plot 1: times (fit and predict) by dataset
-    fig1, axs1 = plt.subplots(1, n, figsize=(6 * n, 5), squeeze=False, sharey=True)
+    cols = 4
+    rows = (n + cols - 1) // cols
+    fig1, axs1 = plt.subplots(
+        rows, cols, figsize=(6 * cols, 5 * rows), squeeze=False, sharey=True
+    )
     for i, dataset in enumerate(datasets):
-        sub = axs1[0][i]
+        r = i // cols
+        c = i % cols
+        sub = axs1[r][c]
         ds = df[df["dataset"] == dataset].sort_values("batch_size")
 
         if "test_fit_lat_sec" in ds.columns:
@@ -98,9 +104,15 @@ def plot_results(csv_path: Path, output_dir: Path, ref_csv_path: Path):
     print(f"Saved times figure to: {fig1_path}")
 
     # Plot 2: ARI scores by dataset
-    fig2, axs2 = plt.subplots(1, n, figsize=(6 * n, 5), squeeze=False, sharey=True)
+    cols = 4
+    rows = (n + cols - 1) // cols
+    fig2, axs2 = plt.subplots(
+        rows, cols, figsize=(6 * cols, 5 * rows), squeeze=False, sharey=True
+    )
     for i, dataset in enumerate(datasets):
-        sub = axs2[0][i]
+        r = i // cols
+        c = i % cols
+        sub = axs2[r][c]
         ds = df[df["dataset"] == dataset].sort_values("batch_size")
 
         if "test_ari_chunk" in ds.columns:
@@ -139,6 +151,12 @@ def plot_results(csv_path: Path, output_dir: Path, ref_csv_path: Path):
         sub.grid(True, which="both", linestyle="--", alpha=0.5)
 
     fig2.suptitle("ARI scores by Batch Size")
+    # Hide unused axes
+    for j in range(n, rows * cols):
+        r = j // cols
+        c = j % cols
+        axs2[r][c].axis("off")
+
     fig2.tight_layout(rect=(0, 0.03, 1, 0.95))
     fig2_path = output_dir / "plot_ari.png"
     fig2.savefig(fig2_path)
