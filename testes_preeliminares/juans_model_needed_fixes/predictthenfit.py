@@ -7,8 +7,8 @@ from sklearn.metrics import adjusted_rand_score
 from EvolvingMicroTEDA import EvolvingMicroTEDA
 
 DATASETS = {
-    "chameleon-ds7-clean": (0.0001, 0.01),
-    "chameleon-ds8-clean": (0.0001, 0.01),
+    "juan-DS7": (0.0001, 0.01),
+    "juan-DS8": (0.0001, 0.01),
     "std-DS7": (10, 1000),
     "std-DS8": (10, 1000),
 }

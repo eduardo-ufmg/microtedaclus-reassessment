@@ -17,17 +17,22 @@ def plot_results(csv_path: Path, output_dir: Path, ref_csv_path: Path):
     # Ensure numeric conversion
     for col in [
         "batch_size",
-        "tune_ari_wm",
-        "tune_fit_t_wm",
-        "tune_pred_t_wm",
-        "test_ari_wm",
-        "test_fit_t_wm",
-        "test_pred_t_wm",
+        "tune_ari_chunk",
+        "tune_fit_lat_sec",
+        "tune_pred_lat_sec",
+        "test_ari_chunk",
+        "test_fit_lat_sec",
+        "test_pred_lat_sec",
     ]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
-    for col in ["fit_time", "predict_time", "ari_score"]:
+    for col in [
+        "tune_ari_global",
+        "test_ari_global",
+        "test_fit_lat_sec",
+        "test_pred_lat_sec",
+    ]:
         if col in ref_df.columns:
             ref_df[col] = pd.to_numeric(ref_df[col], errors="coerce")
 
@@ -41,27 +46,42 @@ def plot_results(csv_path: Path, output_dir: Path, ref_csv_path: Path):
     for i, dataset in enumerate(datasets):
         sub = axs1[0][i]
         ds = df[df["dataset"] == dataset].sort_values("batch_size")
-        sub.plot(
-            ds["batch_size"], ds["test_fit_t_wm"], marker="o", label="test_fit_t_wm"
-        )
-        sub.plot(
-            ds["batch_size"], ds["test_pred_t_wm"], marker="o", label="test_pred_t_wm"
-        )
+
+        if "test_fit_lat_sec" in ds.columns:
+            sub.plot(
+                ds["batch_size"],
+                ds["test_fit_lat_sec"],
+                marker="o",
+                label="test_fit_lat_sec",
+            )
+        if "test_pred_lat_sec" in ds.columns:
+            sub.plot(
+                ds["batch_size"],
+                ds["test_pred_lat_sec"],
+                marker="o",
+                label="test_pred_lat_sec",
+            )
 
         ref_row = ref_df[ref_df["dataset"] == dataset]
         if not ref_row.empty:
-            sub.axhline(
-                ref_row["fit_time"].iloc[0],
-                color="red",
-                linestyle="--",
-                label="max_fit_time",
-            )
-            sub.axhline(
-                ref_row["predict_time"].iloc[0],
-                color="purple",
-                linestyle="--",
-                label="max_predict_time",
-            )
+            if "test_fit_lat_sec" in ref_row.columns and pd.notna(
+                ref_row["test_fit_lat_sec"].iloc[0]
+            ):
+                sub.axhline(
+                    ref_row["test_fit_lat_sec"].iloc[0],
+                    color="red",
+                    linestyle="--",
+                    label="ref_test_fit_lat_sec",
+                )
+            if "test_pred_lat_sec" in ref_row.columns and pd.notna(
+                ref_row["test_pred_lat_sec"].iloc[0]
+            ):
+                sub.axhline(
+                    ref_row["test_pred_lat_sec"].iloc[0],
+                    color="purple",
+                    linestyle="--",
+                    label="ref_test_pred_lat_sec",
+                )
 
         sub.set_title(f"{dataset} - times")
         sub.set_xlabel("batch_size")
@@ -83,14 +103,33 @@ def plot_results(csv_path: Path, output_dir: Path, ref_csv_path: Path):
         sub = axs2[0][i]
         ds = df[df["dataset"] == dataset].sort_values("batch_size")
 
-        sub.plot(ds["batch_size"], ds["test_ari_wm"], marker="o", label="test_ari_wm")
+        if "test_ari_chunk" in ds.columns:
+            sub.plot(
+                ds["batch_size"],
+                ds["test_ari_chunk"],
+                marker="o",
+                label="test_ari_chunk",
+            )
+        if "tune_ari_chunk" in ds.columns:
+            sub.plot(
+                ds["batch_size"],
+                ds["tune_ari_chunk"],
+                marker="o",
+                label="tune_ari_chunk",
+            )
+
         ref_row = ref_df[ref_df["dataset"] == dataset]
-        sub.axhline(
-            ref_row["ari_score"].iloc[0],
-            color="green",
-            linestyle="--",
-            label="max_ari_score",
-        )
+        if (
+            not ref_row.empty
+            and "test_ari_global" in ref_row.columns
+            and pd.notna(ref_row["test_ari_global"].iloc[0])
+        ):
+            sub.axhline(
+                ref_row["test_ari_global"].iloc[0],
+                color="green",
+                linestyle="--",
+                label="ref_test_ari_global",
+            )
 
         sub.set_title(f"{dataset} - ARI")
         sub.set_xlabel("batch_size")
