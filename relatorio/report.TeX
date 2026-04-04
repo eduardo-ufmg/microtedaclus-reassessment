@@ -6,6 +6,7 @@
 \usepackage{listings}         % Code blocks
 \usepackage{cite}             % BibTeX citations
 \usepackage{hyperref}         % Clickable references
+\usepackage{labeltext}
 
 % --- Code Block Configuration ---
 \lstset{
@@ -32,11 +33,66 @@ The introduction is also deferred until we have a clearer picture of the entire 
 
 \section{Background and Related Work}
 
-\subsection{Typicality and Eccentricity Based Data Analytics}
+The TEDA framework is presented as an alternative to probability theory for handling data in non-deterministic scenarios \cite{angelov2014outside}. The original microTEDAclus model applies its metrics to decide if a sample is an outlier to a microcluster and if microclusters are suitable candidates to form a macrocluster \cite{maia2020evolvclus}. Finally, when evaluating the previous model's performance in the last-mile problem, \cite{galindo2021lastmile} refactor the decay logic and variance computation.
+
+\subsection{Typicality and Eccentricity-Based Data Analytics}
+
+The paper \textit{Outside the Box: An Alternative Data Analytics Frame-Work}, by Plamen Angelov, introduces the mathematical formulation for the metrics \textbf{Eccentricity} and \textbf{Typicality} \cite{angelov2014outside}.
+
+Let
+
+\begin{equation}
+    C = \{ \sum_{i=1}^{k} \pi^k_i > 0,\quad j > 1,\quad k > 2 \}
+\end{equation}
+
+be a set of conditions for a sample $j$ to be considered for the computation of eccentricity and typicality in a moment $k$.
+
+Eccentricity, a measure of how much a sample deviates from a cluster, is defined as:
+
+\begin{equation}
+    \xi^k_j = \frac{2\pi^k_j}{\sum_{i=1}^{k} \pi^k_i}, \quad C
+\end{equation}
+
+Where $\pi^k_j$ is the sum of distances from the sample $j$ to all samples in the moment $k$.
+
+Typicality, a measure of how well a sample fits within a cluster, is defined as:
+
+\begin{equation}
+    \tau^k_j = 1 - \xi^k_j, \quad C
+\end{equation}
+
+Both are, by definition, bounded: $0 < \xi^k_j < 1$ and $0 < \tau^k_j < 1$. The normalized eccentricity and typicality are presented as:
+
+\begin{equation}
+    \zeta^k_j = \frac{\xi^k_j}{2}, \quad \sum_{i=1}^{k} \zeta^k_i = 1\quad 0 < \zeta^k_j < \frac{1}{2}\quad C
+\end{equation}
+
+\begin{equation}
+    t^k_j = \frac{\tau^k_j}{k - 2}, \quad \sum_{i=1}^{k} t^k_i = 1\quad 0 < t^k_j < \frac{1}{k - 2}\quad C
+\end{equation}
+
+The paper states that samples for which the normalized eccentricity $\zeta^k_j > 1/k$ are considered anomalous, and those for which the normalized typicality $t^k_j > 1/k$ are considered typical.
+
+Furthermore, it provides recursive, or incremental, formulas for updating $\sum_{i=1}^{k} \pi^k_i$ in the squared Euclidean distance, as follows:
+
+\begin{gather}
+    \sum_{i=1}^{k} \pi^k_i = \sum_{i=1}^{k-1} \pi^{k-1}_i + 2 \pi^k_k \\
+    \pi^k_j = k (\lVert x_j - \mu^k \rVert^2 + X^k - \lVert \mu^k \rVert^2) \\
+    \mu^k = \frac{k - 1}{k} \mu^{k-1} + \frac{1}{k} x_k \\
+    X^k = \frac{k - 1}{k} X^{k-1} + \frac{1}{k} \lVert x_k \rVert^2
+\end{gather}
+
+Finally, it is made clear \labeltext[Angelov's statement about the use of other proximity functions]{those metrics suit various proximity functions, among which are the cosine similarity and the Mahalanobis distance}{info:mahalanobis_as_teda_metric} \cite{mahalanobis2018generalized}.
 
 \subsection{Original microTEDAclus}
 
+
+
+\subsubsection{Critique}
+
 \subsection{microTEDAclus Updates in the \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} PHD Thesis}
+
+\subsubsection{Critique}
 
 \section{Reassessment}
 
@@ -49,6 +105,7 @@ The introduction is also deferred until we have a clearer picture of the entire 
 \section{Proposal for an Improved Model}
 
 % --- Bibliography ---
-\bibliography{references}
+\bibliographystyle{plain}
+\bibliography{bibliography}
 
 \end{document}
