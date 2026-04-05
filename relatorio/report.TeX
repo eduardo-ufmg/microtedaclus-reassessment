@@ -75,20 +75,132 @@ The paper states that samples for which the normalized eccentricity $\zeta^k_j >
 
 Furthermore, it provides recursive, or incremental, formulas for updating $\sum_{i=1}^{k} \pi^k_i$ in the squared Euclidean distance, as follows:
 
+The mean and the scalar product of the samples in the moment $k$ are
+
 \begin{gather}
-    \sum_{i=1}^{k} \pi^k_i = \sum_{i=1}^{k-1} \pi^{k-1}_i + 2 \pi^k_k \\
-    \pi^k_j = k (\lVert x_j - \mu^k \rVert^2 + X^k - \lVert \mu^k \rVert^2) \\
     \mu^k = \frac{k - 1}{k} \mu^{k-1} + \frac{1}{k} x_k \\
     X^k = \frac{k - 1}{k} X^{k-1} + \frac{1}{k} \lVert x_k \rVert^2
 \end{gather}
+
+From those,
+
+\begin{equation}
+    \pi^k_j = k (\lVert x_j - \mu^k \rVert^2 + X^k - \lVert \mu^k \rVert^2)
+\end{equation}
+
+and
+
+\begin{equation}
+    \sum_{i=1}^{k} \pi^k_i = \sum_{i=1}^{k-1} \pi^{k-1}_i + 2 \pi^k_k \\
+\end{equation}
 
 Finally, it is made clear \labeltext[Angelov's statement about the use of other proximity functions]{those metrics suit various proximity functions, among which are the cosine similarity and the Mahalanobis distance}{info:mahalanobis_as_teda_metric} \cite{mahalanobis2018generalized}.
 
 \subsection{Original microTEDAclus}
 
+\textit{Evolving Clustering Algorithm Based on Mixture of Typicalities for Stream Data Mining}, by Maia et al., employs the typicality and eccentricity metrics over the euclidean distance to instantiate and update microclusters from the detection of outliers and typical samples, as well as to decide when to merge microclusters into macroclusters \cite{maia2020evolvclus}.
 
+It redefines the eccentricity expression into a recursive form:
+
+\begin{equation}
+    \xi(x_k) = \frac{1}{k} + \frac{\left( \mu_k - x_k \right)^T \left( \mu_k - x_k \right)}{k \sigma^2_k}
+\end{equation}
+
+where
+
+\begin{gather}
+    \mu_k = \frac{k - 1}{k} \mu_{k-1} + \frac{x_k}{k} \\
+    \sigma^2_k = \frac{k - 1}{k} \sigma^2_{k-1} + \frac{1}{k - 1} \lVert x_k - \mu_k \rVert^2
+\end{gather}
+
+Another change is in the criteria regarding the typicality and eccentricity thresholds. \textbf{microTEDAclus} considers a sample $x_k$ to be an outlier if
+
+\begin{equation}
+    \zeta(x_k) > \frac{m^2 + 1}{2k}, \quad m > 0
+\end{equation}
+
+In this algorithm, $m$ is an arbitrary function of the number of samples in the data:
+
+\begin{equation}
+    m(k) = \frac{3}{1 + e^{-0.007(k - 100)}}
+\end{equation}
+
+Microclusters are dynamically characterized by the following parameters:
+
+\begin{itemize}
+    \item $S^i_k$: the number of samples in the microcluster $i$ at moment $k$.
+    \item $\mu^i_k$: the mean of the samples in the microcluster $i$ at moment $k$.
+    \item $\sigma^2_k$: the variance of the samples in the microcluster $i$ at moment $k$.
+    \item $\xi^i(x_k)$, $\zeta^i(x_k)$: the eccentricity and normalized eccentricity of the sample $x_k$ to the microcluster $i$ at moment $k$.
+    \item $\tau^i(x_k)$, $t^i(x_k)$: the typicality and normalized typicality of the sample $x_k$ to the microcluster $i$ at moment $k$.
+    \item $D^i_k = 1 / \zeta^i(x_k)$: \labeltext[order-dependent parameter handled as a characteristic of the microcluster]{the density of the microcluster $i$ at moment $k$.}{critique:density_as_microcluster_characteristic}
+    \item $m^i_k(S^i_k)$: the dynamic threshold function for the microcluster $i$ at moment $k$.
+\end{itemize}
+
+All the metrics and conditions yet defined for the entire data may be applied to each microcluster. Thus, for $S^i_k > 2$, a sample $x_k$ is considered an outlier to the microcluster $i$ if
+
+\begin{equation}
+    \zeta^i(x_k) > \frac{m^i_k(S^i_k)^2 + 1}{2S^i_k}
+\end{equation}
+
+and, for $S^i_k = 2$, if
+
+\begin{equation}
+    \left( \zeta^i(x_k) > \frac{m^i_k(S^i_k)^2 + 1}{2S^i_k} \right) \land \left( \left( \sigma^i_2 \right)^2 < r_0 \right)
+\end{equation}
+
+where $r_0$ is an hyperparameter of the model.
+
+$x_k$ is checked against all microclusters, which are updated if $x_k$ is not an outlier to them as follows:
+
+\begin{equation}
+\begin{gathered}
+    S^i_k = S^i_{k-1} + 1 \\
+    \mu^i_k = \frac{S^i_k - 1}{S^i_k} \mu^i_{S^i_{k}-1} + \frac{x_k}{S^i_k} \\
+    \left(\sigma^i_k\right)^2 = \frac{S^i_k - 1}{S^i_k} \left(\sigma^i_{k-1}\right)^2 + \frac{1}{S^i_k - 1} \left( \frac{2\lVert x_k - u^i_k \rVert }{d} \right)^2 \\
+    \xi^i(x_k) = \frac{1}{S^i_k} + \frac{2\left( \mu^i_k - x_k \right)^T \left( \mu^i_k - x_k \right)}{S^i_k \left( \sigma^i_k \right)^2d}
+\end{gathered} \label{critique:dimensionality_penalty}
+\end{equation}
+
+Macroclusters are the disjoint sets of connected microclusters in a graph where the vertices are the microclusters and the edges are defined by the condition
+
+\begin{equation}
+    \text{dist}(\mu^i_k, \mu^j_k) < 2 \left( \sigma^i_k + \sigma^j_k \right), \quad i \neq j
+\end{equation}
+
+To prevent the collapse of all microclusters into a single macrocluster under overlap, a microcluster $m^j_l$ is a candidate to form an edge only if
+
+\begin{equation}
+    D^l_k \ge \text{mean}\left(D^l_k\right), \quad l = 1,\dots,\left|\mathcal{M}_j\right| \label{critique:use_of_unstable_density}
+\end{equation}
+
+\labeltext[unclear microcluster activation criterion]{where $\mathcal{M}_j = \left\{ m^j_1, m^j_2, \cdots, m^j_l \right\}, \quad l = 1, 2, \cdots, N_j$ is the jth macrocluster composed of a set of $N_j$ connected microclusters $m^j_l$.}{critique:unclear_microcluster_activation_criterion}
+
+The density of a macrocluster is the sum of the normalized typicalities of its active microclusters:
+
+\begin{equation}
+    w^l_k = \frac{D^l_k}{\sum_{l\in\mathcal{M}_j} D^l_k}
+\end{equation}
+
+Furthermore, the typicality of a sample $x_k$ to a macrocluster $\mathcal{M}_j$ is the weighted sum of the typicalities of $x_k$ to the microclusters in $\mathcal{M}_j$:
+
+\begin{equation}
+    \mathcal{T}_j(x_k) = \sum_{l\in\mathcal{M}_j} w^l_k t^l_k(x_k)
+\end{equation}
+
+A sample's predicted label $j$ is the index of the macrocluster $\mathcal{M}_j$ to which it has the highest typicality:
+
+\begin{equation}
+    j = \arg\max_j \mathcal{T}_j(x_k)
+\end{equation}
 
 \subsubsection{Critique}
+
+\subsubsection{Order-Dependent Density as a Microcluster Characteristic}
+
+\subsubsection{Anomalous Dimensionality Penalty}
+
+\subsubsection{Unclear Microcluster Activation Criterion}
 
 \subsection{microTEDAclus Updates in the \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} PHD Thesis}
 
