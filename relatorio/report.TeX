@@ -146,12 +146,12 @@ All the metrics and conditions yet defined for the entire data may be applied to
 and, for $S^i_k = 2$, if
 
 \begin{equation}
-    \left( \zeta^i(x_k) > \frac{m^i_k(S^i_k)^2 + 1}{2S^i_k} \right) \land \left( \left( \sigma^i_2 \right)^2 < r_0 \right)
+    \left( \zeta^i(x_k) > \frac{m^i_k(2)^2 + 1}{4} \right) \land \left( \left( \sigma^i_2 \right)^2 < r_0 \right) \label{critique:incorrect_condition_logic}
 \end{equation}
 
 where $r_0$ is an hyperparameter of the model.
 
-$x_k$ is checked against all microclusters, which are updated if $x_k$ is not an outlier to them as follows:
+$x_k$ is checked against all microclusters, which are updated if $x_k$ is not an outlier to them, as follows:
 
 \begin{equation}
 \begin{gathered}
@@ -194,13 +194,56 @@ A sample's predicted label $j$ is the index of the macrocluster $\mathcal{M}_j$ 
     j = \arg\max_j \mathcal{T}_j(x_k)
 \end{equation}
 
+No explicit decay logic is defined for microclusters.
+
 \subsubsection{Critique}
 
 \subsubsection{Order-Dependent Density as a Microcluster Characteristic}
 
+Because \textbf{eccentricity} and \textbf{typicality} are metrics between a sample and a microcluster, the density $D^i_k = 1 / \zeta^i(x_k)$ is also a metric between a sample and a microcluster, and thus should not be treated as a characteristic of the microcluster itself. Consider a microcluster $i$ at moment $k$ with $\sigma^i_k = \sigma_\text{small}$, or for which the radius that contains most of its samples is $r_\text{small}$. For any of the standard clustering algorithms, such a microcluster would be considered dense \cite{ester1996density, aggarwal2003framework, cao2006density}, even if the sample $x_k$ is far from its mean $\mu^i_k$. \textbf{microTEDAclus}, however, would compute $\zeta^i(x_k)$ as a large value, and thus $D^i_k$ as a small value, which would make the microcluster $i$ less likely to be activated in the macrocluster formation process. On the other hand, if $\sigma^i_k = \sigma_\text{large}$, or if the radius that contains most of its samples is $r_\text{large}$, a sample $x_k$ that is close to $\mu^i_k$ would have a small $\zeta^i(x_k)$ and thus a large $D^i_k$, which would make the microcluster $i$ more likely to be activated, even if it is not dense at all.
+
+\subsubsection{Incorrect Condition Logic for Outlier Detection in Microclusters with Two Samples}
+
+For $S^i_k = 2$,
+
+\begin{gather}
+    \mu_2 = \frac{1}{2} \left( x_1 + x_2 \right) \\
+    \sigma^2_2 = \frac{\left(x_1 - x_2\right)^2}{4} \\
+    d(x_2, \mu_2) = 1 \\
+    \zeta(x_2) = 0.5
+\end{gather}
+
+Because $m \ge 1$,
+
+\begin{equation}
+    \frac{m^i_k(2)^2 + 1}{4} \ge 0.5
+\end{equation}
+
+Thus, the condition $\zeta^i(x_k) > \frac{m^i_k(2)^2 + 1}{4}$ is never satisfied for $S^i_k = 2$, which ensures that any conjunction with it is also never satisfied, and no sample can be considered an outlier to a microcluster with two samples. The simple change of the condition logic from a conjunction to a disjunction would simplify the expression to
+
+\begin{equation}
+    \left( \sigma^i_2 \right)^2 < r_0
+\end{equation}
+
+which would be true for the samples that are closer to the mean $\mu^i_2$. Because the goal is to detect outliers, however, this yelds the opposite of the intended behavior, and thus the condition logic should be changed to
+
+\begin{equation}
+    \left( \sigma^i_2 \right)^2 > r_0
+\end{equation}
+
 \subsubsection{Anomalous Dimensionality Penalty}
 
+The set of expressions \ref{critique:dimensionality_penalty} explicitly penalizes the variance and eccentricity of a microcluster by the dimensionality of the data $d$. This is not standard, suggested by any of the papers that introduce the TEDA metrics \cite{angelov2014outside, angelov2014anomaly}, or justified by any theoretical or empirical evidence.
+
 \subsubsection{Unclear Microcluster Activation Criterion}
+
+The paper defines macroclusters as connected components of a graph, meaning the set $\mathcal{M}_j$ is strictly determined by the existence of edges between microclusters. However, the condition for the existence of an edge between two microclusters depends on the mean density of $\mathcal{M}_j$. This creates a topological contradiction: a pairwise edge cannot be evaluated using the global properties of a set that the edge itself is required to construct.
+
+Furthermore, in an online setting, there are no macroclusters the first time the existence of an edge is checked. Because the sets $\mathcal{M}_j$ are initially empty, the term $\text{mean}\left(D^l_k\right)$ is mathematically undefined, leaving no valid mechanism to determine if the initial edges should exist.
+
+Even assuming prior initialization, the criterion suffers from temporal recursion. When evaluating a new candidate microcluster at time $k$, the formulation does not specify whether the mean of $\mathcal{M}_j$ is computed over the prior topological state or the posterior state. Although the former is more intuitive, the formal notation indicates the latter.
+
+Finally, the inequality contains a fundamental notational flaw. In the expression $D^l_k \ge \text{mean}\left(D^l_k\right)$, the index $l$ is mathematically ill-posed. It is simultaneously used to denote a specific, isolated microcluster on the left side of the inequality and as a dummy iteration variable for the set mean on the right side.
 
 \subsection{microTEDAclus Updates in the \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} PHD Thesis}
 
