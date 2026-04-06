@@ -6,7 +6,14 @@
 \usepackage{listings}         % Code blocks
 \usepackage{cite}             % BibTeX citations
 \usepackage{hyperref}         % Clickable references
+\usepackage{cleveref}         % Smart referencing
+
+% --- Page Layout ---
+\usepackage[margin=1in]{geometry}
+
+% --- Custom Commands ---
 \usepackage{labeltext}
+
 
 % --- Code Block Configuration ---
 \lstset{
@@ -116,7 +123,7 @@ where
 Another change is in the criteria regarding the typicality and eccentricity thresholds. \textbf{microTEDAclus} considers a sample $x_k$ to be an outlier if
 
 \begin{equation}
-    \zeta(x_k) > \frac{m^2 + 1}{2k}, \quad m > 0
+    \zeta(x_k) > \frac{m^2 + 1}{2k}, \quad m > 0 \label{eq:angelovs_outlier}
 \end{equation}
 
 In this algorithm, $m$ is an arbitrary function of the number of samples in the data:
@@ -149,7 +156,7 @@ and, for $S^i_k = 2$, if
     \left( \zeta^i(x_k) > \frac{m^i_k(2)^2 + 1}{4} \right) \land \left( \left( \sigma^i_2 \right)^2 < r_0 \right) \label{critique:incorrect_condition_logic}
 \end{equation}
 
-where $r_0$ is an hyperparameter of the model.
+where $r_0$ is a hyperparameter of the model.
 
 $x_k$ is checked against all microclusters, which are updated if $x_k$ is not an outlier to them, as follows:
 
@@ -198,11 +205,11 @@ No explicit decay logic is defined for microclusters.
 
 \subsubsection{Critique}
 
-\subsubsection{Order-Dependent Density as a Microcluster Characteristic}
+\subsubsection{Order-Dependent Density as a Microcluster Characteristic} \label{sss:order_dependent_characteristics}
 
-Because \textbf{eccentricity} and \textbf{typicality} are metrics between a sample and a microcluster, the density $D^i_k = 1 / \zeta^i(x_k)$ is also a metric between a sample and a microcluster, and thus should not be treated as a characteristic of the microcluster itself. Consider a microcluster $i$ at moment $k$ with $\sigma^i_k = \sigma_\text{small}$, or for which the radius that contains most of its samples is $r_\text{small}$. For any of the standard clustering algorithms, such a microcluster would be considered dense \cite{ester1996density, aggarwal2003framework, cao2006density}, even if the sample $x_k$ is far from its mean $\mu^i_k$. \textbf{microTEDAclus}, however, would compute $\zeta^i(x_k)$ as a large value, and thus $D^i_k$ as a small value, which would make the microcluster $i$ less likely to be activated in the macrocluster formation process. On the other hand, if $\sigma^i_k = \sigma_\text{large}$, or if the radius that contains most of its samples is $r_\text{large}$, a sample $x_k$ that is close to $\mu^i_k$ would have a small $\zeta^i(x_k)$ and thus a large $D^i_k$, which would make the microcluster $i$ more likely to be activated, even if it is not dense at all.
+Because \textbf{eccentricity} and \textbf{typicality} are metrics between a sample and a microcluster, the density $D^i_k = 1 / \zeta^i(x_k)$ is also a metric between a sample and a microcluster. So, it should not be treated as a characteristic of the microcluster itself. Consider a microcluster $i$ at moment $k$ with $\sigma^i_k = \sigma_\text{small}$, or for which the radius that contains most of its samples is $r_\text{small}$. For any of the standard clustering algorithms, such a microcluster would be considered dense \cite{ester1996density, aggarwal2003framework, cao2006density}, even if the sample $x_k$ is far from its mean $\mu^i_k$. \textbf{microTEDAclus}, however, would compute $\zeta^i(x_k)$ as a large value, and therefore $D^i_k$ as a small value, which would make the microcluster $i$ less likely to be activated in the macrocluster formation process. On the other hand, if $\sigma^i_k = \sigma_\text{large}$, or if the radius that contains most of its samples is $r_\text{large}$, a sample $x_k$ that is close to $\mu^i_k$ would have a small $\zeta^i(x_k)$ and therefore a large $D^i_k$. This would make the microcluster $i$ more likely to be activated, even if it is not dense at all.
 
-\subsubsection{Incorrect Condition Logic for Outlier Detection in Microclusters with Two Samples}
+\subsubsection{Incorrect Condition Logic for Outlier Detection in Microclusters with Two Samples} \label{sss:incorrect_condition_logic}
 
 For $S^i_k = 2$,
 
@@ -225,17 +232,17 @@ Thus, the condition $\zeta^i(x_k) > \frac{m^i_k(2)^2 + 1}{4}$ is never satisfied
     \left( \sigma^i_2 \right)^2 < r_0
 \end{equation}
 
-which would be true for the samples that are closer to the mean $\mu^i_2$. Because the goal is to detect outliers, however, this yelds the opposite of the intended behavior, and thus the condition logic should be changed to
+which would be true for the samples that are closer to the mean $\mu^i_2$. Because the goal is to detect outliers, however, this yields the opposite of the intended behavior, so the condition logic should be changed to
 
 \begin{equation}
     \left( \sigma^i_2 \right)^2 > r_0
 \end{equation}
 
-\subsubsection{Anomalous Dimensionality Penalty}
+\subsubsection{Anomalous Dimensionality Penalty} \label{sss:dimensionality_penalty}
 
 The set of expressions \ref{critique:dimensionality_penalty} explicitly penalizes the variance and eccentricity of a microcluster by the dimensionality of the data $d$. This is not standard, suggested by any of the papers that introduce the TEDA metrics \cite{angelov2014outside, angelov2014anomaly}, or justified by any theoretical or empirical evidence.
 
-\subsubsection{Unclear Microcluster Activation Criterion}
+\subsubsection{Unclear Microcluster Activation Criterion} \label{sss:unclear_microcluster_activation_criterion}
 
 The paper defines macroclusters as connected components of a graph, meaning the set $\mathcal{M}_j$ is strictly determined by the existence of edges between microclusters. However, the condition for the existence of an edge between two microclusters depends on the mean density of $\mathcal{M}_j$. This creates a topological contradiction: a pairwise edge cannot be evaluated using the global properties of a set that the edge itself is required to construct.
 
@@ -247,15 +254,77 @@ Finally, the inequality contains a fundamental notational flaw. In the expressio
 
 \subsection{microTEDAclus Updates in the \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} PHD Thesis}
 
+From the algorithm \cite{galindo2021lastmile} presents, only the changes from the original microTEDAclus are described in this section.
+
+In it, the condition for outlier detection in microclusters with two samples is changed to
+
+\begin{equation}
+    \left( \zeta^i_2(x_2)  > \frac{m^i(2)^2+1}{4} \right) \land \left( \left( \sigma^i_2 \right)^2 > r_0 \right)
+\end{equation}
+
+which solves the contradiction of the $r_0$ usage, but retains the issue of the incorrectly used conjunction.
+
+An explicit decay logic is introduced. Microclusters have a new parameter $v^i_k$, initialized as $v^i_k = 1$ when the microcluster is created, and updated as
+
+\begin{equation}
+    v^i_k = v^i_{k-1} - \rho
+\end{equation}
+
+when the sample $x_k$ is an outlier to the microcluster $i$, where $\rho = \frac{1}{\text{decay}}$ and \textit{decay} is a hyperparameter of the model. A microcluster is removed if $v^i_k \le 0$.
+
+To adequate the algorithm to the problem's data projection, the euclidean distance is replaced by the cosine similarity, which \cite{angelov2014outside} states to be a valid proximity function for the TEDA metrics. The outlier condition is changed to
+
+\begin{equation}
+    \left(x_k - \mu^i_k\right)^2 > \left(m^i_k\right)^2\sigma^i_2 \label{critique:imports_euclidean_condition_from_angelov}
+\end{equation}
+
+And the microcluster-update expressions are changed to
+
+\begin{equation}
+\begin{gathered}
+    S^i_k = S^i_{k-1} + 1 \\
+    \mu^i_k = \frac{S^i_k - 1}{S^i_k} \mu^i_{S^i_{k}-1} + \frac{1}{S^i_k} \frac{x_k}{\lVert x_k \rVert}, \quad \lVert x_k \rVert \neq 0 \\
+    \left(\sigma^i_k\right)^2 = \frac{S^i_k - 1}{S^i_k} \left(\sigma^i_{k-1}\right)^2 + \frac{1}{S^i_k - 1} \left( \frac{2\lVert x_k - \mu^i_k \rVert}{d} \right)^2 \label{critique:euclidean_variance} \\
+    \xi^i(x_k) = \frac{1 - \mu^i_k\frac{x_k}{\lVert x_k \rVert}}{1 + k\left(\mu^i_k\right)^2}, \quad \lVert x_k \rVert \neq 0
+\end{gathered}
+\end{equation}
+
+The remainder of the algorithm, including the macrocluster formation process, is unchanged.
+
 \subsubsection{Critique}
+
+\subsubsection{Issues not Addressed by the Updates}
+
+The issues in \cref{sss:order_dependent_characteristics,sss:dimensionality_penalty,sss:unclear_microcluster_activation_criterion} are completely ignored in the updated model, and the issue \ref{sss:incorrect_condition_logic} is only partially solved, as the conjunction is still present in the condition for outlier detection in microclusters with two samples.
+
+\subsubsection{Import of an Incompatible Outlier Condition from Angelov's Paper}
+
+\cite{angelov2014anomaly} derives \ref{eq:angelovs_outlier} from \ref{critique:imports_euclidean_condition_from_angelov} explicitly for the euclidean distance, and states that a similar condition can be derived for the cosine similarity, but does not provide any such condition. The employment of such an incompatible condition in the updated model is not justified by any theoretical or empirical evidence, and it suggests a fundamental error in the algorithm's design.
+
+\subsubsection{Usage of Euclidean Variance with Cosine Similarity}
+
+Although it updates the eccentricity formula to be compatible with the cosine similarity, the updated model retains the original variance computation \ref{critique:euclidean_variance}, which is explicitly derived for the euclidean distance. There is no theoretical or empirical evidence that this variance computation is compatible with the cosine similarity, and it suggests another fundamental error in the algorithm's design.
 
 \section{Reassessment}
 
+% TODO:
+% - state that when we reference the original microTEDAclus it is the https://github.com/cseveriano/evolving_clustering/tree/50dd2b4e38ee11aba9382f1a8e04f530b7c9c949 commit
+% - state that when we reference the updated microTEDAclus it is the implementation that the authors provided for us
+% - data is the one provided with the last-mile's implementation and any publicly available dataset for which the source is explicitly stated in the report
+
 \subsection{Data}
+
+% last-mile datasets are cleaned, ordered, and downsampled versions of the original datasets, but this is not explicitly stated in the original paper, so we need to clarify it here. We will use their cleaned versions and the original versions, as well as making it explicit from where we got the original versions.
 
 \subsection{Preprocessing}
 
+% neither the original microTEDAclus paper nor the last-mile thesis paper explicitly state any preprocessing steps, but the in the public repositories we can see that the entire datasets are normalized using the min-max normalization before the clustering process. We will test with the normalization and without it, and we will make it explicit that the original microTEDAclus paper does not mention any normalization.
+
 \subsection{Processing}
+
+% neither in the original microTEDAclus provided implementation nor in the last-mile provided implementation there is any signal of actual prequential evaluation. altough the original microTEDAclus states that it does, the code processes in a fit-then-predict manner, which is not prequential. we will test only true prequential evaluation, and we will make it explicit that the original microTEDAclus implementation does not do it.
+
+\subsection{Experiments}
 
 \section{Proposal for an Improved Model}
 
