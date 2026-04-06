@@ -323,6 +323,7 @@ Although it updates the eccentricity formula to be compatible with the cosine si
 \subsection{Processing}
 
 % neither in the original microTEDAclus provided implementation nor in the last-mile provided implementation there is any signal of actual prequential evaluation. altough the original microTEDAclus states that it does, the code processes in a fit-then-predict manner, which is not prequential. we will test only true prequential evaluation, and we will make it explicit that the original microTEDAclus implementation does not do it.
+% microTEDAclus' paper uses the streamMOA R package implementation of the benchmark algorithms, DenStream, CluStream, and StreamKM++. This is extremely problematic, as the R package calls a Java package and it introduces a lot of overhead, which makes the comparison unfair. We will river's implementation of the same algorithms, which is the standard Python implementation for stream clustering benchmarks, and we will make it explicit that the original microTEDAclus paper uses an unfair benchmark.
 
 \subsection{Experiments}
 
