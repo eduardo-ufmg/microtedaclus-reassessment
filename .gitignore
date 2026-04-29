@@ -124,3 +124,6 @@ latexmkrc
 
 # Temporary directories
 _texpad_tmp/
+
+# Custom
+modelo_PFC_latex
