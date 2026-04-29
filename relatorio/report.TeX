@@ -7,6 +7,8 @@
 \usepackage{cite}             % BibTeX citations
 \usepackage{hyperref}         % Clickable references
 \usepackage{cleveref}         % Smart referencing
+\usepackage{algorithm}        % Pseudocode environment
+\usepackage{algpseudocode}    % Pseudocode commands
 
 % --- Page Layout ---
 \usepackage[margin=1in]{geometry}
@@ -40,7 +42,11 @@ The introduction is also deferred until we have a clearer picture of the entire 
 
 \section{Background and Related Work}
 
-The TEDA framework is presented as an alternative to probability theory for handling data in non-deterministic scenarios \cite{angelov2014outside}. The original microTEDAclus model applies its metrics to decide if a sample is an outlier to a microcluster and if microclusters are suitable candidates to form a macrocluster \cite{maia2020evolvclus}. Finally, when evaluating the previous model's performance in the last-mile problem, \cite{galindo2021lastmile} refactor the decay logic and variance computation.
+The TEDA framework is introduced by Angelov in \textit{Outside the Box: An Alternative Data Analytics Framework} as an alternative to probability theory for handling data in non-deterministic scenarios \cite{angelov2014outside}. The first part of this section presents the \textbf{eccentricity} and \textbf{typicality} metrics and their recursive expressions, which form the basis of the TEDA mathematical formulation.
+
+In the original presentation of the microTEDAclus model, \textit{Evolving Clustering Algorithm Based on Mixture of Typicalities for Stream Data Mining}, the author applies these metrics to determine if a sample is an outlier to a microcluster and if microclusters are suitable candidates to form a macrocluster \cite{maia2020evolvclus}. The second part of this section presents the original microTEDAclus formulation, alongside a detailed review of several issues in its mathematical and logical formulation.
+
+Finally, while evaluating the performance of the previous model in the last-mile problem, the authors of \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} refactor the decay logic and variance computation \cite{galindo2021lastmile}. The corresponding subsection describes the changes made relative to the original microTEDAclus and highlights new issues arising from these modifications.
 
 \subsection{Typicality and Eccentricity-Based Data Analytics}
 
@@ -80,14 +86,16 @@ Both are, by definition, bounded: $0 < \xi^k_j < 1$ and $0 < \tau^k_j < 1$. The 
 
 The paper states that samples for which the normalized eccentricity $\zeta^k_j > 1/k$ are considered anomalous, and those for which the normalized typicality $t^k_j > 1/k$ are considered typical.
 
-Furthermore, it provides recursive, or incremental, formulas for updating $\sum_{i=1}^{k} \pi^k_i$ in the squared Euclidean distance, as follows:
+Furthermore, it provides recursive, or incremental, formulas for updating $\sum_{i=1}^{k} \pi^k_i$ in the squared Euclidean distance, as in \cref{eq:recursive_mu_X}:
 
 The mean and the scalar product of the samples in the moment $k$ are
 
-\begin{gather}
+\begin{equation}
+\begin{gathered}
     \mu^k = \frac{k - 1}{k} \mu^{k-1} + \frac{1}{k} x_k \\
     X^k = \frac{k - 1}{k} X^{k-1} + \frac{1}{k} \lVert x_k \rVert^2
-\end{gather}
+\end{gathered} \label{eq:recursive_mu_X}
+\end{equation}
 
 From those,
 
@@ -107,10 +115,10 @@ Finally, it is made clear \labeltext[Angelov's statement about the use of other 
 
 \textit{Evolving Clustering Algorithm Based on Mixture of Typicalities for Stream Data Mining}, by Maia et al., employs the typicality and eccentricity metrics over the euclidean distance to instantiate and update microclusters from the detection of outliers and typical samples, as well as to decide when to merge microclusters into macroclusters \cite{maia2020evolvclus}.
 
-It redefines the eccentricity expression into a recursive form:
+It redefines the eccentricity expression into a recursive form, (see \cref{eq:recursive_eccentricity}).
 
 \begin{equation}
-    \xi(x_k) = \frac{1}{k} + \frac{\left( \mu_k - x_k \right)^T \left( \mu_k - x_k \right)}{k \sigma^2_k}
+    \xi(x_k) = \frac{1}{k} + \frac{\left( \mu_k - x_k \right)^T \left( \mu_k - x_k \right)}{k \sigma^2_k} \label{eq:recursive_eccentricity}
 \end{equation}
 
 where
@@ -126,7 +134,7 @@ Another change is in the criteria regarding the typicality and eccentricity thre
     \zeta(x_k) > \frac{m^2 + 1}{2k}, \quad m > 0 \label{eq:angelovs_outlier}
 \end{equation}
 
-In this algorithm, $m$ is an arbitrary function of the number of samples in the data:
+In this model, $m$ is an arbitrary function of the number of samples in the data:
 
 \begin{equation}
     m(k) = \frac{3}{1 + e^{-0.007(k - 100)}}
@@ -142,12 +150,12 @@ Microclusters are dynamically characterized by the following parameters:
     \item $\tau^i(x_k)$, $t^i(x_k)$: the typicality and normalized typicality of the sample $x_k$ to the microcluster $i$ at moment $k$.
     \item $D^i_k = 1 / \zeta^i(x_k)$: \labeltext[order-dependent parameter handled as a characteristic of the microcluster]{the density of the microcluster $i$ at moment $k$.}{critique:density_as_microcluster_characteristic}
     \item $m^i_k(S^i_k)$: the dynamic threshold function for the microcluster $i$ at moment $k$.
-\end{itemize}
+\end{itemize} \label{list:microcluster_parameters}
 
 All the metrics and conditions yet defined for the entire data may be applied to each microcluster. Thus, for $S^i_k > 2$, a sample $x_k$ is considered an outlier to the microcluster $i$ if
 
 \begin{equation}
-    \zeta^i(x_k) > \frac{m^i_k(S^i_k)^2 + 1}{2S^i_k}
+    \zeta^i(x_k) > \frac{m^i_k(S^i_k)^2 + 1}{2S^i_k} \label{eq:outlier_condition}
 \end{equation}
 
 and, for $S^i_k = 2$, if
@@ -169,13 +177,53 @@ $x_k$ is checked against all microclusters, which are updated if $x_k$ is not an
 \end{gathered} \label{critique:dimensionality_penalty}
 \end{equation}
 
+Let
+
+\begin{equation}
+    S^i_k = 1, \quad \mu^i_k = x_k, \quad \sigma^2_k = 0 \label{eq:initial_microcluster_parameters}
+\end{equation}
+
+be the initial parameters of a microcluster created with the sample $x_k$.
+
+The microcluster update procedure is described, in the original paper, by \cref{alg:microcluster_update}.
+
+\begin{algorithm}[H]
+\caption{Microcluster update}
+\label{alg:microcluster_update}
+\begin{algorithmic}[1]
+\Require $x_k$, $r_0$
+\Ensure $m_i$, $i = 1, 2, \dots, n$
+\While{new samples available}
+    \If{$k == 1$}
+        \State Set $m_1$ parameters with \cref{eq:initial_microcluster_parameters}
+    \Else
+        \State $\text{flag} \gets \text{true}$
+        \For{$i = 1$ to $n$}
+            \If{$S^i_k = 2$}
+                $\text{outlier} \gets \text{condition in \cref{critique:incorrect_condition_logic}}$
+            \Else
+                $\text{outlier} \gets \text{condition in \cref{eq:outlier_condition}}$
+            \EndIf
+            \If{not $\text{outlier}$}
+                \State Update $m_i$ parameters with \cref{critique:dimensionality_penalty}
+                \State $\text{flag} \gets \text{false}$
+            \EndIf
+        \EndFor
+        \If{$\text{flag}$}
+            \State Create new microcluster $m_{n+1}$ with \cref{eq:initial_microcluster_parameters}
+        \EndIf
+    \EndIf
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
 Macroclusters are the disjoint sets of connected microclusters in a graph where the vertices are the microclusters and the edges are defined by the condition
 
 \begin{equation}
-    \text{dist}(\mu^i_k, \mu^j_k) < 2 \left( \sigma^i_k + \sigma^j_k \right), \quad i \neq j
+    \text{dist}(\mu^i_k, \mu^j_k) < 2 \left( \sigma^i_k + \sigma^j_k \right), \quad i \neq j \label{eq:microcluster_intersection_condition}
 \end{equation}
 
-To prevent the collapse of all microclusters into a single macrocluster under overlap, a microcluster $m^j_l$ is a candidate to form an edge only if
+\labeltext[criterion to prevent microcluster colapse]{To prevent the collapse of all microclusters into a single macrocluster under overlap, a microcluster $m^j_l$ is a candidate to form an edge only if}{info:microcluster_activation_criterion}
 
 \begin{equation}
     D^l_k \ge \text{mean}\left(D^l_k\right), \quad l = 1,\dots,\left|\mathcal{M}_j\right| \label{critique:use_of_unstable_density}
@@ -192,7 +240,7 @@ The density of a macrocluster is the sum of the normalized typicalities of its a
 Furthermore, the typicality of a sample $x_k$ to a macrocluster $\mathcal{M}_j$ is the weighted sum of the typicalities of $x_k$ to the microclusters in $\mathcal{M}_j$:
 
 \begin{equation}
-    \mathcal{T}_j(x_k) = \sum_{l\in\mathcal{M}_j} w^l_k t^l_k(x_k)
+    \mathcal{T}_j(x_k) = \sum_{l\in\mathcal{M}_j} w^l_k t^l_k(x_k) \label{eq:macrocluster_typicality}
 \end{equation}
 
 A sample's predicted label $j$ is the index of the macrocluster $\mathcal{M}_j$ to which it has the highest typicality:
@@ -201,9 +249,26 @@ A sample's predicted label $j$ is the index of the macrocluster $\mathcal{M}_j$ 
     j = \arg\max_j \mathcal{T}_j(x_k)
 \end{equation}
 
+The macrocluster identification process is described, in the original paper, by \cref{alg:macrocluster_update}.
+
+\begin{algorithm}[H]
+\caption{Macrocluster update}
+\label{alg:macrocluster_update}
+\begin{algorithmic}[1]
+\Require $x_k$, $m_i$, $i = 1, 2, \dots, n$
+\Ensure membership of $x_k$ to macroclusters
+\While{new samples available}
+    \State $\mathcal{M} \gets \text{Group the microclusters that intersect with each other according to \cref{eq:microcluster_intersection_condition}}$
+    \State Find the set of active microclusters for each macrocluster $\mathcal{M}_j$ according to \cref{critique:use_of_unstable_density}
+    \State Compute the typicality of $x_k$ to each macrocluster $\mathcal{M}_j$ with \cref{eq:macrocluster_typicality}
+    \State Assign $x_k$ to the macrocluster $\mathcal{M}_j$ with the highest typicality
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
 No explicit decay logic is defined for microclusters.
 
-\subsubsection{Critique}
+\subsubsection{Open Questions and Issues in the Original microTEDAclus Formulation}
 
 \subsubsection{Order-Dependent Density as a Microcluster Characteristic} \label{sss:order_dependent_characteristics}
 
@@ -240,7 +305,7 @@ which would be true for the samples that are closer to the mean $\mu^i_2$. Becau
 
 \subsubsection{Anomalous Dimensionality Penalty} \label{sss:dimensionality_penalty}
 
-The set of expressions \ref{critique:dimensionality_penalty} explicitly penalizes the variance and eccentricity of a microcluster by the dimensionality of the data $d$. This is not standard, suggested by any of the papers that introduce the TEDA metrics \cite{angelov2014outside, angelov2014anomaly}, or justified by any theoretical or empirical evidence.
+The set of expressions in \cref{critique:dimensionality_penalty} explicitly penalizes the variance and eccentricity of a microcluster by the dimensionality of the data $d$. This is not standard, suggested by any of the papers that introduce the TEDA metrics \cite{angelov2014outside, angelov2014anomaly}, or justified by any theoretical or empirical evidence.
 
 \subsubsection{Unclear Microcluster Activation Criterion} \label{sss:unclear_microcluster_activation_criterion}
 
@@ -251,6 +316,10 @@ Furthermore, in an online setting, there are no macroclusters the first time the
 Even assuming prior initialization, the criterion suffers from temporal recursion. When evaluating a new candidate microcluster at time $k$, the formulation does not specify whether the mean of $\mathcal{M}_j$ is computed over the prior topological state or the posterior state. Although the former is more intuitive, the formal notation indicates the latter.
 
 Finally, the inequality contains a fundamental notational flaw. In the expression $D^l_k \ge \text{mean}\left(D^l_k\right)$, the index $l$ is mathematically ill-posed. It is simultaneously used to denote a specific, isolated microcluster on the left side of the inequality and as a dummy iteration variable for the set mean on the right side.
+
+\subsubsection{Inconsistency Between the Prose and the Macrocluster Identification Formal Algorithm}
+
+Although the paper recognizes the need a \ref{info:microcluster_activation_criterion}, the provided pseudocode for the macrocluster update process, \cref{alg:macrocluster_update}, does not perform this validation prior to the macrocluster formation process, but only after it. This means that the macroclusters are formed without any criterion, and then the microclusters that do not satisfy the criterion are deactivated, which creates ambiguity regarding the actual definition of a macrocluster and the role of the activation criterion in the algorithm.
 
 \subsection{microTEDAclus Updates in the \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} PHD Thesis}
 
@@ -291,7 +360,7 @@ And the microcluster-update expressions are changed to
 
 The remainder of the algorithm, including the macrocluster formation process, is unchanged.
 
-\subsubsection{Critique}
+\subsubsection{Open Questions and Issues in the Updated microTEDAclus Formulation}
 
 \subsubsection{Issues not Addressed by the Updates}
 
@@ -299,11 +368,11 @@ The issues in \cref{sss:order_dependent_characteristics,sss:dimensionality_penal
 
 \subsubsection{Import of an Incompatible Outlier Condition from Angelov's Paper}
 
-\cite{angelov2014anomaly} derives \ref{eq:angelovs_outlier} from \ref{critique:imports_euclidean_condition_from_angelov} explicitly for the euclidean distance, and states that a similar condition can be derived for the cosine similarity, but does not provide any such condition. The employment of such an incompatible condition in the updated model is not justified by any theoretical or empirical evidence, and it suggests a fundamental error in the algorithm's design.
+\cite{angelov2014anomaly} derives \cref{eq:angelovs_outlier} from \cref{critique:imports_euclidean_condition_from_angelov} explicitly for the euclidean distance, and states that a similar condition can be derived for the cosine similarity, but does not provide any such condition. The employment of such an incompatible condition in the updated model is not justified by any theoretical or empirical evidence, and it suggests a fundamental error in the algorithm's design.
 
 \subsubsection{Usage of Euclidean Variance with Cosine Similarity}
 
-Although it updates the eccentricity formula to be compatible with the cosine similarity, the updated model retains the original variance computation \ref{critique:euclidean_variance}, which is explicitly derived for the euclidean distance. There is no theoretical or empirical evidence that this variance computation is compatible with the cosine similarity, and it suggests another fundamental error in the algorithm's design.
+Although it updates the eccentricity formula to be compatible with the cosine similarity, the updated model retains the original variance computation through \cref{critique:euclidean_variance}, which is explicitly derived for the euclidean distance. There is no theoretical or empirical evidence that this variance computation is compatible with the cosine similarity, and it suggests another fundamental error in the algorithm's design.
 
 \section{Reassessment}
 
@@ -324,6 +393,7 @@ Although it updates the eccentricity formula to be compatible with the cosine si
 
 % neither in the original microTEDAclus provided implementation nor in the last-mile provided implementation there is any signal of actual prequential evaluation. altough the original microTEDAclus states that it does, the code processes in a fit-then-predict manner, which is not prequential. we will test only true prequential evaluation, and we will make it explicit that the original microTEDAclus implementation does not do it.
 % microTEDAclus' paper uses the streamMOA R package implementation of the benchmark algorithms, DenStream, CluStream, and StreamKM++. This is extremely problematic, as the R package calls a Java package and it introduces a lot of overhead, which makes the comparison unfair. We will river's implementation of the same algorithms, which is the standard Python implementation for stream clustering benchmarks, and we will make it explicit that the original microTEDAclus paper uses an unfair benchmark.
+% Because both the algorithm and the dataset access are deterministic, it is not clear why the original microTEDAclus paper performs multiple runs of the same experiment. Maybe the averages and the standard deviations are computed over the multiple batches of the same dataset, but this is not explicitly stated. Moreover, there is no reason to expect a normal distribution of the results, so the usage of the mean and the standard deviation is not justified. We will perform only one run of each experiment, and we will make it explicit that the original microTEDAclus paper does not justify its usage of multiple runs and statistical measures.
 
 \subsection{Experiments}
 
