@@ -1,0 +1,18 @@
+\ProvidesPackage{labeltext}
+
+% --- To be able to label text ---
+\makeatletter
+\newcommand{\labeltext}[3][]{%
+    \@bsphack%
+    \def\tst{#1}%
+    \def\labelmarkup{}%
+    \def\refmarkup{}%
+    \ifx\tst\empty
+        \def\@currentlabel{\refmarkup{#2}}\label{#3}%
+    \else
+        \def\@currentlabel{\refmarkup{#1}}\label{#3}%
+    \fi%
+    \@esphack%
+    \labelmarkup{#2}% visible printed text.
+}
+\makeatother

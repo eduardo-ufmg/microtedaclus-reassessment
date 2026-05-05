@@ -10,7 +10,7 @@
 \usepackage{graphicx}
 \usepackage[utf8]{inputenc}
 %\usepackage[latin1]{inputenc} %%pode ser necessário trocar a codificação em sistemas Windows
-\usepackage[brazil]{babel}		%%pode ser necessário trocar o pacote de línguas em algumas distribuições LateX
+\usepackage[english]{babel}		%%pode ser necessário trocar o pacote de línguas em algumas distribuições LateX
 %\usepackage[portuguese]{babel}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb}
@@ -22,6 +22,14 @@
 %\usepackage[num]{abntex2cite} %se você quiser seguir as normas ABNT no sistema numérico
 \usepackage{setspace}
 \usepackage[toc,page]{appendix}
+
+\usepackage{listings}         % Code blocks
+\usepackage{cite}             % BibTeX citations
+\usepackage{cleveref}         % Smart referencing
+\usepackage{algorithm}        % Pseudocode environment
+\usepackage{algpseudocode}    % Pseudocode commands
+
+\usepackage{labeltext}
 
 %Definindo fonte Times (Use os pacotes obsoletos se não conseguir instalar os atualizados)
 %\usepackage{times}     %Pacote de fontes obsoleto, apenas texto
@@ -55,7 +63,9 @@
 \pagenumbering{arabic}
 \setcounter{page}{1}
 \include{Introduction/Introduction}
-
+\include{RelatedWork/RelatedWork}
+\include{MethodologyReassessment/MethodologyReassessment}
+\include{ImprovedModel/ImprovedModel}
 \include{Results/Results}
 \include{Conclusions/Conclusions}
 
