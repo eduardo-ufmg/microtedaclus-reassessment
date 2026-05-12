@@ -10,39 +10,39 @@ The next sections examine weaknesses from the evaluated model implementation to 
 %% the model's implementation seen in the public repository is not the same as the one described in the original work, but much more similar to the updated version presented in the PHD thesis Mineração de Dados Aplicada a Problemas de Last-Mile na Logística. this is a problem because the results of the experiments are not comparable to the ones presented in the original work, and the conclusions drawn from those results may not be valid.
 
 %% required bibliography:
-%% - last-mile logistics:
+%% - the paper that introduces the original version of microTEDAclus: Evolving clustering algorithm based on mixture of typicalities for stream data mining, by José Maia Neto
+%% - the paper that introduces the updated version of microTEDAclus: Mineração de Dados Aplicada a Problemas de Last-Mile na Logística, by Juan Camilo Fonseca Galindo
 
 \section{Benchmark Models Source}
 
 %% the models are denstream, clustream, and streamkm++ . those are suitable models for data stream clustering benchmark. the validity of the experiments, however, depends on implementation and execution
 
 %% required bibliography:
-%% - DenStream:
-%% - CluStream:
-%% - StreamKM++:
+%% - the paper that introduces DenStream:
+%% - the paper that introduces CluStream:
+%% - the paper that introduces StreamKM++:
 
 \subsection{Original Work}
 
 %% the original work states it uses R's streammoa. the problem is that, because the experiments are done in python, the package calls R, which, in turn, calls Java. this is a problem because of the overhead of calling R and Java from Python
 
 %% required bibliography:
-%% - microTEDAclus:
-%% - streammoa:
+%% - the paper that introduces streammoa:
 
 \subsection{Current work}
 
 %% uses river's clustream and denstream and clusopt-core's streamkm++. river's implementations are in pure python, which make them comparable to microTEDAclus. clusopt-core's streamkm++ is implemented in C++, which makes it faster than microTEDAclus, rather than slower.
 
 %% required bibliography:
-%% - river:
-%% - clusopt-core:
+%% - the paper that introduces river:
+%% - the paper that introduces clusopt-core:
 
 \section{Datasets}
 
 %% although the original work references valid benchmarking datasets, the preprocessing to which those datasets are subjected before being used is omited and have a significant impact on the results.
 
 %% required bibliography:
-%% - impact of preprocessing on results:
+%% - an authority paper on the impact of preprocessing on results. not necessarily the first to talk about it, but one that is widely cited and recognized in the field:
 
 \subsection{Static}
 
@@ -51,8 +51,7 @@ The next sections examine weaknesses from the evaluated model implementation to 
 %% we use the same datasets, but we also include the original versions of the chameleon datasets, which are not cleaned, scaled, or downsampled. this allows us to evaluate the impact of preprocessing on the results.
 
 %% required bibliography:
-%% - chameleon datasets:
-%% - streammoa:
+%% - the paper that introduces the chameleon datasets:
 %% - link to public repository of the original work: https://github.com/eduardo-ufmg/evolving_clustering (current author's fork of the original repository at the commit 50dd2b4)
 
 \subsection{Concept Drift}
@@ -60,14 +59,14 @@ The next sections examine weaknesses from the evaluated model implementation to 
 %% the streammoa concept drift datasets used are STR-B1, STR-B2, and RBF. those are generated with noise samples labeled as 'NA'. from the scatter plots shown in the original work, it seems that the noise samples are not included in the evaluation. we will include the noise samples in the evaluation, as they are part of the dataset and can have a significant impact on the results. this allows us to evaluate the impact of noise on the results.
 
 %% required bibliography:
-%% - impact of noise on results:
+%% - an authority paper on the impact of noise on results. not necessarily the first to talk about it, but one that is widely cited and recognized in the field:
 
 \subsection{Scalability}
 
 %% for the scalability experiments, the original work uses synthetic datasets. the generation process and conditions is well described in the original work, and lack the introduction of noise, which is a common characteristic of real-world datasets. we will generate synthetic datasets with noise, to evaluate the impact of noise on the results.
 
 %% required bibliography:
-%% - noise in real world datasets:
+%% - an authority paper on noise in real world datasets. not necessarily the first to talk about it, but one that is widely cited and recognized in the field:
 
 \section{Evaluation Metrics}
 
@@ -76,9 +75,9 @@ The next sections examine weaknesses from the evaluated model implementation to 
 %% furthermore, mean and standard deviation are only valid statistics when the results are expected to be normally distributed, which is not the case for quality metrics over sequential batches of data, where the results for each batch are not independent and are a direct consequence of the data snapshot, which is not random, since it is a sequential batch of data.
 
 %% required bibliography:
-%% - ARI:
-%% - mean and standard deviation:
-%% - iqr:
+%% - the paper that introduces the ARI metric:
+%% - an authoritative paper that states that the mean and the standard deviation are suitable statistics for normally distributed data, and that they are not suitable for non-normally distributed data. not necessarily the first to talk about it, but one that is widely cited and recognized in the field:
+%% - the paper that introduces the iqr metric:
 
 \section{Prequential Versus Sequential Evaluation}
 
@@ -91,5 +90,5 @@ The next sections examine weaknesses from the evaluated model implementation to 
 %% - notebooks/**
 
 %% required bibliography:
-%% - prequential evaluation:
-%% - cross-validation:
+%% - an authoritative paper that explains and comments on prequential evaluation. not necessarily the first to talk about it, but one that is widely cited and recognized in the field:
+%% - an authoritative paper that explains and comments on cross-validation. not necessarily the first to talk about it, but one that is widely cited and recognized in the field:
