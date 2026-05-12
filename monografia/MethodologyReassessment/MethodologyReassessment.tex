@@ -1,0 +1,95 @@
+\chapter{Methodology Reassessment}
+\label{chap:methodology_reassessment}
+
+The \textit{Evolving clustering algorithm based on mixture of typicalities for stream data mining} paper presents promising results for the microTEDAclus model \cite{maia2020evolvclus}. Before conclusions can be drawn from those results, however, it is important to assess the methodology used in the original work. In this chapter, only its methodology is reviewed, since the following paper, \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} \cite{minerao2022minerao} assumes its validity and does not perform further investigation on it.
+
+The next sections examine weaknesses from the evaluated model implementation to the experiments protocol, including the evaluation metrics and procedures. The goal of this reassessment is to identify potential issues in the original work's methodology that could affect the validity of its results and conclusions. By doing so, a more rigorous and accurate evaluation of the microTEDAclus model can be conducted, leading to more reliable conclusions about its performance and applicability in real-world scenarios.
+
+\section{Model Implementation}
+
+%% the model's implementation seen in the public repository is not the same as the one described in the original work, but much more similar to the updated version presented in the PHD thesis Mineração de Dados Aplicada a Problemas de Last-Mile na Logística. this is a problem because the results of the experiments are not comparable to the ones presented in the original work, and the conclusions drawn from those results may not be valid.
+
+%% required bibliography:
+%% - last-mile logistics:
+
+\section{Benchmark Models Source}
+
+%% the models are denstream, clustream, and streamkm++ . those are suitable models for data stream clustering benchmark. the validity of the experiments, however, depends on implementation and execution
+
+%% required bibliography:
+%% - DenStream:
+%% - CluStream:
+%% - StreamKM++:
+
+\subsection{Original Work}
+
+%% the original work states it uses R's streammoa. the problem is that, because the experiments are done in python, the package calls R, which, in turn, calls Java. this is a problem because of the overhead of calling R and Java from Python
+
+%% required bibliography:
+%% - microTEDAclus:
+%% - streammoa:
+
+\subsection{Current work}
+
+%% uses river's clustream and denstream and clusopt-core's streamkm++. river's implementations are in pure python, which make them comparable to microTEDAclus. clusopt-core's streamkm++ is implemented in C++, which makes it faster than microTEDAclus, rather than slower.
+
+%% required bibliography:
+%% - river:
+%% - clusopt-core:
+
+\section{Datasets}
+
+%% although the original work references valid benchmarking datasets, the preprocessing to which those datasets are subjected before being used is omited and have a significant impact on the results.
+
+%% required bibliography:
+%% - impact of preprocessing on results:
+
+\subsection{Static}
+
+%% the original work uses cleaned, scaled, and downsampled versions of two of the chameleon datasets, as seem in the public repository, and the ordered, noiseless, cassini dataset from streammoa.
+
+%% we use the same datasets, but we also include the original versions of the chameleon datasets, which are not cleaned, scaled, or downsampled. this allows us to evaluate the impact of preprocessing on the results.
+
+%% required bibliography:
+%% - chameleon datasets:
+%% - streammoa:
+%% - link to public repository of the original work: https://github.com/eduardo-ufmg/evolving_clustering (current author's fork of the original repository at the commit 50dd2b4)
+
+\subsection{Concept Drift}
+
+%% the streammoa concept drift datasets used are STR-B1, STR-B2, and RBF. those are generated with noise samples labeled as 'NA'. from the scatter plots shown in the original work, it seems that the noise samples are not included in the evaluation. we will include the noise samples in the evaluation, as they are part of the dataset and can have a significant impact on the results. this allows us to evaluate the impact of noise on the results.
+
+%% required bibliography:
+%% - impact of noise on results:
+
+\subsection{Scalability}
+
+%% for the scalability experiments, the original work uses synthetic datasets. the generation process and conditions is well described in the original work, and lack the introduction of noise, which is a common characteristic of real-world datasets. we will generate synthetic datasets with noise, to evaluate the impact of noise on the results.
+
+%% required bibliography:
+%% - noise in real world datasets:
+
+\section{Evaluation Metrics}
+
+%% the main quality metric used in the original work is the adjusted rand index (ARI). this is a suitable metric for clustering evaluation.
+%% the statistics regarding the metric, however, is not. although the original work states that the results are averaged over multiple runs with random subsets of the data, the public repository shows that the results are obtained from a single run for each dataset. the `mean` and `std` values shown in the original work are statistics of the ARI values obtained from the different batches of data, and not from multiple runs. this is a problem because it does not reflect the true variability of the results.
+%% furthermore, mean and standard deviation are only valid statistics when the results are expected to be normally distributed, which is not the case for quality metrics over sequential batches of data, where the results for each batch are not independent and are a direct consequence of the data snapshot, which is not random, since it is a sequential batch of data.
+
+%% required bibliography:
+%% - ARI:
+%% - mean and standard deviation:
+%% - iqr:
+
+\section{Prequential Versus Sequential Evaluation}
+
+%% as can be seem in the public repository, what the paper calls "prequential evaluation" is actually a batched sequential evaluation, where the model is trained then evaluated on the same batch of data. this is a problem because it does not reflect the true performance of the model in a streaming setting, where the model is evaluated on unseen data after being trained on previous data.
+
+%% furthermore, batched evalutation is performed solely on the concept drift datasets. static datasets are evalutated in a single fit then predict pass, which, besides not being a streaming setting, is not standard practice even for static datasets, where cross-validation is preferred. this is a problem because it does not allow us to evaluate the performance of the model on unseen data, and it does not allow us to compare the results with other works that use cross-validation.
+
+%% code source:
+%% - src/models/evolving/util/Benchmarks.py
+%% - notebooks/**
+
+%% required bibliography:
+%% - prequential evaluation:
+%% - cross-validation:
