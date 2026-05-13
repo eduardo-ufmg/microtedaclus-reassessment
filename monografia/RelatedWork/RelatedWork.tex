@@ -153,7 +153,7 @@ be the initial parameters of a microcluster created with the sample $x_k$.
 
 The microcluster update procedure is described, in the original paper, by \cref{alg:microcluster_update}.
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
 \caption{Microcluster update}
 \label{alg:microcluster_update}
 \begin{algorithmic}[1]
@@ -166,9 +166,9 @@ The microcluster update procedure is described, in the original paper, by \cref{
         \State $\text{flag} \gets \text{true}$
         \For{$i = 1$ to $n$}
             \If{$S^i_k = 2$}
-                $\text{outlier} \gets \text{condition in \cref{critique:incorrect_condition_logic}}$
+                \State $\text{outlier} \gets \text{condition in \cref{critique:incorrect_condition_logic}}$
             \Else
-                $\text{outlier} \gets \text{condition in \cref{eq:outlier_condition}}$
+                \State $\text{outlier} \gets \text{condition in \cref{eq:outlier_condition}}$
             \EndIf
             \If{not $\text{outlier}$}
                 \State Update $m_i$ parameters with \cref{critique:dimensionality_penalty}
@@ -189,13 +189,13 @@ Macroclusters are the disjoint sets of connected microclusters in a graph where 
     \text{dist}(\mu^i_k, \mu^j_k) < 2 \left( \sigma^i_k + \sigma^j_k \right), \quad i \neq j \label{eq:microcluster_intersection_condition}
 \end{equation}
 
-\labeltext[criterion to prevent microcluster colapse]{To prevent the collapse of all microclusters into a single macrocluster under overlap, a microcluster $m^j_l$ is a candidate to form an edge only if}{info:microcluster_activation_criterion}
+\labeltext[criterion to prevent microcluster colapse]{To prevent the collapse of all microclusters into a single macrocluster under overlap, a microcluster $m^j_l$ is part of the macrocluster's calculations only if}{info:microcluster_activation_criterion}
 
 \begin{equation}
     D^l_k \ge \text{mean}\left(D^l_k\right), \quad l = 1,\dots,\left|\mathcal{M}_j\right| \label{critique:use_of_unstable_density}
 \end{equation}
 
-\labeltext[unclear microcluster activation criterion]{where $\mathcal{M}_j = \left\{ m^j_1, m^j_2, \cdots, m^j_l \right\}, \quad l = 1, 2, \cdots, N_j$ is the jth macrocluster composed of a set of $N_j$ connected microclusters $m^j_l$.}{critique:unclear_microcluster_activation_criterion}
+where $\mathcal{M}_j = \left\{ m^j_1, m^j_2, \cdots, m^j_l \right\}, \quad l = 1, 2, \cdots, N_j$ is the jth macrocluster composed of a set of $N_j$ connected microclusters $m^j_l$.
 
 The density of a macrocluster is the sum of the normalized typicalities of its active microclusters, as in \cref{eq:macrocluster_density}.
 
@@ -219,7 +219,7 @@ A sample's predicted label $j$ is the index of the macrocluster $\mathcal{M}_j$ 
 
 The macrocluster identification process is described, in the original paper, by \cref{alg:macrocluster_update}.
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
 \caption{Macrocluster update}
 \label{alg:macrocluster_update}
 \begin{algorithmic}[1]
@@ -277,20 +277,6 @@ which would be true for the samples that are closer to the mean $\mu^i_2$. Becau
 
 The set of expressions in \cref{critique:dimensionality_penalty} explicitly penalizes the variance and eccentricity of a microcluster by the dimensionality of the data $d$. This is not standard, suggested by any of the papers that introduce the TEDA metrics \cite{angelov2014outside, angelov2014anomaly}, or justified by any theoretical or empirical evidence.
 
-\subsubsection{Unclear Microcluster Activation Criterion} \label{sss:unclear_microcluster_activation_criterion}
-
-The paper defines macroclusters as connected components of a graph, meaning the set $\mathcal{M}_j$ is strictly determined by the existence of edges between microclusters. However, the condition for the existence of an edge between two microclusters depends on the mean density of $\mathcal{M}_j$. This creates a topological contradiction: a pairwise edge cannot be evaluated using the global properties of a set that the edge itself is required to construct.
-
-Furthermore, in an online setting, there are no macroclusters the first time the existence of an edge is checked. Because the sets $\mathcal{M}_j$ are initially empty, the term $\text{mean}\left(D^l_k\right)$ is mathematically undefined, leaving no valid mechanism to determine if the initial edges should exist.
-
-Even assuming prior initialization, the criterion suffers from temporal recursion. When evaluating a new candidate microcluster at time $k$, the formulation does not specify whether the mean of $\mathcal{M}_j$ is computed over the prior topological state or the posterior state. Although the former is more intuitive, the formal notation indicates the latter.
-
-Finally, the inequality contains a fundamental notational flaw. In the expression $D^l_k \ge \text{mean}\left(D^l_k\right)$, the index $l$ is mathematically ill-posed. It is simultaneously used to denote a specific, isolated microcluster on the left side of the inequality and as a dummy iteration variable for the set mean on the right side.
-
-\subsubsection{Inconsistency Between the Prose and the Macrocluster Identification Formal Algorithm}
-
-Although the paper recognizes the need a \ref{info:microcluster_activation_criterion}, the provided pseudocode for the macrocluster update process, \cref{alg:macrocluster_update}, does not perform this validation prior to the macrocluster formation process, but only after it. This means that the macroclusters are formed without any criterion, and then the microclusters that do not satisfy the criterion are deactivated, which creates ambiguity regarding the actual definition of a macrocluster and the role of the activation criterion in the algorithm.
-
 \section[microTEDAclus Updates]{microTEDAclus Updates in the \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} PHD Thesis}
 
 From the model addressed by \cite{galindo2021lastmile}, only the changes from the original microTEDAclus are described in this section.
@@ -336,7 +322,7 @@ The remainder of the algorithm, including the macrocluster formation process, is
 
 \subsubsection{Issues not Addressed by the Updates}
 
-The issues in \cref{sss:order_dependent_characteristics,sss:dimensionality_penalty,sss:unclear_microcluster_activation_criterion} are completely ignored in the updated model, and the issue \ref{sss:incorrect_condition_logic} is only partially solved, as the conjunction is still present in the condition for outlier detection in microclusters with two samples.
+The issues in \cref{sss:order_dependent_characteristics,sss:dimensionality_penalty} are completely ignored in the updated model, and the issue \ref{sss:incorrect_condition_logic} is only partially solved, as the conjunction is still present in the condition for outlier detection in microclusters with two samples.
 
 \subsubsection{Import of an Incompatible Outlier Condition from Angelov's Paper}
 

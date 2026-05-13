@@ -19,7 +19,7 @@ It is important to note that the implementation of the microTEDAclus model found
 
 The most notable and critical change from the paper's formulation to the implementation is the introduction of an explicit decayment logic, specifically the one described in \cite{galindo2021lastmile}. The model constructor's signature is seen in \cref{snippet:maia_implementation_constructor}.
 
-\begin{lstlisting}[language=Python, caption={Constructor of the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_constructor}]
+\begin{lstlisting}[float, language=Python, caption={Constructor of the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_constructor}]
 def __init__(self, macro_cluster_update=1,
                 verbose=0, variance_limit=0.001, decay = 100, debug=False, plot_graph=False):
     self.verbose = verbose
@@ -39,7 +39,7 @@ def __init__(self, macro_cluster_update=1,
 
 The introduced factor, $\text{fading\_factor} = \frac{1}{\text{decay}}$, corresponds to the $\rho$ parameter of the decayment logic described in \cite{galindo2021lastmile}, which is a value between 0 and 1 that determines the rate at which the model forgets old data. It is used in two distinct methods of the implementation. In \cref{snippet:maia_implementation_prune_microclusters}, it linearly decays the \texttt{life} of the microclusters that were considered 'not active' in the current \texttt{fit} iteration. Such functionality loosely corresponds to the one described in \cite{galindo2021lastmile}, but does not match it exactly; the paper states that the decayment is applied to the microclusters that are not updated by the sample being processed, while the "activeness" of a microcluster is determined in the macrocluster construction phase, and depends only on the comparison between the microcluster's and the macrocluster's densities.
 
-\begin{lstlisting}[language=Python, caption={Pruning of microclusters in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_prune_microclusters}]
+\begin{lstlisting}[float, language=Python, caption={Pruning of microclusters in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_prune_microclusters}]
 def prune_micro_clusters(self):
     for mc in self.micro_clusters:
 
@@ -57,7 +57,7 @@ def prune_micro_clusters(self):
 
 The second method where the fading factor is used is \cref{snippet:maia_implementation_update_life}. In this method, the fading factor acts as a scaling coefficient for a dynamic reward or penalty. It evaluates the Euclidean distance of the new sample to the micro-cluster's center relative to its standard deviation. If the sample is closer than the standard deviation, \texttt{life} increases, otherwise it decreases. The fading factor scales the amount of increase or decrease, which means that the model will forget old data faster if the fading factor is higher.
 
-\begin{lstlisting}[language=Python, caption={Update of microclusters' life in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_update_life}]
+\begin{lstlisting}[float, language=Python, caption={Update of microclusters' life in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_update_life}]
     def update_life(self, xk, micro_cluster):
         previous_mean = micro_cluster["mean"]
         previous_var = micro_cluster["variance"]
@@ -71,6 +71,119 @@ The second method where the fading factor is used is \cref{snippet:maia_implemen
 \end{lstlisting}
 
 Such decayment logic is not present neither in the original work nor in the updated version of microTEDAclus, and its introduction in the implementation found in the public repository is not justified or explained in any of those works. This is a problem because it introduces a significant change to the model's behavior that is not accounted for in the original work, and it may affect the results of the experiments and the conclusions drawn from them.
+
+Another significant change from the paper's formulation to the implementation is the handling of microcluster activation. \cref{info:microcluster_activation_criterion} and \cref{critique:use_of_unstable_density} present the criterion and use for microcluster activation stated in the original work. The implementation's procedure deviates from it and is described in \cref{alg:microcluster_activation_criterion_pseudocode}. Note that this pseudocode corresponds to the current work's interpretation of the code provided in the public repository, and it is not acknowledged or explained in neither the original work or the updated version of microTEDAclus' presentation.
+
+\begin{algorithm}[htbp]
+\caption{Microcluster activation criterion used in the implementation found in the public repository}
+\label{alg:microcluster_activation_criterion_pseudocode}
+\begin{algorithmic}[1]
+\Require $m_i$, $i = 1, 2, \dots, n$ (the set of all microclusters)
+\Ensure $\mathcal{M}_j, j = 1, 2, \dots, m$ (the set of macroclusters)
+\State Construct the graph $\mathbb{G}_0$ by connecting microclusters that satisfy the intersection condition described in \cref{eq:microcluster_intersection_condition}
+\State Build a macrocluster $\mathcal{M}_j$ for each connected component of $\mathbb{G}_0$
+\For{each macrocluster $\mathcal{M}_j$}
+    \State Compute its microclusters' activation according to \cref{critique:use_of_unstable_density}
+\EndFor
+\State Capture the active graph $\mathbb{G}_1$ by removing the non-active microclusters from $\mathbb{G}_0$
+\State Build a macrocluster $\mathcal{M}_j$ for each connected component of $\mathbb{G}_1$
+\end{algorithmic}
+\end{algorithm}
+
+Hence, it can be inferred that, because $\mathbb{G}_0$ is subject to the ill condition of microcluster collapse, predicted by the original work, a second graph-building pass is performed over the microclusters considered to be active according to \cref{critique:use_of_unstable_density}. The resulting graph, $\mathbb{G}_1$, is expected to be secured from the overlap condition. The macroclusters built from it are the output of the macrocluster construction phase. Not only this change deviates from the original work's formulation, but it also introduces a significant increase in the computational complexity of the macrocluster construction phase, which may affect the results of the experiments and the conclusions drawn from them.
+
+The process is performed by \cref{snippet:maia_implementation_update_macroclusters}, which calls \cref{snippet:maia_implementation_define_macroclusters} to build the macroclusters from the graph $\mathbb{G}_0$ followed by \cref{snippet:maia_implementation_define_activations} to determine the active microclusters, capture the active graph $\mathbb{G}_1$, and extract the final macroclusters from it.
+
+\begin{lstlisting}[float, language=Python, caption={Update of macroclusters in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_update_macroclusters}]
+def update_macro_clusters(self):
+    self.define_macro_clusters()
+    self.define_activations()
+\end{lstlisting}
+
+\begin{lstlisting}[float, language=Python, caption={Definition of macroclusters from the graph $\mathbb{G}_0$ in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_define_macroclusters}]
+def define_macro_clusters(self):
+    for mi in self.changed_micro_clusters:
+        for mj in self.micro_clusters:
+            if mi["id"] != mj["id"]:
+                edge = (mi["id"],mj["id"])
+                if EvolvingClustering.has_intersection(mi, mj):
+                    self.graph.add_edge(*edge)
+                elif EvolvingClustering.nodes_connected(mi["id"],mj["id"], self.graph):
+                    self.graph.remove_edge(*edge)
+
+    self.macro_clusters = list(nx.connected_components(self.graph))
+    self.changed_micro_clusters.clear()
+\end{lstlisting}
+
+\begin{lstlisting}[float, language=Python, caption={Definition of active microclusters and macroclusters from the graph $\mathbb{G}_1$ in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_define_activations}]
+def define_activations(self):
+    self.active_graph = self.graph.copy()
+    for mg in self.macro_clusters:
+        num_micro = len(mg)
+        total_density = 0
+        for i in mg:
+            dens = next(item["density"] for item in self.micro_clusters if item["id"] == i)
+            total_density += dens
+        mean_density = total_density / num_micro
+        for i in mg:
+            mi = next(item for item in self.micro_clusters if item["id"] == i)
+            mi["active"] = (mi["num_samples"] > 2) and (mi["density"] >= mean_density)
+            if not mi["active"]:
+                self.active_graph.remove_node(mi["id"])
+    self.active_macro_clusters = list(nx.connected_components(self.active_graph))
+\end{lstlisting}
+
+\cref{snippet:maia_implementation_is_outlier} implements \cref{eq:outlier_condition} and substitutes \cref{critique:incorrect_condition_logic} by \cref{eq:corrected_condition_logic_for_outliers}.
+
+\begin{lstlisting}[float, language=Python, caption={Outlier detection in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_is_outlier}]
+def is_outlier(self, s_ik, var_ik, norm_ecc):
+    if s_ik < 3:
+        outlier = (var_ik > self.variance_limit)
+    else:
+        mik_sik = 3 / (1 + math.exp(-0.007 * (s_ik - 100)))
+        outlier_limit = ((mik_sik ** 2) + 1) / (2 * s_ik)
+        outlier = (norm_ecc > outlier_limit)
+    return outlier
+\end{lstlisting}
+
+Finally, \cref{eq:recursive_eccentricity} and \cref{eq:normalized_typicality} are implemented as \cref{snippet:maia_implementation_get_eccentricity} and the previous to last expression of \cref{snippet:maia_implementation_calculate_membership}, respectively.
+
+\begin{lstlisting}[float, language=Python, caption={Eccentricity calculation in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_get_eccentricity}]
+def get_eccentricity(x, num_samples, mean, var):
+    if var == 0 and num_samples > 1:
+        result = (1/num_samples)
+    else:
+        a = mean - x
+        result = ((1 / num_samples) + ((np.linalg.norm(a) * 2 / len(a)) ** 2 / (num_samples * var)))
+
+    return result
+\end{lstlisting}
+
+\begin{lstlisting}[float, language=Python, caption={Membership calculation in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_calculate_membership}]
+def calculate_membership(x, active_micro_clusters):
+    total_density = 0
+    for m in active_micro_clusters:
+        total_density += m["density"]
+
+    mb = 0
+    for m in active_micro_clusters:
+        d = m["density"]
+
+        t = 1 - EvolvingClustering.get_normalized_eccentricity(x, m["num_samples"], m["mean"], m["variance"])
+        mb += (d / total_density) * t
+    return mb
+\end{lstlisting}
+
+The mathematical expansion of the main expression in \cref{snippet:maia_implementation_get_eccentricity} is \cref{eq:maia_implementation_eccentricity_eq}, which is fundamentally different from \cref{eq:recursive_eccentricity}.
+
+\begin{equation}
+    \xi^i\left(x\right) = \frac{1}{S^i_k} + \frac{4\lVert\mu^i_k - x\rVert^2}{d^2S^i_k\left(\sigma^i_k\right)^2}
+    \label{eq:maia_implementation_eccentricity_eq}
+\end{equation}
+
+The expression for the intermediary typicality calculation in \cref{snippet:maia_implementation_calculate_membership} cannot be mathematically rewritten to match \cref{eq:normalized_typicality}, and is not equivalent to it.
+
+
 
 \section{Benchmark Models Source}
 
