@@ -15,6 +15,63 @@ The next sections examine weaknesses from the evaluated model implementation to 
 
 In the fifth section of the original work, \textbf{Methodology and experiments}, \cite{maia2020evolvclus} provides a URL to the public GitHub repository where the code for the experiments can be found: \url{https://github.com/cseveriano/evolving_clustering}. To ensure persistence of the code, a fork of the original repository was created at the commit \texttt{50dd2b4}, which is the last commit to the repository at the time of this reassessment \cite{eduardo2026evolvingclustering}. The implementation of the microTEDAclus model is found in the \texttt{src/models/evolving/EvolvingClustering.py} file of the repository.
 
+It is important to note that the implementation of the microTEDAclus model found in the public repository is not the same as the one described in the original work, but is the one that, when submitted to the repository experiments, produced the results shown in the original work. A closer inspection of the code reveals that said implementation have characteristics that are similar to the ones described in the updated version of microTEDAclus, which is presented in the PHD thesis \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} \cite{galindo2021lastmile}. Furthermore, it handles the outlier-condition logic's problem stated in \cref{sss:incorrect_condition_logic}, but introduces mathematical errors in the implementation of expressions \cref{eq:recursive_eccentricity} and \cref{eq:normalized_typicality}, which are the core of the microTEDAclus model. This is a problem because the results of the experiments are not comparable to the ones presented in the original work, and the conclusions drawn from those results may not be valid.
+
+The most notable and critical change from the paper's formulation to the implementation is the introduction of an explicit decayment logic, specifically the one described in \cite{galindo2021lastmile}. The model constructor's signature is seen in \cref{snippet:maia_implementation_constructor}.
+
+\begin{lstlisting}[language=Python, caption={Constructor of the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_constructor}]
+def __init__(self, macro_cluster_update=1,
+                verbose=0, variance_limit=0.001, decay = 100, debug=False, plot_graph=False):
+    self.verbose = verbose
+    self.total_num_samples = 0
+    self.micro_clusters = []
+    self.macro_clusters = []
+    self.active_macro_clusters = []
+    self.graph = nx.Graph()
+    self.active_graph = nx.Graph()
+    self.variance_limit = variance_limit
+    self.macro_cluster_update = macro_cluster_update
+    self.debug = debug
+    self.plot_graph = plot_graph
+    self.changed_micro_clusters = []
+    self.fading_factor = 1 / decay
+\end{lstlisting}
+
+The introduced factor, $\text{fading\_factor} = \frac{1}{\text{decay}}$, corresponds to the $\rho$ parameter of the decayment logic described in \cite{galindo2021lastmile}, which is a value between 0 and 1 that determines the rate at which the model forgets old data. It is used in two distinct methods of the implementation. In \cref{snippet:maia_implementation_prune_microclusters}, it linearly decays the \texttt{life} of the microclusters that were considered 'not active' in the current \texttt{fit} iteration. Such functionality loosely corresponds to the one described in \cite{galindo2021lastmile}, but does not match it exactly; the paper states that the decayment is applied to the microclusters that are not updated by the sample being processed, while the "activeness" of a microcluster is determined in the macrocluster construction phase, and depends only on the comparison between the microcluster's and the macrocluster's densities.
+
+\begin{lstlisting}[language=Python, caption={Pruning of microclusters in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_prune_microclusters}]
+def prune_micro_clusters(self):
+    for mc in self.micro_clusters:
+
+        if not mc["active"]:
+            mc["life"] = mc["life"] - self.fading_factor
+
+            if mc["life"] < 0:
+                self.micro_clusters.remove(mc)
+
+                if mc in self.changed_micro_clusters:
+                    self.changed_micro_clusters.remove(mc)
+
+                self.graph.remove_node(mc["id"])
+\end{lstlisting}
+
+The second method where the fading factor is used is \cref{snippet:maia_implementation_update_life}. In this method, the fading factor acts as a scaling coefficient for a dynamic reward or penalty. It evaluates the Euclidean distance of the new sample to the micro-cluster's center relative to its standard deviation. If the sample is closer than the standard deviation, \texttt{life} increases, otherwise it decreases. The fading factor scales the amount of increase or decrease, which means that the model will forget old data faster if the fading factor is higher.
+
+\begin{lstlisting}[language=Python, caption={Update of microclusters' life in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_update_life}]
+    def update_life(self, xk, micro_cluster):
+        previous_mean = micro_cluster["mean"]
+        previous_var = micro_cluster["variance"]
+        if previous_var > 0:
+            d = EvolvingClustering.get_euclidean_distance(xk, previous_mean)
+            dist = np.sqrt(np.sum(d))
+            rt = np.sqrt(previous_var)
+            micro_cluster["life"] = micro_cluster["life"] + (((rt - dist) / rt) * self.fading_factor)
+        else:
+            micro_cluster["life"] = 1
+\end{lstlisting}
+
+Such decayment logic is not present neither in the original work nor in the updated version of microTEDAclus, and its introduction in the implementation found in the public repository is not justified or explained in any of those works. This is a problem because it introduces a significant change to the model's behavior that is not accounted for in the original work, and it may affect the results of the experiments and the conclusions drawn from them.
+
 \section{Benchmark Models Source}
 
 %% the models are denstream, clustream, and streamkm++ . those are suitable models for data stream clustering benchmark. the validity of the experiments, however, depends on implementation and execution

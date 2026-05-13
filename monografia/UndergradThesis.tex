@@ -28,6 +28,7 @@
 \usepackage{cleveref}         % Smart referencing
 \usepackage{algorithm}        % Pseudocode environment
 \usepackage{algpseudocode}    % Pseudocode commands
+\usepackage{xcolor}           % Custom colors for code highlighting
 
 \usepackage{labeltext}
 
@@ -38,6 +39,19 @@
 
 \usepackage[a4paper,top=30mm,bottom=30mm,inner=30mm,outer=25mm,headheight=7mm,headsep=6mm,footskip=7mm]{geometry}
 \usepackage{enumerate}
+
+\lstset{%
+  basicstyle=\ttfamily\small,
+  columns=fullflexible,
+  breaklines=true,
+  breakatwhitespace=true,
+  frame=single,
+  captionpos=b,
+  numbers=left,
+  numberstyle=\tiny,
+  keepspaces=true,
+  tabsize=4,
+}
 
 \makeindex
 
