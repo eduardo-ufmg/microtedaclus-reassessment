@@ -159,6 +159,13 @@ def get_eccentricity(x, num_samples, mean, var):
     return result
 \end{lstlisting}
 
+The mathematical expansion of the main expression in \cref{snippet:maia_implementation_get_eccentricity} is \cref{eq:maia_implementation_eccentricity_eq}, which is fundamentally different from \cref{eq:recursive_eccentricity}.
+
+\begin{equation}
+    \xi^i\left(x\right) = \frac{1}{S^i_k} + \frac{4\lVert\mu^i_k - x\rVert^2}{d^2S^i_k\left(\sigma^i_k\right)^2}
+    \label{eq:maia_implementation_eccentricity_eq}
+\end{equation}
+
 \begin{lstlisting}[float, language=Python, caption={Membership calculation in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_calculate_membership}]
 def calculate_membership(x, active_micro_clusters):
     total_density = 0
@@ -174,16 +181,9 @@ def calculate_membership(x, active_micro_clusters):
     return mb
 \end{lstlisting}
 
-The mathematical expansion of the main expression in \cref{snippet:maia_implementation_get_eccentricity} is \cref{eq:maia_implementation_eccentricity_eq}, which is fundamentally different from \cref{eq:recursive_eccentricity}.
-
-\begin{equation}
-    \xi^i\left(x\right) = \frac{1}{S^i_k} + \frac{4\lVert\mu^i_k - x\rVert^2}{d^2S^i_k\left(\sigma^i_k\right)^2}
-    \label{eq:maia_implementation_eccentricity_eq}
-\end{equation}
-
 The expression for the intermediary typicality calculation in \cref{snippet:maia_implementation_calculate_membership} cannot be mathematically rewritten to match \cref{eq:normalized_typicality}, and is not equivalent to it.
 
-
+The updated implementation of microTEDAclus, which is presented in the PHD thesis \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} \cite{galindo2021lastmile}, was provided by the work's author, but is not publicly available. Its main improvements from the original implementation are the introduction of partial support to the use of the cossine distance as distance metric, the refactor of the decayment logic, and the extraction of the microcluster structure to a separate class.
 
 \section{Benchmark Models Source}
 
@@ -194,18 +194,11 @@ The expression for the intermediary typicality calculation in \cref{snippet:maia
 %% - the paper that introduces CluStream:
 %% - the paper that introduces StreamKM++:
 
-\subsection{Original Work}
-
 %% the original work states it uses R's streammoa. the problem is that, because the experiments are done in python, the package calls R, which, in turn, calls Java. this is a problem because of the overhead of calling R and Java from Python
+%% this paper uses river's clustream and denstream and clusopt-core's streamkm++. river's implementations are in pure python, which make them comparable to microTEDAclus. clusopt-core's streamkm++ is implemented in C++, which makes it faster than microTEDAclus, rather than slower.
 
 %% required bibliography:
 %% - the paper that introduces streammoa:
-
-\subsection{Current work}
-
-%% uses river's clustream and denstream and clusopt-core's streamkm++. river's implementations are in pure python, which make them comparable to microTEDAclus. clusopt-core's streamkm++ is implemented in C++, which makes it faster than microTEDAclus, rather than slower.
-
-%% required bibliography:
 %% - the paper that introduces river:
 %% - the paper that introduces clusopt-core:
 
