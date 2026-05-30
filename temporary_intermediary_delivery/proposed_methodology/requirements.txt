@@ -1,0 +1,12 @@
+optuna
+numpy
+scikit-learn
+pandas
+rpy2
+pympler
+river
+numba
+matplotlib
+scipy
+black
+networkx
