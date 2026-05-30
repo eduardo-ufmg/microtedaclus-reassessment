@@ -223,4 +223,5 @@ __marimo__/
 results/
 aggregated_per_run/
 data_samples/
+plots/
 temp*
