@@ -172,7 +172,7 @@ MODEL_MAP = {
     "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
 }
 
-RUNS = 10
+RUNS = 3  # 10
 BATCH_SIZE = 100
 
 for dataset in tqdm(DATASETS, desc="Datasets"):
@@ -197,8 +197,8 @@ for dataset in tqdm(DATASETS, desc="Datasets"):
                 lambda trial: objective(
                     trial, model_class, search_space_class, X_opt, y_opt, BATCH_SIZE
                 ),
-                n_trials=32,
-                timeout=120,  # 2 minutes per optimization run
+                n_trials=3,  # speed it up just to check post processing n_trials=100,
+                timeout=30,  # // timeout=600 # 10 minutes per model/dataset/run
             )
 
             try:
