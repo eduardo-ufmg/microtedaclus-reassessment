@@ -30,7 +30,7 @@ def format_cell(mean_val, std_val):
 
 # 1. Ingest Data
 all_files = glob.glob(os.path.join(INPUT_DIR, "*.csv"))
-raw_data = []
+raw_data: list[pd.DataFrame] = []
 
 for filepath in all_files:
     filename = os.path.basename(filepath)

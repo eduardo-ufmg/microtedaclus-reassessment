@@ -54,109 +54,117 @@ METRIC_CONFIG = {
     },
 }
 
-print("1. Ingesting raw evaluation telemetry...")
-all_files = glob.glob(os.path.join(INPUT_DIR, "*.csv"))
-df_list = []
 
-for filepath in all_files:
-    filename = os.path.basename(filepath)
-    name_without_ext = filename.replace(".csv", "")
-    parts = name_without_ext.split("_")
+def main():
+    print("1. Ingesting raw evaluation telemetry...")
+    all_files = glob.glob(os.path.join(INPUT_DIR, "*.csv"))
+    df_list: list[pd.DataFrame] = []
 
-    if len(parts) < 3:
-        continue
+    for filepath in all_files:
+        filename = os.path.basename(filepath)
+        name_without_ext = filename.replace(".csv", "")
+        parts = name_without_ext.split("_")
 
-    run_id = parts[-1]
-    model_name = parts[-2]
-    dataset_name = "_".join(parts[:-2])
-
-    try:
-        df = pd.read_csv(filepath)
-        # Filter explicitly for successful batches
-        df = df[df["status"] == "OK"].copy()
-
-        if df.empty:
+        if len(parts) < 3:
             continue
 
-        df["dataset"] = dataset_name
-        df["model"] = model_name
-        df["run"] = int(run_id)
-        df_list.append(df)
-    except Exception as e:
-        print(f"Skipping {filepath} due to parsing error: {e}")
+        run_id = parts[-1]
+        model_name = parts[-2]
+        dataset_name = "_".join(parts[:-2])
 
-if not df_list:
-    print("No valid data found to plot. Exiting.")
-    exit(0)
+        try:
+            df = pd.read_csv(filepath)
+            # Filter explicitly for successful batches
+            df = df[df["status"] == "OK"].copy()
 
-master_df = pd.concat(df_list, ignore_index=True)
-
-# Apply scalers
-for target_metric, config in METRIC_CONFIG.items():
-    master_df[target_metric] = master_df[config["source_col"]] * config["scale"]
-
-# Extract global entities
-datasets = master_df["dataset"].unique()
-models = sorted(master_df["model"].unique())
-
-# Consistent color mapping for models across all plots
-colors = plt.cm.tab10(np.linspace(0, 1, len(models)))
-color_map = {model: color for model, color in zip(models, colors)}
-
-print("2. Computing aggregations and generating plots...")
-# Aggregation: Group by dataset, model, and batch index
-agg_cols = list(METRIC_CONFIG.keys())
-grouped = (
-    master_df.groupby(["dataset", "model", "batch"])[agg_cols]
-    .agg(["mean", "std"])
-    .reset_index()
-)
-
-for dataset in datasets:
-    ds_data = grouped[grouped["dataset"] == dataset]
-
-    for metric, config in METRIC_CONFIG.items():
-        fig, ax = plt.subplots(figsize=(10, 6))
-
-        for model in models:
-            model_data = ds_data[ds_data["model"] == model].sort_values("batch")
-            if model_data.empty:
+            if df.empty:
                 continue
 
-            batches = model_data["batch"].values
-            means = model_data[(metric, "mean")].values
-            stds = model_data[(metric, "std")].values
+            df["dataset"] = dataset_name
+            df["model"] = model_name
+            df["run"] = int(run_id)
+            df_list.append(df)
+        except Exception as e:
+            print(f"Skipping {filepath} due to parsing error: {e}")
 
-            # If only 1 run survived for a batch, std is NaN. Force to 0 for plotting continuity.
-            stds = np.nan_to_num(stds, nan=0.0)
+    if not df_list:
+        print("No valid data found to plot. Exiting.")
+        exit(0)
 
-            # Boundary clipping
-            lower_bound = means - stds
-            upper_bound = means + stds
+    master_df = pd.concat(df_list, ignore_index=True)
 
-            # Log scale safety: matplotlib fill_between fails if lower_bound <= 0 on a log axis
-            logical_min = config["min"]
-            if config["y_scale"] == "log" and logical_min <= 0:
-                logical_min = np.min(means)
+    # Apply scalers
+    for target_metric, config in METRIC_CONFIG.items():
+        master_df[target_metric] = master_df[config["source_col"]] * config["scale"]
 
-            lower_bound = np.clip(lower_bound, logical_min, config["max"])
-            upper_bound = np.clip(upper_bound, logical_min, config["max"])
+    # Extract global entities
+    datasets = master_df["dataset"].unique()
+    models = sorted(master_df["model"].unique())
 
-            ax.plot(batches, means, label=model, color=color_map[model], linewidth=2.0)
-            ax.fill_between(
-                batches, lower_bound, upper_bound, color=color_map[model], alpha=0.2
-            )
+    # Consistent color mapping for models across all plots
+    colors = plt.get_cmap("tab10")(np.linspace(0, 1, len(models)))
+    color_map = {model: color for model, color in zip(models, colors)}
 
-        ax.set_title(f"{dataset} - {config['ylabel']}")
-        ax.set_xlabel("Batch Index")
-        ax.set_ylabel(config["ylabel"])
-        ax.set_yscale(config["y_scale"])
-        ax.legend(title="Models", loc="best")
-        ax.grid(True, which="both", linestyle="--", alpha=0.5)
+    print("2. Computing aggregations and generating plots...")
+    # Aggregation: Group by dataset, model, and batch index
+    agg_cols = list(METRIC_CONFIG.keys())
+    grouped = (
+        master_df.groupby(["dataset", "model", "batch"])[agg_cols]
+        .agg(["mean", "std"])
+        .reset_index()
+    )
 
-        plt.tight_layout()
-        plot_path = os.path.join(OUTPUT_DIR, f"{dataset}_{metric}.png")
-        plt.savefig(plot_path, dpi=300)
-        plt.close(fig)
+    for dataset in datasets:
+        ds_data = grouped[grouped["dataset"] == dataset]
 
-print(f"Processing complete. Plots serialized to {OUTPUT_DIR}/")
+        for metric, config in METRIC_CONFIG.items():
+            fig, ax = plt.subplots(figsize=(10, 6))
+
+            for model in models:
+                model_data = ds_data[ds_data["model"] == model].sort_values("batch")
+                if model_data.empty:
+                    continue
+
+                batches = model_data["batch"].values
+                means = model_data[(metric, "mean")].values
+                stds = model_data[(metric, "std")].values
+
+                # If only 1 run survived for a batch, std is NaN. Force to 0 for plotting continuity.
+                stds = np.nan_to_num(stds, nan=0.0)
+
+                # Boundary clipping
+                lower_bound = means - stds
+                upper_bound = means + stds
+
+                # Log scale safety: matplotlib fill_between fails if lower_bound <= 0 on a log axis
+                logical_min = config["min"]
+                if config["y_scale"] == "log" and logical_min <= 0:
+                    logical_min = np.min(means)
+
+                lower_bound = np.clip(lower_bound, logical_min, config["max"])
+                upper_bound = np.clip(upper_bound, logical_min, config["max"])
+
+                ax.plot(
+                    batches, means, label=model, color=color_map[model], linewidth=2.0
+                )
+                ax.fill_between(
+                    batches, lower_bound, upper_bound, color=color_map[model], alpha=0.2
+                )
+
+            ax.set_title(f"{dataset} - {config['ylabel']}")
+            ax.set_xlabel("Batch Index")
+            ax.set_ylabel(config["ylabel"])
+            ax.set_yscale(config["y_scale"])
+            ax.legend(title="Models", loc="best")
+            ax.grid(True, which="both", linestyle="--", alpha=0.5)
+
+            plt.tight_layout()
+            plot_path = os.path.join(OUTPUT_DIR, f"{dataset}_{metric}.png")
+            plt.savefig(plot_path, dpi=300)
+            plt.close(fig)
+
+    print(f"Processing complete. Plots serialized to {OUTPUT_DIR}/")
+
+
+if __name__ == "__main__":
+    main()
