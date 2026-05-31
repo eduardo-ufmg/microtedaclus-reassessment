@@ -53,6 +53,7 @@ def get_r_stream(name):
         robjects.r("data <- mlbench.cassini(4000)")
         X = np.array(robjects.r("data$x"))
         y = np.array(robjects.r("as.numeric(data$classes)"))
+        y = np.nan_to_num(y, nan=-1).astype(int)
         shuffle_idx = np.random.permutation(len(X))
         return X[shuffle_idx], y[shuffle_idx]
     elif name == "RandomRBFGeneratorEvents":
@@ -62,22 +63,25 @@ def get_r_stream(name):
                 eventMergeSplitOption = TRUE,
                 eventDeleteCreate = TRUE
             )
-            data <- get_points(dsd, n = 10000, class = TRUE)
+            data <- get_points(dsd, n = 10000, info = TRUE)
         """)
-        X = np.array(robjects.r("data[, -ncol(data)]"))
+        X = np.array(robjects.r("as.matrix(data[, -ncol(data)])"))
         y = np.array(robjects.r("as.numeric(data[, ncol(data)])"))
+        y = np.nan_to_num(y, nan=-1).astype(int)
         return X, y
     elif name == "Benchmark(1)":
         robjects.r("dsd <- DSD_Benchmark(1)")
-        robjects.r("data <- get_points(dsd, n = 4000, class = TRUE)")
-        X = np.array(robjects.r("data[, -ncol(data)]"))
+        robjects.r("data <- get_points(dsd, n = 400, info = TRUE)")
+        X = np.array(robjects.r("as.matrix(data[, -ncol(data)])"))
         y = np.array(robjects.r("as.numeric(data[, ncol(data)])"))
+        y = np.nan_to_num(y, nan=-1).astype(int)
         return X, y
     elif name == "Benchmark(2)":
         robjects.r("dsd <- DSD_Benchmark(2)")
-        robjects.r("data <- get_points(dsd, n = 4000, class = TRUE)")
-        X = np.array(robjects.r("data[, -ncol(data)]"))
+        robjects.r("data <- get_points(dsd, n = 400, info = TRUE)")
+        X = np.array(robjects.r("as.matrix(data[, -ncol(data)])"))
         y = np.array(robjects.r("as.numeric(data[, ncol(data)])"))
+        y = np.nan_to_num(y, nan=-1).astype(int)
         return X, y
     else:
         raise ValueError(f"Unknown R dataset: {name}")
