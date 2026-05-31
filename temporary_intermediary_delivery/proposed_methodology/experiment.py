@@ -126,7 +126,7 @@ def objective(trial, model_class, search_space_class, X_opt, y_opt, batch_size):
     y_pred_all = []
     num_batches = len(X_opt) // batch_size
 
-    t0 = time.perf_counter_ns()
+    t0 = time.process_time_ns()
 
     try:
         for b in range(num_batches):
@@ -141,7 +141,7 @@ def objective(trial, model_class, search_space_class, X_opt, y_opt, batch_size):
     except Exception:
         raise optuna.exceptions.TrialPruned()
 
-    t_total_sec = (time.perf_counter_ns() - t0) / 1e9
+    t_total_sec = (time.process_time_ns() - t0) / 1e9
 
     y_pred_eval = np.array(y_pred_all)[burn_in_idx:]
     y_opt_eval = y_opt[: len(y_pred_all)][burn_in_idx:]
@@ -188,10 +188,34 @@ for dataset in tqdm(DATASETS, desc="Datasets"):
         X_opt, y_opt = X[:split_idx], y[:split_idx]
         X_eval, y_eval = X[split_idx:], y[split_idx:]
 
-        # Initialize dataset sample file for this run
+        # 1. Decoupled Data Sampling (10% per batch)
         sample_file_path = f"./data_samples/{dataset}_{run}.csv"
-        col_names = ["sample_idx"] + [f"x{i}" for i in range(X.shape[1])] + ["y"]
-        pd.DataFrame(columns=col_names).to_csv(sample_file_path, index=False)
+        n_eval = len(X_eval)
+        num_batches = n_eval // BATCH_SIZE
+        sample_indices = []
+
+        for b in range(num_batches):
+            start_idx = b * BATCH_SIZE
+            sample_size = max(1, BATCH_SIZE // 10)
+            idx = np.random.choice(BATCH_SIZE, size=sample_size, replace=False)
+            sample_indices.extend(start_idx + idx)
+
+        sample_indices = np.sort(sample_indices)
+        global_indices = sample_indices + split_idx
+
+        # 2. Vectorized array construction and I/O
+        sampled_data = np.column_stack(
+            (
+                global_indices,
+                np.asarray(X_eval[sample_indices]),
+                np.asarray(y_eval[sample_indices]),
+            )
+        )
+
+        col_names = ["sample_idx"] + [f"x{i}" for i in range(X_eval.shape[1])] + ["y"]
+        pd.DataFrame(sampled_data, columns=col_names).to_csv(
+            sample_file_path, index=False
+        )
 
         for model_name, (model_class, search_space_class) in MODEL_MAP.items():
             output_file = f"./results/{dataset}_{model_name}_{run}.csv"
@@ -224,25 +248,14 @@ for dataset in tqdm(DATASETS, desc="Datasets"):
                 X_batch = X_eval[start_idx:end_idx]
                 y_batch = y_eval[start_idx:end_idx]
 
-                # Sample 10% of the batch (Only once per dataset/run, handle via the first model processed)
-                if model_name == list(MODEL_MAP.keys())[0]:
-                    sample_size = max(1, len(X_batch) // 10)
-                    local_indices = np.random.choice(
-                        len(X_batch), size=sample_size, replace=False
-                    )
-                    for idx in local_indices:
-                        global_idx = start_idx + idx
-                        row = [global_idx] + X_batch[idx].tolist() + [y_batch[idx]]
-                        sampled_data_rows.append(row)
-
                 try:
-                    t0_pred = time.perf_counter_ns()
+                    t0_pred = time.process_time_ns()
                     preds = model.predict(X_batch)
-                    t_pred_ns = time.perf_counter_ns() - t0_pred
+                    t_pred_ns = time.process_time_ns() - t0_pred
 
-                    t0_fit = time.perf_counter_ns()
+                    t0_fit = time.process_time_ns()
                     model.fit(X_batch)
-                    t_fit_ns = time.perf_counter_ns() - t0_fit
+                    t_fit_ns = time.process_time_ns() - t0_fit
 
                     ari = adjusted_rand_score(np.asarray(y_batch), preds)
                     mem_bytes = asizeof.asizeof(model)
@@ -252,7 +265,6 @@ for dataset in tqdm(DATASETS, desc="Datasets"):
                 except Exception as e:
                     ari, t_pred_ns, t_fit_ns, mc_count, mem_bytes = 0.0, 0, 0, 0, 0
                     status = f"ERROR: {str(e).replace(',', ';')}"
-                    raise optuna.exceptions.TrialPruned()
 
                 results.append(
                     {
@@ -267,8 +279,3 @@ for dataset in tqdm(DATASETS, desc="Datasets"):
                 )
 
             pd.DataFrame(results).to_csv(output_file, index=False)
-
-            if model_name == list(MODEL_MAP.keys())[0] and sampled_data_rows:
-                pd.DataFrame(sampled_data_rows).to_csv(
-                    sample_file_path, mode="a", header=False, index=False
-                )
