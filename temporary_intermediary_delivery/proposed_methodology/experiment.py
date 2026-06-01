@@ -71,14 +71,14 @@ def get_r_stream(name):
         return X, y
     elif name == "Benchmark(1)":
         robjects.r("dsd <- DSD_Benchmark(1)")
-        robjects.r("data <- get_points(dsd, n = 400, info = TRUE)")
+        robjects.r("data <- get_points(dsd, n = 4000, info = TRUE)")
         X = np.array(robjects.r("as.matrix(data[, -ncol(data)])"))
         y = np.array(robjects.r("as.numeric(data[, ncol(data)])"))
         y = np.nan_to_num(y, nan=-1).astype(int)
         return X, y
     elif name == "Benchmark(2)":
         robjects.r("dsd <- DSD_Benchmark(2)")
-        robjects.r("data <- get_points(dsd, n = 400, info = TRUE)")
+        robjects.r("data <- get_points(dsd, n = 4000, info = TRUE)")
         X = np.array(robjects.r("as.matrix(data[, -ncol(data)])"))
         y = np.array(robjects.r("as.numeric(data[, ncol(data)])"))
         y = np.nan_to_num(y, nan=-1).astype(int)

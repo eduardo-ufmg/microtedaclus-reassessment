@@ -1,0 +1,4 @@
+batch,ari,time_predict_ns,time_fit_ns,microcluster_count,memory_bytes,status
+0,0.0,174955,690845,100,186544,OK
+1,0.0,2319345,509107,200,389528,OK
+2,0.0,4681288,52838919,264,548960,OK
