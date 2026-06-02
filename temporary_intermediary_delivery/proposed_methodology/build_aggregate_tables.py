@@ -13,6 +13,7 @@ OUTPUT_DIR = "./latex/tables"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 MODEL_ORDER = ["CluStream", "DenStream", "MicroTEDAClus"]
+SCL_PATTERN = re.compile(r"^SCL[-_](\d+)$")
 
 
 @dataclass(frozen=True)
@@ -22,6 +23,7 @@ class MetricSpec:
     best: str  # "min" or "max"
     scale: float
     unit: str | None
+    round_to_int: bool = False
 
 
 METRICS: list[MetricSpec] = [
@@ -33,8 +35,10 @@ METRICS: list[MetricSpec] = [
     MetricSpec("memory_bytes_max", "Memory (max)", "min", 1 / (1024**2), "MB"),
     MetricSpec("time_fit_ns", "Fit time", "min", 1e-6, "ms"),
     MetricSpec("time_predict_ns", "Predict time", "min", 1e-6, "ms"),
-    MetricSpec("microcluster_count", "Microcluster count", "min", 1.0, None),
-    MetricSpec("microcluster_count_max", "Microcluster count (max)", "min", 1.0, None),
+    MetricSpec("microcluster_count", "Microcluster count", "min", 1.0, None, True),
+    MetricSpec(
+        "microcluster_count_max", "Microcluster count (max)", "min", 1.0, None, True
+    ),
 ]
 
 
@@ -82,16 +86,29 @@ def parse_cell(cell_value: str) -> tuple[float | None, float | None]:
         return None, None
 
 
-def format_cell(mean_val: float | None, std_val: float | None) -> str:
+def format_cell(
+    mean_val: float | None, std_val: float | None, round_to_int: bool = False
+) -> str:
     if mean_val is None or std_val is None:
         return "NaN"
     if math.isnan(mean_val) or math.isnan(std_val):
         return "NaN"
-    return f"{mean_val:.4g} \\pm {std_val:.4g}"
+    if round_to_int:
+        mean_val = float(round(mean_val))
+        std_val = float(round(std_val))
+        return f"{mean_val:.0f} \\pm {std_val:.0f}"
+    return f"{mean_val:.3f} \\pm {std_val:.3f}"
 
 
 def is_best(value: float, best_value: float) -> bool:
     return math.isclose(value, best_value, rel_tol=1e-9, abs_tol=1e-12)
+
+
+def dataset_sort_key(dataset_name: str) -> tuple[int, str, int]:
+    match = SCL_PATTERN.match(dataset_name)
+    if match:
+        return 1, "SCL-", int(match.group(1))
+    return 0, dataset_name, 0
 
 
 def build_caption(spec: MetricSpec) -> str:
@@ -110,6 +127,14 @@ def build_table(metric_path: str, spec: MetricSpec) -> str:
             df[model] = "NaN"
 
     df = df[["dataset"] + MODEL_ORDER]
+    dataset_values = df["dataset"].fillna("").astype(str).tolist()
+    sort_keys = [dataset_sort_key(value) for value in dataset_values]
+    df["_sort_group"] = [key[0] for key in sort_keys]
+    df["_sort_alpha"] = [key[1] for key in sort_keys]
+    df["_sort_num"] = [key[2] for key in sort_keys]
+    df = df.sort_values(
+        ["_sort_group", "_sort_alpha", "_sort_num"], kind="mergesort"
+    ).drop(columns=["_sort_group", "_sort_alpha", "_sort_num"])
 
     rows_tex: list[str] = []
     for _, row in df.iterrows():
@@ -144,7 +169,7 @@ def build_table(metric_path: str, spec: MetricSpec) -> str:
         cell_texts: list[str] = []
         for model in MODEL_ORDER:
             mean_val, std_val = row_values[model]
-            cell_body = format_cell(mean_val, std_val)
+            cell_body = format_cell(mean_val, std_val, spec.round_to_int)
             if cell_body != "NaN":
                 cell_tex = f"${cell_body}$"
                 if model in best_models:
@@ -163,7 +188,8 @@ def build_table(metric_path: str, spec: MetricSpec) -> str:
     lines = [
         r"\begin{table}[t]",
         r"\centering",
-        r"\small",
+        r"\scriptsize",
+        r"\resizebox{\textwidth}{!}{%",
         rf"\begin{{tabular}}{{{column_spec}}}",
         r"\hline",
         "Dataset & " + " & ".join(MODEL_ORDER) + r" \\",
@@ -171,6 +197,7 @@ def build_table(metric_path: str, spec: MetricSpec) -> str:
         *rows_tex,
         r"\hline",
         r"\end{tabular}",
+        r"}",
         rf"\caption{{{caption}}}",
         rf"\label{{{label}}}",
         r"\end{table}",
