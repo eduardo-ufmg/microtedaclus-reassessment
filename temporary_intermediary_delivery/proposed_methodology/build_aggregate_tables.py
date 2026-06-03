@@ -90,9 +90,9 @@ def format_cell(
     mean_val: float | None, std_val: float | None, round_to_int: bool = False
 ) -> str:
     if mean_val is None or std_val is None:
-        return "NaN"
+        return "{NaN}"
     if math.isnan(mean_val) or math.isnan(std_val):
-        return "NaN"
+        return "{NaN}"
     if round_to_int:
         mean_val = float(round(mean_val))
         std_val = float(round(std_val))
@@ -136,6 +136,10 @@ def build_table(metric_path: str, spec: MetricSpec) -> str:
         ["_sort_group", "_sort_alpha", "_sort_num"], kind="mergesort"
     ).drop(columns=["_sort_group", "_sort_alpha", "_sort_num"])
 
+    max_int_mean: dict[str, int] = {model: 1 for model in MODEL_ORDER}
+    max_int_std: dict[str, int] = {model: 1 for model in MODEL_ORDER}
+    rows_tex: list[str] = []
+
     rows_tex: list[str] = []
     for _, row in df.iterrows():
         dataset_name = escape_latex(str(row["dataset"]))
@@ -169,21 +173,38 @@ def build_table(metric_path: str, spec: MetricSpec) -> str:
         cell_texts: list[str] = []
         for model in MODEL_ORDER:
             mean_val, std_val = row_values[model]
-            cell_body = format_cell(mean_val, std_val, spec.round_to_int)
-            if cell_body != "NaN":
-                cell_tex = f"${cell_body}$"
-                if model in best_models:
-                    cell_tex = f"{{\\boldmath {cell_tex}}}"
-            else:
-                cell_tex = "NaN"
+
+            # Update dynamic widths
+            if mean_val is not None and not math.isnan(mean_val):
+                max_int_mean[model] = max(
+                    max_int_mean[model], len(str(int(abs(mean_val))))
+                )
+            if std_val is not None and not math.isnan(std_val):
+                max_int_std[model] = max(
+                    max_int_std[model], len(str(int(abs(std_val))))
+                )
+
+            cell_tex = format_cell(mean_val, std_val, spec.round_to_int)
+            if cell_tex != "{NaN}" and model in best_models:
+                cell_tex = f"\\bfseries {cell_tex}"
             cell_texts.append(cell_tex)
 
         row_line = " & ".join([dataset_name] + cell_texts) + r" \\"
         rows_tex.append(row_line)
 
-    column_spec = "l" + "c" * len(MODEL_ORDER)
+    dec_digits = "0" if spec.round_to_int else "3"
+    s_columns: list[str] = []
+    for model in MODEL_ORDER:
+        fmt = (
+            f"{max_int_mean[model]}.{dec_digits} \\pm {max_int_std[model]}.{dec_digits}"
+        )
+        s_columns.append(f"S[table-format={fmt}]")
+
+    column_spec = "l" + "".join(s_columns)
     caption = build_caption(spec)
     label = f"tab:{spec.key}"
+
+    header_models = " & ".join([f"{{{m}}}" for m in MODEL_ORDER])
 
     lines = [
         r"\begin{table}[t]",
@@ -192,7 +213,7 @@ def build_table(metric_path: str, spec: MetricSpec) -> str:
         r"\resizebox{\textwidth}{!}{%",
         rf"\begin{{tabular}}{{{column_spec}}}",
         r"\hline",
-        "Dataset & " + " & ".join(MODEL_ORDER) + r" \\",
+        f"Dataset & {header_models} \\\\",
         r"\hline",
         *rows_tex,
         r"\hline",
