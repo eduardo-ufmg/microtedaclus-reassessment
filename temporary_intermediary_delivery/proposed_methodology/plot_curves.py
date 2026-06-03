@@ -63,7 +63,8 @@ def main():
     for filepath in all_files:
         filename = os.path.basename(filepath)
         name_without_ext = filename.replace(".csv", "")
-        parts = name_without_ext.split("_")
+        name_without_parentheses = name_without_ext.replace("(", "").replace(")", "")
+        parts = name_without_parentheses.split("_")
 
         if len(parts) < 3:
             continue

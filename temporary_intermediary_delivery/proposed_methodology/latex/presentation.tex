@@ -1,5 +1,6 @@
 \documentclass{beamer}
 \usepackage{siunitx}
+\usepackage{graphicx}
 
 \sisetup{
     separate-uncertainty = true,
@@ -63,6 +64,49 @@
 
 \begin{frame}[t]{Microcluster Count (Max)}
 	\input{tables/microcluster_count_max.tex}
+\end{frame}
+
+\graphicspath{{./../plots/}}
+
+\begin{frame}[t]{ARI - Benchmark 1}
+    \includegraphics[width=\textwidth]{"Benchmark1_ari.png"}
+\end{frame}
+
+\begin{frame}[t]{ARI - Benchmark 2}
+    \includegraphics[width=\textwidth]{"Benchmark2_ari.png"}
+\end{frame}
+
+\begin{frame}[t]{ARI - RandomRBFGeneratorEvents}
+    \includegraphics[width=\textwidth]{"RandomRBFGeneratorEvents_ari.png"}
+\end{frame}
+
+\begin{frame}[t]{Fit Time - Dimensions}
+\centering
+    \includegraphics[width=0.48\linewidth]{"SCL-2_time_fit_ms.png"}\hfill
+    \includegraphics[width=0.48\linewidth]{"SCL-8_time_fit_ms.png"}
+
+    \medskip
+
+    \includegraphics[width=0.48\linewidth]{"SCL-32_time_fit_ms.png"}\hfill
+    \includegraphics[width=0.48\linewidth]{"SCL-128_time_fit_ms.png"}
+\end{frame}
+
+\begin{frame}[t]{Predict Time - Dimensions}
+\centering
+    \includegraphics[width=0.48\linewidth]{"SCL-2_time_predict_ms.png"}\hfill
+    \includegraphics[width=0.48\linewidth]{"SCL-8_time_predict_ms.png"}
+
+    \medskip
+    \includegraphics[width=0.48\linewidth]{"SCL-32_time_predict_ms.png"}\hfill
+    \includegraphics[width=0.48\linewidth]{"SCL-128_time_predict_ms.png"}
+\end{frame}
+
+\begin{frame}[t]{Memory - Benchmark 1}
+    \includegraphics[width=\textwidth]{"Benchmark1_memory_mb.png"}
+\end{frame}
+
+\begin{frame}[t]{Microcluster Count - Benchmark 1}
+    \includegraphics[width=\textwidth]{"Benchmark1_microcluster_count.png"}
 \end{frame}
 
 \end{document}
