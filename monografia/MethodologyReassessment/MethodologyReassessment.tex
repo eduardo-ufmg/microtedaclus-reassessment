@@ -185,22 +185,25 @@ The expression for the intermediary typicality calculation in \cref{snippet:maia
 
 The updated implementation of microTEDAclus, which is presented in the PHD thesis \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} \cite{galindo2021lastmile}, was provided by the work's author, but is not publicly available. Its main improvements from the original implementation are the introduction of partial support to the use of the cossine distance as distance metric, the refactor of the decayment logic, and the extraction of the microcluster structure to a separate class.
 
-\section{Benchmark Models Source}
-
-%% the models are denstream, clustream, and streamkm++ . those are suitable models for data stream clustering benchmark. the validity of the experiments, however, depends on implementation and execution
+\section{Benchmark Models}
 
 %% required bibliography:
-%% - the paper that introduces DenStream:
-%% - the paper that introduces CluStream:
-%% - the paper that introduces StreamKM++:
-
-%% the original work states it uses R's streammoa. the problem is that, because the experiments are done in python, the package calls R, which, in turn, calls Java. this is a problem because of the overhead of calling R and Java from Python
-%% this paper uses river's clustream and denstream and clusopt-core's streamkm++. river's implementations are in pure python, which make them comparable to microTEDAclus. clusopt-core's streamkm++ is implemented in C++, which makes it faster than microTEDAclus, rather than slower.
+%% - the paper that introduces DenStream: cao2006density
+%% - the paper that introduces CluStream: aggarwal2003framework
+%% - the paper that introduces StreamKM++: ackermann2012streamkmpp
+%% - the paper that introduces TEDACloud: angelov2016tedacloud
+%% - the paper that introduces CEDAS: hyde2017fully
 
 %% required bibliography:
-%% - the paper that introduces streammoa:
-%% - the paper that introduces river:
-%% - the paper that introduces clusopt-core:
+%% - the paper that introduces streammoa: hahsler2019streammoa
+%% - the paper that introduces river: montiel2021river
+%% - the paper that introduces clusopt-core: clusoptcore2024
+%% - tedacloud repo: https://github.com/pedrotavaris/Teda-Cloud/blob/master/tedacloud.py
+%% - cedas repo: https://github.com/RHyde67/CEDAS-Python/blob/master/CEDAS.py
+
+In it's experiments, the original work compares the proposed microTEDAclus model against three benchmark models: DenStream \cite{cao2006density}, CluStream \cite{aggarwal2003framework}, and StreamKM++ \cite{ackermann2012streamkmpp}, commonly used in the literature for data stream clustering evaluation \cite{hyde2017fully,akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline} as benchmark models. The validity of the experiments, however, depends on the implementation and execution of those models. As stated in the article and verified in the public repository, the implementations of those models are sourced from the \texttt{R} package \texttt{streamMOA} through the binding provided by \texttt{rpy2}.
+
+However, because \texttt{streamMOA} is a wrapper for the Java-based MOA framework \cite{streamMOA2024}, two layers of interface overhead are introduced in the execution of the benchmark models. Such overhead is expected to have a significant impact on both the execution time and the memory footprint perceived by the \texttt{Python} experiment orchestrator.
 
 \section{Datasets}
 
@@ -216,7 +219,7 @@ The updated implementation of microTEDAclus, which is presented in the PHD thesi
 %% we use the same datasets, but we also include the original versions of the chameleon datasets, which are not cleaned, scaled, or downsampled. this allows us to evaluate the impact of preprocessing on the results.
 
 %% required bibliography:
-%% - the paper that introduces the chameleon datasets:
+%% - the paper that introduces the chameleon datasets: karypis1999chameleon
 %% - link to public repository of the original work: https://github.com/eduardo-ufmg/evolving_clustering (current author's fork of the original repository at the commit 50dd2b4)
 
 \subsection{Concept Drift}

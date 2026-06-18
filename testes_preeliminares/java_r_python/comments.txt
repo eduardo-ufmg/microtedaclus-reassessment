@@ -1,0 +1,20 @@
+python bridge_benchmark.py stream_data.csv CluStream
+rpy2.rinterface_lib.embedded.RRuntimeError: Error in update.DSC_MOA(list(description = "CluStream", class = "moa/clusterers/clustream/WithKmeans",  :
+  argument "n" is missing, with no default
+
+python bridge_benchmark.py stream_data.csv DenStream
+Bridge Execution Time [DenStream]: 193.2192 seconds
+Peak Memory Usage (MB) [DenStream]: 286.53
+
+python bridge_benchmark.py stream_data.csv StreamKM
+rpy2.rinterface_lib.embedded.RRuntimeError: Error in update.DSC_MOA(list(description = "StreamKM", class = "moa/clusterers/streamkm/StreamKM",  :
+  argument "n" is missing, with no default
+
+java -Xmx2g -cp "target/classes:target/dependency/*" MOABenchmark stream_data.csv 10 DenStream
+Execution Time (ms) [DenStream]: 6833
+
+java -Xmx2g -cp "target/classes:target/dependency/*" MOABenchmark stream_data.csv 10 CluStream
+Execution Time (ms) [CluStream]: 7894
+
+java -Xmx2g -cp "target/classes:target/dependency/*" MOABenchmark stream_data.csv 10 StreamKM
+Execution Time (ms) [StreamKM]: 1711
