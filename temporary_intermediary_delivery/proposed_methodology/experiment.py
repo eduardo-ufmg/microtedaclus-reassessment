@@ -3,23 +3,23 @@ import sys
 import time
 import urllib.request
 from io import StringIO
-import numpy as np
-import pandas as pd
-import optuna
-from scipy.io import arff
-from sklearn.metrics import adjusted_rand_score
-from sklearn.datasets import make_blobs
-from pympler import asizeof
-import rpy2.robjects as robjects
-from rpy2.robjects.packages import importr
-from tqdm import tqdm
 
+import numpy as np
+import optuna
+import pandas as pd
+import rpy2.robjects as robjects
 from models.CluStream.CluStream import CluStream, CluStreamParameterSearchSpace
 from models.DenStream.DenStream import DenStream, DenStreamParameterSearchSpace
 from models.MicroTEDAClus.MicroTEDAClus import (
     MicroTEDAClus,
     MicroTEDAClusParameterSearchSpace,
 )
+from pympler import asizeof
+from rpy2.robjects.packages import importr
+from scipy.io import arff
+from sklearn.datasets import make_blobs
+from sklearn.metrics import adjusted_rand_score
+from tqdm import tqdm
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 os.makedirs("./results", exist_ok=True)

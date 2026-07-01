@@ -1,5 +1,6 @@
 import csv
 import sys
+
 from river.datasets.synth import RandomRBF
 
 

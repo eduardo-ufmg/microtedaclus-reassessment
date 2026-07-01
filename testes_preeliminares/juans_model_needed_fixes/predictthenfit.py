@@ -1,10 +1,10 @@
 import time
-import optuna
-import numpy as np
-import pandas as pd
-from sklearn.metrics import adjusted_rand_score
 
+import numpy as np
+import optuna
+import pandas as pd
 from EvolvingMicroTEDA import EvolvingMicroTEDA
+from sklearn.metrics import adjusted_rand_score
 
 DATASETS = {
     "dynamic_rotating_blobs": (0.0001, 5.0),

@@ -1,8 +1,9 @@
+import math
 from dataclasses import dataclass, field
 from typing import Optional
-import math
-import numpy as np
+
 import networkx as nx
+import numpy as np
 from numpy.linalg import norm
 
 

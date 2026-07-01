@@ -1,7 +1,8 @@
-import os
 import glob
-import pandas as pd
+import os
+
 import numpy as np
+import pandas as pd
 
 # Configuration
 INPUT_DIR = "./aggregated_per_run"

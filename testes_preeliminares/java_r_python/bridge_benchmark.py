@@ -1,8 +1,13 @@
+import logging
 import sys
 import time
-from rpy2.robjects import r, FloatVector
+
+import rpy2.rinterface_lib.callbacks
 import rpy2.robjects.packages as rpackages
 from memory_profiler import memory_usage
+from rpy2.robjects import FloatVector, r
+
+rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR)
 
 stream = rpackages.importr("stream")
 streamMOA = rpackages.importr("streamMOA")

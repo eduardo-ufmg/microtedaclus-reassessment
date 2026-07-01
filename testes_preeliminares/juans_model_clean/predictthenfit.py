@@ -1,11 +1,11 @@
 import time
-import optuna
+
 import numpy as np
+import optuna
 import pandas as pd
+from EvolvingMicroTEDAClean import EvolvingMicroTEDAClean
 from scipy.spatial.distance import pdist
 from sklearn.metrics import adjusted_rand_score
-
-from EvolvingMicroTEDAClean import EvolvingMicroTEDAClean
 
 DATASETS = [
     "static_moons",
