@@ -14,12 +14,19 @@ from models.MicroTEDAClus.MicroTEDAClus import (
     MicroTEDAClus,
     MicroTEDAClusParameterSearchSpace,
 )
+from models.CEDAS.CEDAS import CEDAS, CEDASParameterSearchSpace
 from pympler import asizeof
 from rpy2.robjects.packages import importr
 from scipy.io import arff
 from sklearn.datasets import make_blobs
 from sklearn.metrics import adjusted_rand_score
 from tqdm import tqdm
+
+import logging
+
+import rpy2.rinterface_lib.callbacks
+
+rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR)
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 os.makedirs("./results", exist_ok=True)
@@ -171,9 +178,10 @@ DATASETS = [
 ]
 
 MODEL_MAP = {
-    "CluStream": (CluStream, CluStreamParameterSearchSpace),
-    "DenStream": (DenStream, DenStreamParameterSearchSpace),
-    "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
+    # "CluStream": (CluStream, CluStreamParameterSearchSpace),
+    # "DenStream": (DenStream, DenStreamParameterSearchSpace),
+    # "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
+    "CEDAS": (CEDAS, CEDASParameterSearchSpace),
 }
 
 RUNS = 10
