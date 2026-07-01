@@ -202,7 +202,14 @@ The updated implementation of microTEDAclus, which is presented in the PHD thesi
 
 In it's experiments, the original work compares the proposed microTEDAclus model against three benchmark models: DenStream \cite{cao2006density}, CluStream \cite{aggarwal2003framework}, and StreamKM++ \cite{ackermann2012streamkmpp}, commonly used in the literature for data stream clustering evaluation \cite{hyde2017fully,akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline} as benchmark models. The validity of the experiments, however, depends on the implementation and execution of those models. As stated in the article and verified in the public repository, the implementations of those models are sourced from the \texttt{R} package \texttt{streamMOA} through the binding provided by \texttt{rpy2}.
 
-However, because \texttt{streamMOA} is a wrapper for the Java-based MOA framework \cite{streamMOA2024}, two layers of interface overhead are introduced in the execution of the benchmark models. Such overhead is expected to have a significant impact on both the execution time and the memory footprint perceived by the \texttt{Python} experiment orchestrator.
+However, because \texttt{streamMOA} is a wrapper for the Java-based MOA framework \cite{streamMOA2024}, two layers of interface overhead are introduced in the execution of the benchmark models. Such overhead is expected to have a significant impact on both the execution time and the memory footprint perceived by the \texttt{Python} experiment orchestrator. To verify such hypothesis, a benchmarking experiment was conducted as described in \cref{alg:benchmarking_experiment}.
+
+\begin{algorithm}[htbp]
+\caption{Benchmarking experiment to evaluate the impact of interface overhead on the execution time and memory footprint of the benchmark models}
+\label{alg:benchmarking_experiment}
+\begin{algorithmic}[1]
+\Require $M$ the set of benchmark models, $n = 100000$ the number of samples to be processed, $d = 10$ the dimensionality of the samples, $C = 5$ the number of classes, $c = 50$ the number of clusters, $r = 8$ the number of runs
+\Ensure $T$ the execution time and $F$ the memory footprint of each model
 
 \section{Datasets}
 
