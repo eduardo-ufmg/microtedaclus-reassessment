@@ -200,6 +200,8 @@ The updated implementation of microTEDAclus, which is presented in the PHD thesi
 %% - tedacloud repo: https://github.com/pedrotavaris/Teda-Cloud/blob/master/tedacloud.py
 %% - cedas repo: https://github.com/RHyde67/CEDAS-Python/blob/master/CEDAS.py
 
+\subsection{Benchmark Models Implementation Used in the Original Work}
+
 In it's experiments, the original work compares the proposed microTEDAclus model against three benchmark models: DenStream \cite{cao2006density}, CluStream \cite{aggarwal2003framework}, and StreamKM++ \cite{ackermann2012streamkmpp}, commonly used in the literature for data stream clustering evaluation \cite{hyde2017fully,akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline} as benchmark models. The validity of the experiments, however, depends on the implementation and execution of those models. As stated in the article and verified in the public repository, the implementations of those models are sourced from the \texttt{R} package \texttt{streamMOA} through the binding provided by \texttt{rpy2}.
 
 However, because \texttt{streamMOA} is a wrapper for the Java-based MOA framework \cite{streamMOA2024}, two layers of interface overhead are introduced in the execution of the benchmark models. Such overhead is expected to have a significant impact on both the execution time and the memory footprint perceived by the \texttt{Python} experiment orchestrator. To verify such hypothesis, a benchmarking experiment was conducted as described in \cref{alg:benchmarking_experiment}.
@@ -227,9 +229,9 @@ However, because \texttt{streamMOA} is a wrapper for the Java-based MOA framewor
 
 The results of the benchmarking experiment are shown in \cref{fig:benchmark_java_bridge}.
 
-\begin{figure}[htbp]
+\begin{figure}[thpb]
     \centering
-    \includegraphics[width=1.0\textwidth]{MethodologyReassessment/benchmark_java_bridge.png}
+    \includegraphics[width=\textwidth]{MethodologyReassessment/benchmark_java_bridge.png}
     \caption{Benchmarking experiment results showing the impact of interface overhead on the execution time and memory footprint of the benchmark models. The left bar chart shows the execution wall clock time of each model, while the right bar chart shows the memory footprint of each model. The models are executed both through the \texttt{rpy2} bridge and directly in \texttt{Python}.}
     \label{fig:benchmark_java_bridge}
 \end{figure}
@@ -238,22 +240,112 @@ The hypotesis that the interface overhead has a significant impact on the execut
 
 Because the original work's implementation of the microTEDAclus model is in \texttt{Python}, the benchmark models must also be implemented in \texttt{Python} to ensure a fair comparison. Since the \texttt{River} framework \cite{montiel2021river} provides implementations of the DenStream, CluStream, and StreamKM models in the required language, it is used as the source for the benchmark models in this reassessment. To verify the performance impact of this change, the benchmarking experiment was repeated with the \texttt{River} implementations of the benchmark models. The results are shown in \cref{fig:benchmark_river}.
 
-%%%%%%%
-
-Since the \texttt{rpy2} bridge accesses the \texttt{streamMOA} package, both enviroments set exactly the same model parameters, exposed on tables \cref{tab:paramsmoa_clustream,tab:paramsmoa_denstream,tab:paramsmoa_streamkmpp}. Because \texttt{river} is a different implementation of the same models, a best-effort approach was used to set parameters that ensure a fair comparison. The parameters used for the \texttt{river} implementations are shown on tables \cref{tab:paramsriver_clustream,tab:paramsriver_denstream,tab:paramsriver_streamkmpp}.
-
-\begin{table}[htbp]
+\begin{figure}[thpb]
     \centering
-    \caption{Parameters used for the CluStream model in the \texttt{streamMOA} package}
-    \label{tab:paramsmoa_clustream}
+    \includegraphics[width=\textwidth]{MethodologyReassessment/benchmark_river.png}
+    \caption{Benchmarking experiment results showing the execution time and memory footprint of the benchmark models implemented in \texttt{River}. The left bar chart shows the execution wall clock time of each model, while the right bar chart shows the memory footprint of each model.}
+    \label{fig:benchmark_river}
+\end{figure}
+
+The results show that the execution time of \texttt{river} implementations is comparable to the one of the native \texttt{streamMOA} implementations for \texttt{DenStream} and \texttt{StreamKM}, although \texttt{CluStream} is significantly slower. Besides that, its memory footprint is significantly lower for all models. Finally, the fact that \texttt{river} is a native \texttt{Python} implementation of the benchmark models ensures that the execution time and memory footprint are not affected by the interface overhead, which is a requirement for the validity of the experiments. Therefore, the \texttt{river} implementations of the benchmark models are used in this reassessment.
+
+Since the \texttt{rpy2} bridge accesses the \texttt{streamMOA} package, both enviroments set exactly the same model parameters, exposed on tables \cref{tab:paramsmoa_clustream,tab:paramsmoa_denstream,tab:paramsmoa_streamkmpp}.
+
+\begin{table}
+    \centering
     \begin{tabular}{|c|c|}
         \hline
         Parameter & Value \\
         \hline
         \texttt{maxNumKernels} & 100 \\
         \texttt{k} & 5 \\
+        \hline
     \end{tabular}
+    \caption{Parameters used for the CluStream model in the \texttt{streamMOA} package}
+    \label{tab:paramsmoa_clustream}
 \end{table}
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        Parameter & Value \\
+        \hline
+        \texttt{epsilon} & 0.02 \\
+        \texttt{mu} & 1.0 \\
+        \texttt{beta} & 0.2 \\
+        \texttt{lambda} & 0.001 \\
+        \texttt{initPoints} & 100 \\
+        \texttt{offline} & 2.0 \\
+        \hline
+    \end{tabular}
+    \caption{Parameters used for the DenStream model in the \texttt{streamMOA} package}
+    \label{tab:paramsmoa_denstream}
+\end{table}
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        Parameter & Value \\
+        \hline
+        \texttt{sizeCoreset} & 10000 \\
+        \texttt{numClusters} & 5 \\
+        \texttt{length} & 100000 \\
+        \hline
+    \end{tabular}
+    \caption{Parameters used for the StreamKM++ model in the \texttt{streamMOA} package}
+    \label{tab:paramsmoa_streamkmpp}
+\end{table}
+
+Because \texttt{river} is a different implementation of the same models, a best-effort approach was used to set parameters that ensure a fair comparison. The parameters used for the \texttt{river} implementations are shown on tables \cref{tab:paramsriver_clustream,tab:paramsriver_denstream,tab:paramsriver_streamkmpp}.
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        Parameter & Value \\
+        \hline
+        \texttt{n\_macro\_clusters} & 5 \\
+        \texttt{max\_micro\_clusters} & 100 \\
+        \hline
+    \end{tabular}
+    \caption{Parameters used for the CluStream model in the \texttt{river} package}
+    \label{tab:paramsriver_clustream}
+\end{table}
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        Parameter & Value \\
+        \hline
+        \texttt{decaying\_factor} & 0.001 \\
+        \texttt{beta} & 0.6 \\
+        \texttt{mu} & 2.0 \\
+        \texttt{epsilon} & 0.02 \\
+        \texttt{n\_samples\_init} & 100 \\
+        \hline
+    \end{tabular}
+    \caption{Parameters used for the DenStream model in the \texttt{river} package. It is important to note that in \texttt{river}, \texttt{mu} maps to \texttt{streamMOA}'s $\texttt{mu} \times \texttt{offline}$, and thus the value is set to 2.0 to match the \texttt{streamMOA} configuration. Furthermore, \texttt{river} requires that $\mu\beta > 1$, thus the value of \texttt{beta} is set to 0.6 to satisfy this condition.}
+    \label{tab:paramsriver_denstream}
+\end{table}
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        Parameter & Value \\
+        \hline
+        \texttt{chunk\_size} & 10000 \\
+        \texttt{n\_clusters} & 5 \\
+        \hline
+    \end{tabular}
+    \caption{Parameters used for the StreamKM++ model in the \texttt{river} package}
+    \label{tab:paramsriver_streamkmpp}
+\end{table}
+
+\subsection{TEDACloud and CEDAS}
 
 
 

@@ -23,7 +23,7 @@ def generate_visualization(csv_file: str, output_image: str) -> None:
 
     colors = cm.magma(np.linspace(0.2, 0.8, n_envs))
 
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    fig, axes = plt.subplots(1, 2, figsize=(10, 6))
 
     for i, env in enumerate(active_envs):
         env_data = (
@@ -77,9 +77,7 @@ def generate_visualization(csv_file: str, output_image: str) -> None:
     axes[1].set_xticks(x)
     axes[1].set_xticklabels(algorithms)
     axes[1].grid(True, axis="y", ls="--", alpha=0.5)
-
-    for ax in axes:
-        ax.legend(title="Environment")
+    axes[1].legend(title="Environment")
 
     plt.tight_layout()
     plt.savefig(output_image, format="png")

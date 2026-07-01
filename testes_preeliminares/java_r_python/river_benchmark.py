@@ -18,7 +18,7 @@ def make_clusterer(algorithm):
         # initPoints -> n_samples_init.
         return cluster.DenStream(
             decaying_factor=0.001,
-            beta=0.2,
+            beta=0.6,
             mu=2.0,
             epsilon=0.02,
             n_samples_init=100,

@@ -50,6 +50,16 @@ def parse_internal_metrics(
         )
         if mem_match:
             metrics["internal_peak_rss_mb"] = float(mem_match.group(1))
+    elif environment == "River":
+        time_match = re.search(r"River Execution Time \[.*?\]:\s+([\d.]+)", stdout_text)
+        if time_match:
+            metrics["internal_time_sec"] = float(time_match.group(1))
+
+        mem_match = re.search(
+            r"Peak Memory Usage \(MB\) \[.*?\]:\s+([\d.]+)", stdout_text
+        )
+        if mem_match:
+            metrics["internal_peak_rss_mb"] = float(mem_match.group(1))
 
     return metrics
 
@@ -104,6 +114,7 @@ def main():
             "10",
         ],
         "Bridge": ["python3", "bridge_benchmark.py", csv_input],
+        "River": ["python3", "river_benchmark.py", csv_input],
     }
 
     for alg in algorithms:
