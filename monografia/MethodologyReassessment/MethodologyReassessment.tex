@@ -210,6 +210,52 @@ However, because \texttt{streamMOA} is a wrapper for the Java-based MOA framewor
 \begin{algorithmic}[1]
 \Require $M$ the set of benchmark models, $n = 100000$ the number of samples to be processed, $d = 10$ the dimensionality of the samples, $C = 5$ the number of classes, $c = 50$ the number of clusters, $r = 8$ the number of runs
 \Ensure $T$ the execution time and $F$ the memory footprint of each model
+\State $S \gets \texttt{generate\_dataset\_with\_riverRandomRBF}(n, d, C, c)$
+\For{each model $m \in M$}
+    \State $T_m \gets []$
+    \State $F_m \gets []$
+    \For{$i = 1$ to $r$}
+        \State $t, f \gets \texttt{run\_model\_with\_time\_and\_memory\_measurement}(m, S)$
+        \State $T_m.\texttt{append}(t)$
+        \State $F_m.\texttt{append}(f)$
+    \EndFor
+    \State $T[m] \gets \texttt{compute\_statistics}(T_m)$
+    \State $F[m] \gets \texttt{compute\_statistics}(F_m)$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+The results of the benchmarking experiment are shown in \cref{fig:benchmark_java_bridge}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1.0\textwidth]{MethodologyReassessment/benchmark_java_bridge.png}
+    \caption{Benchmarking experiment results showing the impact of interface overhead on the execution time and memory footprint of the benchmark models. The left bar chart shows the execution wall clock time of each model, while the right bar chart shows the memory footprint of each model. The models are executed both through the \texttt{rpy2} bridge and directly in \texttt{Python}.}
+    \label{fig:benchmark_java_bridge}
+\end{figure}
+
+The hypotesis that the interface overhead has a significant impact on the execution time is confirmed by the timing bar chart, which shows that the execution wall clock time of the models is significantly higher when those are executed through the \texttt{rpy2} bridge. The memory footprint, however, is not significantly affected by the interface overhead, as shown in the memory bar chart. The timing discrepancy is enough to support the requirement that the benchmark models must be stricly implemented in the same environment as the evaluated model.
+
+Because the original work's implementation of the microTEDAclus model is in \texttt{Python}, the benchmark models must also be implemented in \texttt{Python} to ensure a fair comparison. Since the \texttt{River} framework \cite{montiel2021river} provides implementations of the DenStream, CluStream, and StreamKM models in the required language, it is used as the source for the benchmark models in this reassessment. To verify the performance impact of this change, the benchmarking experiment was repeated with the \texttt{River} implementations of the benchmark models. The results are shown in \cref{fig:benchmark_river}.
+
+%%%%%%%
+
+Since the \texttt{rpy2} bridge accesses the \texttt{streamMOA} package, both enviroments set exactly the same model parameters, exposed on tables \cref{tab:paramsmoa_clustream,tab:paramsmoa_denstream,tab:paramsmoa_streamkmpp}. Because \texttt{river} is a different implementation of the same models, a best-effort approach was used to set parameters that ensure a fair comparison. The parameters used for the \texttt{river} implementations are shown on tables \cref{tab:paramsriver_clustream,tab:paramsriver_denstream,tab:paramsriver_streamkmpp}.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Parameters used for the CluStream model in the \texttt{streamMOA} package}
+    \label{tab:paramsmoa_clustream}
+    \begin{tabular}{|c|c|}
+        \hline
+        Parameter & Value \\
+        \hline
+        \texttt{maxNumKernels} & 100 \\
+        \texttt{k} & 5 \\
+    \end{tabular}
+\end{table}
+
+
 
 \section{Datasets}
 

@@ -2,11 +2,11 @@ import subprocess
 import re
 import csv
 import sys
+import math
 
 
-def parse_time_output(stderr_text: str) -> dict[str, float]:
-    """Extracts wall clock time and peak RSS memory from /usr/bin/time -v output."""
-    metrics = {}
+def parse_time_output(stderr_text: str) -> dict[str, float | None]:
+    metrics = {"os_peak_rss_mb": None, "os_wall_clock_sec": None}
 
     rss_match = re.search(r"Maximum resident set size \(kbytes\):\s+(\d+)", stderr_text)
     if rss_match:
@@ -28,9 +28,10 @@ def parse_time_output(stderr_text: str) -> dict[str, float]:
     return metrics
 
 
-def parse_internal_metrics(stdout_text: str, environment: str) -> dict[str, float]:
-    """Extracts internally logged execution time and memory from the benchmark scripts."""
-    metrics = {"internal_time_sec": float, "internal_peak_rss_mb": float}
+def parse_internal_metrics(
+    stdout_text: str, environment: str
+) -> dict[str, float | None]:
+    metrics = {"internal_time_sec": None, "internal_peak_rss_mb": None}
 
     if environment == "Java":
         time_match = re.search(r"Execution Time \(ms\) \[.*?\]:\s+(\d+)", stdout_text)
@@ -53,8 +54,7 @@ def parse_internal_metrics(stdout_text: str, environment: str) -> dict[str, floa
     return metrics
 
 
-def run_experiment(command: list) -> tuple:
-    """Wraps command in /usr/bin/time and executes it."""
+def run_experiment(command: list[str]) -> tuple[str, str]:
     time_cmd = ["/usr/bin/time", "-v"] + command
     result = subprocess.run(time_cmd, capture_output=True, text=True)
 
@@ -67,10 +67,29 @@ def run_experiment(command: list) -> tuple:
     return result.stdout, result.stderr
 
 
+def compute_statistics(data: list[float | None]) -> tuple[float | None, float | None]:
+    valid_data = [x for x in data if x is not None]
+    n = len(valid_data)
+
+    if n == 0:
+        return None, None
+
+    mean = sum(valid_data) / n
+
+    if n > 1:
+        variance = sum((x - mean) ** 2 for x in valid_data) / (n - 1)
+        std = math.sqrt(variance)
+    else:
+        std = 0.0
+
+    return mean, std
+
+
 def main():
     algorithms = ["CluStream", "DenStream", "StreamKM"]
     csv_input = "stream_data.csv"
     results_file = "benchmark_results.csv"
+    runs = 8
 
     results = []
 
@@ -89,35 +108,44 @@ def main():
 
     for alg in algorithms:
         for env, base_cmd in commands.items():
-            print(f"Executing {env} : {alg}...")
-            cmd = base_cmd + [alg]
+            print(f"Executing {env} : {alg} (Iterations: {runs})...")
 
-            stdout, stderr = run_experiment(cmd)
-
-            os_metrics = parse_time_output(stderr)
-            internal_metrics = parse_internal_metrics(stdout, env)
-
-            row = {
-                "Algorithm": alg,
-                "Environment": env,
-                "Internal_Exec_Time_sec": internal_metrics.get("internal_time_sec"),
-                "Internal_Peak_RSS_MB": internal_metrics.get("internal_peak_rss_mb"),
-                "OS_Wall_Clock_sec": os_metrics.get("os_wall_clock_sec"),
-                "OS_Peak_RSS_MB": os_metrics.get("os_peak_rss_mb"),
+            raw_metrics = {
+                "Internal_Exec_Time_sec": [],
+                "Internal_Peak_RSS_MB": [],
+                "OS_Wall_Clock_sec": [],
+                "OS_Peak_RSS_MB": [],
             }
+
+            for i in range(runs):
+                cmd = base_cmd + [alg]
+                stdout, stderr = run_experiment(cmd)
+
+                os_m = parse_time_output(stderr)
+                int_m = parse_internal_metrics(stdout, env)
+
+                raw_metrics["OS_Wall_Clock_sec"].append(os_m["os_wall_clock_sec"])
+                raw_metrics["OS_Peak_RSS_MB"].append(os_m["os_peak_rss_mb"])
+                raw_metrics["Internal_Exec_Time_sec"].append(int_m["internal_time_sec"])
+                raw_metrics["Internal_Peak_RSS_MB"].append(
+                    int_m["internal_peak_rss_mb"]
+                )
+
+            row = {"Algorithm": alg, "Environment": env}
+
+            for metric, values in raw_metrics.items():
+                mean, std = compute_statistics(values)
+                row[f"{metric}_mean"] = mean
+                row[f"{metric}_std"] = std
+
             results.append(row)
 
     with open(results_file, mode="w", newline="") as csvfile:
-        fieldnames = [
-            "Algorithm",
-            "Environment",
-            "Internal_Exec_Time_sec",
-            "Internal_Peak_RSS_MB",
-            "OS_Wall_Clock_sec",
-            "OS_Peak_RSS_MB",
-        ]
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        fieldnames = ["Algorithm", "Environment"]
+        for metric in raw_metrics.keys():
+            fieldnames.extend([f"{metric}_mean", f"{metric}_std"])
 
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for row in results:
             writer.writerow(row)

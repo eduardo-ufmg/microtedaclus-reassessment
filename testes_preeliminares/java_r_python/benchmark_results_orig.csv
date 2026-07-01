@@ -1,7 +1,0 @@
-Algorithm,Environment,Internal_Exec_Time_sec,Internal_Peak_RSS_MB,OS_Wall_Clock_sec,OS_Peak_RSS_MB
-CluStream,Java,10.135,<class 'float'>,11.24,348.65625
-CluStream,Bridge,220.1916,282.1,223.18,281.94921875
-DenStream,Java,5.971,<class 'float'>,6.03,236.57421875
-DenStream,Bridge,187.2318,284.78,188.27,284.93359375
-StreamKM,Java,1.675,<class 'float'>,1.75,241.98046875
-StreamKM,Bridge,171.051,321.56,172.0,321.56640625
