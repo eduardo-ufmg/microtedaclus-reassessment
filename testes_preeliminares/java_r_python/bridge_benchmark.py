@@ -35,7 +35,7 @@ def run_bridge_experiment(csv_path, algorithm):
         for line in f:
             values = [float(x) for x in line.strip().split(",")]
             r_instance = r.matrix(FloatVector(values), nrow=1)
-            r_update(clusterer, r_instance)
+            r_update(clusterer, r_instance, n=1)
 
     end_time = time.perf_counter()
     print(f"Bridge Execution Time [{algorithm}]: {end_time - start_time:.4f} seconds")
