@@ -360,6 +360,8 @@ AutoCloud's introductory paper \cite{angelov2020autocloud} was published approxi
 %% required bibliography:
 %% - an authority paper on the impact of preprocessing on results. not necessarily the first to talk about it, but one that is widely cited and recognized in the field:
 
+The original work organizes the datasets used in its experiments into three categories: static, concept drift, and the synthetic datasets used for the processing time scalability experiments. Although the selected datasets are commonly used in the literature for data stream clustering evaluation \cite{angelov2016tedacloud,angelov2020autocloud,zhang2022extension,nguyenLe2026beyondbinary,zubaroglu2023emcstream}, the following subsections discuss how some cleaning and scaling decisions made in the original work's experiments introduced severe data leakage into the evaluation process, which is expected to have a significant and hidden impact on the results. %% paper on data leakage
+
 \subsection{Static}
 
 %% the original work uses cleaned, scaled, and downsampled versions of two of the chameleon datasets, as seem in the public repository, and the ordered, noiseless, cassini dataset from streammoa.

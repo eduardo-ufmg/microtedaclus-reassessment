@@ -26,6 +26,7 @@ from models.MicroTEDAClus.MicroTEDAClus import (
     MicroTEDAClusParameterSearchSpace,
 )
 from models.TEDACloud.TEDACloud import TEDACloud, TEDACloudParameterSearchSpace
+from models.StreamKM.StreamKM import StreamKM, StreamKMParameterSearchSpace
 
 rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR)
 
@@ -127,7 +128,10 @@ def objective(trial, model_class, search_space_class, X_opt, y_opt, batch_size):
 
     try:
         model = model_class(**params)
-    except Exception:
+    except Exception as e:
+        print(
+            f"Error initializing model {model_class.__name__} with params {params}: {e}"
+        )
         raise optuna.exceptions.TrialPruned()
 
     burn_in_idx = int(0.05 * len(X_opt))
@@ -146,7 +150,8 @@ def objective(trial, model_class, search_space_class, X_opt, y_opt, batch_size):
             y_pred_all.extend(preds)
             model.fit(X_batch)
 
-    except Exception:
+    except Exception as e:
+        print(f"Error occurred while fitting model {model_class.__name__}: {e}")
         raise optuna.exceptions.TrialPruned()
 
     t_total_sec = (time.process_time_ns() - t0) / 1e9
@@ -184,7 +189,8 @@ MODEL_MAP = {
     # "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
     # "CEDAS": (CEDAS, CEDASParameterSearchSpace),
     # "TEDACloud": (TEDACloud, TEDACloudParameterSearchSpace),
-    "AutoCloud": (AutoCloud, AutoCloudParameterSearchSpace),
+    # "AutoCloud": (AutoCloud, AutoCloudParameterSearchSpace),
+    "StreamKM": (StreamKM, StreamKMParameterSearchSpace),
 }
 
 RUNS = 10

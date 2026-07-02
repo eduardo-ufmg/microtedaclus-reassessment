@@ -113,59 +113,64 @@ class AutoCloud:
         merge_occurred = True
         while merge_occurred:
             merge_occurred = False
-            cloud_ids = list(self.clouds.keys())
 
-            for i in range(len(cloud_ids)):
-                for j in range(i + 1, len(cloud_ids)):
-                    c1_id, c2_id = min(cloud_ids[i], cloud_ids[j]), max(
-                        cloud_ids[i], cloud_ids[j]
+            # Create a static list of edges to safely iterate over during mutation
+            edges_to_evaluate = list(self.intersections.keys())
+
+            for c1_id, c2_id in edges_to_evaluate:
+                # Skip if either cloud was already consumed in a merge during this while-loop iteration
+                if c1_id not in self.clouds or c2_id not in self.clouds:
+                    continue
+
+                c1, c2 = self.clouds[c1_id], self.clouds[c2_id]
+                inter = self.intersections[(c1_id, c2_id)]
+
+                # Equations 16 & 17
+                if inter > c1["s"] - inter or inter > c2["s"] - inter:
+                    new_id = self.next_cloud_id
+                    self.next_cloud_id += 1
+
+                    # Equation 18
+                    s_l = c1["s"] + c2["s"] - inter
+
+                    # Equation 19
+                    mu_l = (c1["s"] * c1["mu"] + c2["s"] * c2["mu"]) / (
+                        c1["s"] + c2["s"]
                     )
-                    c1, c2 = self.clouds[c1_id], self.clouds[c2_id]
-                    inter = self.intersections.get((c1_id, c2_id), 0)
 
-                    # Equations 16 & 17
-                    if inter > c1["s"] - inter or inter > c2["s"] - inter:
-                        new_id = self.next_cloud_id
-                        self.next_cloud_id += 1
+                    # Equation 20
+                    denom = c1["s"] + c2["s"] - 2
+                    var_l = ((c1["s"] - 1) * c1["var"] + (c2["s"] - 1) * c2["var"]) / (
+                        denom if denom > 0 else 1
+                    )
 
-                        # Equation 18
-                        s_l = c1["s"] + c2["s"] - inter
+                    self.clouds[new_id] = {"s": s_l, "mu": mu_l, "var": var_l}
 
-                        # Equation 19
-                        mu_l = (c1["s"] * c1["mu"] + c2["s"] * c2["mu"]) / (
-                            c1["s"] + c2["s"]
-                        )
+                    # Transfer intersection histories
+                    for other_id in self.clouds.keys():
+                        if other_id not in (c1_id, c2_id, new_id):
+                            # Extract existing intersections with the merging clouds
+                            inter_c1 = self.intersections.pop(
+                                (min(c1_id, other_id), max(c1_id, other_id)), 0
+                            )
+                            inter_c2 = self.intersections.pop(
+                                (min(c2_id, other_id), max(c2_id, other_id)), 0
+                            )
 
-                        # Equation 20
-                        denom = c1["s"] + c2["s"] - 2
-                        var_l = (
-                            (c1["s"] - 1) * c1["var"] + (c2["s"] - 1) * c2["var"]
-                        ) / (denom if denom > 0 else 1)
-
-                        self.clouds[new_id] = {"s": s_l, "mu": mu_l, "var": var_l}
-
-                        # Transfer intersection histories
-                        for other_id in self.clouds.keys():
-                            if other_id not in (c1_id, c2_id, new_id):
-                                inter_c1 = self.intersections.pop(
-                                    (min(c1_id, other_id), max(c1_id, other_id)), 0
+                            if inter_c1 + inter_c2 > 0:
+                                new_edge = (
+                                    min(new_id, other_id),
+                                    max(new_id, other_id),
                                 )
-                                inter_c2 = self.intersections.pop(
-                                    (min(c2_id, other_id), max(c2_id, other_id)), 0
-                                )
-                                if inter_c1 + inter_c2 > 0:
-                                    self.intersections[
-                                        (min(new_id, other_id), max(new_id, other_id))
-                                    ] = (inter_c1 + inter_c2)
+                                self.intersections[new_edge] = inter_c1 + inter_c2
 
-                        self.intersections.pop((c1_id, c2_id), None)
-                        del self.clouds[c1_id]
-                        del self.clouds[c2_id]
+                    # Purge the consumed edge and clouds
+                    self.intersections.pop((c1_id, c2_id), None)
+                    del self.clouds[c1_id]
+                    del self.clouds[c2_id]
 
-                        merge_occurred = True
-                        break
-                if merge_occurred:
-                    break
+                    merge_occurred = True
+                    break  # Break inner loop to restart evaluation with the new graph topology
 
     def predict_one(self, x_k: np.ndarray) -> int:
         if not self.clouds:
