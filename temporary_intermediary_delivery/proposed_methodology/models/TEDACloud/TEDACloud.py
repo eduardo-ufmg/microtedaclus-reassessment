@@ -1,6 +1,7 @@
-import optuna
-import numpy as np
 import collections
+
+import numpy as np
+import optuna
 
 
 class TEDACloud:

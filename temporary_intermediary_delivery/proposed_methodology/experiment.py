@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import time
@@ -7,15 +8,8 @@ from io import StringIO
 import numpy as np
 import optuna
 import pandas as pd
+import rpy2.rinterface_lib.callbacks
 import rpy2.robjects as robjects
-from models.CluStream.CluStream import CluStream, CluStreamParameterSearchSpace
-from models.DenStream.DenStream import DenStream, DenStreamParameterSearchSpace
-from models.MicroTEDAClus.MicroTEDAClus import (
-    MicroTEDAClus,
-    MicroTEDAClusParameterSearchSpace,
-)
-from models.CEDAS.CEDAS import CEDAS, CEDASParameterSearchSpace
-from models.TEDACloud.TEDACloud import TEDACloud, TEDACloudParameterSearchSpace
 from pympler import asizeof
 from rpy2.robjects.packages import importr
 from scipy.io import arff
@@ -23,9 +17,15 @@ from sklearn.datasets import make_blobs
 from sklearn.metrics import adjusted_rand_score
 from tqdm import tqdm
 
-import logging
-
-import rpy2.rinterface_lib.callbacks
+from models.AutoCloud.AutoCloud import AutoCloud, AutoCloudParameterSearchSpace
+from models.CEDAS.CEDAS import CEDAS, CEDASParameterSearchSpace
+from models.CluStream.CluStream import CluStream, CluStreamParameterSearchSpace
+from models.DenStream.DenStream import DenStream, DenStreamParameterSearchSpace
+from models.MicroTEDAClus.MicroTEDAClus import (
+    MicroTEDAClus,
+    MicroTEDAClusParameterSearchSpace,
+)
+from models.TEDACloud.TEDACloud import TEDACloud, TEDACloudParameterSearchSpace
 
 rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR)
 
@@ -183,7 +183,8 @@ MODEL_MAP = {
     # "DenStream": (DenStream, DenStreamParameterSearchSpace),
     # "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
     # "CEDAS": (CEDAS, CEDASParameterSearchSpace),
-    "TEDACloud": (TEDACloud, TEDACloudParameterSearchSpace),
+    # "TEDACloud": (TEDACloud, TEDACloudParameterSearchSpace),
+    "AutoCloud": (AutoCloud, AutoCloudParameterSearchSpace),
 }
 
 RUNS = 10
