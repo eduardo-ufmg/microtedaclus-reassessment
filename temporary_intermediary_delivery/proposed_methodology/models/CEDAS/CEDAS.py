@@ -1,16 +1,11 @@
 """
 CEDAS: Clustering of Evolving Data-streams into Arbitrary Shapes.
 
-Ported directly from:
+Ported from:
     Hyde, R., Angelov, P., MacKenzie, A.R. (2017).
     "Fully online clustering of evolving data streams into arbitrarily
     shaped clusters." Information Sciences 382-383, 96-114.
     (Algorithms 1-4, Section 3).
-
-This is NOT a port of RHyde67/CEDAS-Python (that repo is an incomplete,
-unofficial WIP -- its core micro-cluster update branch is unimplemented
-and it never builds the macro-cluster graph). It is a fresh implementation
-from the paper's pseudocode.
 """
 
 import math
