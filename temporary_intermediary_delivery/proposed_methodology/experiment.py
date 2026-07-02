@@ -15,6 +15,7 @@ from models.MicroTEDAClus.MicroTEDAClus import (
     MicroTEDAClusParameterSearchSpace,
 )
 from models.CEDAS.CEDAS import CEDAS, CEDASParameterSearchSpace
+from models.TEDACloud.TEDACloud import TEDACloud, TEDACloudParameterSearchSpace
 from pympler import asizeof
 from rpy2.robjects.packages import importr
 from scipy.io import arff
@@ -181,7 +182,8 @@ MODEL_MAP = {
     # "CluStream": (CluStream, CluStreamParameterSearchSpace),
     # "DenStream": (DenStream, DenStreamParameterSearchSpace),
     # "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
-    "CEDAS": (CEDAS, CEDASParameterSearchSpace),
+    # "CEDAS": (CEDAS, CEDASParameterSearchSpace),
+    "TEDACloud": (TEDACloud, TEDACloudParameterSearchSpace),
 }
 
 RUNS = 10

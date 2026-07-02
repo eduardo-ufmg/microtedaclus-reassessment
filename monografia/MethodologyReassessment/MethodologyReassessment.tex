@@ -347,7 +347,11 @@ Because \texttt{river} is a different implementation of the same models, a best-
 
 \subsection{TEDACloud and CEDAS}
 
-It is not clear why, even though the original work references TEDACloud \cite{angelov2016tedacloud} and CEDAS \cite{hyde2017fully}, it does not include them in the experiments.
+It is not clear why, even though the original work references TEDACloud \cite{angelov2016tedacloud} and CEDAS \cite{hyde2017fully}, it does not include them in the experiments. CEDAS's introductory paper points to its official \texttt{MATLAB} implementation in \url{https://rhyde67.github.io/CEDAS/}, which was easily ported to \texttt{Python} and is available in the public repository of this reassessment. TEDACloud's introductory paper does not provide a public implementation, but a \texttt{Python} implementation was derived from the algorithm description in the paper and is also available in this work's public repository. Both implementations are included in this reassessment's experiments.
+
+\subsection{AutoCloud}
+
+AutoCloud's introductory paper \cite{angelov2020autocloud} was published approximately at the same time as the microTEDAclus paper, thus it is not expected to have been included in the original work's experiments. The algorithm is presented as an improvement over TEDACloud, and since it is a recent and relevant work, it is included in this reassessment's experiments. A \texttt{Python} implementation was derived from the algorithm description in the paper and is available in this work's public repository.
 
 \section{Datasets}
 
