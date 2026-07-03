@@ -7,12 +7,6 @@ The next sections examine weaknesses from the evaluated model implementation to 
 
 \section{Model Implementation}
 
-%% the model's implementation seen in the public repository is not the same as the one described in the original work, but much more similar to the updated version presented in the PHD thesis Mineração de Dados Aplicada a Problemas de Last-Mile na Logística. this is a problem because the results of the experiments are not comparable to the ones presented in the original work, and the conclusions drawn from those results may not be valid.
-
-%% required bibliography:
-%% - the paper that introduces the original version of microTEDAclus: Evolving clustering algorithm based on mixture of typicalities for stream data mining, by José Maia Neto
-%% - the paper that introduces the updated version of microTEDAclus: Mineração de Dados Aplicada a Problemas de Last-Mile na Logística, by Juan Camilo Fonseca Galindo
-
 In the fifth section of the original work, \textbf{Methodology and experiments}, \cite{maia2020evolvclus} provides a URL to the public GitHub repository where the code for the experiments can be found: \url{https://github.com/cseveriano/evolving_clustering}. To ensure persistence of the code, a fork of the original repository was created at the commit \texttt{50dd2b4}, which is the last commit to the repository at the time of this reassessment \cite{eduardo2026evolvingclustering}. The implementation of the microTEDAclus model is found in the \texttt{src/models/evolving/EvolvingClustering.py} file of the repository.
 
 It is important to note that the implementation of the microTEDAclus model found in the public repository is not the same as the one described in the original work, but is the one that, when submitted to the repository experiments, produced the results shown in the original work. A closer inspection of the code reveals that said implementation have characteristics that are similar to the ones described in the updated version of microTEDAclus, which is presented in the PHD thesis \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} \cite{galindo2021lastmile}. Furthermore, it handles the outlier-condition logic's problem stated in \cref{sss:incorrect_condition_logic}, but introduces mathematical errors in the implementation of expressions \cref{eq:recursive_eccentricity} and \cref{eq:normalized_typicality}, which are the core of the microTEDAclus model. This is a problem because the results of the experiments are not comparable to the ones presented in the original work, and the conclusions drawn from those results may not be valid.
@@ -187,19 +181,6 @@ The updated implementation of microTEDAclus, which is presented in the PHD thesi
 
 \section{Benchmark Models}
 
-%% required bibliography:
-%% - the paper that introduces DenStream: cao2006density
-%% - the paper that introduces CluStream: aggarwal2003framework
-%% - the paper that introduces StreamKM++: ackermann2012streamkmpp
-%% - the paper that introduces TEDACloud: angelov2016tedacloud
-%% - the paper that introduces CEDAS: hyde2017fully
-
-%% required bibliography:
-%% - the paper that introduces streammoa: hahsler2019streammoa
-%% - the paper that introduces river: montiel2021river
-%% - tedacloud repo: https://github.com/pedrotavaris/Teda-Cloud/blob/master/tedacloud.py
-%% - cedas repo: https://github.com/RHyde67/CEDAS-Python/blob/master/CEDAS.py
-
 \subsection{Benchmark Models Implementation Used in the Original Work}
 
 In it's experiments, the original work compares the proposed microTEDAclus model against three benchmark models: DenStream \cite{cao2006density}, CluStream \cite{aggarwal2003framework}, and StreamKM++ \cite{ackermann2012streamkmpp}, commonly used in the literature for data stream clustering evaluation \cite{hyde2017fully,akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline} as benchmark models. The validity of the experiments, however, depends on the implementation and execution of those models. As stated in the article and verified in the public repository, the implementations of those models are sourced from the \texttt{R} package \texttt{streamMOA} through the binding provided by \texttt{rpy2}.
@@ -347,30 +328,79 @@ Because \texttt{river} is a different implementation of the same models, a best-
 
 \subsection{TEDACloud and CEDAS}
 
-It is not clear why, even though the original work references TEDACloud \cite{angelov2016tedacloud} and CEDAS \cite{hyde2017fully}, it does not include them in the experiments. CEDAS's introductory paper points to its official \texttt{MATLAB} implementation in \url{https://rhyde67.github.io/CEDAS/}, which was easily ported to \texttt{Python} and is available in the public repository of this reassessment. TEDACloud's introductory paper does not provide a public implementation, but a \texttt{Python} implementation was derived from the algorithm description in the paper and is also available in this work's public repository. Both implementations are included in this reassessment's experiments.
+It is not clear why, even though the original work references TEDACloud \cite{bezerra2016tedacloud} and CEDAS \cite{hyde2017fully}, it does not include them in the experiments. CEDAS's introductory paper points to its official \texttt{MATLAB} implementation in \url{https://rhyde67.github.io/CEDAS/}, which was easily ported to \texttt{Python} and is available in the public repository of this reassessment. TEDACloud's introductory paper does not provide a public implementation, but a \texttt{Python} implementation was derived from the algorithm description in the paper and is also available in this work's public repository. Both implementations are included in this reassessment's experiments.
 
 \subsection{AutoCloud}
 
-AutoCloud's introductory paper \cite{angelov2020autocloud} was published approximately at the same time as the microTEDAclus paper, thus it is not expected to have been included in the original work's experiments. The algorithm is presented as an improvement over TEDACloud, and since it is a recent and relevant work, it is included in this reassessment's experiments. A \texttt{Python} implementation was derived from the algorithm description in the paper and is available in this work's public repository.
+AutoCloud's introductory paper \cite{bezerra2020autocloud} was published approximately at the same time as the microTEDAclus paper, thus it is not expected to have been included in the original work's experiments. The algorithm is presented as an improvement over TEDACloud, and since it is a recent and relevant work, it is included in this reassessment's experiments. A \texttt{Python} implementation was derived from the algorithm description in the paper and is available in this work's public repository.
 
 \section{Datasets}
 
-%% although the original work references valid benchmarking datasets, the preprocessing to which those datasets are subjected before being used is omited and have a significant impact on the results.
-
-%% required bibliography:
-%% - an authority paper on the impact of preprocessing on results. not necessarily the first to talk about it, but one that is widely cited and recognized in the field:
-
-The original work organizes the datasets used in its experiments into three categories: static, concept drift, and the synthetic datasets used for the processing time scalability experiments. Although the selected datasets are commonly used in the literature for data stream clustering evaluation \cite{angelov2016tedacloud,angelov2020autocloud,zhang2022extension,nguyenLe2026beyondbinary,zubaroglu2023emcstream}, the following subsections discuss how some cleaning and scaling decisions made in the original work's experiments introduced severe data leakage into the evaluation process, which is expected to have a significant and hidden impact on the results. %% paper on data leakage
+The original work organizes the datasets used in its experiments into three categories: static, concept drift, and the synthetic datasets used for the processing time scalability experiments. Although the selected datasets are commonly used in the literature for data stream clustering evaluation \cite{bezerra2016tedacloud,bezerra2020autocloud,zhang2022extension,nguyenLe2026beyondbinary,zubaroglu2023emcstream}, the following subsections discuss how some downsampling, cleaning, ordering, and scaling decisions had a significant and hidden impact on the experiment results and invalidated the conclusions drawn from them regarding real-world online stream clustering scenarios.
 
 \subsection{Static}
 
-%% the original work uses cleaned, scaled, and downsampled versions of two of the chameleon datasets, as seem in the public repository, and the ordered, noiseless, cassini dataset from streammoa.
 
-%% we use the same datasets, but we also include the original versions of the chameleon datasets, which are not cleaned, scaled, or downsampled. this allows us to evaluate the impact of preprocessing on the results.
+The original work's static datasets \textbf{ST-D1} and \textbf{ST-D2} are stated to correspond to datasets introduced in \cite{karypis1999chameleon} to evaluate the performance of the Chameleon clustering algorithm. From the original work's plots, it can be inferred that those corresponds to datasets \textbf{DS4} and \textbf{DS5} from the source paper. The public repository, however, loads its experiment's data from \url{https://query.data.world/s/faarcpz24ukr2g53druxljp4nghhzn} and \url{https://query.data.world/s/zry3yzt4ruwrlonziw2pfkegsdugw2}, which are cleaned, scaled, ordered, and downsampled versions of the original datasets, and no information regarding the preprocessing steps is provided in the original work. Not only the noise removal and downsampling makes those instances of the datasets much easier and faster to cluster, the ordering and scaling of the data guarantees a severe data leakage given the streaming nature of the proposed application for which the model is designed. The following experiments expose the impact of each of those preprocessing steps on the score chosen to evaluate the clustering quality, discussed in \cref{sec:evaluation_metrics}, and on the execution time of the model. Without loss of generality, \textbf{ST4} is chosen as the representative dataset for the experiments.
 
-%% required bibliography:
-%% - the paper that introduces the chameleon datasets: karypis1999chameleon
-%% - link to public repository of the original work: https://github.com/eduardo-ufmg/evolving_clustering (current author's fork of the original repository at the commit 50dd2b4)
+\subsubsection{Raw Dataset}
+
+The original \textbf{DS4} dataset is loaded from \url{https://raw.githubusercontent.com/deric/clustering-benchmark/master/src/main/resources/datasets/artificial/cluto-t7-10k.arff}. It contains 10000 samples, 2 features, 9 clusters, and significant noise. \cref{fig:raw_ds4} shows a scatter plot of the dataset, where each feature corresponds to one of the axes, and each sample is colored according to its cluster label. The noise samples are colored in dark blue and are labeled as \texttt{-1} in the \texttt{.arff} file.
+
+\begin{figure}[thpb]
+    \centering
+    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/raw_ds4.png}
+    \caption{Scatter plot of the original \textbf{DS4} dataset. Each sample is colored according to its cluster label, with noise samples colored in dark blue.}
+    \label{fig:raw_ds4}
+\end{figure}
+
+\cref{fig:raw_metrics} shows the evolution of the adjusted rand index and the execution time of the microTEDAclus model over 100-sample batches of the original \textbf{DS4} dataset. An ARI of 1.0 indicates perfect clustering, while an ARI of 0.0 indicates random clustering. It is clear that, for the original dataset, the model struggles to achieve an ARI of 0.5, and scores closer to 0.25 for most of the batches. The execution is kept as the baseline for the following experiments.
+
+\begin{figure}[thpb]
+    \centering
+    \includegraphics[width=\textwidth]{MethodologyReassessment/raw_metrics.png}
+    \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the original \textbf{DS4} dataset. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
+    \label{fig:raw_metrics}
+\end{figure}
+
+\subsubsection{Noise Removal}
+
+The noise removal step is performed by filtering out the samples labeled as \texttt{-1} in the \texttt{.arff} file. The resulting dataset contains 9208 samples and is shown in \cref{fig:noise_removed_ds4}.
+
+\begin{figure}[thpb]
+    \centering
+    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/noise_removed_ds4.png}
+    \caption{Scatter plot of the \textbf{DS4} dataset after noise removal. Each sample is colored according to its cluster label.}
+    \label{fig:noise_removed_ds4}
+\end{figure}
+
+\cref{fig:noise_removed_metrics} shows that the ARI score slightly improves for batches 10 to 40, but the execution time remains similar to the original dataset.
+
+\begin{figure}[thpb]
+    \centering
+    \includegraphics[width=\textwidth]{MethodologyReassessment/noise_removed_metrics.png}
+    \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the \textbf{DS4} dataset after noise removal. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
+    \label{fig:noise_removed_metrics}
+\end{figure}
+
+Although the noise removal step achieves a limited impact on the evaluation metrics, it constitutes a severe form of data leakage \cite{kaufman2012leakage,kapoor2023leakage}. This is because a sample is considered noise if it does not belong to any of the clusters, which is a condition that can only be determined after the clustering process. In any valid scenario, the clustering model itself must determine which samples are noise with only knowledge of the previous samples \cite{akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline,zhang2022extension,zubaroglu2023emcstream,kaufman2012leakage,kapoor2023leakage}.
+
+\subsubsection{Downsampling}
+
+Downsampling, on the other hand, does not necessarily constitute a form of data leakage, since it can be achieved without any information about the samples, past or future. It is performed by randomly selecting 50\% of the samples from the noise-removed dataset, resulting in a dataset with 4604 samples, shown in \cref{fig:downsampled_ds4}.
+
+\begin{figure}[thpb]
+    \centering
+    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/downsampled_ds4.png}
+    \caption{Scatter plot of the \textbf{DS4} dataset after downsampling. Each sample is colored according to its cluster label.}
+    \label{fig:downsampled_ds4}
+\end{figure}
+
+The results shown in \cref{fig:downsampled_metrics} show that downsampling damaged the ARI score for the entire run, and did not significantly affect the execution time. This is not the expected behavior, but may be explained by the algorithm's formulation in \cref{chap:background_relatedwork}. The
+
+\subsubsection{Ordering}
+
+\subsubsection{Scaling}
 
 \subsection{Concept Drift}
 

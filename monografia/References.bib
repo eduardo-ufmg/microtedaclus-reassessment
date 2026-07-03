@@ -139,7 +139,7 @@
 }
 
 %% tedacloud
-@inproceedings{angelov2016tedacloud,
+@inproceedings{bezerra2016tedacloud,
   author={Bezerra, Clauber Gomes and Sielly Jales Costa, Bruno and Guedes, Luiz Affonso and Angelov, Plamen Parvanov},
   booktitle={2016 IEEE Conference on Evolving and Adaptive Intelligent Systems (EAIS)},
   title={A new evolving clustering algorithm for online data streams},
@@ -149,6 +149,21 @@
   pages={162-168},
   keywords={Clustering algorithms;Mathematical model;Shape;Electronic mail;Real-time systems;Training;Conferences;clustering;data streams;evolving systems;autonomous learning;real-time;TEDA;typicality;eccentricity},
   doi={10.1109/EAIS.2016.7502508}}
+
+%% autocloud
+@article{bezerra2020autocloud,
+title = {An evolving approach to data streams clustering based on typicality and eccentricity data analytics},
+journal = {Information Sciences},
+volume = {518},
+pages = {13-28},
+year = {2020},
+issn = {0020-0255},
+doi = {https://doi.org/10.1016/j.ins.2019.12.022},
+url = {https://www.sciencedirect.com/science/article/pii/S0020025519311363},
+author = {Clauber Gomes Bezerra and Bruno Sielly Jales Costa and Luiz Affonso Guedes and Plamen Parvanov Angelov},
+keywords = {Online clustering, Data stream, Eccentricity, Typicality, Anomaly detection},
+abstract = {In this paper we propose an algorithm for online clustering of data streams. This algorithm is called AutoCloud and is based on the recently introduced concept of Typicality and Eccentricity Data Analytics, mainly used for anomaly detection tasks. AutoCloud is an evolving, online and recursive technique that does not need training or prior knowledge about the data set. Thus, AutoCloud is fully online, requiring no offline processing. It allows creation and merging of clusters autonomously as new data observations become available. The clusters created by AutoCloud are called data clouds, which are structures without pre-defined shape or boundaries. AutoCloud allows each data sample to belong to multiple data clouds simultaneously using fuzzy concepts. AutoCloud is also able to handle concept drift and concept evolution, which are problems that are inherent in data streams in general. Since the algorithm is recursive and online, it is suitable for applications that require a real-time response. We validate our proposal with applications to multiple well known data sets in the literature.}
+}
 
 %% streammoa
 @manual{streamMOA2024,
@@ -312,58 +327,41 @@ DOI = {10.3390/app12199402}
   note    = {First published online: 6 July 2022}
 }
 
-%% preprocessing impact
-@inbook{sarada2026data,
-author = {Sarada, B. and Akhtar, C. Gazala and Saroj, N. Shaleen and Harwalka, Sanjeevini S.},
-publisher = {John Wiley & Sons, Ltd},
-isbn = {9781394355310},
-title = {Data Acquisition and Preprocessing Techniques for Effective Machine Learning},
-booktitle = {Enhancing Hybrid Nanodevice Fabrication Efficiency Using Machine Learning},
-chapter = {16},
-pages = {311-339},
-doi = {https://doi.org/10.1002/9781394355310.ch16},
-url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/9781394355310.ch16},
-eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781394355310.ch16},
-year = {2026},
-keywords = {Machine learning, data acquisition, data preprocessing, generative AI, feature selection, data augmentation},
-abstract = {Summary In the world of machine learning, data acquisition and its preprocessing play a vital role for the workflow and affect the model in terms of its performance and reliability. This chapter explores in-depth methods of data acquisition and preparation for the purpose of maintaining data quality and its applicability to machine learning tasks. It begins with an understanding of data-related issues by discussing data acquisition methods, primary and secondary sources of data, forms of data, and data gathering methods such as application programming interfaces, web scraping, and sensor-based methodologies. Then, the attention turns to data cleaning measures such as missing values and variables, outlier detection, and deletion, as well as noise reduction techniques. The chapter also covers some data transformation approaches including normalization and standardization. How categorical data are encoded is also discussed, and then features of the data are covered. A specific subsection on the methods of data augmentation is given outlining the methods that have been used to increase the sizes of datasets such as image-based, text-based, and synthesis-based dataset generation. Data augmentation methods including principal component analysis and t-distributed stochastic neighbor embedding, feature selection methods, and techniques on how to deal with time series data are also discussed. For practical applications, data preprocessing in python is outlined in a case study providing them with a clear perspective between the theory and its application. The readers are also provided with data by discussing the challenges of data acquisition and the solutions available for them. The chapter finishes with the discussion of the latest trends in the field of study, which include training AI to create datasets, using generative AI, training self-supervised networks that require little or no supervision usually delivered by human professionals. In the preceding abstract, it is emphasized that effective techniques for data acquisition and preprocessing are crucial for the construction of good, accurate models of machine learning systems, and therefore for the achievement of reproducible and dependable results in the area.}
-}
-
-%% preprocessing impact
-@article{ramirez2017survey,
-title = {A survey on data preprocessing for data stream mining: Current status and future directions},
-journal = {Neurocomputing},
-volume = {239},
-pages = {39-57},
-year = {2017},
-issn = {0925-2312},
-doi = {https://doi.org/10.1016/j.neucom.2017.01.078},
-url = {https://www.sciencedirect.com/science/article/pii/S0925231217302631},
-author = {Sergio Ramírez-Gallego and Bartosz Krawczyk and Salvador García and Michał Woźniak and Francisco Herrera},
-keywords = {Data mining, Data stream, Concept drift, Data preprocessing, Data reduction, Feature selection, Instance selection, Data discretization, Online learning},
-abstract = {Data preprocessing and reduction have become essential techniques in current knowledge discovery scenarios, dominated by increasingly large datasets. These methods aim at reducing the complexity inherent to real-world datasets, so that they can be easily processed by current data mining solutions. Advantages of such approaches include, among others, a faster and more precise learning process, and more understandable structure of raw data. However, in the context of data preprocessing techniques for data streams have a long road ahead of them, despite online learning is growing in importance thanks to the development of Internet and technologies for massive data collection. Throughout this survey, we summarize, categorize and analyze those contributions on data preprocessing that cope with streaming data. This work also takes into account the existing relationships between the different families of methods (feature and instance selection, and discretization). To enrich our study, we conduct thorough experiments using the most relevant contributions and present an analysis of their predictive performance, reduction rates, computational time, and memory usage. Finally, we offer general advices about existing data stream preprocessing algorithms, as well as discuss emerging future challenges to be faced in the domain of data stream preprocessing.}
-}
-
-%% preprocessing impact
-@article{gomes2019machine,
-author = {Gomes, Heitor Murilo and Read, Jesse and Bifet, Albert and Barddal, Jean Paul and Gama, Jo\~{a}o},
-title = {Machine learning for streaming data: state of the art, challenges, and opportunities},
-year = {2019},
-issue_date = {December 2019},
+%% data leakage
+@article{kaufman2012leakage,
+author = {Kaufman, Shachar and Rosset, Saharon and Perlich, Claudia and Stitelman, Ori},
+title = {Leakage in data mining: Formulation, detection, and avoidance},
+year = {2012},
+issue_date = {December 2012},
 publisher = {Association for Computing Machinery},
 address = {New York, NY, USA},
-volume = {21},
-number = {2},
-issn = {1931-0145},
-url = {https://doi.org/10.1145/3373464.3373470},
-doi = {10.1145/3373464.3373470},
-abstract = {Incremental learning, online learning, and data stream learning are terms commonly associated with learning algorithms that update their models given a continuous influx of data without performing multiple passes over data. Several works have been devoted to this area, either directly or indirectly as characteristics of big data processing, i.e., Velocity and Volume. Given the current industry needs, there are many challenges to be addressed before existing methods can be efficiently applied to real-world problems. In this work, we focus on elucidating the connections among the current stateof- the-art on related fields; and clarifying open challenges in both academia and industry. We treat with special care topics that were not thoroughly investigated in past position and survey papers. This work aims to evoke discussion and elucidate the current research opportunities, highlighting the relationship of different subareas and suggesting courses of action when possible.},
-journal = {SIGKDD Explor. Newsl.},
-month = nov,
-pages = {6–22},
-numpages = {17}
+volume = {6},
+number = {4},
+issn = {1556-4681},
+url = {https://doi.org/10.1145/2382577.2382579},
+doi = {10.1145/2382577.2382579},
+abstract = {Deemed “one of the top ten data mining mistakes”, leakage is the introduction of information about the data mining target that should not be legitimately available to mine from. In addition to our own industry experience with real-life projects, controversies around several major public data mining competitions held recently such as the INFORMS 2010 Data Mining Challenge and the IJCNN 2011 Social Network Challenge are evidence that this issue is as relevant today as it has ever been. While acknowledging the importance and prevalence of leakage in both synthetic competitions and real-life data mining projects, existing literature has largely left this idea unexplored. What little has been said turns out not to be broad enough to cover more complex cases of leakage, such as those where the classical independently and identically distributed (i.i.d.) assumption is violated, that have been recently documented. In our new approach, these cases and others are explained by explicitly defining modeling goals and analyzing the broader framework of the data mining problem. The resulting definition enables us to derive general methodology for dealing with the issue. We show that it is possible to avoid leakage with a simple specific approach to data management followed by what we call a learn-predict separation, and present several ways of detecting leakage when the modeler has no control over how the data have been collected. We also offer an alternative point of view on leakage that is based on causal graph modeling concepts.},
+journal = {ACM Trans. Knowl. Discov. Data},
+month = dec,
+articleno = {15},
+numpages = {21},
+keywords = {Data mining, leakage, predictive modeling}
 }
 
+%% data leakage
+@article{kapoor2023leakage,
+  author  = {Sayash Kapoor and Arvind Narayanan},
+  title   = {Leakage and the Reproducibility Crisis in Machine-Learning-Based Science},
+  journal = {Patterns},
+  volume  = {4},
+  number  = {9},
+  pages   = {100804},
+  year    = {2023},
+  publisher = {Elsevier},
+  issn    = {2666-3899},
+  doi     = {10.1016/j.patter.2023.100804},
+  url     = {https://doi.org/10.1016/j.patter.2023.100804}
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% i will delete those as soon as i finish to overwrite the introduction template with my actual introduction

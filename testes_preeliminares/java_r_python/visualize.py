@@ -21,7 +21,12 @@ def generate_visualization(csv_file: str, output_image: str) -> None:
     bar_width = 0.8 / n_envs
     offsets = np.linspace(-0.4 + bar_width / 2, 0.4 - bar_width / 2, n_envs)
 
-    colors = cm.magma(np.linspace(0.2, 0.8, n_envs))
+    cmap = cm.magma
+    env_colors = {
+        "Java": cmap(0.20),
+        "Bridge": cmap(0.50),
+        "River": cmap(0.80),
+    }
 
     fig, axes = plt.subplots(1, 2, figsize=(10, 6))
 
@@ -43,7 +48,7 @@ def generate_visualization(csv_file: str, output_image: str) -> None:
             bar_width,
             yerr=[lower_time_err, upper_time_err],
             label=env,
-            color=colors[i],
+            color=env_colors[env],
             capsize=5,
             edgecolor="black",
         )
@@ -58,7 +63,7 @@ def generate_visualization(csv_file: str, output_image: str) -> None:
             bar_width,
             yerr=mem_std,
             label=env,
-            color=colors[i],
+            color=env_colors[env],
             capsize=5,
             edgecolor="black",
         )
