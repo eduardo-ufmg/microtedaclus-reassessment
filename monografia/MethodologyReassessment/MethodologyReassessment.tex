@@ -334,6 +334,72 @@ It is not clear why, even though the original work references TEDACloud \cite{be
 
 AutoCloud's introductory paper \cite{bezerra2020autocloud} was published approximately at the same time as the microTEDAclus paper, thus it is not expected to have been included in the original work's experiments. The algorithm is presented as an improvement over TEDACloud, and since it is a recent and relevant work, it is included in this reassessment's experiments. A \texttt{Python} implementation was derived from the algorithm description in the paper and is available in this work's public repository.
 
+\subsection{Hyperparameter Tuning} \label{subsec:hyperparameter_tuning}
+
+All the models evaluated in this reassessment have hyperparameters that can be tuned to improve their performance, even those for which the introductory paper chooses to use default values. To ensure that any model is not unfairly disadvantaged by the choice of hyperparameters, all the following experiments are preceded by a hyperparameter tuning phase in which the first 20\% of the samples of each stream is extracted to perform a Bayesian optimization \cite{ozaki2025optunahub} search for the best hyperparameters of each model. Such an approach prevents data leakage \cite{kaufman2012leakage,kapoor2023leakage} because the evaluation phase is performed on the unseen remaining 80\% of the samples of the stream. Furthermore, it is basically an automated and safer approach than the one taken by the experiments in the original work, in which the parameters that maximize the score over the entire dataset are selected for the evaluation experiment. The hyperparameter tuning is performed by a \texttt{Optuna} study set to maximize its objective function, shown in \cref{lst:objective_function}.
+
+\begin{lstlisting}[float, language=Python, caption={Objective function used for hyperparameter tuning of the evaluated models}, label={lst:objective_function}]
+def objective(trial, model_class, search_space_class, X_opt, y_opt, batch_size):
+    params = search_space_class().sample_parameters(trial)
+
+    try:
+        model = model_class(**params)
+    except Exception as e:
+        print(
+            f"Error initializing model {model_class.__name__} with params {params}: {e}"
+        )
+        raise optuna.exceptions.TrialPruned()
+
+    burn_in_idx = int(0.05 * len(X_opt))
+    y_pred_all = []
+    num_batches = len(X_opt) // batch_size
+
+    t0 = time.process_time_ns()
+
+    try:
+        for b in range(num_batches):
+            start_idx = b * batch_size
+            end_idx = start_idx + batch_size
+            X_batch = X_opt[start_idx:end_idx]
+
+            preds = model.predict(X_batch)
+            y_pred_all.extend(preds)
+            model.fit(X_batch)
+
+    except Exception as e:
+        print(f"Error occurred while executing model {model_class.__name__}: {e}")
+        raise optuna.exceptions.TrialPruned()
+
+    t_total_sec = (time.process_time_ns() - t0) / 1e9
+
+    y_pred_eval = np.array(y_pred_all)[burn_in_idx:]
+    y_opt_eval = y_opt[: len(y_pred_all)][burn_in_idx:]
+
+    ari = adjusted_rand_score(y_opt_eval, y_pred_eval)
+
+    l2_time_penalty = 1e-3 * t_total_sec
+    return ari - l2_time_penalty
+\end{lstlisting}
+
+The objective function may be expressed as in \cref{alg:hyperparameter_tuning_objective_function}.
+
+\begin{algorithm}[htbp]
+\caption{Objective function for hyperparameter tuning of the evaluated models}
+\label{alg:hyperparameter_tuning_objective_function}
+\begin{algorithmic}[1]
+\Require $X_{opt}$ the input samples for hyperparameter tuning, $y_{opt}$ the ground truth labels for hyperparameter tuning, $batch\_size$ the size of the batches to be processed, $model\_class$ the class of the model to be evaluated, $search\_space\_class$ the class that defines the search space for the model's hyperparameters, $trial$ the current trial of the hyperparameter tuning process
+\Ensure $score$ the score to be maximized by the hyperparameter tuning process
+\State query $params$ from the $trial$ select by the Optuna study, according to the search space defined by $search\_space\_class$
+\State initialize $model$ with $params$
+\State perform the prequential execution and capture its execution time
+\State drop the initial 5\% of the predictions to avoid penalizing the model for its initial learning phase
+\State compute the adjusted rand index $ari$ between the predictions and the ground truth labels
+\State return the regularized score $score = ari - \lambda \cdot t_{total}$, where $\lambda$ is a regularization factor that penalizes the execution time of the model
+\end{algorithmic}
+\end{algorithm}
+
+The tuning strategy's goal is to both reduce error- and bias-prone subjective decisions regarding the choice of hyperparameters and to prevent the selection of parameters that provide a small increase in the score at the cost of a significant increase in the execution time.
+
 \section{Datasets}
 
 The original work organizes the datasets used in its experiments into three categories: static, concept drift, and the synthetic datasets used for the processing time scalability experiments. Although the selected datasets are commonly used in the literature for data stream clustering evaluation \cite{bezerra2016tedacloud,bezerra2020autocloud,zhang2022extension,nguyenLe2026beyondbinary,zubaroglu2023emcstream}, the following subsections discuss how some downsampling, cleaning, ordering, and scaling decisions had a significant and hidden impact on the experiment results and invalidated the conclusions drawn from them regarding real-world online stream clustering scenarios.
@@ -454,7 +520,7 @@ Finally, the scaling step is performed by applying a min-max normalization to th
     \label{fig:scaled_ds4}
 \end{figure}
 
-\cref{fig:scaled_metrics} shows how the ARI score is drastically increased and the execution time is significantly reduced for the scaled dataset. Such improvement is attributed to \textbf{I}: the fact that microTEDAClus strictly relies on the Euclidean norm to calculate all of its distance-based metrics, and \textbf{II}: the parameters of \cref{eq:m_function} being tuned for the scaled dataset, rather than kept as hyperparameters of the model. To investigate this hypothesis, the following experiments are conducted over the downsampled, but unordered dataset, to avoid the interpretability issues caused by the ordering step.
+\cref{fig:scaled_metrics} shows how the ARI score is drastically increased and the execution time is significantly reduced for the scaled dataset. Such improvement is attributed to \textbf{I}: the fact that microTEDAClus strictly relies on the Euclidean norm to calculate all of its distance-based metrics, and \textbf{II}: the parameters of \cref{eq:m_function} being tuned for the scaled dataset, rather than kept as hyperparameters of the model. To investigate this hypothesis, the following experiments are conducted over the downsampled, but unordered dataset, to avoid the interpretability issues caused by the ordering step. Furthermore, it is clear that microTEDAClus' parameter \texttt{variance\_limit} is intrinsically and strongly dependent on the data's scale. Thus, the importance of the tuning step described in \cref{subsec:hyperparameter_tuning} is highlighted, as it allows the model to be fairly evaluated on datasets with different scales.
 
 \subsection{Concept Drift}
 

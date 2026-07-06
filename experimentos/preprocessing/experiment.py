@@ -135,7 +135,7 @@ def build_pipeline(X0, y0):
 
 
 # --------------------------------------------------------------------------
-# Optuna objective (identical in spirit to experiment.py)
+# Optuna objective
 # --------------------------------------------------------------------------
 def objective(trial, X_opt, y_opt, batch_size):
     params = MicroTEDAClusParameterSearchSpace().sample_parameters(trial)
@@ -163,7 +163,7 @@ def objective(trial, X_opt, y_opt, batch_size):
             model.fit(X_batch)
 
     except Exception as e:
-        print(f"Error occurred while fitting MicroTEDAClus: {e}")
+        print(f"Error occurred while executing MicroTEDAClus: {e}")
         raise optuna.exceptions.TrialPruned()
 
     t_total_sec = (time.process_time_ns() - t0) / 1e9
