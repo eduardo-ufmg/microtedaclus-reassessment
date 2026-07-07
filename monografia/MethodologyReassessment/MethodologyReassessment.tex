@@ -520,7 +520,85 @@ Finally, the scaling step is performed by applying a min-max normalization to th
     \label{fig:scaled_ds4}
 \end{figure}
 
-\cref{fig:scaled_metrics} shows how the ARI score is drastically increased and the execution time is significantly reduced for the scaled dataset. Such improvement is attributed to \textbf{I}: the fact that microTEDAClus strictly relies on the Euclidean norm to calculate all of its distance-based metrics, and \textbf{II}: the parameters of \cref{eq:m_function} being tuned for the scaled dataset, rather than kept as hyperparameters of the model. To investigate this hypothesis, the following experiments are conducted over the downsampled, but unordered dataset, to avoid the interpretability issues caused by the ordering step. Furthermore, it is clear that microTEDAClus' parameter \texttt{variance\_limit} is intrinsically and strongly dependent on the data's scale. Thus, the importance of the tuning step described in \cref{subsec:hyperparameter_tuning} is highlighted, as it allows the model to be fairly evaluated on datasets with different scales.
+\begin{figure}[thpb]
+    \centering
+    \includegraphics[width=\textwidth]{MethodologyReassessment/scaled_metrics.png}
+    \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the ordered downsampled \textbf{DS4} dataset after scaling. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
+    \label{fig:scaled_metrics}
+\end{figure}
+
+\cref{fig:scaled_metrics} shows how the ARI score is kept near 1.0 for more batches -- although its evaluation is already fundamendamentally harmed by the previous ordering -- and the execution time is significantly reduced for the scaled dataset. Such improvement is attributed to the parameters of \cref{eq:m_function} being tuned for the scaled dataset, rather than kept as hyperparameters of the model. To investigate this hypothesis, the following experiments are conducted over the downsampled, but unordered dataset, to avoid the interpretability issues caused by the ordering step. Furthermore, it is clear that microTEDAClus' parameter \texttt{variance\_limit} is intrinsically and strongly dependent on the data's scale. Thus, the importance of the tuning step described in \cref{subsec:hyperparameter_tuning} is highlighted, as it allows the model to be fairly evaluated on datasets with different scales. In the experiment, the unordered downsampled dataset is subjected to three independent transformations:
+
+\begin{enumerate} \label{list:scaling_study}
+    \item scale each feature to the range $[0, 1]$ using min-max normalization, to investigate the impact of the used scaling method on the results;
+    \item scale each feature to $[0, \text{mean}(\max{x_0}, \max{x_1})]$, to investigate how the loss of the features' relative scale affects the results;
+    \item divide both features by $\max{x_0, x_1}$, to investigate the impact of the scaling without changing the features' relative scale.
+\end{enumerate}
+
+\cref{fig:scaling_study_grid} shows the results of the microTEDAclus model over the three scaled datasets. The left column shows the scatter plots of the datasets with the feature ranges, the central column shows the ARI score over 100-sample batches, and the right column shows the execution time in milliseconds. In it, \texttt{minmax}, \texttt{mean}, and \texttt{global} corresponds, respectively, to \texttt{1}, \texttt{2}, and \texttt{3} in \cref{list:scaling_study}. The results show that the best ARI score is achieved when the features are scaled to $\le 1$ without losing their relative scale, as done in \texttt{global}. Even though the \texttt{minmax} standardization significantly reduces the execution time, the loss of the features' relative scale drastically reduces the ARI score. The \texttt{mean} transformation, which retains the overall scale, but drops the features' relative scale, does not significantly affect the ARI score, but it does increase the execution time.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{MethodologyReassessment/scaling_study_grid.png}
+    \caption{Results of the microTEDAclus model over three scaled versions of the unordered downsampled \textbf{DS4} dataset. The left column shows the scatter plots of the datasets with the feature ranges, the central column shows the ARI score over 100-sample batches, and the right column shows the execution time in milliseconds. In it, \texttt{minmax}, \texttt{mean}, and \texttt{global} corresponds, respectively, to \texttt{1}, \texttt{2}, and \texttt{3} of \cref{list:scaling_study}.}
+    \label{fig:scaling_study_grid}
+\end{figure}
+
+The second experiment extends the microTEDAClus implementation to expose the \cref{eq:m_function} parameters for external tuning and perform both tuning and optimization steps over the three scaled datasets. The function may be generalized as
+
+\begin{equation} \label{eq:generalized_m}
+    m(k) = \frac{\text{up}}{1 + e^{-a(k-b)}}, \text{up} > 1
+\end{equation}
+
+microTEDAClus sets
+
+\begin{align}
+    \text{up} &= 3 \\
+    a &= 0.007 \\
+    b &= 100
+\end{align}
+
+so
+
+\begin{align}
+    m(2) &\approx 1.005 \\
+    m(1000) &\approx 2.995
+\end{align}
+
+which approximately meets the function definition criteria in \cite{maia2020evolvclus}. If those criteria are substituted by
+
+\begin{align}
+    m(3) &= 1 \\
+    \lim_{k \to \infty} m(k) &= \text{up}
+\end{align}
+
+then
+
+\begin{align}
+    \lim_{k \to \infty} \frac{\text{up}}{1 + e^{-a(k-b)}} &= \text{up} \\
+    \lim_{k \to \infty} e^{-a(k-b)} &= 0 \\
+    \implies a &> 0
+\end{align}
+
+and
+
+\begin{align}
+    \frac{\text{up}}{1 + e^{-a(3-b)}} &= 1 \\
+    e^{-a(3-b)} &= \text{up} - 1 \\
+    -a(3-b) &= \ln(\text{up} - 1) \\
+    b &= 3 + \frac{\ln(\text{up} - 1)}{a} \label{eq:b_of_a}
+\end{align}
+
+which reduces the tunable parameters in \cref{eq:generalized_m} from $(a, b, \text{up})$ to $(a, \text{up})$. It is worth noting that because $k \in \mathbb{N}$ and \cref{sss:incorrect_condition_logic} shows that $m(2)$ does not matter for \cref{eq:corrected_condition_logic_for_outliers}, $k = 3$ is the actual lower bound the function's domain. From \cref{eq:b_of_a} and \cref{eq:generalized_m},
+
+\begin{align}
+    m(k) &= \frac{\text{up}}{1 + e^{-a(k-(3 + \frac{\ln(\text{up} - 1)}{a}))}} \\
+    m(k) &= \frac{\text{up}}{1 + e^{-a(k-3) + \ln(\text{up} - 1)}} \\
+    m(k) &= \frac{\text{up}}{1 + e^{-a(k-3)}e^{\ln(\text{up} - 1)}} \\
+    m(k) &= \frac{\text{up}}{1 + (\text{up} - 1)e^{-a(k-3)}}
+\end{align}
+
+If $k_{95\%} = m^{-1}(0.95\times\text{up})$, %% find a(k95) so the free hyperparameter becomes k95
 
 \subsection{Concept Drift}
 

@@ -34,7 +34,7 @@ SPLIT_FRAC = 0.2
 DOWNSAMPLE_FRAC = 0.5
 RNG_SEED = 0
 
-CONDITIONS = ["minmax_scaled", "scaled_back", "global_scaled"]
+CONDITIONS = ["minmax", "mean", "global"]
 
 
 # --------------------------------------------------------------------------
@@ -93,13 +93,13 @@ def build_conditions(X_base, y_base):
 
     scaler = MinMaxScaler()
     X_minmax = scaler.fit_transform(X_base)
-    datasets["minmax_scaled"] = (X_minmax, y_base)
+    datasets["minmax"] = (X_minmax, y_base)
 
     X_scaled_back = X_minmax * c_scaled_back
-    datasets["scaled_back"] = (X_scaled_back, y_base)
+    datasets["mean"] = (X_scaled_back, y_base)
 
     X_global = X_base / g_global
-    datasets["global_scaled"] = (X_global, y_base)
+    datasets["global"] = (X_global, y_base)
 
     return datasets
 
