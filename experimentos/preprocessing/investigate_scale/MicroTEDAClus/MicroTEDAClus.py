@@ -15,6 +15,8 @@ class MicroTEDAClus:
         verbose=0,
         variance_limit=0.001,
         decay=100,
+        m_a=0.007,
+        m_b=100,
         debug=False,
         plot_graph=False,
     ):
@@ -31,6 +33,8 @@ class MicroTEDAClus:
         self.plot_graph = plot_graph
         self.changed_micro_clusters = []
         self.fading_factor = 1 / decay
+        self.m_a = m_a
+        self.m_b = m_b
 
     @staticmethod
     def get_micro_cluster(id, num_samples, mean, variance, density, life):
@@ -69,7 +73,7 @@ class MicroTEDAClus:
         if s_ik < 3:
             outlier = var_ik > self.variance_limit
         else:
-            mik_sik = 3 / (1 + math.exp(-0.007 * (s_ik - 100)))
+            mik_sik = 3 / (1 + math.exp(-self.m_a * (s_ik - self.m_b)))
             outlier_limit = ((mik_sik**2) + 1) / (2 * s_ik)
             outlier = norm_ecc > outlier_limit
 
@@ -413,4 +417,6 @@ class MicroTEDAClusParameterSearchSpace:
                 "variance_limit", 0.0001, 10.0, log=True
             ),
             "decay": trial.suggest_int("decay", 10, 10000, log=True),
+            # "m_a": trial.suggest_float("m_a", 0.0001, 0.1, log=True),
+            # "m_b": trial.suggest_float("m_b", 10, 10000, log=True),
         }

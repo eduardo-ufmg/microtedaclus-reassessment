@@ -1,0 +1,84 @@
+\chapter{Improved Model}
+\label{chap:ImprovedModel}
+
+\section{Reparameterization of the $m$ Function}
+
+The function may be generalized as
+
+\begin{equation} \label{eq:generalized_m}
+    m(k) = \frac{\text{up}}{1 + e^{-a(k-b)}}, \text{up} > 1
+\end{equation}
+
+microTEDAClus sets
+
+\begin{align}
+    \text{up} &= 3 \\
+    a &= 0.007 \\
+    b &= 100
+\end{align}
+
+so
+
+\begin{align}
+    m(2) &\approx 1.005 \\
+    m(1000) &\approx 2.995
+\end{align}
+
+which approximately meets the function definition criteria in \cite{maia2020evolvclus}. If those criteria are substituted by
+
+\begin{align}
+    m(3) &= 1 \\
+    \lim_{k \to \infty} m(k) &= \text{up}
+\end{align}
+
+then
+
+\begin{align}
+    \lim_{k \to \infty} \frac{\text{up}}{1 + e^{-a(k-b)}} &= \text{up} \\
+    \lim_{k \to \infty} e^{-a(k-b)} &= 0 \\
+    \implies a &> 0
+\end{align}
+
+and
+
+\begin{align}
+    \frac{\text{up}}{1 + e^{-a(3-b)}} &= 1 \\
+    e^{-a(3-b)} &= \text{up} - 1 \\
+    -a(3-b) &= \ln(\text{up} - 1) \\
+    b &= 3 + \frac{\ln(\text{up} - 1)}{a} \label{eq:b_of_a}
+\end{align}
+
+which reduces the tunable parameters in \cref{eq:generalized_m} from $(a, b, \text{up})$ to $(a, \text{up})$. It is worth noting that because $k \in \mathbb{N}$ and \cref{sss:incorrect_condition_logic} shows that $m(2)$ does not matter for \cref{eq:corrected_condition_logic_for_outliers}, $k = 3$ is the actual lower bound the function's domain. From \cref{eq:b_of_a} and \cref{eq:generalized_m},
+
+\begin{align}
+    m(k) &= \frac{\text{up}}{1 + e^{-a(k-(3 + \frac{\ln(\text{up} - 1)}{a}))}} \\
+    m(k) &= \frac{\text{up}}{1 + e^{-a(k-3) + \ln(\text{up} - 1)}} \\
+    m(k) &= \frac{\text{up}}{1 + e^{-a(k-3)}e^{\ln(\text{up} - 1)}} \\
+    m(k) &= \frac{\text{up}}{1 + (\text{up} - 1)e^{-a(k-3)}}
+\end{align}
+
+If $k_{95\%} = m^{-1}(0.95\text{up})$,
+
+\begin{align}
+    0.95\text{up} &= \frac{\text{up}}{1+(\text{up}-1)e^{-a(k_{95\%}-3)}} \\
+    1 + (\text{up}-1)e^{-a(k_{95\%}-3)} &= \frac{\text{up}}{0.95\text{up}} = \frac{1}{0.95} = \frac{20}{19} \\
+    (\text{up}-1)e^{-a(k_{95\%}-3)} &= \frac{20}{19} - 1 = \frac{1}{19} \\
+    e^{-a(k_{95\%}-3)} &= \frac{1}{19(\text{up}-1)} \\
+    -a(k_{95\%}-3) &= \ln\left(\frac{1}{19(\text{up}-1)}\right) \\
+    a &= -\frac{1}{k_{95\%}-3}\ln\left(\frac{1}{19(\text{up}-1)}\right) \\
+    a &= \frac{1}{k_{95\%}-3}\ln(19(\text{up}-1))
+\end{align}
+
+Then,
+
+\begin{align}
+    m(k) &= \frac{\text{up}}{1 + (\text{up} - 1)e^{-\frac{1}{k_{95\%}-3}\ln(19(\text{up}-1))(k-3)}} \\
+    m(k) &= \frac{\text{up}}{1 + (\text{up} - 1)(19(\text{up}-1))^{-\frac{k-3}{k_{95\%}-3}}}
+\end{align}
+
+Which have two tunable parameters, $\text{up}$ and $k_{95\%}$, instead of the three parameters of \cref{eq:generalized_m}. Furthermore, those parameters directly interpretable under \cref{eq:outlier_condition}:
+
+\begin{itemize}
+    \item $\text{up}$ is the steady-state boundary for a mature microcluster. It defines the maximum $m\sigma$ limit used to classify outliers once the cluster has observed a highly representative sample size.
+    \item $k_{95\%}$ is the sample size at which the microcluster is considered stable. A lower $k_{95\%}$ causes the cluster to rapidly trust its estimated parameters, while a higher value enforces a prolonged period of cautious, tighter outlier detection.
+\end{itemize}

@@ -544,61 +544,16 @@ Finally, the scaling step is performed by applying a min-max normalization to th
     \label{fig:scaling_study_grid}
 \end{figure}
 
-The second experiment extends the microTEDAClus implementation to expose the \cref{eq:m_function} parameters for external tuning and perform both tuning and optimization steps over the three scaled datasets. The function may be generalized as
+The second experiment extends the microTEDAClus implementation to expose the \cref{eq:m_function} parameters for external tuning and perform both tuning and evaluation steps over the three scaled datasets. \cref{fig:scaling_study_tuning_grid} shows the results of the microTEDAclus model over the three scaled datasets after the tuning of the \cref{eq:m_function} parameters.
 
-\begin{equation} \label{eq:generalized_m}
-    m(k) = \frac{\text{up}}{1 + e^{-a(k-b)}}, \text{up} > 1
-\end{equation}
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{MethodologyReassessment/scaling_study_tuning_grid.png}
+    \caption{Results of the microTEDAclus model over three scaled versions of the unordered downsampled \textbf{DS4} dataset after tuning of the \cref{eq:m_function} parameters. The left column shows the scatter plots of the datasets with the feature ranges, the central column shows the ARI score over 100-sample batches, and the right column shows the execution time in milliseconds. In it, \texttt{minmax}, \texttt{mean}, and \texttt{global} corresponds, respectively, to \texttt{1}, \texttt{2}, and \texttt{3} of \cref{list:scaling_study}.}
+    \label{fig:scaling_study_tuning_grid}
+\end{figure}
 
-microTEDAClus sets
 
-\begin{align}
-    \text{up} &= 3 \\
-    a &= 0.007 \\
-    b &= 100
-\end{align}
-
-so
-
-\begin{align}
-    m(2) &\approx 1.005 \\
-    m(1000) &\approx 2.995
-\end{align}
-
-which approximately meets the function definition criteria in \cite{maia2020evolvclus}. If those criteria are substituted by
-
-\begin{align}
-    m(3) &= 1 \\
-    \lim_{k \to \infty} m(k) &= \text{up}
-\end{align}
-
-then
-
-\begin{align}
-    \lim_{k \to \infty} \frac{\text{up}}{1 + e^{-a(k-b)}} &= \text{up} \\
-    \lim_{k \to \infty} e^{-a(k-b)} &= 0 \\
-    \implies a &> 0
-\end{align}
-
-and
-
-\begin{align}
-    \frac{\text{up}}{1 + e^{-a(3-b)}} &= 1 \\
-    e^{-a(3-b)} &= \text{up} - 1 \\
-    -a(3-b) &= \ln(\text{up} - 1) \\
-    b &= 3 + \frac{\ln(\text{up} - 1)}{a} \label{eq:b_of_a}
-\end{align}
-
-which reduces the tunable parameters in \cref{eq:generalized_m} from $(a, b, \text{up})$ to $(a, \text{up})$. It is worth noting that because $k \in \mathbb{N}$ and \cref{sss:incorrect_condition_logic} shows that $m(2)$ does not matter for \cref{eq:corrected_condition_logic_for_outliers}, $k = 3$ is the actual lower bound the function's domain. From \cref{eq:b_of_a} and \cref{eq:generalized_m},
-
-\begin{align}
-    m(k) &= \frac{\text{up}}{1 + e^{-a(k-(3 + \frac{\ln(\text{up} - 1)}{a}))}} \\
-    m(k) &= \frac{\text{up}}{1 + e^{-a(k-3) + \ln(\text{up} - 1)}} \\
-    m(k) &= \frac{\text{up}}{1 + e^{-a(k-3)}e^{\ln(\text{up} - 1)}} \\
-    m(k) &= \frac{\text{up}}{1 + (\text{up} - 1)e^{-a(k-3)}}
-\end{align}
-
-If $k_{95\%} = m^{-1}(0.95\times\text{up})$, %% find a(k95) so the free hyperparameter becomes k95
 
 \subsection{Concept Drift}
 
