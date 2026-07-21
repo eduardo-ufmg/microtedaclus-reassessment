@@ -420,7 +420,7 @@ The original \textbf{DS4} dataset is loaded from \url{https://raw.githubusercont
     \label{fig:raw_ds4}
 \end{figure}
 
-\cref{fig:raw_metrics} shows the evolution of the adjusted rand index and the execution time of the microTEDAclus model over 100-sample batches of the original \textbf{DS4} dataset. An ARI of 1.0 indicates perfect clustering, while an ARI of 0.0 indicates random clustering. It is clear that, for the original dataset, the model struggles to achieve an ARI of 0.5, and scores closer to 0.25 for most of the batches. The execution is kept as the baseline for the following experiments.
+\cref{fig:raw_metrics} shows the evolution of the adjusted rand index and the execution time of the microTEDAclus model over 100-sample batches of the original \textbf{DS4} dataset. An ARI of 1.0 indicates perfect clustering, while an ARI of 0.0 indicates random clustering. It is clear that, for the original dataset, the model \textcolor{red}{\dots}
 
 \begin{figure}[thpb]
     \centering
@@ -440,7 +440,7 @@ The noise removal step is performed by filtering out the samples labeled as \tex
     \label{fig:noise_removed_ds4}
 \end{figure}
 
-\cref{fig:noise_removed_metrics} shows that the ARI score slightly improves for batches 10 to 40, but the execution time remains similar to the original dataset.
+\cref{fig:noise_removed_metrics} shows \textcolor{red}{\dots}
 
 \begin{figure}[thpb]
     \centering
@@ -462,25 +462,7 @@ Downsampling, on the other hand, does not necessarily constitute a form of data 
     \label{fig:downsampled_ds4}
 \end{figure}
 
-The results shown in \cref{fig:downsampled_metrics} show that downsampling did not significantly affect neither the ARI score nor the execution time. This is not the expected behavior, and is further analyzed in the following short experiment.
-
-\begin{figure}[thpb]
-    \centering
-    \includegraphics[width=\textwidth]{MethodologyReassessment/downsampled_metrics.png}
-    \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the \textbf{DS4} dataset after downsampling. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
-    \label{fig:downsampled_metrics}
-\end{figure}
-
-Static analysis of \cref{sec:model_implementation} indicates that the microTEDAclus model's execution time is expected to be governed by its microcluster operations, since those include multiple graph operations, which are known to be computationally expensive \cite{arias2024improved}. If that is the case, because downsampling does not change the problem's cluster geometry, the number of microclusters is expected to be similar for both the denoised and downsampled datasets, and thus the execution time should be similar.
-
-\begin{figure}[thpb]
-    \centering
-    \includegraphics[width=\textwidth]{MethodologyReassessment/downsampling_investigation.png}
-    \caption{Investigation of the impact of downsampling on the microcluster count and execution time of the microTEDAclus model. The left plot shows the number of microclusters, while the right plot shows the execution time in milliseconds.}
-    \label{fig:downsampling_investigation}
-\end{figure}
-
-\cref{fig:downsampling_investigation} shows that both the microcluster count and the corresponding execution time are similar for the range of cumulative seen samples in which both datasets (denoised and downsampled) are processed. Because the denoised dataset has more samples, its curves extend further in the x-axis. This confirms that the execution time is governed by the microcluster operations, and explains why the execution time is similar for both datasets, despite the downsampled dataset having half the number of samples. The slight decrease in the ARI score is attributed to the non-linearity of the score with respect to the number of correctly clustered samples, which is expected to be lower for the downsampled dataset.
+The results shown in \cref{fig:downsampled_metrics} \textcolor{red}{\dots}
 
 \subsubsection{Ordering}
 
@@ -500,7 +482,7 @@ Data ordering is expected to impose the most harm on the original work's experim
     \label{fig:unordered_batches}
 \end{figure}
 
-\cref{fig:ordered_metrics} shows the results of the microTEDAclus model over the ordered dataset. The ARI score oscillates between 1.0 for the batches that contain samples from a single cluster, and 0.0 for the batches that contain samples from multiple clusters. The execution time is similar to the previous experiments.
+\cref{fig:ordered_metrics} shows the results of the microTEDAclus model over the ordered dataset. \textcolor{red}{\dots}
 
 \begin{figure}[thpb]
     \centering
@@ -527,33 +509,7 @@ Finally, the scaling step is performed by applying a min-max normalization to th
     \label{fig:scaled_metrics}
 \end{figure}
 
-\cref{fig:scaled_metrics} shows how the ARI score is kept near 1.0 for more batches -- although its evaluation is already fundamendamentally harmed by the previous ordering -- and the execution time is significantly reduced for the scaled dataset. Such improvement is attributed to the parameters of \cref{eq:m_function} being tuned for the scaled dataset, rather than kept as hyperparameters of the model. To investigate this hypothesis, the following experiments are conducted over the downsampled, but unordered dataset, to avoid the interpretability issues caused by the ordering step. Furthermore, it is clear that microTEDAClus' parameter \texttt{variance\_limit} is intrinsically and strongly dependent on the data's scale. Thus, the importance of the tuning step described in \cref{subsec:hyperparameter_tuning} is highlighted, as it allows the model to be fairly evaluated on datasets with different scales. In the experiment, the unordered downsampled dataset is subjected to three independent transformations:
-
-\begin{enumerate} \label{list:scaling_study}
-    \item scale each feature to the range $[0, 1]$ using min-max normalization, to investigate the impact of the used scaling method on the results;
-    \item scale each feature to $[0, \text{mean}(\max{x_0}, \max{x_1})]$, to investigate how the loss of the features' relative scale affects the results;
-    \item divide both features by $\max{x_0, x_1}$, to investigate the impact of the scaling without changing the features' relative scale.
-\end{enumerate}
-
-\cref{fig:scaling_study_grid} shows the results of the microTEDAclus model over the three scaled datasets. The left column shows the scatter plots of the datasets with the feature ranges, the central column shows the ARI score over 100-sample batches, and the right column shows the execution time in milliseconds. In it, \texttt{minmax}, \texttt{mean}, and \texttt{global} corresponds, respectively, to \texttt{1}, \texttt{2}, and \texttt{3} in \cref{list:scaling_study}. The results show that the best ARI score is achieved when the features are scaled to $\le 1$ without losing their relative scale, as done in \texttt{global}. Even though the \texttt{minmax} standardization significantly reduces the execution time, the loss of the features' relative scale drastically reduces the ARI score. The \texttt{mean} transformation, which retains the overall scale, but drops the features' relative scale, does not significantly affect the ARI score, but it does increase the execution time.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{MethodologyReassessment/scaling_study_grid.png}
-    \caption{Results of the microTEDAclus model over three scaled versions of the unordered downsampled \textbf{DS4} dataset. The left column shows the scatter plots of the datasets with the feature ranges, the central column shows the ARI score over 100-sample batches, and the right column shows the execution time in milliseconds. In it, \texttt{minmax}, \texttt{mean}, and \texttt{global} corresponds, respectively, to \texttt{1}, \texttt{2}, and \texttt{3} of \cref{list:scaling_study}.}
-    \label{fig:scaling_study_grid}
-\end{figure}
-
-The second experiment extends the microTEDAClus implementation to expose the \cref{eq:m_function} parameters for external tuning and perform both tuning and evaluation steps over the three scaled datasets. \cref{fig:scaling_study_tuning_grid} shows the results of the microTEDAclus model over the three scaled datasets after the tuning of the \cref{eq:m_function} parameters.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{MethodologyReassessment/scaling_study_tuning_grid.png}
-    \caption{Results of the microTEDAclus model over three scaled versions of the unordered downsampled \textbf{DS4} dataset after tuning of the \cref{eq:m_function} parameters. The left column shows the scatter plots of the datasets with the feature ranges, the central column shows the ARI score over 100-sample batches, and the right column shows the execution time in milliseconds. In it, \texttt{minmax}, \texttt{mean}, and \texttt{global} corresponds, respectively, to \texttt{1}, \texttt{2}, and \texttt{3} of \cref{list:scaling_study}.}
-    \label{fig:scaling_study_tuning_grid}
-\end{figure}
-
-
+\cref{fig:scaled_metrics} shows \textcolor{red}{\dots}
 
 \subsection{Concept Drift}
 
