@@ -212,7 +212,7 @@ The results of the benchmarking experiment are shown in \cref{fig:benchmark_java
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=\textwidth]{MethodologyReassessment/benchmark_java_bridge.png}
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/benchmark_java_bridge.png}
     \caption{Benchmarking experiment results showing the impact of interface overhead on the execution time and memory footprint of the benchmark models. The left bar chart shows the execution wall clock time of each model, while the right bar chart shows the memory footprint of each model. The models are executed both through the \texttt{rpy2} bridge and directly in \texttt{Python}.}
     \label{fig:benchmark_java_bridge}
 \end{figure}
@@ -223,7 +223,7 @@ Because the original work's implementation of the microTEDAclus model is in \tex
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=\textwidth]{MethodologyReassessment/benchmark_river.png}
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/benchmark_river.png}
     \caption{Benchmarking experiment results showing the execution time and memory footprint of the benchmark models implemented in \texttt{River}. The left bar chart shows the execution wall clock time of each model, while the right bar chart shows the memory footprint of each model.}
     \label{fig:benchmark_river}
 \end{figure}
@@ -381,7 +381,7 @@ def objective(trial, model_class, search_space_class, X_opt, y_opt, batch_size):
     return ari - l2_time_penalty
 \end{lstlisting}
 
-The objective function may be expressed as in \cref{alg:hyperparameter_tuning_objective_function}.
+Such objective function may be expressed as in \cref{alg:hyperparameter_tuning_objective_function}.
 
 \begin{algorithm}[htbp]
 \caption{Objective function for hyperparameter tuning of the evaluated models}
@@ -398,7 +398,16 @@ The objective function may be expressed as in \cref{alg:hyperparameter_tuning_ob
 \end{algorithmic}
 \end{algorithm}
 
-The tuning strategy's goal is to both reduce error- and bias-prone subjective decisions regarding the choice of hyperparameters and to prevent the selection of parameters that provide a small increase in the score at the cost of a significant increase in the execution time.
+This tuning strategy's goal is to both reduce error- and bias-prone subjective decisions regarding the choice of hyperparameters and to prevent the selection of parameters that provide a small increase in the score at the cost of a significant increase in the execution time.
+
+\subsection{Multi-run Statistics}
+
+To account for the inherent variability in the performance of the evaluated models, each experiment consists of 20 runs for each set of model, dataset, condition, and such. The results of those runs are aggregated and reported as the median, first quartile, and third quartile of the evaluated metrics. The choice of this statistical approach is justified by two reasons:
+
+\begin{enumerate}
+    \item Preliminary experiments exposed the presence of outliers in the results of some models, which significantly harms the reliability of the mean as a measure of central tendency, as well as the interpretability of the standard deviation as a measure of dispersion. The median, first quartile, and third quartile are more robust to outliers and provide a better representation of the distribution of the results.
+    \item Timing metrics are ploted in logarithmic scale. Such scale not only makes the mean and standard deviation less interpretable, but also require the clipping of the lower bound of the timing metrics to a small positive value when it is zero or negative. This is because the plotting library used in this work does not support logarithmic scale for non-positive values. The median, first quartile, and third quartile are not affected by this issue, since such metrics are bounded by the actual values of the timing metrics, which are always non-negative.
+\end{enumerate}
 
 \section{Datasets}
 
@@ -407,7 +416,7 @@ The original work organizes the datasets used in its experiments into three cate
 \subsection{Static}
 
 
-The original work's static datasets \textbf{ST-D1} and \textbf{ST-D2} are stated to correspond to datasets introduced in \cite{karypis1999chameleon} to evaluate the performance of the Chameleon clustering algorithm. From the original work's plots, it can be inferred that those corresponds to datasets \textbf{DS4} and \textbf{DS5} from the source paper. The public repository, however, loads its experiment's data from \url{https://query.data.world/s/faarcpz24ukr2g53druxljp4nghhzn} and \url{https://query.data.world/s/zry3yzt4ruwrlonziw2pfkegsdugw2}, which are cleaned, scaled, ordered, and downsampled versions of the original datasets, and no information regarding the preprocessing steps is provided in the original work. Not only the noise removal and downsampling makes those instances of the datasets much easier and faster to cluster, the ordering and scaling of the data guarantees a severe data leakage given the streaming nature of the proposed application for which the model is designed. The following experiments expose the impact of each of those preprocessing steps on the score chosen to evaluate the clustering quality, discussed in \cref{sec:evaluation_metrics}, and on the execution time of the model. Without loss of generality, \textbf{ST4} is chosen as the representative dataset for the experiments.
+In \cite{maia2020evolvclus}, static datasets \textbf{ST-D1} and \textbf{ST-D2} are stated to correspond to datasets introduced in \cite{karypis1999chameleon} to evaluate the performance of the Chameleon clustering algorithm. From the original work's plots, it can be inferred that those corresponds to datasets \textbf{DS4} and \textbf{DS5} from the source paper. The public repository, however, loads its experiment's data from \url{https://query.data.world/s/faarcpz24ukr2g53druxljp4nghhzn} and \url{https://query.data.world/s/zry3yzt4ruwrlonziw2pfkegsdugw2}, which are cleaned, scaled, ordered, and downsampled versions of the original datasets, and no information regarding the preprocessing steps is provided in the original work. Those operations over the dataset guarantee severe data leakage given the streaming nature of the proposed application for which the model is designed. The following experiments investigate the impact of each of those preprocessing steps on the score chosen to evaluate the clustering quality, discussed in \cref{sec:evaluation_metrics}, and on the execution time of the model. Without loss of generality, \textbf{ST4} is chosen as the representative dataset for the experiments.
 
 \subsubsection{Raw Dataset}
 
@@ -415,7 +424,7 @@ The original \textbf{DS4} dataset is loaded from \url{https://raw.githubusercont
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/raw_ds4.png}
+    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/figures/raw_ds4.png}
     \caption{Scatter plot of the original \textbf{DS4} dataset. Each sample is colored according to its cluster label, with noise samples colored in dark blue.}
     \label{fig:raw_ds4}
 \end{figure}
@@ -424,7 +433,7 @@ The original \textbf{DS4} dataset is loaded from \url{https://raw.githubusercont
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=\textwidth]{MethodologyReassessment/raw_metrics.png}
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/raw_metrics.png}
     \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the original \textbf{DS4} dataset. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
     \label{fig:raw_metrics}
 \end{figure}
@@ -435,7 +444,7 @@ The noise removal step is performed by filtering out the samples labeled as \tex
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/noise_removed_ds4.png}
+    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/figures/noise_removed_ds4.png}
     \caption{Scatter plot of the \textbf{DS4} dataset after noise removal. Each sample is colored according to its cluster label.}
     \label{fig:noise_removed_ds4}
 \end{figure}
@@ -444,7 +453,7 @@ The noise removal step is performed by filtering out the samples labeled as \tex
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=\textwidth]{MethodologyReassessment/noise_removed_metrics.png}
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/noise_removed_metrics.png}
     \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the \textbf{DS4} dataset after noise removal. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
     \label{fig:noise_removed_metrics}
 \end{figure}
@@ -457,7 +466,7 @@ Downsampling, on the other hand, does not necessarily constitute a form of data 
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/downsampled_ds4.png}
+    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/figures/downsampled_ds4.png}
     \caption{Scatter plot of the \textbf{DS4} dataset after downsampling. Each sample is colored according to its cluster label.}
     \label{fig:downsampled_ds4}
 \end{figure}
@@ -470,14 +479,14 @@ Data ordering is expected to impose the most harm on the original work's experim
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=\textwidth]{MethodologyReassessment/ordered_batches.png}
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/ordered_batches.png}
     \caption{Scatter plot of the ordered downsampled \textbf{DS4} dataset for batches 0, 10, 20, and 30. Each sample is colored according to its cluster label.}
     \label{fig:ordered_batches}
 \end{figure}
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=\textwidth]{MethodologyReassessment/unordered_batches.png}
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/unordered_batches.png}
     \caption{Scatter plot of the unordered downsampled \textbf{DS4} dataset for batches 0, 10, 20, and 30. Each sample is colored according to its cluster label.}
     \label{fig:unordered_batches}
 \end{figure}
@@ -486,7 +495,7 @@ Data ordering is expected to impose the most harm on the original work's experim
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=\textwidth]{MethodologyReassessment/ordered_metrics.png}
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/ordered_metrics.png}
     \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the ordered downsampled \textbf{DS4} dataset. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
     \label{fig:ordered_metrics}
 \end{figure}
@@ -497,14 +506,14 @@ Finally, the scaling step is performed by applying a min-max normalization to th
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/scaled_ds4.png}
+    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/figures/scaled_ds4.png}
     \caption{Scatter plot of the ordered downsampled \textbf{DS4} dataset after scaling. Each sample is colored according to its cluster label.}
     \label{fig:scaled_ds4}
 \end{figure}
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=\textwidth]{MethodologyReassessment/scaled_metrics.png}
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/scaled_metrics.png}
     \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the ordered downsampled \textbf{DS4} dataset after scaling. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
     \label{fig:scaled_metrics}
 \end{figure}

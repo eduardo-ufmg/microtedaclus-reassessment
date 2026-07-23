@@ -327,7 +327,7 @@ def plot_metrics(ari_stats, t_predict_stats, t_fit_stats, params_text, stage, ou
     axes[0].fill_between(
         batches, ari_q1, ari_q3, color="tab:blue", alpha=0.3, label="IQR"
     )
-    axes[0].set_title(f"{stage} — ARI per batch")
+    axes[0].set_title(f"{stage} — ARI per Batch")
     axes[0].set_xlabel("Batch Index")
     axes[0].set_ylabel("Adjusted Rand Index")
     axes[0].set_ylim(-1.0, 1.0)
@@ -354,7 +354,7 @@ def plot_metrics(ari_stats, t_predict_stats, t_fit_stats, params_text, stage, ou
     axes[1].fill_between(
         batches, tf_q1, tf_q3, color="tab:green", alpha=0.3, label="fit IQR"
     )
-    axes[1].set_title(f"{stage} — processing time per batch")
+    axes[1].set_title(f"{stage} — Processing Time per Batch")
     axes[1].set_xlabel("Batch Index")
     axes[1].set_ylabel("Time (ms)")
     axes[1].set_yscale("log")

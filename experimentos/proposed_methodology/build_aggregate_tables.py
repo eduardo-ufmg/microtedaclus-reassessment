@@ -12,7 +12,15 @@ INPUT_DIR = "./metrics_summary"
 OUTPUT_DIR = "./latex/tables"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-MODEL_ORDER = ["CluStream", "DenStream", "MicroTEDAClus"]
+MODEL_ORDER = [
+    "CluStream",
+    "DenStream",
+    "MicroTEDAClus",
+    "CEDAS",
+    "TEDACloud",
+    "AutoCloud",
+    "StreamKM",
+]
 SCL_PATTERN = re.compile(r"^SCL[-_](\d+)$")
 
 

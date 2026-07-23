@@ -9,7 +9,15 @@ INPUT_DIR = "./aggregated_per_run"
 OUTPUT_DIR = "./metrics_summary"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-KNOWN_MODELS = ["CluStream", "DenStream", "MicroTEDAClus"]
+KNOWN_MODELS = [
+    "CluStream",
+    "DenStream",
+    "MicroTEDAClus",
+    "CEDAS",
+    "TEDACloud",
+    "AutoCloud",
+    "StreamKM",
+]
 
 
 def parse_filename(filename):

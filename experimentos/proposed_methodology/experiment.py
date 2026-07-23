@@ -184,12 +184,12 @@ DATASETS = [
 ]
 
 MODEL_MAP = {
-    # "CluStream": (CluStream, CluStreamParameterSearchSpace),
-    # "DenStream": (DenStream, DenStreamParameterSearchSpace),
-    # "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
-    # "CEDAS": (CEDAS, CEDASParameterSearchSpace),
-    # "TEDACloud": (TEDACloud, TEDACloudParameterSearchSpace),
-    # "AutoCloud": (AutoCloud, AutoCloudParameterSearchSpace),
+    "CluStream": (CluStream, CluStreamParameterSearchSpace),
+    "DenStream": (DenStream, DenStreamParameterSearchSpace),
+    "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
+    "CEDAS": (CEDAS, CEDASParameterSearchSpace),
+    "TEDACloud": (TEDACloud, TEDACloudParameterSearchSpace),
+    "AutoCloud": (AutoCloud, AutoCloudParameterSearchSpace),
     "StreamKM": (StreamKM, StreamKMParameterSearchSpace),
 }
 

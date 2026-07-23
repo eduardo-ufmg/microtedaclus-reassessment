@@ -29,10 +29,13 @@ CHAMELEON_DS7_URL = (
 
 BATCH_SIZE = 100
 OPT_TRIALS = 100
-OPT_TIMEOUT = 600  # seconds
+OPT_TIMEOUT = 300  # seconds
 SPLIT_FRAC = 0.2
 DOWNSAMPLE_FRAC = 0.5
 RNG_SEED = 0
+N_RUNS = 20
+
+STAGES = ["noise_removed", "downsampled"]
 
 TIMER_KEYS = [
     "update_micro_clusters",
@@ -232,29 +235,44 @@ def evaluate_instrumented(model, X_eval, y_eval, batch_size):
     return pd.DataFrame(records)
 
 
+def aggregate_curves(arr_list):
+    """arr_list: list of 1D arrays of equal length (may contain NaNs for
+    failed runs). Returns (median, q1, q3) along the run axis, ignoring
+    NaNs. Median is the central statistic; Q1-Q3 give the IQR band."""
+    stacked = np.vstack(arr_list)
+    with np.errstate(all="ignore"):
+        median = np.nanmedian(stacked, axis=0)
+        q1 = np.nanpercentile(stacked, 25, axis=0)
+        q3 = np.nanpercentile(stacked, 75, axis=0)
+    return median, q1, q3
+
+
 # ---------
 # Plotting
 # ---------
-def plot_stage_comparisons(dfs, out_dir):
+def plot_stage_comparisons(results, out_dir):
+    """results: dict stage_name -> {
+        'x': cumulative_samples array,
+        'microcluster_count': (median, q1, q3),
+        'total_time': (median, q1, q3),
+    }, each median/q1/q3 aggregated across N_RUNS independent tuning+
+    evaluation repetitions (see run_stage / aggregate_curves)."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
     colors = {"noise_removed": "tab:blue", "downsampled": "tab:red"}
 
-    for stage_name, df in dfs.items():
+    for stage_name, res in results.items():
         color = colors.get(stage_name)
-        x_vals = df["cumulative_samples"]
+        x_vals = res["x"]
 
         # Subplot 1: Microclusters
-        ax1.plot(
-            x_vals,
-            df["microcluster_count"],
-            label=stage_name,
-            color=color,
-            linewidth=2.0,
-        )
+        mc_med, mc_q1, mc_q3 = res["microcluster_count"]
+        ax1.plot(x_vals, mc_med, label=stage_name, color=color, linewidth=2.0)
+        ax1.fill_between(x_vals, mc_q1, mc_q3, color=color, alpha=0.25)
 
         # Subplot 2: Total Timings
-        total_time = df[TIMER_KEYS].sum(axis=1)
-        ax2.plot(x_vals, total_time, label=stage_name, color=color, linewidth=2.0)
+        tt_med, tt_q1, tt_q3 = res["total_time"]
+        ax2.plot(x_vals, tt_med, label=stage_name, color=color, linewidth=2.0)
+        ax2.fill_between(x_vals, tt_q1, tt_q3, color=color, alpha=0.25)
 
     # Configure Ax 1
     ax1.set_title("Microcluster Count vs. Samples Processed")
@@ -264,9 +282,9 @@ def plot_stage_comparisons(dfs, out_dir):
     ax1.grid(True, linestyle="--", alpha=0.5)
 
     # Configure Ax 2
-    ax2.set_title("Total Microcluster Processing Time vs. Samples Processed")
+    ax2.set_title("Processing Time vs. Samples Processed")
     ax2.set_xlabel("Cumulative Samples Processed")
-    ax2.set_ylabel("Total Time (ms)")
+    ax2.set_ylabel("Time (ms)")
     ax2.set_yscale("log")
     ax2.legend()
     ax2.grid(True, which="both", linestyle="--", alpha=0.5)
@@ -279,16 +297,20 @@ def plot_stage_comparisons(dfs, out_dir):
 # -----
 # Main
 # -----
-def run_stage(stage_name, X, y):
+def tune_and_evaluate_once(
+    stage_name, run_idx, X_opt, y_opt, X_eval, y_eval, batch_size
+):
+    """One independent tuning+evaluation repetition. Returns
+    (microcluster_count: (n_eval_batches,), total_time_ms: (...,)), NaN-filled
+    if the study produced no valid trial (so runs still align for
+    cross-run aggregation without biasing it)."""
+    n_eval_batches = len(X_eval) // batch_size
 
-    n_samples = len(X)
-    split_idx = int(SPLIT_FRAC * n_samples)
-    X_opt, y_opt = X[:split_idx], y[:split_idx]
-    X_eval, y_eval = X[split_idx:], y[split_idx:]
-
-    study = optuna.create_study(direction="maximize")
+    seed = RNG_SEED + 1000 * STAGES.index(stage_name) + run_idx
+    sampler = optuna.samplers.TPESampler(seed=seed)
+    study = optuna.create_study(direction="maximize", sampler=sampler)
     study.optimize(
-        lambda trial: objective(trial, X_opt, y_opt, BATCH_SIZE),
+        lambda trial: objective(trial, X_opt, y_opt, batch_size),
         n_trials=OPT_TRIALS,
         timeout=OPT_TIMEOUT,
     )
@@ -296,13 +318,42 @@ def run_stage(stage_name, X, y):
     try:
         best_params = study.best_params
     except ValueError:
-        print(f"[{stage_name}] All trials pruned — skipping.")
-        return None
+        nan_arr = np.full(n_eval_batches, np.nan)
+        return nan_arr, nan_arr.copy()
 
     model = InstrumentedMicroTEDAClus(**best_params)
-    df = evaluate_instrumented(model, X_eval, y_eval, BATCH_SIZE)
+    df = evaluate_instrumented(model, X_eval, y_eval, batch_size)
 
-    return df
+    total_time_ms = df[TIMER_KEYS].sum(axis=1).to_numpy()
+    return df["microcluster_count"].to_numpy(), total_time_ms
+
+
+def run_stage(stage_name, X, y):
+    n_samples = len(X)
+    split_idx = int(SPLIT_FRAC * n_samples)
+    X_opt, y_opt = X[:split_idx], y[:split_idx]
+    X_eval, y_eval = X[split_idx:], y[split_idx:]
+    n_eval_batches = len(X_eval) // BATCH_SIZE
+
+    mc_runs, tt_runs = [], []
+    for run_idx in tqdm(range(N_RUNS), desc=f"{stage_name} runs", leave=False):
+        mc, tt = tune_and_evaluate_once(
+            stage_name, run_idx, X_opt, y_opt, X_eval, y_eval, BATCH_SIZE
+        )
+        mc_runs.append(mc)
+        tt_runs.append(tt)
+
+    if all(np.all(np.isnan(mc)) for mc in mc_runs):
+        print(f"[{stage_name}] All trials pruned in every run — skipping.")
+        return None
+
+    x_vals = (np.arange(1, n_eval_batches + 1)) * BATCH_SIZE
+
+    return {
+        "x": x_vals,
+        "microcluster_count": aggregate_curves(mc_runs),
+        "total_time": aggregate_curves(tt_runs),
+    }
 
 
 def main():
@@ -312,19 +363,20 @@ def main():
     X_nr, y_nr = op_noise_removed(X0, y0)
     X_ds, y_ds = op_downsampled(X_nr, y_nr)
 
-    stages = {
+    stage_datasets = {
         "noise_removed": (X_nr, y_nr),
         "downsampled": (X_ds, y_ds),
     }
 
-    dfs = {}
-    for stage_name, (X, y) in tqdm(stages.items(), desc="Stages"):
-        df = run_stage(stage_name, X, y)
-        if df is not None:
-            dfs[stage_name] = df
+    results = {}
+    for stage_name in tqdm(STAGES, desc="Stages"):
+        X, y = stage_datasets[stage_name]
+        res = run_stage(stage_name, X, y)
+        if res is not None:
+            results[stage_name] = res
 
-    if len(dfs) == len(stages):
-        plot_stage_comparisons(dfs, OUTPUT_DIR)
+    if len(results) == len(STAGES):
+        plot_stage_comparisons(results, OUTPUT_DIR)
     else:
         print("Skipping comparison plots — not all stages produced results.")
 
