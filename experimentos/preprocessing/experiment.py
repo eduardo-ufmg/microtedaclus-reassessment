@@ -6,16 +6,16 @@ MicroTEDAClus on the `cluto-t7-10k` (chameleon ds7) dataset.
 
 Pipeline (cumulative — each stage is derived from the previous one):
 
-    raw -> noise_removed -> downsampled -> ordered -> scaled
+    raw -> noise_removed -> downsampled -> scaled -> ordered
 
 Stage definitions (see chat discussion for the rationale):
     raw            : dataset as loaded from the arff file, no operation.
     noise_removed  : drop points whose ground-truth label is -1 (noise class).
     downsampled    : random uniform subsample, 50% of the previous stage's
-                      points, original relative order preserved, seed=42.
+                      points, original relative order preserved, seed=0.
+    scaled         : MinMax scaling to [0, 1] per feature (column).
     ordered        : stable sort by ground-truth label (ascending) — points
                       of the same cluster become contiguous in the stream.
-    scaled         : MinMax scaling to [0, 1] per feature (column).
 
 Optimization/evaluation protocol:
     - 20% / 80% opt/eval split
@@ -102,15 +102,15 @@ def op_downsampled(X, y, frac=DOWNSAMPLE_FRAC, rng=None):
     return X[idx], y[idx]
 
 
-def op_ordered(X, y):
-    idx = np.argsort(y, kind="stable")
-    return X[idx], y[idx]
-
-
 def op_scaled(X, y):
     scaler = MinMaxScaler()
     X_scaled = scaler.fit_transform(X)
     return X_scaled, y
+
+
+def op_ordered(X, y):
+    idx = np.argsort(y, kind="stable")
+    return X[idx], y[idx]
 
 
 def build_pipeline(X0, y0):
@@ -125,11 +125,11 @@ def build_pipeline(X0, y0):
     X, y = op_downsampled(X, y)
     datasets["downsampled"] = (X, y)
 
-    X, y = op_ordered(X, y)
-    datasets["ordered"] = (X, y)
-
     X, y = op_scaled(X, y)
     datasets["scaled"] = (X, y)
+
+    X, y = op_ordered(X, y)
+    datasets["ordered"] = (X, y)
 
     return datasets
 

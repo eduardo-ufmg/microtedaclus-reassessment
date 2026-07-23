@@ -416,7 +416,7 @@ The original work organizes the datasets used in its experiments into three cate
 \subsection{Static}
 
 
-In \cite{maia2020evolvclus}, static datasets \textbf{ST-D1} and \textbf{ST-D2} are stated to correspond to datasets introduced in \cite{karypis1999chameleon} to evaluate the performance of the Chameleon clustering algorithm. From the original work's plots, it can be inferred that those corresponds to datasets \textbf{DS4} and \textbf{DS5} from the source paper. The public repository, however, loads its experiment's data from \url{https://query.data.world/s/faarcpz24ukr2g53druxljp4nghhzn} and \url{https://query.data.world/s/zry3yzt4ruwrlonziw2pfkegsdugw2}, which are cleaned, scaled, ordered, and downsampled versions of the original datasets, and no information regarding the preprocessing steps is provided in the original work. Those operations over the dataset guarantee severe data leakage given the streaming nature of the proposed application for which the model is designed. The following experiments investigate the impact of each of those preprocessing steps on the score chosen to evaluate the clustering quality, discussed in \cref{sec:evaluation_metrics}, and on the execution time of the model. Without loss of generality, \textbf{ST4} is chosen as the representative dataset for the experiments.
+In \cite{maia2020evolvclus}, static datasets \textbf{ST-D1} and \textbf{ST-D2} are stated to correspond to datasets introduced in \cite{karypis1999chameleon} to evaluate the performance of the Chameleon clustering algorithm. From the original work's plots, it can be inferred that those corresponds to datasets \textbf{DS4} and \textbf{DS5} from the source paper. The public repository, however, loads its experiment's data from \url{https://query.data.world/s/faarcpz24ukr2g53druxljp4nghhzn} and \url{https://query.data.world/s/zry3yzt4ruwrlonziw2pfkegsdugw2}, which are cleaned, downsampled, scaled, and ordered versions of the original datasets, and no information regarding the preprocessing steps is provided in the original work. Those operations over the dataset guarantee severe data leakage given the streaming nature of the proposed application for which the model is designed. The following experiments investigate the impact of each of those preprocessing steps on the score chosen to evaluate the clustering quality, discussed in \cref{sec:evaluation_metrics}, and on the execution time of the model. Without loss of generality, \textbf{ST4} is chosen as the representative dataset for the experiments.
 
 \subsubsection{Raw Dataset}
 
@@ -473,6 +473,27 @@ Downsampling, on the other hand, does not necessarily constitute a form of data 
 
 The results shown in \cref{fig:downsampled_metrics} \textcolor{red}{\dots}
 
+
+\subsubsection{Scaling}
+
+The scaling step is performed by applying a min-max normalization to the features of the downsampled dataset. Each feature is scaled to the range $[0, 1]$ by subtracting the minimum value and dividing by the range of the feature. \cref{fig:scaled_ds4} shows a scatter plot of the scaled dataset.
+
+\begin{figure}[thpb]
+    \centering
+    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/figures/scaled_ds4.png}
+    \caption{Scatter plot of the ordered downsampled \textbf{DS4} dataset after scaling. Each sample is colored according to its cluster label.}
+    \label{fig:scaled_ds4}
+\end{figure}
+
+\begin{figure}[thpb]
+    \centering
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/scaled_metrics.png}
+    \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the downsampled \textbf{DS4} dataset after scaling. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
+    \label{fig:scaled_metrics}
+\end{figure}
+
+\cref{fig:scaled_metrics} shows \textcolor{red}{\dots}
+
 \subsubsection{Ordering}
 
 Data ordering is expected to impose the most harm on the original work's experiments validity. Not only it represents a severe form of data leakage, because it completely disregards the chronological order of the samples, it also guarantees that, for the 100-sample batche length chosen for the experiments, most of the batches will contain samples from a single cluster. For this experiment, the downsampled dataset is reordered by the cluster labels, in a way that all samples from the same cluster are contiguous. \cref{fig:ordered_batches} show the scatter plot of the batches with index 0, 10, 20, and 30. \cref{fig:unordered_batches} shows the scatter plot of the same batches in the original downsampled dataset.
@@ -499,26 +520,6 @@ Data ordering is expected to impose the most harm on the original work's experim
     \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the ordered downsampled \textbf{DS4} dataset. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
     \label{fig:ordered_metrics}
 \end{figure}
-
-\subsubsection{Scaling}
-
-Finally, the scaling step is performed by applying a min-max normalization to the features of the ordered dataset. Each feature is scaled to the range $[0, 1]$ by subtracting the minimum value and dividing by the range of the feature. \cref{fig:scaled_ds4} shows a scatter plot of the scaled dataset.
-
-\begin{figure}[thpb]
-    \centering
-    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/figures/scaled_ds4.png}
-    \caption{Scatter plot of the ordered downsampled \textbf{DS4} dataset after scaling. Each sample is colored according to its cluster label.}
-    \label{fig:scaled_ds4}
-\end{figure}
-
-\begin{figure}[thpb]
-    \centering
-    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/scaled_metrics.png}
-    \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the ordered downsampled \textbf{DS4} dataset after scaling. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
-    \label{fig:scaled_metrics}
-\end{figure}
-
-\cref{fig:scaled_metrics} shows \textcolor{red}{\dots}
 
 \subsection{Concept Drift}
 

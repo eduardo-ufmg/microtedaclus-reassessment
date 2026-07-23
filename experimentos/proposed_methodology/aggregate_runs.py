@@ -30,11 +30,11 @@ def parse_filename(filename):
     raise ValueError(f"Unrecognized model in filename: {filename}")
 
 
-def format_cell(mean_val, std_val):
-    """Formats the statistical pair into a single cell string."""
-    if pd.isna(mean_val) or pd.isna(std_val):
+def format_cell(median_val, q1_val, q3_val):
+    """Formats the median/IQR triple into a single cell string."""
+    if pd.isna(median_val) or pd.isna(q1_val) or pd.isna(q3_val):
         return "NaN"
-    return f"{mean_val:.4g} \u00b1 {std_val:.4g}"
+    return f"{median_val:.4g} [{q1_val:.4g}, {q3_val:.4g}]"
 
 
 # 1. Ingest Data
@@ -66,67 +66,32 @@ master_df = pd.concat(raw_data, ignore_index=True)
 datasets = sorted(master_df["dataset"].unique())
 models = sorted(master_df["model"].unique())
 
-# 2. Identify Metric Types
-# Base columns exclude structural identifiers
+# 2. Identify Metric Columns
+# Base columns exclude structural identifiers. Each column in
+# aggregated_per_run/*.csv is already a single per-run point statistic
+# (e.g. a per-run median), so no paired/unpaired split is needed here:
+# medians and quantiles have no "law of total variance" analogue to pool
+# a mean+std pair, so every metric is treated uniformly as an inter-run
+# distribution of per-run values.
 all_cols = set(master_df.columns) - {"run", "run_status", "dataset", "model"}
-std_cols = {col for col in all_cols if col.endswith("_std")}
-mean_cols = {col for col in all_cols if col.endswith("_mean")}
 
-# Paired metrics (require Law of Total Variance) e.g., 'time_fit_ns'
-paired_metrics = {
-    col.replace("_mean", "")
-    for col in mean_cols
-    if f"{col.replace('_mean', '')}_std" in std_cols
-}
-
-# Unpaired metrics (require standard Inter-Run stats) e.g., 'ari_mean_all', 'memory_bytes_max'
-unpaired_metrics = (
-    all_cols
-    - {f"{m}_mean" for m in paired_metrics}
-    - {f"{m}_std" for m in paired_metrics}
-)
-
-# 3. Statistical Aggregation
-aggregated_results = {
-    metric: [] for metric in list(paired_metrics) + list(unpaired_metrics)
-}
+# 3. Statistical Aggregation (inter-run median / Q1 / Q3)
+aggregated_results = {metric: [] for metric in all_cols}
 
 grouped = master_df.groupby(["dataset", "model"])
 
 for (dataset, model), group in grouped:
-    # Process Paired Metrics (Law of Total Variance)
-    for metric in paired_metrics:
-        run_means = group[f"{metric}_mean"]
-        run_stds = group[f"{metric}_std"]
-
-        # Pooled Mean: Mean of means
-        pooled_mean = run_means.mean()
-
-        # Pooled Variance: Mean of variances + Variance of means
-        mean_of_vars = (run_stds**2).mean()
-        var_of_means = run_means.var(ddof=1) if len(run_means) > 1 else 0.0
-
-        pooled_std = np.sqrt(mean_of_vars + var_of_means)
-
-        aggregated_results[metric].append(
-            {
-                "dataset": dataset,
-                "model": model,
-                "value": format_cell(pooled_mean, pooled_std),
-            }
-        )
-
-    # Process Unpaired Metrics (Standard Inter-Run Stats)
-    for metric in unpaired_metrics:
+    for metric in all_cols:
         vals = group[metric]
-        inter_mean = vals.mean()
-        inter_std = vals.std(ddof=1) if len(vals) > 1 else 0.0
+        inter_median = vals.median()
+        inter_q1 = vals.quantile(0.25)
+        inter_q3 = vals.quantile(0.75)
 
         aggregated_results[metric].append(
             {
                 "dataset": dataset,
                 "model": model,
-                "value": format_cell(inter_mean, inter_std),
+                "value": format_cell(inter_median, inter_q1, inter_q3),
             }
         )
 

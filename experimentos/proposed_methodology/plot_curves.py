@@ -112,8 +112,26 @@ def main():
     agg_cols = list(METRIC_CONFIG.keys())
     grouped = (
         master_df.groupby(["dataset", "model", "batch"])[agg_cols]
-        .agg(["mean", "std"])
+        .agg(
+            [
+                "median",
+                lambda s: s.quantile(0.25),
+                lambda s: s.quantile(0.75),
+            ]
+        )
         .reset_index()
+    )
+    # Name the quantile lambdas explicitly (pandas otherwise assigns
+    # "<lambda_0>"/"<lambda_1>", which is not stable/readable downstream).
+    grouped.columns = pd.MultiIndex.from_tuples(
+        [
+            (
+                (col, {"<lambda_0>": "q1", "<lambda_1>": "q3"}.get(stat, stat))
+                if stat
+                else (col, stat)
+            )
+            for col, stat in grouped.columns
+        ]
     )
 
     for dataset in datasets:
@@ -128,26 +146,22 @@ def main():
                     continue
 
                 batches = model_data["batch"].values
-                means = model_data[(metric, "mean")].values
-                stds = model_data[(metric, "std")].values
-
-                # If only 1 run survived for a batch, std is NaN. Force to 0 for plotting continuity.
-                stds = np.nan_to_num(stds, nan=0.0)
-
-                # Boundary clipping
-                lower_bound = means - stds
-                upper_bound = means + stds
+                medians = model_data[(metric, "median")].values
+                lower_bound = model_data[(metric, "q1")].values
+                upper_bound = model_data[(metric, "q3")].values
+                # Unlike a mean+/-std band, Q1/Q3 need no NaN patching for
+                # single-surviving-run batches (quantile of one value is
+                # that value) and are already within [min, max] by
+                # construction, so no clipping is needed either.
 
                 # Log scale safety: matplotlib fill_between fails if lower_bound <= 0 on a log axis
                 logical_min = config["min"]
                 if config["y_scale"] == "log" and logical_min <= 0:
-                    logical_min = np.min(means)
-
+                    logical_min = np.min(medians)
                 lower_bound = np.clip(lower_bound, logical_min, config["max"])
-                upper_bound = np.clip(upper_bound, logical_min, config["max"])
 
                 ax.plot(
-                    batches, means, label=model, color=color_map[model], linewidth=2.0
+                    batches, medians, label=model, color=color_map[model], linewidth=2.0
                 )
                 ax.fill_between(
                     batches, lower_bound, upper_bound, color=color_map[model], alpha=0.2
