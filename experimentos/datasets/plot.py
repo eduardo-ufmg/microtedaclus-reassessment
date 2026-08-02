@@ -22,12 +22,12 @@ from sklearn.datasets import make_blobs
 rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_DIR = os.path.join(SCRIPT_DIR, "figures")
+OUTPUT_DIR = os.path.join(SCRIPT_DIR, "plots")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 RNG_SEED = 0
 BATCH_SIZE = 100
-SCALABILITY_DIM = 4
+SCALABILITY_DIM = 2
 
 CASSINI_BATCH_INDEX = 2
 CONCEPT_DRIFT_SPECS = [

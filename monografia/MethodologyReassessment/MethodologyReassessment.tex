@@ -402,12 +402,7 @@ This tuning strategy's goal is to both reduce error- and bias-prone subjective d
 
 \subsection{Multi-run Statistics}
 
-To account for the inherent variability in the performance of the evaluated models, each experiment consists of 20 runs for each set of model, dataset, condition, and such. The results of those runs are aggregated and reported as the median, first quartile, and third quartile of the evaluated metrics. The choice of this statistical approach is justified by two reasons:
-
-\begin{enumerate}
-    \item Preliminary experiments exposed the presence of outliers in the results of some models, which significantly harms the reliability of the mean as a measure of central tendency, as well as the interpretability of the standard deviation as a measure of dispersion. The median, first quartile, and third quartile are more robust to outliers and provide a better representation of the distribution of the results.
-    \item Timing metrics are ploted in logarithmic scale. Such scale not only makes the mean and standard deviation less interpretable, but also require the clipping of the lower bound of the timing metrics to a small positive value when it is zero or negative. This is because the plotting library used in this work does not support logarithmic scale for non-positive values. The median, first quartile, and third quartile are not affected by this issue, since such metrics are bounded by the actual values of the timing metrics, which are always non-negative.
-\end{enumerate}
+\dots
 
 \section{Datasets}
 
@@ -531,28 +526,101 @@ Data ordering is expected to impose the most harm on the original work's experim
 
 Such results show that the experiments performed on datasets \textbf{ST-D1} and \textbf{ST-D2} are not valid for evaluating the performance of the microTEDAclus model in real-world online stream clustering scenarios. To ensure the validity of the experiments, this reassessment uses the original \textbf{DS4} and \textbf{DS5} datasets, without any preprocessing.
 
-The third static dataset, \textbf{Cassini}, is generated in the original work by \textbf{R}'s library \texttt{mlbench} and used in its original form, without any preprocessing. Because it is originally ordered by cluster labels in the \texttt{mlbench} library, this work's experiments randomly shuffle the samples to avoid the same problem of data leakage and unrealistic batch composition.
+The third static dataset, \textbf{Cassini}, is generated in the original work by \textbf{R}'s library \texttt{mlbench} and used in its original form, without any preprocessing. Because it is originally ordered by cluster labels in the \texttt{mlbench} library, this work's experiments randomly shuffle the samples to avoid the same problem of data leakage and unrealistic batch composition. \cref{fig:cassini_batches} shows the scatter plots of the batch with index 2 of the original and shuffled \textbf{Cassini} dataset
+
+\begin{figure}[thpb]
+    \centering
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/cassini_batches.png}
+    \caption{Scatter plot of the \textbf{Cassini} dataset. The left plot shows the complete dataset, the middle plot shows the batch with index 2 of the original ordered dataset, and the right plot shows the batch with index 2 of the shuffled dataset. Each sample is colored according to its cluster label.}
+    \label{fig:cassini_batches}
+\end{figure}
 
 \subsection{Concept Drift}
 
-The \texttt{streamMOA} concept drift datasets used in the original work are \textbf{STR-B1}, \textbf{STR-B2}, and \textbf{RBF}. The scatter plots shown in the original work suggest that the noise samples of those datasets, labeled by the library as \texttt{NA}, are removed from the evaluation. Because of the reasons previously discussed, this reassessment includes the noise samples in the evaluation, as they are part of the dataset and can have a significant impact on the results. To prevent parsing issues, the noise samples are relabeled as \texttt{-1} once each dataset is loaded.
+The \texttt{streamMOA} concept drift datasets used in the original work are \textbf{STR-B1}, \textbf{STR-B2}, and \textbf{RBF}. The scatter plots shown in the original work suggest that the noise samples of those datasets, labeled by the library as \texttt{NA}, are removed from the evaluation. Because of the reasons previously discussed, this reassessment includes the noise samples in the evaluation, as they are part of the dataset and can have a significant impact on the results. To prevent parsing issues, the noise samples are relabeled as \texttt{-1} once each dataset is loaded. \cref{fig:concept_drift_noise_handling} compares the complete denoised and relabeled datasets.
+
+\begin{figure}[thpb]
+    \centering
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/concept_drift_noise_handling.png}
+    \caption{Scatter plot of the concept drift datasets. The left plots show the datasets with noise samples removed, while the right plots show the complete datasets with noise samples relabeled as \texttt{-1}. Each sample is colored according to its cluster label.}
+    \label{fig:concept_drift_noise_handling}
+\end{figure}
 
 \subsection{Scalability}
 
-For the scalability experiments, in which memory and execution time are profiled for increasing numbers of samples or feature dimensions, the original work uses synthetic datasets generated by the \texttt{streamMOA} library. The generation process and conditions are well described in the original work, and shows that the synthetic datasets lack the introduction of noise. To ensure that the scalability experiments reflect real-world scenarios, this reassessment generates synthetic datasets with noise.
+For the scalability experiments, in which memory and execution time are profiled for increasing numbers of samples or feature dimensions, the original work uses synthetic datasets generated by the \texttt{streamMOA} library. The generation process and conditions are well described in the original work, and shows that the synthetic datasets lack the introduction of noise. To ensure that the scalability experiments reflect real-world scenarios, this reassessment generates synthetic datasets with noise. \cref{fig:scalability_noise_comparison} shows the scatter plots of the synthetic dataset \texttt{SCL-2} with and without noise.
+
+\begin{figure}[thpb]
+    \centering
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/scalability_noise_comparison.png}
+    \caption{Scatter plot of the synthetic dataset \texttt{SCL-2}. The left plot shows the dataset without noise, while the right plot shows the dataset with noise. Each sample is colored according to its cluster label.}
+    \label{fig:scalability_noise_comparison}
+\end{figure}
 
 \section{Evaluation Metrics} \label{sec:evaluation_metrics}
 
-%% the main quality metric used in the original work is the adjusted rand index (ARI). this is a suitable metric for clustering evaluation.
-%% the statistics regarding the metric, however, is not. although the original work states that the results are averaged over multiple runs with random subsets of the data, the public repository shows that the results are obtained from a single run for each dataset. the `mean` and `std` values shown in the original work are statistics of the ARI values obtained from the different batches of data, and not from multiple runs. this is a problem because it does not reflect the true variability of the results.
-%% furthermore, mean and standard deviation are only valid statistics when the results are expected to be normally distributed, which is not the case for quality metrics over sequential batches of data, where the results for each batch are not independent and are a direct consequence of the data snapshot, which is not random, since it is a sequential batch of data.
+The original work evaluates its proposed model against the selected benchmark models under three metrics: the adjusted rand index, the execution time, and the memory footprint. The following subsections explain how those metrics are computed in it and discuss the impacts of some choices on the validity of the experiments and the reliability of the results.
 
-%% required bibliography:
-%% - the paper that introduces the ARI metric:
-%% - an authoritative paper that states that the mean and the standard deviation are suitable statistics for normally distributed data, and that they are not suitable for non-normally distributed data. not necessarily the first to talk about it, but one that is widely cited and recognized in the field:
-%% - the paper that introduces the iqr metric:
+\subsection{ARI}
 
-\section{Prequential Versus Sequential Evaluation}
+The adjusted rand index is a widely used metric for evaluating the quality of clustering algorithms \cite{hubert1985ari}. Because it is an external metric \cite{halkidi2001validation}, it does not depends on the data distribution or the number of clusters, which makes it suitable for evaluating the performance of clustering algorithms in a streaming setting over non-gaussian datasets. The predictions over which it is computed in the original work, and the analysis of the results, however, do not match the standard practice for evaluating clustering algorithms in streaming or offline settings \cite{akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline,zhang2022extension,zubaroglu2023emcstream}. \cref{sec:prequential_sequential_offline_evaluation} discusses the protocol under which the models' predictions are captured.
+
+Even if computed under suitable evaluation protocols, a single "mean plus standard deviation" over multiple runs is not descriptive for algorithms that are expected to handle evolving data streams. Some questions that are not answered by such measure are:
+
+\begin{itemize}
+    \item How much information does a model require to reach a satisfactory performance?
+    \item Does its performance degrade over time, and if so, how much?
+\end{itemize}
+
+\cref{fig:similar_stats_different_shapes} shows three hypothetical evolutions of the ARI over evaluation batches. For each of them, the answer to the questions above is different, but their central tendency and dispersion measures are the same. The first evolution shows a model that slowly but consistently improves its performance over time, the second shows a model that quickly reaches a high score but then degrades over time, and the third shows a model scores randomly over the batches. The first model is likely the best choice for a real-world application, but the mean and standard deviation of the ARI do not provide enough information to make such decision.
+
+\begin{figure}[thpb]
+    \centering
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/similar_stats_different_shapes.png}
+    \caption{Three hypothetical evolutions of the ARI over evaluation batches. The left plot shows slowly increasing curve, the middle plot shows a curve that quickly reaches a peak and then degrades, and the right plot shows a random curve. All three curves have the same mean and standard deviation, but their shapes are different, which leads to different interpretations of the model's performance.}
+    \label{fig:similar_stats_different_shapes}
+\end{figure}
+
+The original work handles this lack of information with plots of the evolution of the ARI over the evaluation batches for the concept drift datasets, but not for the static datasets. Furthermore, visual interpretation of the plots is not a reliable approach, as it is subjective, prone to error and bias, and does not provide a quantitative measure of the model's performance over time. To address this issue, this reassessment proposes the following metrics to complement the overall ARI and provide a better understanding of the model's performance over time:
+
+\subsubsection{ARI over the last 10 batches}
+
+For each run, the mean and the standard deviation of the ARI over the last 10 evaluation batches are computed. Those measures are aggregated under the law of total variance \cite{billingsley1995probability} over all runs. Such score is expected to quantitatively answer the second of the previous questions. It represents the model's performance after it has processed many samples and the concept drift, if any, has occurred. A model that is able to adapt to concept drift is expected to have a high ARI over the last 10 batches, while a model that is not able to adapt is expected to have a low ARI over the last 10 batches.
+
+\subsubsection{ARI over the first 10 batches}
+
+For each run, the mean and the standard deviation of the ARI over the first 10 evaluation batches are computed. Those measures are aggregated under the law of total variance \cite{billingsley1995probability} over all runs. Such score is expected to quantitatively answer the first of the previous questions. It represents the model's performance after it has processed a small number of samples and before any concept drift has occurred. A model that is able to learn quickly is expected to have a high ARI over the first 10 batches, while a model that is not able to learn quickly is expected to have a low ARI over the first 10 batches.
+
+\subsubsection{Difference between the highest ARI and the ARI of the last batch}
+
+For each run, the difference between the highest ARI and the ARI of the last evaluation batch is computed. Those differences are aggregated under the basic statistics over all runs. It represents specifically the boustness of the model to concept drift. The highest score is expected to be reached in a steady state, before any concept drift has occurred. Since concept drift is expected to degrade the model's performance, this metric is expected to have a smaller value for a model that is less harmed by it than for a sensible that is more sensible to it.
+
+\cref{tab:complementary_scores_on_the_hypotetical_curves} shows the values of the proposed complementary scores for the three hypothetical evolutions of the ARI shown in \cref{fig:similar_stats_different_shapes}. The first model, which slowly improves its performance over time, has a low ARI over the first 10 batches, a high ARI over the last 10 batches, and a small difference between the highest ARI and the ARI of the last batch. The second model, which quickly reaches a high score but then degrades over time, has a high ARI over the first 10 batches, a low ARI over the last 10 batches, and a large difference between the highest ARI and the ARI of the last batch. The third model, which scores randomly over the batches, has the median score for the first two metrics and the highest difference between the highest ARI and the ARI of the last batch.
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        Curve & First 10 batches & Last 10 batches & Highest $-$ Last \\
+        \hline
+        Smooth & $0.008 \pm 0.008$ & $\mathbf{0.992} \pm \mathbf{0.008}$ & \textbf{0.000} \\
+        Spike & $\mathbf{0.464} \pm \mathbf{0.256}$ & $0.095 \pm 0.011$ & 0.922 \\
+        Plateau & $0.267 \pm 0.296$ & $0.442 \pm 0.336$ & 1.000 \\
+        \hline
+    \end{tabular}
+    \caption{Complementary scores for the hypothetical score curves. The first column shows the name of the curve, the second column shows the mean and standard deviation of the ARI over the first 10 batches, the third column shows the mean and standard deviation of the ARI over the last 10 batches, and the fourth column shows the difference between the highest ARI and the ARI of the last batch. The bold values indicate the best performance for each metric.}
+    \label{tab:complementary_scores_on_the_hypotetical_curves}
+\end{table}
+
+\subsection{Complete Runtime}
+
+
+
+\subsection{Memory Usage}
+
+\section{Prequential, Sequential, and Offline Evaluation} \label{sec:prequential_sequential_offline_evaluation}
+
+%% SHOW AND DISCUSS THE ARI GRAPHS THAT START AT A HIGH SCORE WHICH IS IMPOSSIBLE FOR TRUE PREQUENTIAL EVALUATION SINCE THE MODEL IS NOT TRAINED
 
 %% as can be seem in the public repository, what the paper calls "prequential evaluation" is actually a batched sequential evaluation, where the model is trained then evaluated on the same batch of data. this is a problem because it does not reflect the true performance of the model in a streaming setting, where the model is evaluated on unseen data after being trained on previous data.
 
