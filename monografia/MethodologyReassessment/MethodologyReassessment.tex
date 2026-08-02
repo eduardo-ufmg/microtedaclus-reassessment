@@ -612,24 +612,145 @@ For each run, the difference between the highest ARI and the ARI of the last eva
     \label{tab:complementary_scores_on_the_hypotetical_curves}
 \end{table}
 
-\subsection{Complete Runtime}
+\subsection{Complete Runtime} \label{subsec:complete_runtime}
 
+In \cite{maia2020evolvclus}, execution time is only assessed on for the scalability-oriented datasets, and only reported through a plot of execution time per samples versus the feature dimension. Furthermore, since only the mean accross the multiple runs is reported, it is not possible to assess the variability of this metric. This reassessment evaluates and compares fitting and prediction separately, and reports the following analysis:
 
+\begin{itemize}
+    \item For the datasets that are not scalability-oriented, mean and standard deviation of each stage are captured and reported for each model in suitable tables. This allows for a better understanding of the variability of the execution time and the impact of the dataset characteristics on it.
+    \item For the scalability-oriented datasets, the median and the quartile-pair (25th and 75th percentiles) of each stage are captured and reported for each model in the following plots:
+    \begin{itemize}
+        \item Execution time versus the number of samples, for each of two fixed feature dimensions (2 and 64).
+        \item Execution time versus the feature dimension, for each of two fixed batch indexes (10 and last).
+    \end{itemize}
+    This report strategy's goal is to further investigate how the feature dimension impacts on the sample-scalability of the evaluated models, and how the number of samples impacts on the feature-scalability of the evaluated models. Median and quartiles are selected because preeliminary experiments show that a logarithmic scale is more suitable for this metric -- since the models differ by orders of magnitude -- and the high variability of the execution time increase the risk of negative bounds when defined as $\mu - \sigma$. Because \textbf{Matplotlib}'s logarithmic scale does not support negative values, the quartile-pair is preferred to avoid artificially clipping the lower bound of the error bars to zero, since the quartiles are guaranteed to be bounded by the values actually observed in the experiments.
+\end{itemize}
 
 \subsection{Memory Usage}
 
+The original work reports memory consumption only through a plot of memory usage versus the number of samples for \textbf{STR-B1} for a single run. This reassessment evaluates and compares the memory usage of each model for all datasets, and performs the same analysis and report as for the execution time, as described in \cref{subsec:complete_runtime}, under the same reasoning.
+
 \section{Prequential, Sequential, and Offline Evaluation} \label{sec:prequential_sequential_offline_evaluation}
 
-%% SHOW AND DISCUSS THE ARI GRAPHS THAT START AT A HIGH SCORE WHICH IS IMPOSSIBLE FOR TRUE PREQUENTIAL EVALUATION SINCE THE MODEL IS NOT TRAINED
+\cite{maia2020evolvclus} states, in section 5.2.1, that it applies prequential evaluation to assess the performance of the evaluated models in its experiments: "\textit{For each data set and clustering algorithm, the Prequential method is applied. In this method, each instance can be used to test before it is used for training.}". Such approach is, indeed, the standard practice for evaluating clustering algorithms in a streaming setting \cite{akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline}, since "\textit{the purpose of statistical inference is to make sequential probability forecasts for future observations, rather than to express information about parameters.}" \cite{dawid1984prequential},
 
-%% as can be seem in the public repository, what the paper calls "prequential evaluation" is actually a batched sequential evaluation, where the model is trained then evaluated on the same batch of data. this is a problem because it does not reflect the true performance of the model in a streaming setting, where the model is evaluated on unseen data after being trained on previous data.
+However, two observations show that prequential evaluation is implemented in any of the original work's experiments. First, the code in the public repository shows two distinct evaluation protocols, neither of which is prequential evaluation, and a naming misguidance.
 
-%% furthermore, batched evalutation is performed solely on the concept drift datasets. static datasets are evalutated in a single fit then predict pass, which, besides not being a streaming setting, is not standard practice even for static datasets, where cross-validation is preferred. this is a problem because it does not allow us to evaluate the performance of the model on unseen data, and it does not allow us to compare the results with other works that use cross-validation.
+For \textbf{ST-D1} and \textbf{ST-D2}, the implemented protocol is shown in \cref{snippet:original_work_static_evaluation_protocol},
 
-%% code source:
-%% - src/models/evolving/util/Benchmarks.py
-%% - notebooks/**
+\begin{lstlisting}[float, language=Python, caption={Original work's implementation of the evaluation protocol for static datasets}, label={snippet:original_work_static_evaluation_protocol}]
+  X = stream_df[['x', 'y']].values
+  y = stream_df['class'].values
+  evol_model = EvolvingClustering.EvolvingClustering(variance_limit=0.0006, debug=False)
 
-%% required bibliography:
-%% - an authoritative paper that explains and comments on prequential evaluation. not necessarily the first to talk about it, but one that is widely cited and recognized in the field:
-%% - an authoritative paper that explains and comments on cross-validation. not necessarily the first to talk about it, but one that is widely cited and recognized in the field:
+  evol_model.fit(X)
+  y_hat = evol_model.predict(X)
+
+  error = adjusted_rand_score(y, y_hat)
+\end{lstlisting}
+
+which learns the entire dataset before performing the inferences over the exact same samples. Even though the work recognizes that it performs offline evaluation for the static datasets, such protocol is not standard practice for evaluating clustering algorithms in an offline setting \cite{kaufman2012leakage,kapoor2023leakage,arias2024improved,halkidi2001validation}, for which cross-validation is one of the preferred approaches \cite{stone1974cross,kohavi1995study}.
+
+For the remaining datasets, the implemented protocol is exemplified in \cref{snippet:original_suposed_prequential_evaluation_protocol},
+
+\begin{lstlisting}[float, language=Python, caption={Original work's implementation of the evaluation protocol for concept drift and scalability-oriented datasets}, label={snippet:original_suposed_prequential_evaluation_protocol}]
+  X = stream_df[['X1', 'X2']].values
+  y = stream_df['class'].values
+  evol_model = EvolvingClustering.EvolvingClustering(macro_cluster_update=1,  variance_limit=0.001, debug=False)
+  accum_error, error_list = Benchmarks.prequential_evaluation(evol_model, X, y, adjusted_rand_score, train_size, window_size)
+\end{lstlisting}
+
+The name of the function \texttt{prequential\_evaluation} may suggest that it implements prequential evaluation, but its definition is provided in \cref{snippet:original_work_prequential_evaluation_function}:
+
+\begin{lstlisting}[float, language=Python, caption={Original work's implementation of the function named \texttt{prequential\_evaluation}}, label={snippet:original_work_prequential_evaluation_function}]
+def prequential_evaluation(
+    method,
+    data,
+    labels,
+    metric,
+    train_size,
+    window_size=1,
+    fading_factor=1,
+    adjust_labels=0,
+    elapsed_time=False,
+):
+    """
+    :param method: clustering method to be evaluated
+    :param data: data for training and test
+    :param labels: ground truth labels
+    :param metric: error metric
+    :param train_size: number of samples for the first training step
+    :param window_size: window size for each prequential iteration
+    :param fading_factor: fading factor for older test samples
+    :param adjust_labels: adjust labels given the original index. 0 = no adjust, 1 = adjuts in first training, 2 = adjust during the entire prequential process
+    :return:
+    accumulated error, error list
+    """
+
+    test_end = 0
+    index = 0
+    limit = len(labels)
+    accumulated_error = 0
+    error_list = []
+    elapsed_time_list = []
+    memory_usage_list = []
+
+    while test_end < limit:
+        train_start, train_end, test_start, test_end = getDataIndex(
+            index, train_size, window_size, limit
+        )
+        train_data = data[train_start:train_end]
+        test_data = data[test_start:test_end]
+        index = test_start
+
+        if elapsed_time:
+            time_start = time.time()
+        method.fit(train_data)
+        y_hat = method.predict(test_data)
+        y = labels[test_start:test_end]
+
+        if elapsed_time:
+            time_end = time.time()
+            elapsed_time_list.append(time_end - time_start)
+
+        if adjust_labels == 2 or (index == test_start and adjust_labels == 1):
+            y_hat = util.adjust_labels(y_hat, y)
+
+        error = metric(y, y_hat)
+        accumulated_error += fading_factor * error
+        error_list.append(error)
+
+        process = psutil.Process(os.getpid())
+        memory_usage_list.append(process.memory_info().rss / 1000.0)
+
+    return {
+        "accumulated_error": accumulated_error,
+        "error_list": error_list,
+        "elapsed_time_list": elapsed_time_list,
+        "memory_usage_list": memory_usage_list,
+    }
+\end{lstlisting}
+
+of which the excerpt \cref{snippet:original_work_prequential_evaluation_function_steps} shows that the model is trained on the batch before performing the estimation of the labels of its samples:
+
+\begin{lstlisting}[float, language=Python, caption={Excerpt of the original work's implementation of the function named \texttt{prequential\_evaluation}}, label={snippet:original_work_prequential_evaluation_function_steps}]
+        if elapsed_time:
+            time_start = time.time()
+        method.fit(train_data)
+        y_hat = method.predict(test_data)
+        y = labels[test_start:test_end]
+\end{lstlisting}
+
+which is exactly the opposite of prequential evaluation, in which the model is evaluated on the batch before being trained on it.
+
+This reassessment's only protocol, applied throughout all experiments, is prequential evaluation. For each 100-sample batch, the samples' labels are predicted before the model is trained on them. The predicted labels are then compared to the ground truth labels to compute the ARI, and the execution time and memory usage are measured for both the prediction and training stages.
+
+\section{Statistical Significance Tests}
+
+\section{microTEDAclus Evaluation Under the Reassessment's Methodology}
+
+\subsection{Original Work's Model Set}
+
+\subsection{TEDA- and MicroCluster-based Models}
+
+\subsection{Complete Model Set}
