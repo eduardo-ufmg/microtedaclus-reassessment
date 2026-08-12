@@ -402,14 +402,53 @@ This tuning strategy's goal is to both reduce error- and bias-prone subjective d
 
 \subsection{Multi-run Statistics}
 
-\dots
+For empirical studies, statistics over multiple experiment runs are often required to account for the stochastic nature of the models and the data. While the original work selects the median and the standard deviation as central tendency and dispersion measures, respectively, no investigation regarding the implicity assumption of normality of the metrics is provided. \ref{tab:normality_shapiro} shows the results of the Shapiro-Wilk normality test \cite{shapiro1965analysis} for the evaluation metrics measured at the batch after the middle one, across dataset families, dataset sizes, and run counts. The null hypothesis of the test is that the data is normally distributed, and the alternative hypothesis is that it is not. The $p$-values are adjusted using the Holm-Bonferroni method \cite{holm1979simple} to account for multiple comparisons. Bold indicates rejection of normality at $\alpha=0.05$. The results show that most of the metrics do not follow a normal distribution, which suggests that non-parametric statistics should be used. The batch after the middle one is arbitrarily selected because it is expected to be representative of the model's performance after it has processed a significant portion of the data stream, but before the final steady state is reached.
+
+\begin{table}
+    \centering
+    \footnotesize
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{|c|c|c|cccc|}
+        \hline
+        \makecell{Run \\ quantity} & \makecell{Dataset \\ samples} & Dataset & ARI & Total time (ms) & Memory (bytes) & Microcluster count \\
+        \hline
+        \multirow{6}{*}{20} & \multirow{3}{*}{4000} & SCL2 & 0.292 & 0.0658 & 0.0963 & 0.126 \\
+        \cline{3-7}
+         &  & STR-B1 & \textbf{0.00109} & 0.287 & 0.292 & 0.287 \\
+        \cline{3-7}
+         &  & STR-B2 & 0.292 & $\boldsymbol{4.39 \times 10^{-5}}$ & $\boldsymbol{3.17 \times 10^{-4}}$ & $\boldsymbol{3.17 \times 10^{-4}}$ \\
+        \cline{2-7}
+         & \multirow{3}{*}{8000} & SCL2 & \textbf{0.00754} & \textbf{0.00686} & \textbf{0.00802} & 0.0658 \\
+        \cline{3-7}
+         &  & STR-B1 & $\boldsymbol{2.29 \times 10^{-4}}$ & $\boldsymbol{9.65 \times 10^{-4}}$ & \textbf{0.00498} & $\boldsymbol{9.65 \times 10^{-4}}$ \\
+        \cline{3-7}
+         &  & STR-B2 & 0.0658 & $\boldsymbol{1.96 \times 10^{-4}}$ & $\boldsymbol{9.65 \times 10^{-4}}$ & $\boldsymbol{4.32 \times 10^{-4}}$ \\
+        \hline
+        \multirow{6}{*}{100} & \multirow{3}{*}{4000} & SCL2 & $\boldsymbol{8.19 \times 10^{-12}}$ & $\boldsymbol{1.25 \times 10^{-8}}$ & $\boldsymbol{1.08 \times 10^{-7}}$ & $\boldsymbol{4.35 \times 10^{-7}}$ \\
+        \cline{3-7}
+         &  & STR-B1 & $\boldsymbol{3.86 \times 10^{-11}}$ & $\boldsymbol{4.30 \times 10^{-7}}$ & $\boldsymbol{7.99 \times 10^{-5}}$ & $\boldsymbol{1.08 \times 10^{-6}}$ \\
+        \cline{3-7}
+         &  & STR-B2 & $\boldsymbol{8.34 \times 10^{-6}}$ & $\boldsymbol{1.21 \times 10^{-13}}$ & $\boldsymbol{4.62 \times 10^{-12}}$ & $\boldsymbol{9.41 \times 10^{-11}}$ \\
+        \cline{2-7}
+         & \multirow{3}{*}{8000} & SCL2 & $\boldsymbol{2.46 \times 10^{-10}}$ & $\boldsymbol{9.74 \times 10^{-8}}$ & $\boldsymbol{6.28 \times 10^{-7}}$ & $\boldsymbol{1.17 \times 10^{-5}}$ \\
+        \cline{3-7}
+         &  & STR-B1 & $\boldsymbol{1.33 \times 10^{-13}}$ & $\boldsymbol{3.26 \times 10^{-12}}$ & $\boldsymbol{6.04 \times 10^{-11}}$ & $\boldsymbol{3.72 \times 10^{-12}}$ \\
+        \cline{3-7}
+         &  & STR-B2 & \textbf{0.0107} & $\boldsymbol{3.95 \times 10^{-14}}$ & $\boldsymbol{1.11 \times 10^{-12}}$ & $\boldsymbol{7.81 \times 10^{-13}}$ \\
+        \hline
+    \end{tabular}
+    \end{adjustbox}
+    \caption{Holm-adjusted Shapiro-Wilk $p$-values ($p_{\mathrm{holm}}$) for microTEDAclus evaluation metrics measured at the batch after the middle one, across dataset families, dataset sizes, and run counts. Correction is applied jointly across all 48 tests. Bold indicates rejection of normality at $\alpha=0.05$.}
+    \label{tab:normality_shapiro}
+\end{table}
+
+Because this experiment shows that the metrics do not follow a normal distribution, the median and the interquartile range are used as central tendency and dispersion measures, respectively, for inter-run aggregation of the evaluation metrics in this reassessment.
 
 \section{Datasets}
 
 The original work organizes the datasets used in its experiments into three categories: static, concept drift, and the synthetic datasets used for the processing time scalability experiments. Although the selected datasets are commonly used in the literature for data stream clustering evaluation \cite{bezerra2016tedacloud,bezerra2020autocloud,zhang2022extension,nguyenLe2026beyondbinary,zubaroglu2023emcstream}, the following subsections discuss how some downsampling, cleaning, ordering, and scaling decisions had a significant and hidden impact on the experiment results and invalidated the conclusions drawn from them regarding real-world online stream clustering scenarios.
 
 \subsection{Static}
-
 
 In \cite{maia2020evolvclus}, static datasets \textbf{ST-D1} and \textbf{ST-D2} are stated to correspond to datasets introduced in \cite{karypis1999chameleon} to evaluate the performance of the Chameleon clustering algorithm. From the original work's plots, it can be inferred that those corresponds to datasets \textbf{DS4} and \textbf{DS5} from the source paper. The public repository, however, loads its experiment's data from \url{https://query.data.world/s/faarcpz24ukr2g53druxljp4nghhzn} and \url{https://query.data.world/s/zry3yzt4ruwrlonziw2pfkegsdugw2}, which are cleaned, downsampled, scaled, and ordered versions of the original datasets, and no information regarding the preprocessing steps is provided in the original work. Those operations over the dataset guarantee severe data leakage given the streaming nature of the proposed application for which the model is designed. The following experiments investigate the impact of each of those preprocessing steps on the score chosen to evaluate the clustering quality, discussed in \cref{sec:evaluation_metrics}, and on the execution time of the model. Without loss of generality, \textbf{ST4} is chosen as the representative dataset for the experiments.
 
@@ -612,16 +651,18 @@ For each run, the difference between the highest ARI and the ARI of the last eva
     \label{tab:complementary_scores_on_the_hypotetical_curves}
 \end{table}
 
+Thus, for the datasets that are not scalability-oriented,
+
 \subsection{Complete Runtime} \label{subsec:complete_runtime}
 
 In \cite{maia2020evolvclus}, execution time is only assessed on for the scalability-oriented datasets, and only reported through a plot of execution time per samples versus the feature dimension. Furthermore, since only the mean accross the multiple runs is reported, it is not possible to assess the variability of this metric. This reassessment evaluates and compares fitting and prediction separately, and reports the following analysis:
 
 \begin{itemize}
-    \item For the datasets that are not scalability-oriented, mean and standard deviation of each stage are captured and reported for each model in suitable tables. This allows for a better understanding of the variability of the execution time and the impact of the dataset characteristics on it.
-    \item For the scalability-oriented datasets, the median and the quartile-pair (25th and 75th percentiles) of each stage are captured and reported for each model in the following plots:
+    \item For the datasets that are not scalability-oriented, the median and the $(Q_{1}, Q_{3})$ pair of each stage are captured and reported for each model in suitable tables. This allows for a better understanding of the variability of the execution time and the impact of the dataset characteristics on it.
+    \item For the scalability-oriented datasets, the median and the $(Q_{1}, Q_{3})$ pair of each stage are captured and reported for each model in the following plots:
     \begin{itemize}
         \item Execution time versus the number of samples, for each of two fixed feature dimensions (2 and 64).
-        \item Execution time versus the feature dimension, for each of two fixed batch indexes (10 and last).
+        \item Execution time versus the feature dimension, for each of two fixed batch indexes (10 and last - 1).
     \end{itemize}
     This report strategy's goal is to further investigate how the feature dimension impacts on the sample-scalability of the evaluated models, and how the number of samples impacts on the feature-scalability of the evaluated models. Median and quartiles are selected because preeliminary experiments show that a logarithmic scale is more suitable for this metric -- since the models differ by orders of magnitude -- and the high variability of the execution time increase the risk of negative bounds when defined as $\mu - \sigma$. Because \textbf{Matplotlib}'s logarithmic scale does not support negative values, the quartile-pair is preferred to avoid artificially clipping the lower bound of the error bars to zero, since the quartiles are guaranteed to be bounded by the values actually observed in the experiments.
 \end{itemize}
@@ -664,29 +705,8 @@ The name of the function \texttt{prequential\_evaluation} may suggest that it im
 
 \begin{lstlisting}[float, language=Python, caption={Original work's implementation of the function named \texttt{prequential\_evaluation}}, label={snippet:original_work_prequential_evaluation_function}]
 def prequential_evaluation(
-    method,
-    data,
-    labels,
-    metric,
-    train_size,
-    window_size=1,
-    fading_factor=1,
-    adjust_labels=0,
-    elapsed_time=False,
+    method, data, labels, metric, train_size, window_size=1, fading_factor=1, adjust_labels=0, elapsed_time=False,
 ):
-    """
-    :param method: clustering method to be evaluated
-    :param data: data for training and test
-    :param labels: ground truth labels
-    :param metric: error metric
-    :param train_size: number of samples for the first training step
-    :param window_size: window size for each prequential iteration
-    :param fading_factor: fading factor for older test samples
-    :param adjust_labels: adjust labels given the original index. 0 = no adjust, 1 = adjuts in first training, 2 = adjust during the entire prequential process
-    :return:
-    accumulated error, error list
-    """
-
     test_end = 0
     index = 0
     limit = len(labels)
@@ -724,10 +744,7 @@ def prequential_evaluation(
         memory_usage_list.append(process.memory_info().rss / 1000.0)
 
     return {
-        "accumulated_error": accumulated_error,
-        "error_list": error_list,
-        "elapsed_time_list": elapsed_time_list,
-        "memory_usage_list": memory_usage_list,
+        "accumulated_error": accumulated_error, "error_list": error_list, "elapsed_time_list": elapsed_time_list, "memory_usage_list": memory_usage_list,
     }
 \end{lstlisting}
 
@@ -743,9 +760,22 @@ of which the excerpt \cref{snippet:original_work_prequential_evaluation_function
 
 which is exactly the opposite of prequential evaluation, in which the model is evaluated on the batch before being trained on it.
 
+The second hint that the original work does not implement prequential evaluation is in its own batchwise plots. Since, under prequential evaluation, predictions are performed before learning, the ARI of the first batch is expected to be near 0.0, as the model has not yet learned anything about the data. \cref{fig:original_curves} shows the $\text{ARI}(\text{first\_batch}) > 0.5$ for all the reported experiments, and $> 0.8$ for 10 out of 15 curves. Thus, independently of external code inspection, those results cast doubt on the validity of the work's conclusions.
+
+\begin{figure}[thpb]
+    \centering
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/original_curves.png}
+    \caption{Batchwise plots of the ARI reported in the original work. The bottom right plot corresponds to the memory scalability experiment's ARI curve, and the three other plots correspond to the concept drift experiments over \textbf{STR-B1}, \textbf{STR-B2}, and \textbf{RBF}, respectively.}
+    \label{fig:original_curves}
+\end{figure}
+
+It is worth noting that, for the performed sequential evaluation, the optimal model is the one that simply memorizes the label for the sample in each coordinate \cite{aliferis2024overfitting,bayat2025pitfalls}. Such overfitted model, however, is shown to poorly generalize to unseen samples, and is not suitable for real-world applications.
+
 This reassessment's only protocol, applied throughout all experiments, is prequential evaluation. For each 100-sample batch, the samples' labels are predicted before the model is trained on them. The predicted labels are then compared to the ground truth labels to compute the ARI, and the execution time and memory usage are measured for both the prediction and training stages.
 
 \section{Statistical Significance Tests}
+
+
 
 \section{microTEDAclus Evaluation Under the Reassessment's Methodology}
 
