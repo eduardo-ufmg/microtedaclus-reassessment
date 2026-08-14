@@ -64,7 +64,7 @@ OPT_TIMEOUT = 300  # seconds
 SPLIT_FRAC = 0.2
 DOWNSAMPLE_FRAC = 0.5
 RNG_SEED = 0
-N_RUNS = 20
+N_RUNS = 23
 
 STAGES = ["raw", "noise_removed", "downsampled", "ordered", "scaled"]
 

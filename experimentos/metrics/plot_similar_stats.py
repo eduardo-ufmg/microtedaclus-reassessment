@@ -194,13 +194,9 @@ def main():
 
 
 def complementary_scores(y):
-    first10 = y[:10]
-    last10 = y[-10:]
     return {
-        "first10_mean": first10.mean(),
-        "first10_std": first10.std(),
-        "last10_mean": last10.mean(),
-        "last10_std": last10.std(),
+        "penultimate": y[-2],
+        "fifth": y[4],
         "peak_drop": y.max() - y[-1],
     }
 
@@ -211,49 +207,42 @@ def latex_table(scores):
 
     Best values:
       - higher is better:
-            first10 mean
-            last10 mean
+            penultimate batch ARI
+            fifth batch ARI
       - lower is better:
             peak drop
     """
 
     best = {
-        "first10_mean": max(v["first10_mean"] for v in scores.values()),
-        "last10_mean": max(v["last10_mean"] for v in scores.values()),
+        "penultimate": max(v["penultimate"] for v in scores.values()),
+        "fifth": max(v["fifth"] for v in scores.values()),
         "peak_drop": min(v["peak_drop"] for v in scores.values()),
     }
 
-    def pm(mean, std, best_mean):
-        value = f"${mean:.3f} \\pm {std:.3f}$"
-        if np.isclose(mean, best_mean):
-            value = f"$\\mathbf{{{mean:.3f}}} \\pm \\mathbf{{{std:.3f}}}$"
-        return value
+    def fmt(val, best_val):
+        if np.isclose(val, best_val):
+            return rf"\textbf{{{val:.3f}}}"
+        return f"{val:.3f}"
 
     lines = [
         r"\begin{table}",
         r"    \centering",
         r"    \begin{tabular}{|c|c|c|c|}",
         r"        \hline",
-        r"        Curve & First 10 batches & Last 10 batches & Highest $-$ Last \\",
+        r"        Curve & Penultimate batch & Fifth batch & Highest $-$ Last \\",
         r"        \hline",
     ]
 
     for name, s in scores.items():
-        drop = (
-            rf"\textbf{{{s['peak_drop']:.3f}}}"
-            if np.isclose(s["peak_drop"], best["peak_drop"])
-            else f"{s['peak_drop']:.3f}"
-        )
-
         lines.append(
             "        "
             + f"{name}"
             + " & "
-            + pm(s["first10_mean"], s["first10_std"], best["first10_mean"])
+            + fmt(s["penultimate"], best["penultimate"])
             + " & "
-            + pm(s["last10_mean"], s["last10_std"], best["last10_mean"])
+            + fmt(s["fifth"], best["fifth"])
             + " & "
-            + drop
+            + fmt(s["peak_drop"], best["peak_drop"])
             + r" \\"
         )
 
@@ -261,8 +250,8 @@ def latex_table(scores):
         [
             r"        \hline",
             r"    \end{tabular}",
-            r"    \caption{Complementary scores for the hypothetical score curves.}",
-            r"    \label{tab:complementary_scores_on_the_hypothetical_curves}",
+            r"    \caption{Complementary scores for the hypothetical score curves. The bold values indicate the best performance for each metric.}",
+            r"    \label{tab:complementary_scores_on_the_hypotheticals}",
             r"\end{table}",
         ]
     )

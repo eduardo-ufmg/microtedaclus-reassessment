@@ -4,8 +4,8 @@ Normality-of-metrics experiment.
 For MicroTEDAClus on six dataset configurations:
 
     - SCL2       (synthetic 2D Gaussian blobs + uniform noise), n in {4000, 8000}
-    - Benchmark1 (R streamMOA DSD_Benchmark(1)),                n in {4000, 8000}
-    - Benchmark2 (R streamMOA DSD_Benchmark(2)),                n in {4000, 8000}
+    - STR-B1 (R streamMOA DSD_Benchmark(1)),                n in {4000, 8000}
+    - STR-B2 (R streamMOA DSD_Benchmark(2)),                n in {4000, 8000}
 
 this script:
 
@@ -28,7 +28,7 @@ DATASET FAMILIES
   - SCL2: as before — make_blobs() plus a fixed-ratio (10:1 blobs:noise,
     matching the original generate_scl) block of uniform noise points,
     labeled -1.
-  - Benchmark1 / Benchmark2: DSD_Benchmark(1) / DSD_Benchmark(2) from R's
+  - STR-B1 / STR-B2: DSD_Benchmark(1) / DSD_Benchmark(2) from R's
     streamMOA, pulled via rpy2, `n_total` points via get_points(..., info =
     TRUE). NO synthetic noise points are added (per your instruction). The
     only correction applied is the same one used in experiment.py's
@@ -96,12 +96,12 @@ except Exception as e:
 RESULTS_DIR = "./results"
 
 DATASET_SIZES = [4000, 8000]
-FAMILIES = ["SCL2", "Benchmark1", "Benchmark2"]
+FAMILIES = ["SCL2", "STR-B1", "STR-B2"]
 DATASET_CONFIGS = [(family, n) for family in FAMILIES for n in DATASET_SIZES]
 
 # Disjoint seed offsets so the three families never collide even though
 # n_total and run_idx repeat across them.
-FAMILY_SEED_OFFSET = {"SCL2": 0, "Benchmark1": 100_000_000, "Benchmark2": 200_000_000}
+FAMILY_SEED_OFFSET = {"SCL2": 0, "STR-B1": 100_000_000, "STR-B2": 200_000_000}
 
 ROW_RUN_COUNTS = [20, 100]  # rows of the summary figure
 N_RUNS_TOTAL = 100
@@ -170,9 +170,9 @@ def make_dataset(family, n_total, seed):
     if family == "SCL2":
         rng = np.random.default_rng(seed)
         return generate_scl_total(n_total, rng=rng)
-    elif family == "Benchmark1":
+    elif family == "STR-B1":
         return get_benchmark_total(1, n_total, seed)
-    elif family == "Benchmark2":
+    elif family == "STR-B2":
         return get_benchmark_total(2, n_total, seed)
     else:
         raise ValueError(f"Unknown family: {family}")
