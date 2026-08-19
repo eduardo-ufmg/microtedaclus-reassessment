@@ -1,62 +1,3 @@
-"""
-Normality-of-metrics experiment.
-
-For MicroTEDAClus on six dataset configurations:
-
-    - SCL2       (synthetic 2D Gaussian blobs + uniform noise), n in {4000, 8000}
-    - STR-B1 (R streamMOA DSD_Benchmark(1)),                n in {4000, 8000}
-    - STR-B2 (R streamMOA DSD_Benchmark(2)),                n in {4000, 8000}
-
-this script:
-
-  1. Runs up to 100 independent tune+evaluate repetitions per configuration.
-  2. In each repetition, records four metrics measured at the evaluation
-     batch immediately after the middle one: ARI, total time (predict+fit,
-     ms), memory footprint (bytes), microcluster count.
-  3. Persists results incrementally to CSV (results/<family>_<n>.csv), so
-     the script can be interrupted and resumed: on restart it reads the
-     last stored run index and continues from there, up to 100 runs.
-  4. Once 100 runs exist for a given configuration, produces a 2x4 figure
-     (rows = {20 runs, 100 runs}, cols = {ARI, time, memory, MC count}):
-     histogram of each metric with the best-fit normal curve overlaid,
-     annotated with a Shapiro-Wilk normality test result.
-
-If a configuration already has 100 stored runs and its figure already
-exists, the script does nothing for that configuration (idempotent re-run).
-
-DATASET FAMILIES
-  - SCL2: as before — make_blobs() plus a fixed-ratio (10:1 blobs:noise,
-    matching the original generate_scl) block of uniform noise points,
-    labeled -1.
-  - STR-B1 / STR-B2: DSD_Benchmark(1) / DSD_Benchmark(2) from R's
-    streamMOA, pulled via rpy2, `n_total` points via get_points(..., info =
-    TRUE). NO synthetic noise points are added (per your instruction). The
-    only correction applied is the same one used in experiment.py's
-    get_r_stream: any NaN class label from R is mapped to -1 (the noise
-    label), via np.nan_to_num(y, nan=-1).
-
-ASSUMPTIONS (carried over / new, please flag if any are wrong):
-  - Optuna settings reused unchanged: TPE sampler, 100 trials, 300s
-    timeout, objective = ARI - 1e-3*seconds. With up to 100 runs x 6
-    configurations, this script can take a very long time; it is designed
-    to be resumable, not to finish in one sitting.
-  - "One after the middle batch" is taken over the EVALUATION stream
-    (X_eval, using the tuned best model), matching the structure of
-    experiment.py/preproc_experiment.py's evaluation loop.
-    target_batch = num_eval_batches // 2 + 1 (clamped if too small).
-  - 20% / 80% opt/eval split, batch size 100 (as in the reference scripts).
-  - Runs are seeded deterministically per (family, n_total, run_index):
-    for SCL2 this seeds a numpy Generator; for the Benchmark families it
-    seeds R via set.seed() before DSD_Benchmark/get_points, so reruns are
-    reproducible across resumed sessions.
-  - A run that raises an exception during tuning/evaluation is still
-    recorded (status="ERROR: ...", metrics NaN) and counts toward the run
-    index, so a persistently failing configuration doesn't stall forever.
-
-If any of these assumptions are wrong, edit the CONFIG block below before
-running.
-"""
-
 import logging
 import os
 import sys
@@ -69,11 +10,9 @@ import rpy2.rinterface_lib.callbacks
 import rpy2.robjects as robjects
 from pympler import asizeof
 from rpy2.robjects.packages import importr
-from scipy import stats
 from sklearn.datasets import make_blobs
 from sklearn.metrics import adjusted_rand_score
 from tqdm import tqdm
-import matplotlib.pyplot as plt
 
 from MicroTEDAClus.MicroTEDAClus import (
     MicroTEDAClus,
@@ -95,7 +34,7 @@ except Exception as e:
 # --------------------------------------------------------------------------
 RESULTS_DIR = "./results"
 
-DATASET_SIZES = [4000, 8000]
+DATASET_SIZES = [4000]
 FAMILIES = ["SCL2", "STR-B1", "STR-B2"]
 DATASET_CONFIGS = [(family, n) for family in FAMILIES for n in DATASET_SIZES]
 
@@ -103,23 +42,14 @@ DATASET_CONFIGS = [(family, n) for family in FAMILIES for n in DATASET_SIZES]
 # n_total and run_idx repeat across them.
 FAMILY_SEED_OFFSET = {"SCL2": 0, "STR-B1": 100_000_000, "STR-B2": 200_000_000}
 
-ROW_RUN_COUNTS = [20, 100]  # rows of the summary figure
-N_RUNS_TOTAL = 100
+N_RUNS_TOTAL = 1000
 SCL_DIM = 2
-NOISE_RATIO = 400 / 4400  # ~0.0909, matches generate_scl's 10:1 ratio
+NOISE_RATIO = 400 / 4400  # ~0.0909, matches 10:1 ratio
 
 SPLIT_FRAC = 0.2
 BATCH_SIZE = 100
 OPT_TRIALS = 100
 OPT_TIMEOUT = 300  # seconds
-
-METRICS = ["ari", "total_time_ms", "memory_bytes", "microcluster_count"]
-METRIC_LABELS = {
-    "ari": "ARI",
-    "total_time_ms": "Total time (ms)",
-    "memory_bytes": "Memory (MB)",
-    "microcluster_count": "Microcluster count",
-}
 
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
@@ -179,7 +109,7 @@ def make_dataset(family, n_total, seed):
 
 
 # --------------------------------------------------------------------------
-# Optuna objective (identical structure to the reference scripts)
+# Optuna objective
 # --------------------------------------------------------------------------
 def objective(trial, X_opt, y_opt, batch_size):
     params = MicroTEDAClusParameterSearchSpace().sample_parameters(trial)
@@ -312,10 +242,6 @@ def csv_path(family, n_total):
     return os.path.join(RESULTS_DIR, f"{family}_{n_total}.csv")
 
 
-def fig_path(family, n_total):
-    return os.path.join(RESULTS_DIR, f"{family}_{n_total}_normality.png")
-
-
 def last_stored_run(path):
     if not os.path.exists(path):
         return 0
@@ -330,57 +256,6 @@ def append_row(path, run_idx, row_dict):
     row_df = pd.DataFrame([row_dict], index=[run_idx])
     row_df.index.name = "run"
     row_df.to_csv(path, mode="a", header=header)
-
-
-# --------------------------------------------------------------------------
-# Figure generation
-# --------------------------------------------------------------------------
-def make_normality_figure(family, n_total):
-    df = pd.read_csv(csv_path(family, n_total), index_col=0)
-
-    fig, axes = plt.subplots(len(ROW_RUN_COUNTS), len(METRICS), figsize=(20, 9))
-
-    for row, n_runs in enumerate(ROW_RUN_COUNTS):
-        subset = df.loc[df.index <= n_runs]
-        for col, metric in enumerate(METRICS):
-            ax = axes[row, col]
-            data = subset[metric].dropna().to_numpy()
-
-            if len(data) < 3:
-                ax.set_title(f"n={n_runs}: insufficient valid data")
-                continue
-
-            if metric == "memory_bytes":
-                data = data / (1024 * 1024)  # Convert bytes to MB
-
-            ax.hist(data, bins="auto", density=True, alpha=0.6, color="tab:blue")
-
-            mu, sigma = stats.norm.fit(data)
-            x = np.linspace(data.min(), data.max(), 200)
-            ax.plot(
-                x,
-                stats.norm.pdf(x, mu, sigma),
-                "r-",
-                linewidth=2,
-                label="fitted normal",
-            )
-
-            w_stat, p_value = stats.shapiro(data)
-
-            ax.set_title(
-                f"{METRIC_LABELS[metric]}\n"
-                f"n={n_runs}, mu={mu:.3g}, sigma={sigma:.3g}\n"
-                f"Shapiro W={w_stat:.3g}, p={p_value:.3g}"
-            )
-            ax.set_xlabel(METRIC_LABELS[metric])
-            ax.set_ylabel("Density")
-            ax.legend(fontsize=7)
-            ax.grid(True, linestyle="--", alpha=0.4)
-
-    fig.suptitle(f"{family}, {n_total} samples — middle batch")
-    plt.tight_layout()
-    fig.savefig(fig_path(family, n_total))
-    plt.close(fig)
 
 
 # --------------------------------------------------------------------------
@@ -404,14 +279,8 @@ def main():
                 row = run_once(family, n_total, run_idx)
                 append_row(path, run_idx, row)
 
-        # Generate the figure once 100 runs exist and it hasn't been made yet.
-        if last_stored_run(path) >= N_RUNS_TOTAL and not os.path.exists(
-            fig_path(family, n_total)
-        ):
-            print(
-                f"[{family}_{n_total}] 100 runs reached — generating normality figure."
-            )
-            make_normality_figure(family, n_total)
+        if last_stored_run(path) >= N_RUNS_TOTAL:
+            print(f"[{family}_{n_total}] {N_RUNS_TOTAL} runs reached.")
 
 
 if __name__ == "__main__":

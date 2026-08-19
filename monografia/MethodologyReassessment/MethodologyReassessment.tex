@@ -402,61 +402,14 @@ This tuning strategy's goal is to both reduce error- and bias-prone subjective d
 
 \subsection{Multi-run Statistics}
 
-For empirical studies, statistics over multiple experiment runs are often required to account for the stochastic nature of the models and the data. While the original work selects the median and the standard deviation as central tendency and dispersion measures, respectively, no investigation regarding the implicity assumption of normality of the metrics is provided. \ref{tab:normality_shapiro} shows the results of the Shapiro-Wilk normality test \cite{shapiro1965analysis} for the evaluation metrics measured at the batch after the middle one, across dataset families, dataset sizes, and run counts. The null hypothesis of the test is that the data is normally distributed, and the alternative hypothesis is that it is not. The $p$-values are adjusted using the Holm-Bonferroni method \cite{holm1979simple} to account for multiple comparisons. Bold indicates rejection of normality at $\alpha=0.05$. The results show that most of the metrics do not follow a normal distribution, which suggests that non-parametric statistics should be used. The batch after the middle one is arbitrarily selected because it is expected to be representative of the model's performance after it has processed a significant portion of the data stream, but before the final steady state is reached.
+For empirical studies, statistics over multiple experiment runs are required to account for the stochastic nature of the models and the data. In this reassessment, each run starts at the randomized stream generation, goes through hyperparameter tuning, and ends with the evaluation of the tuned model over the remaining samples of the stream. Although the original work aggregates the results of multiple runs under the mean and standard deviation pair, this reassessment uses performs such aggregation under the median and interquartile range (IQR) pair. The reasons for this choice are:
 
-\begin{table}
-    \centering
-    \footnotesize
-    \begin{adjustbox}{max width=\textwidth}
-    \begin{tabular}{|c|c|c|cccc|}
-        \hline
-        \makecell{Run \\ quantity} & \makecell{Dataset \\ samples} & Dataset & ARI & Total time & Memory & Microcluster count \\
-        \hline
-        \multirow{6}{*}{20} & \multirow{3}{*}{4000} & SCL2 & 0.292 & 0.0658 & 0.0963 & 0.126 \\
-        \cline{3-7}
-         &  & STR-B1 & \textbf{0.00109} & 0.287 & 0.292 & 0.287 \\
-        \cline{3-7}
-         &  & STR-B2 & 0.292 & $\boldsymbol{4.39 \times 10^{-5}}$ & $\boldsymbol{3.17 \times 10^{-4}}$ & $\boldsymbol{3.17 \times 10^{-4}}$ \\
-        \cline{2-7}
-         & \multirow{3}{*}{8000} & SCL2 & \textbf{0.00754} & \textbf{0.00686} & \textbf{0.00802} & 0.0658 \\
-        \cline{3-7}
-         &  & STR-B1 & $\boldsymbol{2.29 \times 10^{-4}}$ & $\boldsymbol{9.65 \times 10^{-4}}$ & \textbf{0.00498} & $\boldsymbol{9.65 \times 10^{-4}}$ \\
-        \cline{3-7}
-         &  & STR-B2 & 0.0658 & $\boldsymbol{1.96 \times 10^{-4}}$ & $\boldsymbol{9.65 \times 10^{-4}}$ & $\boldsymbol{4.32 \times 10^{-4}}$ \\
-        \hline
-        \multirow{6}{*}{100} & \multirow{3}{*}{4000} & SCL2 & $\boldsymbol{8.19 \times 10^{-12}}$ & $\boldsymbol{1.25 \times 10^{-8}}$ & $\boldsymbol{1.08 \times 10^{-7}}$ & $\boldsymbol{4.35 \times 10^{-7}}$ \\
-        \cline{3-7}
-         &  & STR-B1 & $\boldsymbol{3.86 \times 10^{-11}}$ & $\boldsymbol{4.30 \times 10^{-7}}$ & $\boldsymbol{7.99 \times 10^{-5}}$ & $\boldsymbol{1.08 \times 10^{-6}}$ \\
-        \cline{3-7}
-         &  & STR-B2 & $\boldsymbol{8.34 \times 10^{-6}}$ & $\boldsymbol{1.21 \times 10^{-13}}$ & $\boldsymbol{4.62 \times 10^{-12}}$ & $\boldsymbol{9.41 \times 10^{-11}}$ \\
-        \cline{2-7}
-         & \multirow{3}{*}{8000} & SCL2 & $\boldsymbol{2.46 \times 10^{-10}}$ & $\boldsymbol{9.74 \times 10^{-8}}$ & $\boldsymbol{6.28 \times 10^{-7}}$ & $\boldsymbol{1.17 \times 10^{-5}}$ \\
-        \cline{3-7}
-         &  & STR-B1 & $\boldsymbol{1.33 \times 10^{-13}}$ & $\boldsymbol{3.26 \times 10^{-12}}$ & $\boldsymbol{6.04 \times 10^{-11}}$ & $\boldsymbol{3.72 \times 10^{-12}}$ \\
-        \cline{3-7}
-         &  & STR-B2 & \textbf{0.0107} & $\boldsymbol{3.95 \times 10^{-14}}$ & $\boldsymbol{1.11 \times 10^{-12}}$ & $\boldsymbol{7.81 \times 10^{-13}}$ \\
-        \hline
-    \end{tabular}
-    \end{adjustbox}
-    \caption{Holm-adjusted Shapiro-Wilk $p$-values ($p_{\mathrm{holm}}$) for microTEDAclus evaluation metrics measured at the batch after the middle one, across dataset families, dataset sizes, and run counts. Correction is applied jointly across all 48 tests. Bold indicates rejection of normality at $\alpha=0.05$.}
-    \label{tab:normality_shapiro}
-\end{table}
+\begin{enumerate}
+    \item The tuning phase may find local optima in the hyperparameter space, specially since it is performed over a randomized stream, which may lead to outlier runs with significantly worse performance than the actual performance of the model. The median and IQR are more robust to outliers than the mean and standard deviation, which may be significantly affected by those outlier runs.
+    \item \textbf{Matplotlib}'s logarithmic scale plotting does not support negative values, which may the lower bounds may assume when computed as $\mu - \sigma$. $Q_1$, however, is guaranteed to greater than or equal to the minimum value of the sample, which is always non-negative for the metrics that are ploted in logarithmic scale for this reassessment.
+\end{enumerate}
 
-Because this experiment shows that the metrics do not follow a normal distribution, the median and the interquartile range are used as central tendency and dispersion measures, respectively, for inter-run aggregation of the evaluation metrics in this reassessment. Under those statistics, the quantity of runs to be performed is defined as \cref{eq:num_runs}.
 
-\begin{align}
-    k^* &= \max_{s \in \{\text{median}, \text{IQR}\}} k^*_s \label{eq:num_runs} \\
-    k^*_s &= \min \left\{ k \in \mathbb{N}_{\geq 3} : \left| E_{\text{global}, s}(k) - E_{\text{global}, s}(k-1) \right| < \varepsilon \right\}
-\end{align}
-
-where the normalized standard error is estimated using Monte Carlo replication \cite{robert2004monte}, as shown in \cref{eq:normalized_standard_error}.
-
-\begin{align}
-    E_{\text{global}, s}(k) &= \max_{c \in \mathcal{C}} \text{NSE}_{c, s}(k), \quad \mathcal{C} = {datasets \times sample counts \times metrics} \\
-    \text{NSE}_{c, s}(k) &= \frac{1}{\text{IQR}_{c, 100}} \sqrt{\frac{1}{B-1} \sum_{b=1}^{B} \left( \hat{s}_{c, k,b} - \bar{\hat{s}}_{c, k} \right)^2}, \quad B = 1000 \label{eq:normalized_standard_error}
-\end{align}
-
-$\varepsilon = 0.01$ corresponds to a maximum absolute marginal reduction of 0.01 in the normalized standard error and is chosen as the threshold for the number of runs to be performed. This experiment over the same configurations in which the normality test was performed shows that $k^* = 23$ runs are required to achieve a normalized standard error variance reduction strictly below the threshold.
 
 \section{Datasets}
 
