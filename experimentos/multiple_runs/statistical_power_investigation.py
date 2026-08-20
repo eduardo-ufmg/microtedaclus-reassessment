@@ -76,17 +76,24 @@ def _plot_stat(ax, global_df, stat, title):
     k = global_df.index.to_numpy(dtype=float)
     y = global_df[f"global_nmae_{stat}"].to_numpy(dtype=float)
 
+    k_max = k.max()
+    y_max = y.max()
+
     ax.set_xlabel("Subset Size (k)")
     ax.set_ylabel("Max NMAE")
-
     ax.plot(k, y, label="Max NMAE", color="blue")
     ax.set_title(title)
+
+    ax.set_xlim(left=-50, right=1050)
+    ax.set_ylim(bottom=-0.05)
+    ax.set_aspect(k_max / y_max, adjustable="box")
+
     ax.grid(True, linestyle="--", alpha=0.6)
     ax.legend()
 
 
 def plot_medianiqr_convergence(global_df):
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
     _plot_stat(axes[0], global_df, "med", "Median")
     _plot_stat(axes[1], global_df, "iqr", "IQR")
     fig.suptitle("Global Worst-Case Convergence — Median / IQR")
@@ -99,21 +106,22 @@ def plot_medianiqr_convergence(global_df):
 
 
 def plot_medianiqr_convergence_with_k(global_df, k_star):
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
     _plot_stat(axes[0], global_df, "med", "Median")
-    axes[0].axvline(
-        k_star, color="black", linestyle=":", label=f"Optimal k={k_star:.0f}"
-    )
+    axes[0].axvline(k_star, color="black", linestyle=":", label=f"k={k_star:.0f}")
     axes[0].set_xticks(np.append(axes[0].get_xticks(), k_star))
     axes[0].legend()
 
     _plot_stat(axes[1], global_df, "iqr", "IQR")
-    axes[1].axvline(
-        k_star, color="black", linestyle=":", label=f"Optimal k={k_star:.0f}"
-    )
+    axes[1].axvline(k_star, color="black", linestyle=":", label=f"k={k_star:.0f}")
     axes[1].set_xticks(np.append(axes[1].get_xticks(), k_star))
     axes[1].legend()
+
+    for ax in axes:
+        ax.set_xlim(left=-50, right=1050)
+        ax.set_ylim(bottom=-0.05)
+        ax.grid(True, linestyle="--", alpha=0.6)
 
     fig.suptitle(f"Global Worst-Case Convergence — Median / IQR (k*={k_star:.0f})")
     plt.tight_layout()
@@ -128,8 +136,11 @@ def analyze_secant_distance(global_df):
     k = global_df.index.to_numpy(dtype=float)
     y = global_df["global_nmae_med"].to_numpy(dtype=float)
 
-    k_norm = (k - k.min()) / (k.max() - k.min())
-    y_norm = (y - y.min()) / (y.max() - y.min())
+    k_max = k.max()
+    y_max = y.max()
+
+    k_norm = k / k_max
+    y_norm = y / y_max
 
     x1, y1 = k_norm[0], y_norm[0]
     x2, y2 = k_norm[-1], y_norm[-1]
@@ -144,6 +155,7 @@ def analyze_secant_distance(global_df):
     max_dist = dist_secant[idx_max]
 
     k_star_original = k[idx_max]
+    y_star_original = y[idx_max]
 
     v_x, v_y = x2 - x1, y2 - y1
     w_x, w_y = k_star_norm - x1, y_star_norm - y1
@@ -151,41 +163,52 @@ def analyze_secant_distance(global_df):
     dot_vv = v_x**2 + v_y**2
     t = dot_wv / dot_vv
 
-    proj_x = x1 + t * v_x
-    proj_y = y1 + t * v_y
+    proj_x_norm = x1 + t * v_x
+    proj_y_norm = y1 + t * v_y
+
+    proj_x = proj_x_norm * k_max
+    proj_y = proj_y_norm * y_max
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
-    axes[0].plot(k_norm, dist_secant, color="black", label="Secant Line Distance")
+    dist_max = dist_secant.max()
+    axes[0].plot(k, dist_secant, color="black", label="Secant Line Distance")
     axes[0].scatter(
-        k_star_norm,
+        k_star_original,
         max_dist,
         color="red",
-        label=f"Global Max (k={k_star_original:.0f})",
+        label=f"Max (k={k_star_original:.0f})",
         zorder=5,
     )
-    axes[0].set_title("Secant Line Distance (Normalized Space)")
-    axes[0].set_xlabel("Normalized Subset Size (k)")
+    axes[0].set_title("Secant Line Distance")
+    axes[0].set_xlabel("Subset Size (k)")
     axes[0].set_ylabel("Distance")
+    axes[0].set_xlim(left=-50, right=1050)
+    axes[0].set_ylim(bottom=-0.05)
+    axes[0].set_aspect(k_max / dist_max, adjustable="box")
     axes[0].grid(True, linestyle="--", alpha=0.6)
     axes[0].legend()
 
-    axes[1].plot(k_norm, y_norm, color="blue", label="Max NMAE (Median)")
-    axes[1].plot([x1, x2], [y1, y2], color="gray", linestyle="--", label="Secant Line")
+    axes[1].plot(k, y, color="blue", label="Max NMAE")
     axes[1].plot(
-        [k_star_norm, proj_x],
-        [y_star_norm, proj_y],
+        [k[0], k[-1]], [y[0], y[-1]], color="gray", linestyle="--", label="Secant Line"
+    )
+    axes[1].plot(
+        [k_star_original, proj_x],
+        [y_star_original, proj_y],
         color="red",
         linestyle="-",
-        label="Shortest Distance Segment",
+        label="Maximum Distance",
     )
-    axes[1].scatter(k_star_norm, y_star_norm, color="red", zorder=5)
+    axes[1].scatter(k_star_original, y_star_original, color="red", zorder=5)
     axes[1].scatter(proj_x, proj_y, color="red", marker="x", zorder=5)
 
-    axes[1].set_title("Max NMAE and Secant Line Projection (Normalized Space)")
-    axes[1].set_xlabel("Normalized Subset Size (k)")
-    axes[1].set_ylabel("Normalized Max NMAE")
-    axes[1].set_aspect("equal", adjustable="box")
+    axes[1].set_title("Secant Line Projection")
+    axes[1].set_xlabel("Subset Size (k)")
+    axes[1].set_ylabel("Max NMAE")
+    axes[1].set_xlim(left=-100)
+    axes[1].set_ylim(bottom=-0.05)
+    axes[1].set_aspect(k_max / y_max, adjustable="box")
     axes[1].grid(True, linestyle="--", alpha=0.6)
     axes[1].legend()
 
