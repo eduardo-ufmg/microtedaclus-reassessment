@@ -56,126 +56,149 @@ def compute_convergence_incrementally(data, k_values, out_path):
         iqrs = np.percentile(subsets, 75, axis=1) - np.percentile(subsets, 25, axis=1)
 
         mae_med = np.mean(np.abs(medians - ref_median))
-        se_med = np.std(medians, ddof=1) if B > 1 else 0.0
         nmae_med = mae_med / scale_med_iqr
-        nse_med = se_med / scale_med_iqr
 
         mae_iqr = np.mean(np.abs(iqrs - ref_iqr))
-        se_iqr = np.std(iqrs, ddof=1) if B > 1 else 0.0
         nmae_iqr = mae_iqr / scale_med_iqr
-        nse_iqr = se_iqr / scale_med_iqr
 
         row_dict = {
             "mae_med": mae_med,
-            "se_med": se_med,
             "nmae_med": nmae_med,
-            "nse_med": nse_med,
             "mae_iqr": mae_iqr,
-            "se_iqr": se_iqr,
             "nmae_iqr": nmae_iqr,
-            "nse_iqr": nse_iqr,
         }
         append_conv_row(out_path, k, row_dict)
 
     return pd.read_csv(out_path, index_col=0)
 
 
-def _plot_stat_pair(ax, global_df, stat, title):
-    ax.plot(
-        global_df.index,
-        global_df[f"global_nmae_{stat}"],
-        label="Max NMAE",
-        color="blue",
-    )
-    ax.plot(
-        global_df.index,
-        global_df[f"global_nse_{stat}"],
-        label="Max NSE",
-        color="red",
-        linestyle="--",
-    )
-    ax.set_title(title)
+def _plot_stat(ax, global_df, stat, title):
+    k = global_df.index.to_numpy(dtype=float)
+    y = global_df[f"global_nmae_{stat}"].to_numpy(dtype=float)
+
     ax.set_xlabel("Subset Size (k)")
-    ax.set_ylabel("Normalized Error")
+    ax.set_ylabel("Max NMAE")
+
+    ax.plot(k, y, label="Max NMAE", color="blue")
+    ax.set_title(title)
     ax.grid(True, linestyle="--", alpha=0.6)
     ax.legend()
 
 
 def plot_medianiqr_convergence(global_df):
     fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-    _plot_stat_pair(axes[0], global_df, "med", "Median")
-    _plot_stat_pair(axes[1], global_df, "iqr", "IQR")
+    _plot_stat(axes[0], global_df, "med", "Median")
+    _plot_stat(axes[1], global_df, "iqr", "IQR")
     fig.suptitle("Global Worst-Case Convergence — Median / IQR")
     plt.tight_layout()
 
     out_path = os.path.join(RESULTS_DIR, "medianiqr_convergence.png")
     fig.savefig(out_path)
     plt.close(fig)
+    print(f"Saved: {out_path}")
 
 
-def analyze_max_nmae_critical_points(global_df):
-    k = global_df.index.to_numpy(dtype=float)
-    y = global_df["global_nmae_med"].to_numpy(dtype=float)
+def plot_medianiqr_convergence_with_k(global_df, k_star):
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
 
-    dy = np.gradient(y, k)
-    ddy = np.gradient(dy, k)
+    _plot_stat(axes[0], global_df, "med", "Median")
+    axes[0].axvline(
+        k_star, color="black", linestyle=":", label=f"Optimal k={k_star:.0f}"
+    )
+    axes[0].set_xticks(np.append(axes[0].get_xticks(), k_star))
+    axes[0].legend()
 
-    x1, y1 = k[0], y[0]
-    x2, y2 = k[-1], y[-1]
+    _plot_stat(axes[1], global_df, "iqr", "IQR")
+    axes[1].axvline(
+        k_star, color="black", linestyle=":", label=f"Optimal k={k_star:.0f}"
+    )
+    axes[1].set_xticks(np.append(axes[1].get_xticks(), k_star))
+    axes[1].legend()
 
-    num = np.abs((x2 - x1) * (y - y1) - (y2 - y1) * (k - x1))
-    den = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-    dist_secant = num / den
-    ddist_secant = np.gradient(dist_secant, k)
-
-    signals = {
-        "1st Derivative": dy,
-        "2nd Derivative": ddy,
-        "Secant Line Distance": dist_secant,
-        "Secant Distance Derivative": ddist_secant,
-    }
-
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-    axes = axes.flatten()
-
-    for ax, (title, sig) in zip(axes, signals.items()):
-        ax.plot(k, sig, label=title, color="black")
-
-        idx_max = np.nanargmax(sig)
-        idx_min = np.nanargmin(sig)
-
-        ax.scatter(
-            k[idx_max],
-            sig[idx_max],
-            color="red",
-            label=f"Global Max (k={k[idx_max]:.0f})",
-            zorder=5,
-        )
-        ax.scatter(
-            k[idx_min],
-            sig[idx_min],
-            color="blue",
-            label=f"Global Min (k={k[idx_min]:.0f})",
-            zorder=5,
-        )
-
-        ax.set_title(title)
-        ax.set_xlabel("Subset Size (k)")
-        ax.set_ylabel("Signal Amplitude")
-        ax.grid(True, linestyle="--", alpha=0.6)
-        ax.legend()
-
-    fig.suptitle("Max NMAE (Median) Critical Point Analysis (Original Domains)")
+    fig.suptitle(f"Global Worst-Case Convergence — Median / IQR (k*={k_star:.0f})")
     plt.tight_layout()
 
-    out_path = os.path.join(RESULTS_DIR, "max_nmae_critical_points.png")
+    out_path = os.path.join(RESULTS_DIR, "medianiqr_convergence_with_k.png")
     fig.savefig(out_path)
     plt.close(fig)
     print(f"Saved: {out_path}")
 
 
+def analyze_secant_distance(global_df):
+    k = global_df.index.to_numpy(dtype=float)
+    y = global_df["global_nmae_med"].to_numpy(dtype=float)
+
+    k_norm = (k - k.min()) / (k.max() - k.min())
+    y_norm = (y - y.min()) / (y.max() - y.min())
+
+    x1, y1 = k_norm[0], y_norm[0]
+    x2, y2 = k_norm[-1], y_norm[-1]
+
+    num = np.abs((x2 - x1) * (y_norm - y1) - (y2 - y1) * (k_norm - x1))
+    den = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    dist_secant = num / den
+
+    idx_max = np.nanargmax(dist_secant)
+    k_star_norm = k_norm[idx_max]
+    y_star_norm = y_norm[idx_max]
+    max_dist = dist_secant[idx_max]
+
+    k_star_original = k[idx_max]
+
+    v_x, v_y = x2 - x1, y2 - y1
+    w_x, w_y = k_star_norm - x1, y_star_norm - y1
+    dot_wv = w_x * v_x + w_y * v_y
+    dot_vv = v_x**2 + v_y**2
+    t = dot_wv / dot_vv
+
+    proj_x = x1 + t * v_x
+    proj_y = y1 + t * v_y
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+    axes[0].plot(k_norm, dist_secant, color="black", label="Secant Line Distance")
+    axes[0].scatter(
+        k_star_norm,
+        max_dist,
+        color="red",
+        label=f"Global Max (k={k_star_original:.0f})",
+        zorder=5,
+    )
+    axes[0].set_title("Secant Line Distance (Normalized Space)")
+    axes[0].set_xlabel("Normalized Subset Size (k)")
+    axes[0].set_ylabel("Distance")
+    axes[0].grid(True, linestyle="--", alpha=0.6)
+    axes[0].legend()
+
+    axes[1].plot(k_norm, y_norm, color="blue", label="Max NMAE (Median)")
+    axes[1].plot([x1, x2], [y1, y2], color="gray", linestyle="--", label="Secant Line")
+    axes[1].plot(
+        [k_star_norm, proj_x],
+        [y_star_norm, proj_y],
+        color="red",
+        linestyle="-",
+        label="Shortest Distance Segment",
+    )
+    axes[1].scatter(k_star_norm, y_star_norm, color="red", zorder=5)
+    axes[1].scatter(proj_x, proj_y, color="red", marker="x", zorder=5)
+
+    axes[1].set_title("Max NMAE and Secant Line Projection (Normalized Space)")
+    axes[1].set_xlabel("Normalized Subset Size (k)")
+    axes[1].set_ylabel("Normalized Max NMAE")
+    axes[1].set_aspect("equal", adjustable="box")
+    axes[1].grid(True, linestyle="--", alpha=0.6)
+    axes[1].legend()
+
+    plt.tight_layout()
+    out_path = os.path.join(RESULTS_DIR, "secant_analysis.png")
+    fig.savefig(out_path)
+    plt.close(fig)
+    print(f"Saved: {out_path}")
+
+    return k_star_original
+
+
 def main():
-    nse_med_dict, nse_iqr_dict = {}, {}
     nmae_med_dict, nmae_iqr_dict = {}, {}
 
     for family in tqdm(FAMILIES, desc="Families"):
@@ -212,25 +235,20 @@ def main():
                 )
 
                 config_key = f"{family}_{n_total}_{metric}"
-                nse_med_dict[config_key] = conv_df["nse_med"]
-                nse_iqr_dict[config_key] = conv_df["nse_iqr"]
                 nmae_med_dict[config_key] = conv_df["nmae_med"]
                 nmae_iqr_dict[config_key] = conv_df["nmae_iqr"]
 
     global_df = pd.DataFrame(
         {
-            "global_nse_med": pd.DataFrame(nse_med_dict).max(axis=1),
-            "global_nse_iqr": pd.DataFrame(nse_iqr_dict).max(axis=1),
             "global_nmae_med": pd.DataFrame(nmae_med_dict).max(axis=1),
             "global_nmae_iqr": pd.DataFrame(nmae_iqr_dict).max(axis=1),
         }
     ).dropna()
 
+    print("\n================== GLOBAL CONVERGENCE PLOTS ==================")
     plot_medianiqr_convergence(global_df)
-    analyze_max_nmae_critical_points(global_df)
-
-    print("================== GLOBAL CONVERGENCE PLOTS ==================")
-    print(f"Saved: {os.path.join(RESULTS_DIR, 'medianiqr_convergence.png')}")
+    k_star = analyze_secant_distance(global_df)
+    plot_medianiqr_convergence_with_k(global_df, k_star)
     print("================================================================\n")
 
 
