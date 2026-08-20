@@ -41,22 +41,18 @@ can be stopped and restarted without redoing expensive Optuna tuning.
 import json
 import os
 import time
+import urllib.request
 from io import StringIO
 
 import matplotlib.pyplot as plt
 import numpy as np
 import optuna
 import pandas as pd
-import urllib.request
+from MicroTEDAClus.MicroTEDAClus import MicroTEDAClus, MicroTEDAClusParameterSearchSpace
 from scipy.io import arff
 from sklearn.metrics import adjusted_rand_score
 from sklearn.preprocessing import MinMaxScaler
 from tqdm import tqdm
-
-from MicroTEDAClus.MicroTEDAClus import (
-    MicroTEDAClus,
-    MicroTEDAClusParameterSearchSpace,
-)
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
@@ -76,7 +72,7 @@ OPT_TIMEOUT = 180  # seconds
 SPLIT_FRAC = 0.2
 DOWNSAMPLE_FRAC = 0.5
 RNG_SEED = 0
-N_RUNS = 200
+N_RUNS = 94
 
 STAGES = ["raw", "noise_removed", "downsampled", "ordered", "scaled"]
 

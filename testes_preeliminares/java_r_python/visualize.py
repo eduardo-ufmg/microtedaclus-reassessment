@@ -1,8 +1,9 @@
 import sys
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+
 import matplotlib.cm as cm
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 
 def generate_visualization(csv_file: str, output_image: str) -> None:

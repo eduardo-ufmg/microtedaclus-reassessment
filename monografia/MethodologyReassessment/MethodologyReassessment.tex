@@ -345,9 +345,6 @@ def objective(trial, model_class, search_space_class, X_opt, y_opt, batch_size):
     try:
         model = model_class(**params)
     except Exception as e:
-        print(
-            f"Error initializing model {model_class.__name__} with params {params}: {e}"
-        )
         raise optuna.exceptions.TrialPruned()
 
     burn_in_idx = int(0.05 * len(X_opt))
@@ -367,7 +364,6 @@ def objective(trial, model_class, search_space_class, X_opt, y_opt, batch_size):
             model.fit(X_batch)
 
     except Exception as e:
-        print(f"Error occurred while executing model {model_class.__name__}: {e}")
         raise optuna.exceptions.TrialPruned()
 
     t_total_sec = (time.process_time_ns() - t0) / 1e9
@@ -406,10 +402,74 @@ For empirical studies, statistics over multiple experiment runs are required to 
 
 \begin{enumerate}
     \item The tuning phase may find local optima in the hyperparameter space, specially since it is performed over a randomized stream, which may lead to outlier runs with significantly worse performance than the actual performance of the model. The median and IQR are more robust to outliers than the mean and standard deviation, which may be significantly affected by those outlier runs.
-    \item \textbf{Matplotlib}'s logarithmic scale plotting does not support negative values, which may the lower bounds may assume when computed as $\mu - \sigma$. $Q_1$, however, is guaranteed to greater than or equal to the minimum value of the sample, which is always non-negative for the metrics that are ploted in logarithmic scale for this reassessment.
+    \item \textbf{Matplotlib}'s logarithmic scale plotting does not support negative values, which the lower bounds may assume when computed as $\mu - \sigma$. $Q_1$, however, is guaranteed to greater than or equal to the minimum value of the sample, which is always non-negative for the metrics that are ploted in logarithmic scale for this reassessment.
 \end{enumerate}
 
+It is assumed that $N=1000$ runs provide enough statistial power to propperly estimate the true performance of the model. Since such quantity imposes a prohibitive combinational cost, the number of runs $k^*$ required to closely approximate this reference is defined as \cref{eq:kneedle}.
 
+\begin{equation}
+k^* \;=\; \operatorname*{argmax}_{k \in \{k_{\min},\dots,N-1\}}\;
+\frac{\big|(\tilde k_{\max}-\tilde k_{\min})\big(\tilde Y(k)-\tilde Y_{\min}\big) - (\tilde Y_{\max}-\tilde Y_{\min})\big(\tilde k(k)-\tilde k_{\min}\big)\big|}
+{\sqrt{(\tilde k_{\max}-\tilde k_{\min})^2 + (\tilde Y_{\max}-\tilde Y_{\min})^2}},
+\label{eq:kneedle}
+\end{equation}
+
+which is solved by the Kneedle algorithm \cite{satopaa2011kneedle} as the point of maximum distance to the secant line joining the endpoints of the min--max-normalized curve
+
+\begin{align}
+\tilde k(k) &= \frac{k - k_{\min}}{k_{\max}-k_{\min}}, &
+\tilde Y(k) &= \frac{\hat Y_{\mathrm{med}}(k) - \min_k \hat Y_{\mathrm{med}}(k)}{\max_k \hat Y_{\mathrm{med}}(k) - \min_k \hat Y_{\mathrm{med}}(k)},
+\end{align}
+
+where $\hat Y_{\mathrm{med}}$ is a monotonically non-increasing isotonic regression \cite{barlow1972statistical} fit to the global worst-case median-convergence curve
+
+\begin{equation}
+\begin{gathered}
+Y_{\mathrm{med}}(k) = \max_{c \in \mathcal{C}} \mathrm{NMAE}^{\mathrm{med}}_c(k), \\
+\mathcal{C} = \{\text{SCL2}, \text{STR-B1}, \text{STR-B2}\} \times \{\texttt{ARI}, \texttt{Time}, \texttt{Memory}, \texttt{\#Microclusters}\}.
+\end{gathered}
+\end{equation}
+
+For a configuration $c \in \mathcal{C}$ and subset size $k \in \{k_{\min},\dots,N-1\}$, and $S_{c,k,1},\dots,S_{c,k,B}$ $B$ independent and identicaly distributed draws, uniform over the $\binom{N}{k}$ size-$k$ subsets of $\{1,\dots,N\}$, and subsample statistics
+
+\begin{equation}
+\begin{aligned}
+m_{c,k,b} = \operatorname{median}\big(\mathcal{D}_c[S_{c,k,b}]\big), \qquad
+q_{c,k,b} = Q_3\big(\mathcal{D}_c[S_{c,k,b}]\big) - Q_1\big(\mathcal{D}_c[S_{c,k,b}]\big), \\ b=1,\dots,B,
+\end{aligned}
+\end{equation}
+
+the normalized mean absolute errors
+
+\begin{align}
+\mathrm{NMAE}^{\mathrm{med}}_c(k) = \frac{1}{s_c B}\sum_{b=1}^{B} \big|m_{c,k,b}-\tilde m_c\big|, \qquad
+\mathrm{NMAE}^{\mathrm{iqr}}_c(k) = \frac{1}{s_c B}\sum_{b=1}^{B} \big|q_{c,k,b}-\tilde q_c\big|
+\end{align}
+
+are Monte Carlo estimates, with $B$ samples, of $\mathbb{E}_{S}\big[\,|\operatorname{stat}(\mathcal{D}_c[S])-\operatorname{stat}(\mathcal{D}_c)|\,\big]/s_c$, the expectation taken over $S$ uniform on size-$k$ subsets of $\{1,\dots,N\}$ \cite{robert2004monte}.
+
+The reference statistics and scale are
+
+\begin{align}
+\tilde m_c &= \operatorname{median}(\mathcal{D}_c), &
+\tilde q_c &= Q_3(\mathcal{D}_c) - Q_1(\mathcal{D}_c), &
+s_c &= \tilde q_c,
+\end{align}
+
+with $\mathcal{D}_c$ the finite population of run-level metric values,
+
+\begin{equation}
+\mathcal{D}_c = \{x_{c,i}\}_{i=1}^{N} \subset \mathbb{R}, \qquad x_{c,i} = \text{value of metric } c \text{ on run } i.
+\end{equation}
+
+For $N=1000$, $B=10^4$, $k_{\min}=3$, $k^* = 94$. \cref{fig:medianiqr_convergence_with_k} shows the convergence of the median and IQR maximum normalized absolute error over $k$ runs and highlights the $k^*$ value.
+
+\begin{figure}[thpb]
+    \centering
+    \includegraphics[width=\textwidth]{MethodologyReassessment/figures/medianiqr_convergence_with_k.png}
+    \caption{Convergence of the median and IQR maximum normalized absolute error over $k$ runs. The left plot shows the convergence of the median, while the right plot shows the convergence of the IQR. The vertical dashed line indicates the $k^*$ value, which is the number of runs required to closely approximate the reference statistics obtained from $N=1000$ runs.}
+    \label{fig:medianiqr_convergence_with_k}
+\end{figure}
 
 \section{Datasets}
 

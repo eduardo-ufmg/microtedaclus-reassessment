@@ -8,16 +8,12 @@ import optuna
 import pandas as pd
 import rpy2.rinterface_lib.callbacks
 import rpy2.robjects as robjects
+from MicroTEDAClus.MicroTEDAClus import MicroTEDAClus, MicroTEDAClusParameterSearchSpace
 from pympler import asizeof
 from rpy2.robjects.packages import importr
 from sklearn.datasets import make_blobs
 from sklearn.metrics import adjusted_rand_score
 from tqdm import tqdm
-
-from MicroTEDAClus.MicroTEDAClus import (
-    MicroTEDAClus,
-    MicroTEDAClusParameterSearchSpace,
-)
 
 rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR)
 optuna.logging.set_verbosity(optuna.logging.WARNING)

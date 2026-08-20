@@ -21,9 +21,9 @@ import json
 import os
 from collections import Counter
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 RESULTS_DIR = "./results"
 PLOTS_DIR = "./plots/preprocessing_study"

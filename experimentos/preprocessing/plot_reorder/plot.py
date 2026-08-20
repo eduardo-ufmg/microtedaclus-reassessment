@@ -1,6 +1,6 @@
 import os
-from io import StringIO
 import urllib.request
+from io import StringIO
 
 import matplotlib.pyplot as plt
 import numpy as np

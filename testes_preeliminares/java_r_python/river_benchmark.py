@@ -1,8 +1,8 @@
 import sys
 import time
 
-from river import cluster
 from memory_profiler import memory_usage
+from river import cluster
 
 
 def make_clusterer(algorithm):

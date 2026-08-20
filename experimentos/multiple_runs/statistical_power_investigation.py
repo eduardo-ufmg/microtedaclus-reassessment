@@ -1,7 +1,9 @@
 import os
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+from sklearn.isotonic import IsotonicRegression
 from tqdm.auto import tqdm
 
 RESULTS_DIR = "./results"
@@ -72,7 +74,7 @@ def compute_convergence_incrementally(data, k_values, out_path):
     return pd.read_csv(out_path, index_col=0)
 
 
-def _plot_stat(ax, global_df, stat, title):
+def _plot_stat(ax, global_df, stat, title, y_iso=None):
     k = global_df.index.to_numpy(dtype=float)
     y = global_df[f"global_nmae_{stat}"].to_numpy(dtype=float)
 
@@ -81,7 +83,9 @@ def _plot_stat(ax, global_df, stat, title):
 
     ax.set_xlabel("Subset Size (k)")
     ax.set_ylabel("Max NMAE")
-    ax.plot(k, y, label="Max NMAE", color="blue")
+
+    ax.plot(k, y, label="Max NMAE", color="blue", alpha=0.4)
+
     ax.set_title(title)
 
     ax.set_xlim(left=-50, right=1050)
@@ -92,29 +96,20 @@ def _plot_stat(ax, global_df, stat, title):
     ax.legend()
 
 
-def plot_medianiqr_convergence(global_df):
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
-    _plot_stat(axes[0], global_df, "med", "Median")
-    _plot_stat(axes[1], global_df, "iqr", "IQR")
-    fig.suptitle("Global Worst-Case Convergence — Median / IQR")
-    plt.tight_layout()
+def plot_medianiqr_convergence_with_k(global_df, k_star, y_iso_med=None):
+    fig, axes = plt.subplots(
+        1,
+        2,
+        constrained_layout=True,
+    )
 
-    out_path = os.path.join(RESULTS_DIR, "medianiqr_convergence.png")
-    fig.savefig(out_path)
-    plt.close(fig)
-    print(f"Saved: {out_path}")
-
-
-def plot_medianiqr_convergence_with_k(global_df, k_star):
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
-
-    _plot_stat(axes[0], global_df, "med", "Median")
-    axes[0].axvline(k_star, color="black", linestyle=":", label=f"k={k_star:.0f}")
+    _plot_stat(axes[0], global_df, "med", "Median", y_iso=y_iso_med)
+    axes[0].axvline(k_star, color="black", linestyle=":", label=f"k*={k_star:.0f}")
     axes[0].set_xticks(np.append(axes[0].get_xticks(), k_star))
     axes[0].legend()
 
     _plot_stat(axes[1], global_df, "iqr", "IQR")
-    axes[1].axvline(k_star, color="black", linestyle=":", label=f"k={k_star:.0f}")
+    axes[1].axvline(k_star, color="black", linestyle=":", label=f"k*={k_star:.0f}")
     axes[1].set_xticks(np.append(axes[1].get_xticks(), k_star))
     axes[1].legend()
 
@@ -123,24 +118,29 @@ def plot_medianiqr_convergence_with_k(global_df, k_star):
         ax.set_ylim(bottom=-0.05)
         ax.grid(True, linestyle="--", alpha=0.6)
 
-    fig.suptitle(f"Global Worst-Case Convergence — Median / IQR (k*={k_star:.0f})")
-    plt.tight_layout()
+    fig.suptitle(
+        f"Global Worst-Case Convergence",
+        y=0.875,
+    )
 
     out_path = os.path.join(RESULTS_DIR, "medianiqr_convergence_with_k.png")
-    fig.savefig(out_path)
+    fig.savefig(out_path, bbox_inches="tight")
     plt.close(fig)
     print(f"Saved: {out_path}")
 
 
-def analyze_secant_distance(global_df):
-    k = global_df.index.to_numpy(dtype=float)
-    y = global_df["global_nmae_med"].to_numpy(dtype=float)
+def compute_isotonic_elbow(k_array, y_array):
+    ir = IsotonicRegression(increasing=False, out_of_bounds="clip")
+    y_iso = ir.fit_transform(k_array, y_array)
 
-    k_max = k.max()
-    y_max = y.max()
+    k_min, k_max = k_array.min(), k_array.max()
+    y_min, y_max = y_iso.min(), y_iso.max()
 
-    k_norm = k / k_max
-    y_norm = y / y_max
+    if np.isclose(k_max, k_min) or np.isclose(y_max, y_min):
+        return k_min, y_iso
+
+    k_norm = (k_array - k_min) / (k_max - k_min)
+    y_norm = (y_iso - y_min) / (y_max - y_min)
 
     x1, y1 = k_norm[0], y_norm[0]
     x2, y2 = k_norm[-1], y_norm[-1]
@@ -149,76 +149,10 @@ def analyze_secant_distance(global_df):
     den = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
     dist_secant = num / den
 
-    idx_max = np.nanargmax(dist_secant)
-    k_star_norm = k_norm[idx_max]
-    y_star_norm = y_norm[idx_max]
-    max_dist = dist_secant[idx_max]
+    idx_star = np.nanargmax(dist_secant)
+    k_star = k_array[idx_star]
 
-    k_star_original = k[idx_max]
-    y_star_original = y[idx_max]
-
-    v_x, v_y = x2 - x1, y2 - y1
-    w_x, w_y = k_star_norm - x1, y_star_norm - y1
-    dot_wv = w_x * v_x + w_y * v_y
-    dot_vv = v_x**2 + v_y**2
-    t = dot_wv / dot_vv
-
-    proj_x_norm = x1 + t * v_x
-    proj_y_norm = y1 + t * v_y
-
-    proj_x = proj_x_norm * k_max
-    proj_y = proj_y_norm * y_max
-
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
-
-    dist_max = dist_secant.max()
-    axes[0].plot(k, dist_secant, color="black", label="Secant Line Distance")
-    axes[0].scatter(
-        k_star_original,
-        max_dist,
-        color="red",
-        label=f"Max (k={k_star_original:.0f})",
-        zorder=5,
-    )
-    axes[0].set_title("Secant Line Distance")
-    axes[0].set_xlabel("Subset Size (k)")
-    axes[0].set_ylabel("Distance")
-    axes[0].set_xlim(left=-50, right=1050)
-    axes[0].set_ylim(bottom=-0.05)
-    axes[0].set_aspect(k_max / dist_max, adjustable="box")
-    axes[0].grid(True, linestyle="--", alpha=0.6)
-    axes[0].legend()
-
-    axes[1].plot(k, y, color="blue", label="Max NMAE")
-    axes[1].plot(
-        [k[0], k[-1]], [y[0], y[-1]], color="gray", linestyle="--", label="Secant Line"
-    )
-    axes[1].plot(
-        [k_star_original, proj_x],
-        [y_star_original, proj_y],
-        color="red",
-        linestyle="-",
-        label="Maximum Distance",
-    )
-    axes[1].scatter(k_star_original, y_star_original, color="red", zorder=5)
-    axes[1].scatter(proj_x, proj_y, color="red", marker="x", zorder=5)
-
-    axes[1].set_title("Secant Line Projection")
-    axes[1].set_xlabel("Subset Size (k)")
-    axes[1].set_ylabel("Max NMAE")
-    axes[1].set_xlim(left=-100)
-    axes[1].set_ylim(bottom=-0.05)
-    axes[1].set_aspect(k_max / y_max, adjustable="box")
-    axes[1].grid(True, linestyle="--", alpha=0.6)
-    axes[1].legend()
-
-    plt.tight_layout()
-    out_path = os.path.join(RESULTS_DIR, "secant_analysis.png")
-    fig.savefig(out_path)
-    plt.close(fig)
-    print(f"Saved: {out_path}")
-
-    return k_star_original
+    return k_star, y_iso
 
 
 def main():
@@ -261,6 +195,10 @@ def main():
                 nmae_med_dict[config_key] = conv_df["nmae_med"]
                 nmae_iqr_dict[config_key] = conv_df["nmae_iqr"]
 
+    if not nmae_med_dict or not nmae_iqr_dict:
+        print("No valid convergence data generated. Exiting.")
+        return
+
     global_df = pd.DataFrame(
         {
             "global_nmae_med": pd.DataFrame(nmae_med_dict).max(axis=1),
@@ -268,10 +206,13 @@ def main():
         }
     ).dropna()
 
+    k_array = global_df.index.to_numpy(dtype=float)
+    y_med_array = global_df["global_nmae_med"].to_numpy(dtype=float)
+
+    k_star, y_iso_med = compute_isotonic_elbow(k_array, y_med_array)
+
     print("\n================== GLOBAL CONVERGENCE PLOTS ==================")
-    plot_medianiqr_convergence(global_df)
-    k_star = analyze_secant_distance(global_df)
-    plot_medianiqr_convergence_with_k(global_df, k_star)
+    plot_medianiqr_convergence_with_k(global_df, k_star, y_iso_med=y_iso_med)
     print("================================================================\n")
 
 

@@ -1,8 +1,8 @@
-import subprocess
-import re
 import csv
-import sys
 import math
+import re
+import subprocess
+import sys
 
 
 def parse_time_output(stderr_text: str) -> dict[str, float | None]:

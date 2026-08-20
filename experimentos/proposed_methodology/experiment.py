@@ -10,13 +10,6 @@ import optuna
 import pandas as pd
 import rpy2.rinterface_lib.callbacks
 import rpy2.robjects as robjects
-from pympler import asizeof
-from rpy2.robjects.packages import importr
-from scipy.io import arff
-from sklearn.datasets import make_blobs
-from sklearn.metrics import adjusted_rand_score
-from tqdm import tqdm
-
 from models.AutoCloud.AutoCloud import AutoCloud, AutoCloudParameterSearchSpace
 from models.CEDAS.CEDAS import CEDAS, CEDASParameterSearchSpace
 from models.CluStream.CluStream import CluStream, CluStreamParameterSearchSpace
@@ -25,8 +18,14 @@ from models.MicroTEDAClus.MicroTEDAClus import (
     MicroTEDAClus,
     MicroTEDAClusParameterSearchSpace,
 )
-from models.TEDACloud.TEDACloud import TEDACloud, TEDACloudParameterSearchSpace
 from models.StreamKM.StreamKM import StreamKM, StreamKMParameterSearchSpace
+from models.TEDACloud.TEDACloud import TEDACloud, TEDACloudParameterSearchSpace
+from pympler import asizeof
+from rpy2.robjects.packages import importr
+from scipy.io import arff
+from sklearn.datasets import make_blobs
+from sklearn.metrics import adjusted_rand_score
+from tqdm import tqdm
 
 rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR)
 
