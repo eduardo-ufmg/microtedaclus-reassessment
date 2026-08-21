@@ -490,7 +490,7 @@ The original \textbf{DS4} dataset is loaded from \url{https://raw.githubusercont
     \label{fig:raw_ds4}
 \end{figure}
 
-\cref{fig:raw_metrics} shows the evolution of the adjusted rand index and the execution time of the microTEDAclus model over 100-sample batches of the original \textbf{DS4} dataset. An ARI of 1.0 indicates perfect clustering, while an ARI of 0.0 indicates random clustering. It is clear that, for the original dataset, the model's score is significantly lower than the one reported in the original work, kept around 0.25 throughout the entire stream. The time spent on the fitting stage is stable at nearly 200 milliseconds per batch, while the prediction stage's duration increases over time, reaching nearly 10 milliseconds per batch at the end of the stream.
+\cref{fig:raw_metrics} shows the evolution of the adjusted rand index and the execution time of the microTEDAclus model over 100-sample batches of the original \textbf{DS4} dataset. An ARI of 1.0 indicates perfect clustering, while an ARI of 0.0 indicates random clustering. It is clear that, for the original dataset, the model's score is significantly lower than the one reported in the original work, kept around 0.25 throughout the entire stream. The time spent on the fitting stage is stable at nearly 400 milliseconds per batch, while the prediction stage's duration increases over time, reaching nearly 20 milliseconds per batch at the end of the stream.
 
 \begin{figure}[thpb]
     \centering
@@ -510,7 +510,7 @@ The noise removal step is performed by filtering out the samples labeled as \tex
     \label{fig:noise_removed_ds4}
 \end{figure}
 
-\cref{fig:noise_removed_metrics} shows a slight increase in the ARI of the microTEDAclus model over the noise-removed dataset, which reaches nearly 0.5 from batches 10 to 20, but then drops to nearly 0.25 for the rest of the stream. The execution time is also slightly reduced, with the fit stage taking right under 200 milliseconds per batch and the prediction stage taking nearly 5 milliseconds per batch at the end of the stream.
+\cref{fig:noise_removed_metrics} shows a slight increase in the ARI of the microTEDAclus model over the noise-removed dataset, which reaches nearly 0.5 from batches 10 to 20, but then drops to nearly 0.25 for the rest of the stream. The execution time is also slightly reduced, with the fit stage 300 milliseconds per batch and the prediction stage taking nearly 10 milliseconds per batch at the end of the stream.
 
 \begin{figure}[thpb]
     \centering
@@ -532,7 +532,7 @@ Downsampling, on the other hand, does not necessarily constitute a form of data 
     \label{fig:downsampled_ds4}
 \end{figure}
 
-The curves in \cref{fig:downsampled_metrics} show that downsampling had little impact on the ARI of the microTEDAclus model, which slightly decreased to nearly 0.2. Simillarly, the execution time's upper bounds only slightly decreased.
+The curves in \cref{fig:downsampled_metrics} show that downsampling had negative impact on the ARI of the microTEDAclus model, which decreased to nearly 0.2. Execution time, however, is significantly reduced. Fitting is performed in approximately 200 milliseconds per batch, and prediction is performed in less than 5 milliseconds through the majority of the stream.
 
 \begin{figure}[thpb]
     \centering
@@ -559,7 +559,7 @@ The scaling step is performed by applying a min-max normalization to the feature
     \label{fig:scaled_metrics}
 \end{figure}
 
-\cref{fig:scaled_metrics} shows that scaling recovers the ARI of the microTEDAclus model to over 0.25 for most batches, and significantly reduces the execution time. Fitting is performed in approximately 10 milliseconds per batch, while prediction is performed in less than 2 milliseconds per batch. More importantly, scaling shifts the optimal parameter \texttt{variance\_limit} from $1 < r_0 < 10$ to $0.01 < r_0 < 0.1$. This contradicts the original work's claim that the model is robust to the choice of this parameter, since it is highly dependent on the scale of the data.
+\cref{fig:scaled_metrics} shows that scaling recovers the ARI of the microTEDAclus model to over 0.25 for most batches, and significantly reduces the execution time. Fitting is performed in approximately 20 milliseconds per batch, while prediction is performed in approximately2 milliseconds per batch. More importantly, scaling shifts the optimal parameter \texttt{variance\_limit} from $1 < r_0 < 10$ to $0.01 < r_0 < 0.1$. This contradicts the original work's claim that the model is robust to the choice of this parameter, since it is highly dependent on the scale of the data.
 
 Scalling is a common preprocessing step in machine learning, and it is expected to be performed in any real-world application of the microTEDAclus model. However, it is important to note that the way it is performed in the original work's experiments, in which the minimum and maximum values of the features are computed over the entire dataset, constitutes a form of data leakage.
 

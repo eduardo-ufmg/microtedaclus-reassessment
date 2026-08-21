@@ -5,15 +5,12 @@ Preprocessing-impact experiment — ANALYSIS stage.
 
 Loads the per-run results persisted by run_preprocessing_experiment.py from
 ./results/ (one CSV of per-batch curves + one params JSON per (stage, run))
-and, for each stage, produces two separate metric figures — one per
-statistical pair, as in the earlier convergence-investigation scripts:
+and, for each stage, produces one metric figure:
 
-    {stage}_metrics_medianiqr.png   median line + IQR (Q1-Q3) band
-    {stage}_metrics_meanstd.png     mean line + mean +/- std band
+    {stage}_metrics.png   median line + IQR (Q1-Q3) band
 
-No combined figure is produced; the two pairs are kept in separate plots.
 Tuned-hyperparameter summaries (median [Q1,Q3] for numeric, mode for
-categorical) are shown as text on both figures.
+categorical) are shown as text on the figure.
 """
 
 import glob
@@ -91,7 +88,7 @@ def load_stage(stage):
 
 
 # --------------------------------------------------------------------------
-# Aggregation — both statistical pairs
+# Aggregation
 # --------------------------------------------------------------------------
 def aggregate_curves_medianiqr(arr_list):
     """arr_list: list of 1D arrays of equal length (may contain NaNs for
@@ -103,17 +100,6 @@ def aggregate_curves_medianiqr(arr_list):
         q1 = np.nanpercentile(stacked, 25, axis=0)
         q3 = np.nanpercentile(stacked, 75, axis=0)
     return median, q1, q3
-
-
-def aggregate_curves_meanstd(arr_list):
-    """arr_list: list of 1D arrays of equal length (may contain NaNs for
-    failed runs). Returns (mean, mean-std, mean+std) along the run axis,
-    ignoring NaNs."""
-    stacked = np.vstack(arr_list)
-    with np.errstate(all="ignore"):
-        mean = np.nanmean(stacked, axis=0)
-        std = np.nanstd(stacked, axis=0, ddof=1)
-    return mean, mean - std, mean + std
 
 
 def aggregate_params(params_runs):
@@ -154,25 +140,24 @@ def format_params_text(param_summary, n_valid, n_runs):
 
 
 # --------------------------------------------------------------------------
-# Plotting — one figure per statistical pair
+# Plotting
 # --------------------------------------------------------------------------
 def _plot_metrics(
-    center_label,
     ari_stats,
     t_predict_stats,
     t_fit_stats,
     params_text,
     stage,
     out_dir,
-    suffix,
 ):
-    """center_label: 'median' or 'mean'; *_stats: (center, lower, upper) tuples."""
+    """*_stats: (median, q1, q3) tuples."""
     ari_c, ari_lo, ari_hi = ari_stats
     tp_c, tp_lo, tp_hi = t_predict_stats
     tf_c, tf_lo, tf_hi = t_fit_stats
     batches = np.arange(len(ari_c))
 
-    band_label = "IQR" if center_label == "median" else "mean +/- std"
+    center_label = "median"
+    band_label = "IQR"
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
@@ -180,7 +165,7 @@ def _plot_metrics(
     axes[0].fill_between(
         batches, ari_lo, ari_hi, color="tab:blue", alpha=0.3, label=band_label
     )
-    axes[0].set_title(f"{stage} — ARI per Batch ({center_label}/{band_label})")
+    axes[0].set_title(f"{stage} — ARI per Batch)")
     axes[0].set_xlabel("Batch Index")
     axes[0].set_ylabel("Adjusted Rand Index")
     axes[0].set_ylim(-1.0, 1.0)
@@ -230,33 +215,18 @@ def _plot_metrics(
     axes[1].grid(True, which="both", linestyle="--", alpha=0.5)
 
     plt.tight_layout()
-    fig.savefig(os.path.join(out_dir, f"{stage}_metrics_{suffix}.png"))
+    fig.savefig(os.path.join(out_dir, f"{stage}_metrics.png"))
     plt.close(fig)
 
 
-def plot_metrics_medianiqr(ari_runs, tp_runs, tf_runs, params_text, stage, out_dir):
+def plot_metrics(ari_runs, tp_runs, tf_runs, params_text, stage, out_dir):
     _plot_metrics(
-        "median",
         aggregate_curves_medianiqr(ari_runs),
         aggregate_curves_medianiqr(tp_runs),
         aggregate_curves_medianiqr(tf_runs),
         params_text,
         stage,
         out_dir,
-        suffix="medianiqr",
-    )
-
-
-def plot_metrics_meanstd(ari_runs, tp_runs, tf_runs, params_text, stage, out_dir):
-    _plot_metrics(
-        "mean",
-        aggregate_curves_meanstd(ari_runs),
-        aggregate_curves_meanstd(tp_runs),
-        aggregate_curves_meanstd(tf_runs),
-        params_text,
-        stage,
-        out_dir,
-        suffix="meanstd",
     )
 
 
@@ -278,10 +248,7 @@ def main():
             print(f"[{stage}] All trials pruned in every run — skipping plots.")
             continue
 
-        plot_metrics_medianiqr(
-            ari_runs, tp_runs, tf_runs, params_text, stage, PLOTS_DIR
-        )
-        plot_metrics_meanstd(ari_runs, tp_runs, tf_runs, params_text, stage, PLOTS_DIR)
+        plot_metrics(ari_runs, tp_runs, tf_runs, params_text, stage, PLOTS_DIR)
 
         print(
             f"[{stage}] {len(ari_runs)} runs loaded ({n_valid} valid) — plots written."
