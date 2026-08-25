@@ -462,7 +462,7 @@ with $\mathcal{D}_c$ the finite population of run-level metric values,
 \mathcal{D}_c = \{x_{c,i}\}_{i=1}^{N} \subset \mathbb{R}, \qquad x_{c,i} = \text{value of metric } c \text{ on run } i.
 \end{equation}
 
-For $N=1000$, $B=10^4$, $k_{\min}=3$, $k^* = 94$. \cref{fig:medianiqr_convergence_with_k} shows the convergence of the median and IQR maximum normalized absolute error over $k$ runs and highlights the $k^*$ value.
+For $N=1000$, $B=10^4$, $k_{\min}=3$, $k^* = 94$. \cref{fig:medianiqr_convergence_with_k} shows the convergence of the median and IQR maximum normalized absolute error over $k$ runs and highlights the $k^*$ value. The metrics are captured on the middle batch of the stream, in which the model is assumed to have reached a steady state and the metrics are expected to be stable.
 
 \begin{figure}[thpb]
     \centering
@@ -707,6 +707,10 @@ The original work reports memory consumption only through a plot of memory usage
     \end{itemize}
     This report strategy's goal is to further investigate how the feature dimension impacts on the sample-scalability of the evaluated models, and how the number of samples impacts on the feature-scalability of the evaluated models. Median and quartiles are selected for the same reasons discussed in \cref{subsec:complete_runtime}.
 \end{itemize}
+
+\subsection{MicroCluster Count}
+
+In the set of models that this work evaluates, only \textbf{StreamKM++} do not employ microclustering techniques. The remaining models are compared in terms of how well they can summarize the data stream into a set of microclusters, which is expected to impact on their performance in terms of clustering quality, execution time, and memory usage. This metric is captured, reported, and analyzed in the same way as the memory usage metric.
 
 \section{Prequential, Sequential, and Offline Evaluation} \label{sec:prequential_sequential_offline_evaluation}
 
