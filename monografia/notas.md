@@ -8,3 +8,4 @@ Label tags (sec, subsec, etc.)
 “The equation \cref” vs. just “\cref”.
 Caption placement.
 Formatting of tables, images, algorithms, code listings, etc.
+folders `experimentos` and `monografia`

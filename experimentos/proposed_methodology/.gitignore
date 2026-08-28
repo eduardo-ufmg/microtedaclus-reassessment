@@ -221,9 +221,6 @@ __marimo__/
 
 #
 results*
-aggregated_per_run/
 data_samples/
-plots/
-metrics_summary/
-temp*
-latex/tables/
+metrics
+statistical_analysis
