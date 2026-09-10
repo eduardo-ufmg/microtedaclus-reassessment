@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c }
+\toprule
+Dataset & CluStream & DenStream & MicroTEDAClus & CEDAS & TEDACloud & AutoCloud & StreamKM \\
+\midrule
+Benchmark(1) & 100.0 (74, 154) & 90.0 (13, 973) & 100.0 (33, 268) & 20.0 (14, 30) & 40.0 (25, 43) & \textcolor{red}{4770.0 (30, 7363)} & \textbf{10.0 (11, 14)} \\
+chameleon\_ds8 & 200.0 (155, 298) & 110.0 (106, 110) & 445.0 (265, 642) & 50.0 (50, 54) & 100.0 (80, 186) & \textcolor{red}{35680.0 (35575, 36357)} & \textbf{30.0 (22, 30)} \\
+chameleon\_ds7 & 260.0 (220, 391) & 70.0 (65, 67) & \textcolor{red}{480.0 (280, 1012)} & 70.0 (63, 67) & 110.0 (97, 115) & 160.0 (129, 177) & \textbf{30.0 (26, 37)} \\
+RandomRBFGeneratorEvents & \textcolor{red}{1220.0 (642, 1832)} & 150.0 (47, 343) & \textcolor{red}{800.0 (242, 4376)} & 60.0 (45, 92) & 150.0 (112, 188) & \textcolor{red}{160.0 (95, 52242)} & \textbf{30.0 (29, 37)} \\
+cassini & 80.0 (53, 118) & 135.0 (106, 189) & 60.0 (46, 68) & 20.0 (12, 22) & 70.0 (53, 87) & \textcolor{red}{6200.0 (27, 9051)} & \textbf{10.0 (7, 13)} \\
+Benchmark(2) & 80.0 (56, 105) & \textcolor{red}{140.0 (91, 240)} & 50.0 (18, 66) & \textbf{10.0 (11, 13)} & 20.0 (11, 23) & \textcolor{red}{20.0 (11, 6892)} & \textbf{10.0 (7, 14)} \\
+\bottomrule
+\end{tabular}
+}
+\caption{Statistical analysis and (Q1, Q3) for the Cumulative Prediction Time [ms]. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\label{tab:all_time_predict_cum_ms}
+\end{table}

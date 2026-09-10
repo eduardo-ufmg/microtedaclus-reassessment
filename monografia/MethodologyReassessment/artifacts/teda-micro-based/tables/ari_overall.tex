@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & MicroTEDAClus & AutoCloud & CEDAS & TEDACloud \\
+\midrule
+Benchmark(1) & \textcolor{red}{0.029 (0.000, 0.570)} & \textcolor{red}{0.084 (0.000, 0.810)} & 0.253 (0.202, 0.651) & \textbf{0.831 (0.634, 0.931)} \\
+chameleon\_ds8 & \textbf{0.202 (0.164, 0.225)} & 0.030 (0.019, 0.032) & \textcolor{red}{0.000 (0.000, 0.000)} & 0.125 (0.123, 0.198) \\
+chameleon\_ds7 & \textbf{0.215 (0.161, 0.239)} & 0.023 (0.002, 0.028) & \textcolor{red}{0.000 (0.000, 0.000)} & 0.040 (0.036, 0.065) \\
+RandomRBFGeneratorEvents & 0.359 (0.000, 0.526) & \textcolor{red}{0.050 (0.000, 0.373)} & 0.181 (0.018, 0.453) & \textbf{0.489 (0.391, 0.571)} \\
+cassini & \textbf{0.492 (0.275, 0.573)} & \textcolor{red}{0.076 (0.000, 0.286)} & \textcolor{red}{0.000 (0.000, 0.156)} & 0.360 (0.251, 0.390) \\
+Benchmark(2) & \textbf{0.564 (0.512, 0.607)} & \textcolor{red}{0.004 (0.000, 0.494)} & \textcolor{red}{0.000 (0.000, 0.550)} & \textcolor{red}{0.506 (0.000, 0.573)} \\
+\bottomrule
+\end{tabular}
+}
+\caption{Statistical analysis and (Q1, Q3) for the Overall Adjusted Rand Index. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\label{tab:teda-micro-based_ari_overall}
+\end{table}

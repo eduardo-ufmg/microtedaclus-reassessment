@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & MicroTEDAClus & AutoCloud & CEDAS & TEDACloud \\
+\midrule
+Benchmark(1) & 95.0 (33, 268) & \textcolor{red}{2880.0 (30, 7363)} & \textbf{20.0 (14, 30)} & 40.0 (25, 43) \\
+chameleon\_ds8 & 445.0 (265, 642) & \textcolor{red}{35680.0 (35575, 36357)} & \textbf{50.0 (50, 54)} & 100.0 (80, 186) \\
+chameleon\_ds7 & \textcolor{red}{480.0 (280, 1012)} & 160.0 (129, 177) & \textbf{70.0 (63, 67)} & 110.0 (97, 115) \\
+RandomRBFGeneratorEvents & \textcolor{red}{795.0 (242, 4376)} & \textcolor{red}{165.0 (95, 52242)} & \textbf{60.0 (45, 92)} & 150.0 (112, 188) \\
+cassini & 60.0 (46, 68) & \textcolor{red}{6200.0 (27, 9051)} & \textbf{20.0 (12, 22)} & 70.0 (53, 87) \\
+Benchmark(2) & \textcolor{red}{50.0 (18, 66)} & 20.0 (11, 6892) & \textbf{10.0 (11, 13)} & 20.0 (11, 23) \\
+\bottomrule
+\end{tabular}
+}
+\caption{Statistical analysis and (Q1, Q3) for the Cumulative Prediction Time [ms]. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\label{tab:teda-micro-based_time_predict_cum_ms}
+\end{table}

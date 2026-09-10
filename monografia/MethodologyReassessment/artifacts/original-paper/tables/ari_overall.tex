@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & MicroTEDAClus & DenStream & CluStream & StreamKM \\
+\midrule
+Benchmark(1) & \textcolor{red}{0.035 (0.000, 0.570)} & \textbf{0.665 (0.000, 0.841)} & 0.096 (0.041, 0.153) & 0.183 (0.123, 0.290) \\
+chameleon\_ds8 & \textcolor{red}{0.202 (0.164, 0.225)} & \textcolor{red}{0.184 (0.184, 0.184)} & \textbf{0.319 (0.280, 0.355)} & \textbf{0.327 (0.312, 0.336)} \\
+chameleon\_ds7 & 0.215 (0.161, 0.239) & \textcolor{red}{0.174 (0.174, 0.174)} & \textbf{0.324 (0.292, 0.367)} & \textbf{0.330 (0.316, 0.342)} \\
+RandomRBFGeneratorEvents & \textbf{0.359 (0.000, 0.526)} & \textbf{0.360 (0.000, 0.473)} & \textcolor{red}{0.170 (0.069, 0.249)} & \textbf{0.371 (0.172, 0.485)} \\
+cassini & \textcolor{red}{0.492 (0.275, 0.573)} & \textcolor{red}{0.383 (0.354, 0.437)} & 0.573 (0.518, 0.588) & \textbf{0.696 (0.567, 0.794)} \\
+Benchmark(2) & \textbf{0.564 (0.512, 0.607)} & \textcolor{red}{0.402 (0.366, 0.433)} & \textbf{0.566 (0.555, 0.577)} & 0.498 (0.415, 0.540) \\
+\bottomrule
+\end{tabular}
+}
+\caption{Statistical analysis and (Q1, Q3) for the Overall Adjusted Rand Index. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\label{tab:original-paper_ari_overall}
+\end{table}

@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c }
+\toprule
+Dataset & CluStream & DenStream & MicroTEDAClus & CEDAS & TEDACloud & AutoCloud & StreamKM \\
+\midrule
+Benchmark(1) & \textcolor{red}{214016 (147280, 346376)} & 15360 (9736, 62272) & \textcolor{red}{283648 (126198, 480120)} & 8192 (5980, 11828) & \textbf{6144 (4232, 7968)} & \textcolor{red}{669696 (4994, 884374)} & \textcolor{red}{27648 (16304, 36520)} \\
+chameleon\_ds8 & 205824 (149384, 324960) & \textbf{10240 (9736, 9736)} & 643072 (529802, 1104864) & \textbf{8192 (8608, 8672)} & \textbf{7168 (7592, 17120)} & \textcolor{red}{1987584 (1987136, 2176208)} & 38912 (28230, 67414) \\
+chameleon\_ds7 & 222720 (172368, 342704) & 10240 (9736, 9736) & \textcolor{red}{719360 (521254, 1154866)} & 8192 (8608, 8672) & \textbf{7168 (6608, 8616)} & \textbf{9216 (7646, 10304)} & 35840 (24378, 65224) \\
+RandomRBFGeneratorEvents & \textcolor{red}{1091584 (570784, 1676104)} & \textbf{10240 (9736, 15710)} & \textcolor{red}{1054720 (326658, 1814580)} & \textbf{9216 (7776, 14600)} & \textbf{11264 (7310, 13344)} & \textcolor{red}{11264 (6378, 2475432)} & 86016 (37000, 239728) \\
+cassini & 151040 (89408, 257528) & 24576 (17840, 29668) & \textcolor{red}{143872 (133944, 188292)} & \textbf{5120 (3616, 6804)} & 12288 (8954, 14666) & \textcolor{red}{722432 (3980, 1013674)} & 31744 (21024, 42376) \\
+Benchmark(2) & \textcolor{red}{155648 (96448, 219680)} & 28672 (19976, 35022) & \textcolor{red}{144384 (76452, 163154)} & \textbf{3072 (3144, 3616)} & 3072 (1736, 3670) & 3072 (1616, 787034) & 28672 (22104, 36352) \\
+\bottomrule
+\end{tabular}
+}
+\caption{Statistical analysis and (Q1, Q3) for the Maximum Memory Footprint [B]. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\label{tab:all_memory_max_bytes}
+\end{table}

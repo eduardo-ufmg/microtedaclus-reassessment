@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & MicroTEDAClus & DenStream & CluStream & StreamKM \\
+\midrule
+Benchmark(1) & \textcolor{red}{158720 (45920, 389246)} & \textbf{12288 (3944, 23958)} & \textcolor{red}{214016 (147280, 346376)} & 16384 (12992, 23664) \\
+chameleon\_ds8 & \textcolor{red}{640512 (527974, 1103124)} & \textbf{9216 (9168, 9200)} & 205824 (149384, 324952) & 28160 (20304, 41050) \\
+chameleon\_ds7 & \textcolor{red}{715264 (518660, 1152554)} & \textbf{6144 (5664, 5696)} & 222720 (172368, 342704) & 20480 (16904, 33130) \\
+RandomRBFGeneratorEvents & \textcolor{red}{433152 (217466, 1573998)} & \textbf{9216 (4334, 13956)} & \textcolor{red}{1091584 (570784, 1676104)} & 31744 (17784, 107400) \\
+cassini & 120320 (42986, 170764) & \textbf{18944 (16384, 24366)} & \textcolor{red}{151040 (89408, 257528)} & \textbf{17408 (13030, 29920)} \\
+Benchmark(2) & 108544 (14420, 140232) & 23552 (17902, 28694) & \textcolor{red}{155648 (96424, 219680)} & \textbf{17408 (13712, 25344)} \\
+\bottomrule
+\end{tabular}
+}
+\caption{Statistical analysis and (Q1, Q3) for the Steady-State Memory Footprint at the Penultimate Batch [B]. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\label{tab:original-paper_memory_penultimate_bytes}
+\end{table}

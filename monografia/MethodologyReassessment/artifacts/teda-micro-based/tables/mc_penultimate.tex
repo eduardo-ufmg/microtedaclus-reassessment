@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & MicroTEDAClus & AutoCloud & CEDAS & TEDACloud \\
+\midrule
+Benchmark(1) & 42 (8, 142) & \textcolor{red}{1081 (6, 2179)} & \textbf{8 (4, 13)} & \textbf{7 (4, 10)} \\
+chameleon\_ds8 & 426 (329, 864) & \textcolor{red}{5266 (5266, 5383)} & \textbf{10 (9, 10)} & \textbf{5 (4, 15)} \\
+chameleon\_ds7 & \textcolor{red}{506 (319, 866)} & 8 (7, 10) & 10 (10, 10) & \textbf{4 (3, 5)} \\
+RandomRBFGeneratorEvents & \textcolor{red}{102 (32, 498)} & \textcolor{red}{13 (6, 6130)} & \textbf{9 (5, 16)} & \textbf{12 (8, 17)} \\
+cassini & 34 (20, 62) & \textcolor{red}{1822 (3, 2640)} & \textbf{5 (2, 7)} & 11 (8, 16) \\
+Benchmark(2) & 30 (6, 47) & 2 (1, 1977) & \textbf{2 (2, 3)} & 2 (1, 3) \\
+\bottomrule
+\end{tabular}
+}
+\caption{Statistical analysis and (Q1, Q3) for the Steady-State Microcluster Count at the Penultimate Batch. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\label{tab:teda-micro-based_mc_penultimate}
+\end{table}

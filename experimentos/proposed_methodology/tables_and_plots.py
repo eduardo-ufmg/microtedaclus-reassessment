@@ -6,31 +6,44 @@ import matplotlib.pyplot as plt
 
 DIR_METRICS_NON_SCL = "./metrics/non_scalability"
 DIR_METRICS_SCL = "./metrics/scalability"
-DIR_STATS = "./statistical_analysis"
-DIR_OUT_TABLES = "./artifacts/tables"
-DIR_OUT_PLOTS_SCL = "./artifacts/plots/scalability"
-DIR_OUT_PLOTS_INTERNAL = "./artifacts/plots/internal"
+DIR_STATS_BASE = "./statistical_analysis"
+DIR_OUT_BASE = "./artifacts"
 
-for d in [DIR_OUT_TABLES, DIR_OUT_PLOTS_SCL, DIR_OUT_PLOTS_INTERNAL]:
-    os.makedirs(d, exist_ok=True)
+SUBSETS = {
+    "all": [
+        "CluStream",
+        "DenStream",
+        "MicroTEDAClus",
+        "CEDAS",
+        "TEDACloud",
+        "AutoCloud",
+        "StreamKM",
+    ],
+    "original-paper": ["MicroTEDAClus", "DenStream", "CluStream", "StreamKM"],
+    "teda-micro-based": ["MicroTEDAClus", "AutoCloud", "CEDAS", "TEDACloud"],
+}
 
-MODELS = [
-    "CluStream",
-    "DenStream",
-    "MicroTEDAClus",
-    "CEDAS",
-    "TEDACloud",
-    "AutoCloud",
-    "StreamKM",
-]
 COLORS = dict(
     zip(
-        MODELS,
+        SUBSETS["all"],
         ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2"],
     )
 )
 
 METRIC_FORMATS = {"ari": "{:.3f}", "time": "{:.0f}", "memory": "{:.0f}", "mc": "{:.0f}"}
+
+READABLE_METRICS = {
+    "ari_overall": "Overall Adjusted Rand Index",
+    "ari_penultimate": "Adjusted Rand Index at the Penultimate Batch",
+    "ari_fifth": "Adjusted Rand Index at the Fifth Batch",
+    "ari_diff": "Maximum ARI Drop",
+    "time_predict_cum_ms": "Cumulative Prediction Time [ms]",
+    "time_fit_cum_ms": "Cumulative Fitting Time [ms]",
+    "memory_max_bytes": "Maximum Memory Footprint [B]",
+    "memory_penultimate_bytes": "Steady-State Memory Footprint at the Penultimate Batch [B]",
+    "mc_max": "Maximum Microcluster Count",
+    "mc_penultimate": "Steady-State Microcluster Count at the Penultimate Batch",
+}
 
 
 def get_fmt(metric_name: str) -> str:
@@ -61,28 +74,34 @@ def format_latex_cell(stat_cell: str, q1: float, q3: float, fmt: str) -> str:
     return base
 
 
-def generate_latex_tables():
+def generate_latex_tables(subset_name: str, subset_models: list, out_dir: str):
     df_agg = pd.read_parquet(os.path.join(DIR_METRICS_NON_SCL, "aggregated.parquet"))
-    stat_files = [f for f in os.listdir(DIR_STATS) if f.endswith(".csv")]
+    dir_stats = os.path.join(DIR_STATS_BASE, subset_name)
+
+    if not os.path.exists(dir_stats):
+        return
+
+    stat_files = [f for f in os.listdir(dir_stats) if f.endswith(".csv")]
 
     for stat_file in stat_files:
         metric = stat_file.replace("_statistical_analysis.csv", "")
-        df_stat = pd.read_csv(os.path.join(DIR_STATS, stat_file), index_col="dataset")
+        df_stat = pd.read_csv(os.path.join(dir_stats, stat_file), index_col="dataset")
         fmt = get_fmt(metric)
+        readable_name = READABLE_METRICS.get(metric, metric.replace("_", " ").title())
 
         latex_lines = [
             "\\begin{table}[htbp]",
             "\\centering",
             "\\resizebox{\\textwidth}{!}{%",
-            "\\begin{tabular}{l " + "c " * len(MODELS) + "}",
+            "\\begin{tabular}{l " + "c " * len(subset_models) + "}",
             "\\toprule",
-            "Dataset & " + " & ".join(MODELS) + " \\\\",
+            "Dataset & " + " & ".join(subset_models) + " \\\\",
             "\\midrule",
         ]
 
         for dataset in df_stat.index:
-            row_str = f"{dataset}"
-            for model in MODELS:
+            row_str = f"{dataset}".replace("_", "\\_")
+            for model in subset_models:
                 if model not in df_stat.columns:
                     row_str += " & -"
                     continue
@@ -104,17 +123,17 @@ def generate_latex_tables():
                 "\\bottomrule",
                 "\\end{tabular}",
                 "}",
-                f"\\caption{{Statistical analysis and (Q1, Q3) for {metric.replace('_', ' ')}}}",
-                f"\\label{{tab:{metric}}}",
+                f"\\caption{{Statistical analysis and (Q1, Q3) for the {readable_name}. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}}",
+                f"\\label{{tab:{subset_name}_{metric}}}",
                 "\\end{table}",
             ]
         )
 
-        with open(os.path.join(DIR_OUT_TABLES, f"{metric}.tex"), "w") as f:
+        with open(os.path.join(out_dir, f"{metric}.tex"), "w") as f:
             f.write("\n".join(latex_lines))
 
 
-def plot_scalability():
+def plot_scalability(subset_models: list, out_dir: str):
     df = pd.read_parquet(os.path.join(DIR_METRICS_SCL, "aggregated_by_batch.parquet"))
     metrics = [
         "ari",
@@ -132,7 +151,7 @@ def plot_scalability():
             fig, ax = plt.subplots(figsize=(6, 4))
             is_log = metric != "ari"
 
-            for model in MODELS:
+            for model in subset_models:
                 df_m = df_dim[df_dim["model"] == model].sort_values("samples")
                 if df_m.empty:
                     continue
@@ -158,9 +177,7 @@ def plot_scalability():
                 ax.set_yscale("log")
             ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.25), ncol=4)
             plt.tight_layout()
-            fig.savefig(
-                os.path.join(DIR_OUT_PLOTS_SCL, f"typeA_{metric}_dim{dim}.png"), dpi=300
-            )
+            fig.savefig(os.path.join(out_dir, f"typeA_{metric}_dim{dim}.png"), dpi=300)
             plt.close(fig)
 
     max_batch = df["batch"].max()
@@ -171,7 +188,7 @@ def plot_scalability():
             fig, ax = plt.subplots(figsize=(6, 4))
             is_log = metric != "ari"
 
-            for model in MODELS:
+            for model in subset_models:
                 df_m = df_b[df_b["model"] == model].sort_values("dim")
                 if df_m.empty:
                     continue
@@ -193,13 +210,12 @@ def plot_scalability():
             ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.25), ncol=4)
             plt.tight_layout()
             fig.savefig(
-                os.path.join(DIR_OUT_PLOTS_SCL, f"typeB_{metric}_batch{b_idx}.png"),
-                dpi=300,
+                os.path.join(out_dir, f"typeB_{metric}_batch{b_idx}.png"), dpi=300
             )
             plt.close(fig)
 
 
-def plot_internal_inspection():
+def plot_internal_inspection(subset_models: list, out_dir: str):
     df = pd.read_parquet(
         os.path.join(DIR_METRICS_NON_SCL, "aggregated_by_batch.parquet")
     )
@@ -220,7 +236,7 @@ def plot_internal_inspection():
             ax = axes[i]
             is_log = metric != "ari"
 
-            for model in MODELS:
+            for model in subset_models:
                 df_m = df_ds[df_ds["model"] == model].sort_values("batch")
                 if df_m.empty:
                     continue
@@ -245,17 +261,26 @@ def plot_internal_inspection():
         plt.suptitle(f"Internal Inspection: {dataset}", y=1.02)
         plt.tight_layout()
         fig.savefig(
-            os.path.join(DIR_OUT_PLOTS_INTERNAL, f"{dataset}_grid.png"),
-            dpi=150,
-            bbox_inches="tight",
+            os.path.join(out_dir, f"{dataset}_grid.png"), dpi=150, bbox_inches="tight"
         )
         plt.close(fig)
 
 
 def main():
-    generate_latex_tables()
-    plot_scalability()
-    plot_internal_inspection()
+    for subset_name, subset_models in SUBSETS.items():
+        dir_tables = os.path.join(DIR_OUT_BASE, subset_name, "tables")
+        dir_plots_scl = os.path.join(DIR_OUT_BASE, subset_name, "plots", "scalability")
+        dir_plots_internal = os.path.join(
+            DIR_OUT_BASE, subset_name, "plots", "internal"
+        )
+
+        for d in [dir_tables, dir_plots_scl, dir_plots_internal]:
+            os.makedirs(d, exist_ok=True)
+
+        generate_latex_tables(subset_name, subset_models, dir_tables)
+        plot_scalability(subset_models, dir_plots_scl)
+        plot_internal_inspection(subset_models, dir_plots_internal)
+        print(f"Generated tables and plots for subset: {subset_name}")
 
 
 if __name__ == "__main__":

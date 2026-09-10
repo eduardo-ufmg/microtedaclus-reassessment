@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & MicroTEDAClus & AutoCloud & CEDAS & TEDACloud \\
+\midrule
+Benchmark(1) & \textcolor{red}{1000.0 (348, 2098)} & \textcolor{red}{7860.0 (83, 19945)} & \textbf{30.0 (21, 45)} & 110.0 (72, 144) \\
+chameleon\_ds8 & 18815.0 (14276, 38904) & \textcolor{red}{97150.0 (96862, 99115)} & \textbf{70.0 (72, 77)} & 310.0 (255, 750) \\
+chameleon\_ds7 & \textcolor{red}{27850.0 (17912, 47447)} & 445.0 (355, 497) & \textbf{90.0 (90, 96)} & 360.0 (307, 378) \\
+RandomRBFGeneratorEvents & \textcolor{red}{8200.0 (2242, 24753)} & \textcolor{red}{480.0 (263, 142907)} & \textbf{90.0 (67, 137)} & 535.0 (370, 716) \\
+cassini & 590.0 (489, 1290) & \textcolor{red}{16910.0 (73, 24525)} & \textbf{30.0 (17, 39)} & 270.0 (193, 358) \\
+Benchmark(2) & \textcolor{red}{575.0 (102, 795)} & \textcolor{red}{50.0 (26, 18647)} & \textbf{20.0 (15, 19)} & 50.0 (27, 66) \\
+\bottomrule
+\end{tabular}
+}
+\caption{Statistical analysis and (Q1, Q3) for the Cumulative Fitting Time [ms]. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\label{tab:teda-micro-based_time_fit_cum_ms}
+\end{table}

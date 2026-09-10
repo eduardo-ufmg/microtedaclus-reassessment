@@ -100,6 +100,7 @@ def main():
                     "dataset": dataset,
                     "model": model,
                     "run": run,
+                    "ari_overall": np.median(ari_array),
                     "ari_penultimate": ari_array[-2],
                     "ari_fifth": ari_array[4],
                     "ari_diff": np.max(ari_array) - ari_array[-1],
@@ -127,6 +128,7 @@ def main():
             os.path.join(DIR_OUT_NON_SCL, "run_level.parquet"), index=False
         )
         scalar_cols = [
+            "ari_overall",
             "ari_penultimate",
             "ari_fifth",
             "ari_diff",

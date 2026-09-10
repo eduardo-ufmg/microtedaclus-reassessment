@@ -814,12 +814,403 @@ It is worth noting that, for the performed sequential evaluation, the optimal mo
 
 This reassessment's only protocol, applied throughout all experiments, is prequential evaluation. For each 100-sample batch, the samples' labels are predicted before the model is trained on them. The predicted labels are then compared to the ground truth labels to compute the ARI, and the execution time and memory usage are measured for both the prediction and training stages.
 
-\section{Statistical Significance Tests}
+\section{Statistical Significance Tests} \label{sec:statistical_significance}
+
+To rigorously classify models as indistinguishable from the optimal or pessimal algorithms for a given metric and dataset, this reassessment adopts a non-parametric statistical evaluation pipeline \cite{demsar2006statistical}. To prevent trivial floating-point artifacts and hardware-level noise from artificially inflating the statistical power of rank-based tests, all metric observations are first discretized to a priori thresholds of practical relevance:
+
+\begin{align}
+\text{ARI}_\text{disc} &= 10^{-3} \lfloor 10^3 \cdot \text{ARI} \rceil, & \text{Time}_\text{disc} \left[\text{ms}\right] &= 10 \lfloor \text{Time} \left[\text{ms}\right] / 10 \rceil, \nonumber \\ \
+\text{Memory}_\text{disc} \left[\text{B}\right] &= 1024 \lfloor \text{Memory} \left[\text{B}\right] / 1024 \rceil, & \text{MC}_\text{disc} &= \lfloor \text{MC} \rceil
+\end{align}
+
+The evaluation proceeds by assessing the global divergence of the $C$ evaluated models across the $N=94$ paired runs via the Friedman omnibus test \cite{friedman1937use} at a significance level of $\alpha = 0.05$. If the omnibus null hypothesis is not rejected, all models are declared statistically indistinguishable. If the null hypothesis is rejected, the models yielding the optimal and pessimal sample medians, denoted $m_{\text{best}}$ and $m_{\text{worst}}$ respectively, are isolated as references. Post-hoc pairwise comparisons are then conducted strictly between these references and the remaining $C-1$ candidate models using the paired Wilcoxon signed-rank test \cite{wilcoxon1945individual}. The resulting arrays of $p$-values are adjusted using the Holm-Bonferroni step-down procedure \cite{holm1979simple} to tightly control the family-wise error rate.
+
+Because the Wilcoxon signed-rank test exhibits extreme sensitivity at sample sizes of $N=94$, frequently rejecting the point-null hypothesis for infinitesimal differences of no practical consequence, a dual-criterion thresholding strategy is applied. A model $m_i$ is deemed strictly distinguishable from the reference $m_{\text{ref}} \in \{m_{\text{best}}, m_{\text{worst}}\}$:
+
+\begin{equation}
+D(m_i, m_{\text{ref}}) \iff (p_{\text{adj}} < \alpha) \land (\vert d \vert \ge 0.147),
+\end{equation}
+
+where $p_{\text{adj}}$ is the Holm-Bonferroni adjusted $p$-value, $d$ is Cliff's Delta \cite{cliff1993dominance}, and $\vert d \vert \ge 0.147$ is the empirical boundary for a non-negligible effect size \cite{romano2006appropriate}.
 
 \section{microTEDAclus Evaluation Under the Reassessment's Methodology}
 
+The results' analysis is performed over three model subsets:
+
+\begin{enumerate}
+    \item The original work's model set: \textbf{microTEDAclus}, \textbf{StreamKM++}, \textbf{DenStream}, and \textbf{CluStream}.
+    \item The set of models that are TEDA-based: \textbf{microTEDAclus}, \textbf{AutoCloud}, \textbf{CEDAS} and \textbf{TEDACloud}.
+    \item The complete set of models.
+\end{enumerate}
+
 \subsection{Original Work's Model Set}
 
+This set's analysis goal is to evaluate the original work's claims regarding the performance of its proposed model, \textbf{microTEDAclus}, against the selected benchmark models. While the original work's results indicates an approximate equivalence between the evaluated models, this reassessment's results show that \textbf{microTEDAclus} is significantly outperformed by the other models in some metrics, and slightly equivalent to them in others. The following subsections detail the results of the evaluation of this model set.
+
+\subsubsection{Clustering Quality}
+
+The models' overall adjusted rand index, alongside the scores at the penultimate batch, the fifth batch, and the maximum performance drop caused by concept drift are detailed in \cref{tab:all_ari_overall,tab:all_ari_penultimate,tab:all_ari_fifth,tab:all_ari_diff}, respectively. Such metrics are expected to provide a better understanding of the models' performance over time and substitute the original work's single central tendency and dispersion measures of the ARI over multiple runs.
+
+\input{MethodologyReassessment/artifacts/original-paper/tables/ari_overall.tex}
+
+Overall, \textbf{microTEDAclus} is outperformed by the other models under the median ARI score for most datasets, and is indistinguishable from the worst model on 3/7 of them. It is indistinguishable from the best model on \textbf{RandomRBFGeneratorEvents} and \textbf{Benchmark(2)}, which feature concept drift. Because it is the sole worst for \textbf{Benchmark(1)}, which also features concept drift, the claim that it is the most adaptable model to concept drift is not fully supported.
+
+\input{MethodologyReassessment/artifacts/original-paper/tables/ari_penultimate.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/original-paper/tables/ari_fifth.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/original-paper/tables/ari_diff.tex}
+\textcolor{red}{\dots}
+
+The sample- and feature-scalability of the clustering quality are illustrated in \cref{fig:orig_ari_scalability_a,fig:orig_ari_scalability_b}. \textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeA_ari_dim2.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeA_ari_dim64.png}
+    \caption{Sample-scalability of the ARI for feature dimension 2 in the left plot and dimension 64 at right.}
+    \label{fig:orig_ari_scalability_a}
+\end{figure}
+\textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_ari_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_ari_batch33.png}
+    \caption{Feature-scalability of the ARI at batch 10 in the left plot and the penultimate batch at right.}
+    \label{fig:orig_ari_scalability_b}
+\end{figure}
+\textcolor{red}{\dots}
+
+\subsubsection{Execution Time}
+
+\textcolor{red}{\dots} Cumulative execution times for the prediction and fitting stages are presented in \cref{tab:original-paper_time_predict_cum_ms,tab:original-paper_time_fit_cum_ms}. \textcolor{red}{\dots}
+
+\input{MethodologyReassessment/artifacts/original-paper/tables/time_predict_cum_ms.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/original-paper/tables/time_fit_cum_ms.tex}
+\textcolor{red}{\dots}
+
+To evaluate the computational overhead under expanding data streams, \cref{fig:orig_time_scalability_a,fig:orig_time_scalability_b} report the sample- and feature-scalability of the execution times for both stages. \textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeA_time_predict_ms_dim2.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeA_time_fit_ms_dim2.png}
+    \caption{Sample-scalability of the prediction execution time in the left plot and fitting execution time at right for 2 dimensions.}
+    \label{fig:orig_time_scalability_a}
+\end{figure}
+\textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_time_predict_ms_batch33.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_time_fit_ms_batch33.png}
+    \caption{Feature-scalability of the prediction execution time at left and fitting execution time at right for the penultimate batch.}
+    \label{fig:orig_time_scalability_b}
+\end{figure}
+\textcolor{red}{\dots}
+
+\subsubsection{Memory Footprint}
+
+\textcolor{red}{\dots} As for the spatial complexity, \cref{tab:original-paper_memory_max_bytes,tab:original-paper_memory_penultimate_bytes} display the maximum and steady-state memory footprints maintained by the algorithms. \textcolor{red}{\dots}
+
+\input{MethodologyReassessment/artifacts/original-paper/tables/memory_max_bytes.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/original-paper/tables/memory_penultimate_bytes.tex}
+\textcolor{red}{\dots}
+
+Memory consumption scalability is depicted in \cref{fig:orig_mem_scalability_a,fig:orig_mem_scalability_b} as a function of the sample volume and feature dimensionality. \textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeA_memory_bytes_dim2.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeA_memory_bytes_dim64.png}
+    \caption{Sample-scalability of memory footprint for feature dimension 2 in the left plot and dimension 64 at right.}
+    \label{fig:orig_mem_scalability_a}
+\end{figure}
+\textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_memory_bytes_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_memory_bytes_batch33.png}
+    \caption{Feature-scalability of memory footprint at batch 10 in the left plot and the penultimate batch at right.}
+    \label{fig:orig_mem_scalability_b}
+\end{figure}
+\textcolor{red}{\dots}
+
+\subsubsection{Microcluster Dynamics}
+
+\textcolor{red}{\dots} The peak and steady-state microcluster counts allocated by each model can be found in \cref{tab:original-paper_mc_max,tab:original-paper_mc_penultimate}. \textcolor{red}{\dots}
+
+\input{MethodologyReassessment/artifacts/original-paper/tables/mc_max.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/original-paper/tables/mc_penultimate.tex}
+\textcolor{red}{\dots}
+
+Finally, \cref{fig:orig_mc_scalability_a,fig:orig_mc_scalability_b} show the evolution of the microcluster counts under expanding sample volumes and feature dimensions. \textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeA_microcluster_count_dim2.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeA_microcluster_count_dim64.png}
+    \caption{Sample-scalability of microcluster count for feature dimension 2 in the left plot and dimension 64 at right.}
+    \label{fig:orig_mc_scalability_a}
+\end{figure}
+\textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_microcluster_count_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_microcluster_count_batch33.png}
+    \caption{Feature-scalability of microcluster count at batch 10 at left and the penultimate batch in the right plot.}
+    \label{fig:orig_mc_scalability_b}
+\end{figure}
+\textcolor{red}{\dots}
+
+% ---------------------------------------------------------
 \subsection{TEDA-based Models}
 
+\subsubsection{Clustering Quality}
+
+The evaluation of the overall adjusted rand index, as well as it across the penultimate and fifth batches, alongside the maximum drop induced by concept drift, is reported in \cref{tab: teda-micro-based_ari_overall,tab:teda-micro-based_ari_penultimate,tab:teda-micro-based_ari_fifth,tab:teda-micro-based_ari_diff}. \textcolor{red}{\dots}
+
+\input{MethodologyReassessment/artifacts/teda-micro-based/tables/ari_overall.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/teda-micro-based/tables/ari_penultimate.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/teda-micro-based/tables/ari_fifth.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/teda-micro-based/tables/ari_diff.tex}
+\textcolor{red}{\dots}
+
+\Cref{fig:teda_ari_scalability_a,fig:teda_ari_scalability_b} demonstrate how clustering quality scales with respect to sample size and feature dimensions. \textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeA_ari_dim2.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeA_ari_dim64.png}
+    \caption{ARI sample-scalability for 2 features in the left plot and 64 features at right.}
+    \label{fig:teda_ari_scalability_a}
+\end{figure}
+\textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_ari_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_ari_batch33.png}
+    \caption{ARI feature-scalability evaluated at batch 10 at left and the penultimate batch at right.}
+    \label{fig:teda_ari_scalability_b}
+\end{figure}
+\textcolor{red}{\dots}
+
+\subsubsection{Execution Time}
+
+\textcolor{red}{\dots} \Cref{tab:teda-micro-based_time_predict_cum_ms,tab:teda-micro-based_time_fit_cum_ms} summarize the cumulative processing times required for the prediction and model fitting operations. \textcolor{red}{\dots}
+
+\input{MethodologyReassessment/artifacts/teda-micro-based/tables/time_predict_cum_ms.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/teda-micro-based/tables/time_fit_cum_ms.tex}
+\textcolor{red}{\dots}
+
+The scaling behavior of these execution times across varying stream lengths and dimensionalities is captured by \cref{fig:teda_time_scalability_a,fig:teda_time_scalability_b}. \textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeA_time_predict_ms_dim2.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeA_time_fit_ms_dim2.png}
+    \caption{Sample-scaling trajectories for the prediction time at left and fitting time at right given a 2-dimensional space.}
+    \label{fig:teda_time_scalability_a}
+\end{figure}
+\textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_time_predict_ms_batch33.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_time_fit_ms_batch33.png}
+    \caption{Feature-scaling trajectories for the prediction time in the left plot and fitting time at right corresponding to the penultimate batch.}
+    \label{fig:teda_time_scalability_b}
+\end{figure}
+\textcolor{red}{\dots}
+
+\subsubsection{Memory Footprint}
+
+\textcolor{red}{\dots} Regarding memory requirements, the algorithms' maximum and steady-state allocations are provided by \cref{tab:teda-micro-based_memory_max_bytes,tab:teda-micro-based_memory_penultimate_bytes}. \textcolor{red}{\dots}
+
+\input{MethodologyReassessment/artifacts/teda-micro-based/tables/memory_max_bytes.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/teda-micro-based/tables/memory_penultimate_bytes.tex}
+\textcolor{red}{\dots}
+
+\Cref{fig:teda_mem_scalability_a,fig:teda_mem_scalability_b} map the spatial scalability against increasing data volume and feature space. \textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeA_memory_bytes_dim2.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeA_memory_bytes_dim64.png}
+    \caption{Memory footprint evaluated against stream length for 2 dimensions in the left plot and 64 dimensions at right.}
+    \label{fig:teda_mem_scalability_a}
+\end{figure}
+\textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_memory_bytes_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_memory_bytes_batch33.png}
+    \caption{Memory footprint evaluated against feature count for batch 10 at left and the penultimate batch in the right plot.}
+    \label{fig:teda_mem_scalability_b}
+\end{figure}
+\textcolor{red}{\dots}
+
+\subsubsection{Microcluster Dynamics}
+
+\textcolor{red}{\dots} \Cref{tab:teda-micro-based_mc_max,tab:teda-micro-based_mc_penultimate} present the algorithms' internal summarization profiles through their peak and steady-state microcluster counts. \textcolor{red}{\dots}
+
+\input{MethodologyReassessment/artifacts/teda-micro-based/tables/mc_max.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/teda-micro-based/tables/mc_penultimate.tex}
+\textcolor{red}{\dots}
+
+The trajectory of these microcluster allocations over growing datasets and feature dimensions is traced in \cref{fig:teda_mc_scalability_a,fig:teda_mc_scalability_b}. \textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeA_microcluster_count_dim2.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeA_microcluster_count_dim64.png}
+    \caption{Microcluster count mapped to sample volume for 2 dimensions at left and 64 dimensions at right.}
+    \label{fig:teda_mc_scalability_a}
+\end{figure}
+\textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_microcluster_count_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_microcluster_count_batch33.png}
+    \caption{Microcluster count mapped to feature space at batch 10 in the left plot and the penultimate batch at right.}
+    \label{fig:teda_mc_scalability_b}
+\end{figure}
+\textcolor{red}{\dots}
+
+% ---------------------------------------------------------
 \subsection{Complete Model Set}
+
+\subsubsection{Clustering Quality}
+
+\Cref{tab:all_ari_overall,tab:all_ari_penultimate,tab:all_ari_fifth,tab:all_ari_diff} capture the models' clustering accuracy at early and late stages of the stream, alongside their resilience to concept drift. \textcolor{red}{\dots}
+
+\input{MethodologyReassessment/artifacts/all/tables/ari_overall.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/all/tables/ari_penultimate.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/all/tables/ari_fifth.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/all/tables/ari_diff.tex}
+\textcolor{red}{\dots}
+
+The scalability of this performance under increasing observations and features is outlined by \cref{fig:all_ari_scalability_a,fig:all_ari_scalability_b}. \textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeA_ari_dim2.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeA_ari_dim64.png}
+    \caption{Evolution of the ARI across stream samples with dimension 2 shown in the left plot and dimension 64 at right.}
+    \label{fig:all_ari_scalability_a}
+\end{figure}
+\textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_ari_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_ari_batch33.png}
+    \caption{Impact of dimensionality on the ARI at batch 10 at left and the penultimate batch in the right plot.}
+    \label{fig:all_ari_scalability_b}
+\end{figure}
+\textcolor{red}{\dots}
+
+\subsubsection{Execution Time}
+
+\textcolor{red}{\dots} The total temporal overhead incurred during the prediction and fitting phases can be assessed through \cref{tab:all_time_predict_cum_ms,tab:all_time_fit_cum_ms}. \textcolor{red}{\dots}
+
+\input{MethodologyReassessment/artifacts/all/tables/time_predict_cum_ms.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/all/tables/time_fit_cum_ms.tex}
+\textcolor{red}{\dots}
+
+\Cref{fig:all_time_scalability_a,fig:all_time_scalability_b} provide a detailed view of the time complexity scaling relative to sample count and dimensionality. \textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeA_time_predict_ms_dim2.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeA_time_fit_ms_dim2.png}
+    \caption{Processing time mapped to stream length for prediction at left and fitting at right in a 2-dimensional setting.}
+    \label{fig:all_time_scalability_a}
+\end{figure}
+\textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_time_predict_ms_batch33.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_time_fit_ms_batch33.png}
+    \caption{Processing time mapped to feature count for prediction in the left plot and fitting at right during the penultimate batch.}
+    \label{fig:all_time_scalability_b}
+\end{figure}
+\textcolor{red}{\dots}
+
+\subsubsection{Memory Footprint}
+
+\textcolor{red}{\dots} To evaluate the memory efficiency of the models, \cref{tab:all_memory_max_bytes,tab:all_memory_penultimate_bytes} isolate both the absolute peak usage and the stabilized footprint. \textcolor{red}{\dots}
+
+\input{MethodologyReassessment/artifacts/all/tables/memory_max_bytes.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/all/tables/memory_penultimate_bytes.tex}
+\textcolor{red}{\dots}
+
+For a broader view of spatial scaling, memory consumption across escalating dataset sizes and dimensions is plotted in \cref{fig:all_mem_scalability_a,fig:all_mem_scalability_b}. \textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeA_memory_bytes_dim2.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeA_memory_bytes_dim64.png}
+    \caption{Spatial complexity tracked over sample observations for 2 dimensions in the left plot and 64 dimensions at right.}
+    \label{fig:all_mem_scalability_a}
+\end{figure}
+\textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_memory_bytes_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_memory_bytes_batch33.png}
+    \caption{Spatial complexity tracked over feature dimensionality at batch 10 at left and the penultimate batch in the right plot.}
+    \label{fig:all_mem_scalability_b}
+\end{figure}
+\textcolor{red}{\dots}
+
+\subsubsection{Microcluster Dynamics}
+
+\textcolor{red}{\dots} The structural complexity of the complete model set, defined by their maximum and operational microcluster limits, is detailed in \cref{tab:all_mc_max,tab:all_mc_penultimate}. \textcolor{red}{\dots}
+
+\input{MethodologyReassessment/artifacts/all/tables/mc_max.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/all/tables/mc_penultimate.tex}
+\textcolor{red}{\dots}
+
+The corresponding scalability curves for these cluster boundaries are exhibited in \cref{fig:all_mc_scalability_a,fig:all_mc_scalability_b}. \textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeA_microcluster_count_dim2.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeA_microcluster_count_dim64.png}
+    \caption{Internal model boundaries relative to stream progression for 2 dimensions at left and 64 dimensions at right.}
+    \label{fig:all_mc_scalability_a}
+\end{figure}
+\textcolor{red}{\dots}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_microcluster_count_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_microcluster_count_batch33.png}
+    \caption{Internal model boundaries relative to feature dimensionality at batch 10 in the left plot and the penultimate batch at right.}
+    \label{fig:all_mc_scalability_b}
+\end{figure}
+\textcolor{red}{\dots}

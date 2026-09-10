@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & MicroTEDAClus & AutoCloud & CEDAS & TEDACloud \\
+\midrule
+Benchmark(1) & \textcolor{red}{0.000 (0.000, 0.077)} & \textcolor{red}{0.020 (0.000, 0.216)} & 0.210 (0.134, 0.891) & \textbf{0.764 (0.343, 0.970)} \\
+chameleon\_ds8 & \textbf{0.124 (0.095, 0.160)} & 0.070 (0.048, 0.070) & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.091 (0.069, 0.171)} \\
+chameleon\_ds7 & \textbf{0.126 (0.091, 0.183)} & 0.073 (0.012, 0.095) & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.117 (0.106, 0.142)} \\
+RandomRBFGeneratorEvents & \textcolor{red}{0.000 (0.000, 0.361)} & \textcolor{red}{0.038 (0.000, 0.452)} & 0.151 (0.009, 0.528) & \textbf{0.540 (0.344, 0.767)} \\
+cassini & \textbf{0.436 (0.143, 0.544)} & \textcolor{red}{0.052 (0.000, 0.293)} & \textcolor{red}{0.000 (0.000, 0.449)} & \textbf{0.366 (0.218, 0.439)} \\
+Benchmark(2) & \textbf{0.528 (0.000, 0.780)} & \textcolor{red}{0.139 (0.000, 0.461)} & \textcolor{red}{0.000 (0.000, 0.501)} & 0.510 (0.000, 0.659) \\
+\bottomrule
+\end{tabular}
+}
+\caption{Statistical analysis and (Q1, Q3) for the Adjusted Rand Index at the Penultimate Batch. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\label{tab:teda-micro-based_ari_penultimate}
+\end{table}

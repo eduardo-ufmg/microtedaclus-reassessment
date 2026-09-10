@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & MicroTEDAClus & DenStream & CluStream & StreamKM \\
+\midrule
+Benchmark(1) & 43 (8, 142) & \textbf{6 (1, 12)} & \textcolor{red}{101 (69, 169)} & 13 (10, 17) \\
+chameleon\_ds8 & \textcolor{red}{426 (329, 864)} & \textbf{4 (4, 4)} & 97 (70, 156) & 15 (11, 18) \\
+chameleon\_ds7 & \textcolor{red}{506 (319, 866)} & \textbf{2 (2, 2)} & 105 (82, 166) & 14 (9, 17) \\
+RandomRBFGeneratorEvents & 102 (32, 498) & \textbf{4 (1, 7)} & \textcolor{red}{528 (275, 804)} & 15 (12, 17) \\
+cassini & 34 (20, 62) & 10 (8, 13) & \textcolor{red}{71 (41, 123)} & \textbf{5 (3, 14)} \\
+Benchmark(2) & 29 (6, 47) & 12 (9, 16) & \textcolor{red}{73 (43, 104)} & \textbf{7 (3, 16)} \\
+\bottomrule
+\end{tabular}
+}
+\caption{Statistical analysis and (Q1, Q3) for the Steady-State Microcluster Count at the Penultimate Batch. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\label{tab:original-paper_mc_penultimate}
+\end{table}

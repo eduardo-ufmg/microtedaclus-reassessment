@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & MicroTEDAClus & DenStream & CluStream & StreamKM \\
+\midrule
+Benchmark(1) & \textcolor{red}{1000.0 (348, 2098)} & 180.0 (111, 187) & 230.0 (118, 394) & \textbf{60.0 (40, 75)} \\
+chameleon\_ds8 & \textcolor{red}{18815.0 (14276, 38904)} & 210.0 (203, 207) & 375.0 (205, 689) & \textbf{105.0 (83, 130)} \\
+chameleon\_ds7 & \textcolor{red}{27850.0 (17912, 47447)} & 210.0 (206, 212) & 380.0 (280, 748) & \textbf{120.0 (88, 154)} \\
+RandomRBFGeneratorEvents & \textcolor{red}{8210.0 (2242, 24753)} & 200.0 (197, 206) & 4260.0 (1350, 8370) & \textbf{120.0 (95, 155)} \\
+cassini & \textcolor{red}{590.0 (489, 1290)} & 190.0 (191, 196) & 120.0 (68, 346) & \textbf{25.0 (19, 56)} \\
+Benchmark(2) & \textcolor{red}{570.0 (102, 795)} & 200.0 (194, 199) & 140.0 (75, 228) & \textbf{30.0 (17, 60)} \\
+\bottomrule
+\end{tabular}
+}
+\caption{Statistical analysis and (Q1, Q3) for the Cumulative Fitting Time [ms]. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\label{tab:original-paper_time_fit_cum_ms}
+\end{table}

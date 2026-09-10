@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c }
+\toprule
+Dataset & CluStream & DenStream & MicroTEDAClus & CEDAS & TEDACloud & AutoCloud & StreamKM \\
+\midrule
+Benchmark(1) & 230.0 (118, 394) & 180.0 (111, 187) & \textcolor{red}{1000.0 (348, 2098)} & \textbf{30.0 (21, 45)} & 110.0 (72, 144) & \textcolor{red}{12910.0 (83, 19945)} & 60.0 (40, 75) \\
+chameleon\_ds8 & 375.0 (205, 689) & 210.0 (203, 207) & 18815.0 (14276, 38904) & \textbf{70.0 (72, 77)} & 310.0 (255, 750) & \textcolor{red}{97150.0 (96862, 99115)} & 105.0 (83, 130) \\
+chameleon\_ds7 & 380.0 (280, 748) & 210.0 (206, 212) & \textcolor{red}{27850.0 (17912, 47447)} & \textbf{90.0 (90, 96)} & 360.0 (307, 378) & 445.0 (355, 497) & \textbf{120.0 (88, 154)} \\
+RandomRBFGeneratorEvents & 4260.0 (1350, 8370) & 200.0 (197, 206) & \textcolor{red}{8210.0 (2242, 24753)} & \textbf{90.0 (67, 137)} & 530.0 (370, 716) & \textcolor{red}{460.0 (263, 142907)} & \textbf{120.0 (95, 155)} \\
+cassini & 120.0 (68, 346) & 190.0 (191, 196) & 590.0 (489, 1290) & \textbf{30.0 (17, 39)} & 270.0 (193, 358) & \textcolor{red}{16910.0 (73, 24525)} & \textbf{25.0 (19, 56)} \\
+Benchmark(2) & 140.0 (75, 228) & 200.0 (194, 199) & \textcolor{red}{570.0 (102, 795)} & \textbf{20.0 (15, 19)} & 50.0 (27, 66) & \textcolor{red}{50.0 (26, 18647)} & 30.0 (17, 60) \\
+\bottomrule
+\end{tabular}
+}
+\caption{Statistical analysis and (Q1, Q3) for the Cumulative Fitting Time [ms]. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\label{tab:all_time_fit_cum_ms}
+\end{table}

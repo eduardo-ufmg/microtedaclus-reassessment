@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & MicroTEDAClus & DenStream & CluStream & StreamKM \\
+\midrule
+Benchmark(1) & \textbf{0.847 (0.807, 0.904)} & \textcolor{red}{0.000 (0.000, 0.000)} & 0.738 (0.000, 0.846) & \textbf{0.875 (0.824, 0.911)} \\
+chameleon\_ds8 & 0.072 (0.000, 0.134) & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.332 (0.272, 0.388)} & 0.248 (0.203, 0.312) \\
+chameleon\_ds7 & \textcolor{red}{0.000 (0.000, 0.000)} & 0.000 (0.000, 0.000) & \textbf{0.267 (0.242, 0.308)} & 0.205 (0.176, 0.240) \\
+RandomRBFGeneratorEvents & \textbf{0.587 (0.403, 0.725)} & \textcolor{red}{0.000 (0.000, 0.000)} & 0.000 (0.000, 0.000) & 0.015 (0.000, 0.351) \\
+cassini & 0.461 (0.151, 0.606) & \textcolor{red}{0.000 (0.000, 0.000)} & 0.580 (0.457, 0.613) & \textbf{0.859 (0.796, 0.919)} \\
+Benchmark(2) & \textbf{0.593 (0.537, 0.646)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.565 (0.526, 0.617)} & 0.439 (0.366, 0.485) \\
+\bottomrule
+\end{tabular}
+}
+\caption{Statistical analysis and (Q1, Q3) for the Adjusted Rand Index at the Fifth Batch. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\label{tab:original-paper_ari_fifth}
+\end{table}

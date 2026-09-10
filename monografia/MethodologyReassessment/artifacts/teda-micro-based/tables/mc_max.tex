@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & MicroTEDAClus & AutoCloud & CEDAS & TEDACloud \\
+\midrule
+Benchmark(1) & \textcolor{red}{82 (28, 176)} & \textcolor{red}{1165 (7, 2252)} & 9 (6, 14) & \textbf{8 (5, 10)} \\
+chameleon\_ds8 & 430 (330, 867) & \textcolor{red}{5345 (5345, 5466)} & \textbf{10 (10, 10)} & \textbf{9 (9, 21)} \\
+chameleon\_ds7 & \textcolor{red}{509 (323, 869)} & \textbf{12 (10, 14)} & \textbf{10 (10, 10)} & \textbf{10 (9, 11)} \\
+RandomRBFGeneratorEvents & \textcolor{red}{215 (83, 535)} & \textcolor{red}{14 (8, 6207)} & \textbf{11 (8, 18)} & \textbf{14 (10, 18)} \\
+cassini & 44 (37, 74) & \textcolor{red}{1882 (5, 2728)} & \textbf{6 (3, 8)} & 16 (11, 19) \\
+Benchmark(2) & \textcolor{red}{45 (15, 57)} & 3 (1, 2046) & \textbf{2 (2, 3)} & \textbf{3 (1, 4)} \\
+\bottomrule
+\end{tabular}
+}
+\caption{Statistical analysis and (Q1, Q3) for the Maximum Microcluster Count. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\label{tab:teda-micro-based_mc_max}
+\end{table}
