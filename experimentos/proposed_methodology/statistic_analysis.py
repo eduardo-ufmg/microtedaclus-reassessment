@@ -37,7 +37,11 @@ SUBSETS = {
 }
 
 METRICS = {
-    "ari_overall": {"dir": "max", "round": lambda x: np.round(x, 3), "fmt": "{:.3f}"},
+    "ari_overall": {
+        "dir": "max",
+        "round": lambda x: np.round(x, 3),
+        "fmt": "{:.3f}",
+    },
     "ari_penultimate": {
         "dir": "max",
         "round": lambda x: np.round(x, 3),
@@ -110,6 +114,8 @@ def process_metric(
         df_disc = pd.DataFrame(data_matrix, columns=valid_models, index=df_ds.index)
 
         medians = df_disc.median()
+        q1s = df_disc.quantile(0.25)
+        q3s = df_disc.quantile(0.75)
 
         if config["dir"] == "max":
             best_model = medians.idxmax()
@@ -169,9 +175,15 @@ def process_metric(
                     worst_tier.add(m)
 
         row_dict = {"dataset": dataset}
+        fmt = config["fmt"]
         for m in valid_models:
             med_val = medians[m]
-            formatted_val = config["fmt"].format(med_val)
+            q1_val = q1s[m]
+            q3_val = q3s[m]
+
+            base_str = (
+                f"{fmt.format(med_val)} ({fmt.format(q1_val)}, {fmt.format(q3_val)})"
+            )
 
             tags = []
             if m in best_tier:
@@ -180,7 +192,7 @@ def process_metric(
                 tags.append("W")
 
             tag_str = f" [{','.join(tags)}]" if tags else ""
-            row_dict[m] = f"{formatted_val}{tag_str}"
+            row_dict[m] = f"{base_str}{tag_str}"
 
         results.append(row_dict)
 

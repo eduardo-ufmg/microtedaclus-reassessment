@@ -30,8 +30,6 @@ COLORS = dict(
     )
 )
 
-METRIC_FORMATS = {"ari": "{:.3f}", "time": "{:.0f}", "memory": "{:.0f}", "mc": "{:.0f}"}
-
 READABLE_METRICS = {
     "ari_overall": "Overall Adjusted Rand Index",
     "ari_penultimate": "Adjusted Rand Index at the Penultimate Batch",
@@ -46,24 +44,14 @@ READABLE_METRICS = {
 }
 
 
-def get_fmt(metric_name: str) -> str:
-    for k, v in METRIC_FORMATS.items():
-        if metric_name.startswith(k):
-            return v
-    return "{:.3f}"
-
-
-def format_latex_cell(stat_cell: str, q1: float, q3: float, fmt: str) -> str:
+def format_latex_cell(stat_cell: str) -> str:
     stat_cell_str = str(stat_cell)
     if stat_cell_str == "nan" or stat_cell_str == "-":
         return "-"
 
     parts = stat_cell_str.split(" [")
-    val_str = parts[0]
+    base = parts[0]
     tags = parts[1].replace("]", "") if len(parts) > 1 else ""
-
-    q_str = f"({fmt.format(q1)}, {fmt.format(q3)})"
-    base = f"{val_str} {q_str}"
 
     if "B" in tags and "W" in tags:
         return base
@@ -75,7 +63,6 @@ def format_latex_cell(stat_cell: str, q1: float, q3: float, fmt: str) -> str:
 
 
 def generate_latex_tables(subset_name: str, subset_models: list, out_dir: str):
-    df_agg = pd.read_parquet(os.path.join(DIR_METRICS_NON_SCL, "aggregated.parquet"))
     dir_stats = os.path.join(DIR_STATS_BASE, subset_name)
 
     if not os.path.exists(dir_stats):
@@ -86,7 +73,6 @@ def generate_latex_tables(subset_name: str, subset_models: list, out_dir: str):
     for stat_file in stat_files:
         metric = stat_file.replace("_statistical_analysis.csv", "")
         df_stat = pd.read_csv(os.path.join(dir_stats, stat_file), index_col="dataset")
-        fmt = get_fmt(metric)
         readable_name = READABLE_METRICS.get(metric, metric.replace("_", " ").title())
 
         latex_lines = [
@@ -100,22 +86,19 @@ def generate_latex_tables(subset_name: str, subset_models: list, out_dir: str):
         ]
 
         for dataset in df_stat.index:
-            row_str = f"{dataset}".replace("_", "\\_")
+            tex_dataset = dataset.replace("_", "\\_")
+            row_str = f"{tex_dataset}"
             for model in subset_models:
                 if model not in df_stat.columns:
                     row_str += " & -"
                     continue
 
                 stat_cell = df_stat.loc[dataset, model]
-                mask = (df_agg["dataset"] == dataset) & (df_agg["model"] == model)
-                if not mask.any():
+                if np.asarray(pd.isna(stat_cell)).all():
                     row_str += " & -"
                     continue
 
-                q1 = df_agg.loc[mask, f"{metric}_q1"].to_numpy()[0]
-                q3 = df_agg.loc[mask, f"{metric}_q3"].to_numpy()[0]
-
-                row_str += f" & {format_latex_cell(str(stat_cell), q1, q3, fmt)}"
+                row_str += f" & {format_latex_cell(str(stat_cell))}"
             latex_lines.append(row_str + " \\\\")
 
         latex_lines.extend(

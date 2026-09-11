@@ -5,15 +5,15 @@
 \toprule
 Dataset & CluStream & DenStream & MicroTEDAClus & CEDAS & TEDACloud & AutoCloud & StreamKM \\
 \midrule
-Benchmark(1) & \textcolor{red}{214016 (147280, 346376)} & 12288 (3944, 23958) & \textcolor{red}{158720 (45920, 389246)} & 7168 (4748, 11546) & \textbf{6144 (3752, 7550)} & \textcolor{red}{644096 (4920, 858388)} & \textcolor{red}{16384 (12992, 23664)} \\
-chameleon\_ds8 & 205824 (149384, 324952) & 9216 (9168, 9200) & 640512 (527974, 1103124) & 8192 (8232, 8608) & \textbf{4096 (3352, 11744)} & \textcolor{red}{1959936 (1959960, 2000208)} & 28160 (20304, 41050) \\
-chameleon\_ds7 & 222720 (172368, 342704) & 6144 (5664, 5696) & \textcolor{red}{715264 (518660, 1152554)} & 8192 (8608, 8672) & \textbf{3072 (2992, 4128)} & 6144 (5552, 7384) & 20480 (16904, 33130) \\
-RandomRBFGeneratorEvents & \textcolor{red}{1091584 (570784, 1676104)} & \textbf{9216 (4334, 13956)} & \textcolor{red}{433152 (217466, 1573998)} & \textbf{8192 (6156, 13058)} & \textbf{9216 (6156, 12782)} & \textcolor{red}{9216 (5076, 2449196)} & 31744 (17784, 107400) \\
-cassini & 151040 (89408, 257528) & 18944 (16384, 24366) & \textcolor{red}{120320 (42986, 170764)} & \textbf{5120 (3616, 6488)} & 8704 (6760, 12334) & \textcolor{red}{701440 (2928, 983860)} & 17408 (13030, 29920) \\
-Benchmark(2) & \textcolor{red}{155648 (96424, 219680)} & 23552 (17902, 28694) & 108544 (14420, 140232) & 3072 (3144, 3616) & \textbf{2048 (1736, 2944)} & 2048 (1616, 762786) & 17408 (13712, 25344) \\
+Benchmark(1) & \textcolor{red}{214016 (146432, 347136)} & 12288 (4096, 23552) & \textcolor{red}{158720 (41984, 390144)} & 7168 (5120, 11264) & \textbf{6144 (4096, 7168)} & \textcolor{red}{644096 (5120, 859136)} & \textcolor{red}{16384 (13312, 23552)} \\
+chameleon\_ds8 & 205824 (149504, 325120) & 9216 (9216, 9216) & 640512 (528128, 1103360) & 8192 (8192, 8192) & \textbf{4096 (3072, 11264)} & \textcolor{red}{1959936 (1959936, 1999872)} & 28160 (20480, 41216) \\
+chameleon\_ds7 & 222720 (172544, 342784) & 6144 (6144, 6144) & \textcolor{red}{715264 (518400, 1152768)} & 8192 (8192, 8192) & \textbf{3072 (3072, 4096)} & 6144 (5120, 7168) & 20480 (17408, 32768) \\
+RandomRBFGeneratorEvents & \textcolor{red}{1091584 (568320, 1679360)} & \textbf{9216 (4096, 14336)} & \textcolor{red}{433152 (231424, 1577984)} & \textbf{8192 (6144, 13312)} & \textbf{9216 (6144, 12288)} & \textcolor{red}{9216 (5120, 2421760)} & 31744 (17408, 107520) \\
+cassini & 151040 (89088, 257536) & 18944 (16384, 24576) & \textcolor{red}{120320 (43008, 170496)} & \textbf{5120 (4096, 6144)} & 8704 (7168, 12288) & \textcolor{red}{701440 (3072, 983552)} & 17408 (13312, 29696) \\
+Benchmark(2) & \textcolor{red}{155648 (96256, 220160)} & 23552 (18432, 28672) & 108544 (14336, 140288) & 3072 (3072, 4096) & \textbf{2048 (2048, 3072)} & 2048 (2048, 765952) & 17408 (13312, 25600) \\
 \bottomrule
 \end{tabular}
 }
-\caption{Statistical analysis and (Q1, Q3) for the Steady-State Memory Footprint at the Penultimate Batch [B]. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}
+\caption{Statistical analysis and (Q1, Q3) for the Steady-State Memory Footprint at the Penultimate Batch (Bytes).}
 \label{tab:all_memory_penultimate_bytes}
 \end{table}
