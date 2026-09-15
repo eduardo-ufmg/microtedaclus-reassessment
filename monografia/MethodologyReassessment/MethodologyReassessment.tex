@@ -843,6 +843,8 @@ The results' analysis is performed over three model subsets:
     \item The complete set of models.
 \end{enumerate}
 
+In the non-scalability-oriented tables, a bolded value indicates that the model is statistically indistinguishable from the optimal model for that metric and dataset, while an red-colored value indicates that the model is statistically indistinguishable from the pessimal model for that metric and dataset.
+
 \subsection{Original Work's Model Set}
 
 This set's analysis goal is to evaluate the original work's claims regarding the performance of its proposed model, \textbf{microTEDAclus}, against the selected benchmark models. While the original work's results indicates an approximate equivalence between the evaluated models, this reassessment's results show that \textbf{microTEDAclus} is significantly outperformed by the other models in some metrics, and slightly equivalent to them in others. The following subsections detail the results of the evaluation of this model set.
@@ -1008,17 +1010,13 @@ The TEDA-based model set is composed of \textbf{microTEDAclus}, \textbf{AutoClou
 The evaluation of the overall adjusted rand index, as well as it across the penultimate and fifth batches, alongside the maximum drop induced by concept drift, is reported in \cref{tab:teda-micro-based_ari_overall,tab:teda-micro-based_ari_penultimate,tab:teda-micro-based_ari_fifth,tab:teda-micro-based_ari_diff}.
 
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/ari_overall.tex}
-
-
-
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/ari_penultimate.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/ari_fifth.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/ari_diff.tex}
-\textcolor{red}{\dots}
 
-\Cref{fig:teda_ari_scalability_a,fig:teda_ari_scalability_b} demonstrate how clustering quality scales with respect to sample size and feature dimensions. \textcolor{red}{\dots}
+In tables \cref{tab:teda-micro-based_ari_overall,tab:teda-micro-based_ari_penultimate,tab:teda-micro-based_ari_fifth}, \textbf{microTEDAclus} achieves competitive scores and is indistinguishable from the best model in many datasets, while \textbf{TEDACloud} matches its performance only under the penultimate batch's ARI. \textbf{CEDAS} and \textbf{AutoCloud} are indistinguishable from the worst model in most datasets. For the ARI drop, \textbf{microTEDAclus} is indistinguishable from the worst model in all datasets, and the sole worst in five of them. \textbf{AutoCloud}, \textbf{CEDAS}, and \textbf{TEDACloud} compete closer to each other, and a clear winner is not identified.
+
+\Cref{fig:teda_ari_scalability_a,fig:teda_ari_scalability_b} demonstrate how clustering quality scales with respect to sample size and feature dimensions. It shows that in lower dimensionality spaces, \textbf{microTEDAclus} and \textbf{CEDAS} achieve a similarly high score, while \textbf{AutoCloud} and \textbf{TEDACloud}'s ARI are lower. In higher dimensionality spaces, however, \textbf{microTEDAclus}'s performance degrades drastically, achieving the worst score among the TEDA-based models for the final samples. \textbf{CEDAS}'s performance is not affected by the dimensionality, and \textbf{TEDACloud}'s score is higher for the initial batches, but degrades as the stream progresses.
 
 \begin{figure}[htbp]
     \centering
@@ -1027,7 +1025,6 @@ The evaluation of the overall adjusted rand index, as well as it across the penu
     \caption{ARI sample-scalability for 2 features in the left plot and 64 features at right.}
     \label{fig:teda_ari_scalability_a}
 \end{figure}
-\textcolor{red}{\dots}
 
 \begin{figure}[htbp]
     \centering
@@ -1036,47 +1033,50 @@ The evaluation of the overall adjusted rand index, as well as it across the penu
     \caption{ARI feature-scalability evaluated at batch 10 at left and the penultimate batch at right.}
     \label{fig:teda_ari_scalability_b}
 \end{figure}
-\textcolor{red}{\dots}
 
 \subsubsection{Execution Time}
 
-\textcolor{red}{\dots} \Cref{tab:teda-micro-based_time_predict_cum_ms,tab:teda-micro-based_time_fit_cum_ms} summarize the cumulative processing times required for the prediction and model fitting operations. \textcolor{red}{\dots}
+\Cref{tab:teda-micro-based_time_predict_cum_ms,tab:teda-micro-based_time_fit_cum_ms} summarize the cumulative processing times required for the prediction and model fitting operations. For both stages, \textbf{microTEDAclus} and \textbf{AutoCloud} are indistinguishable from the worst model in most datasets, and \textbf{CEDAS} is the sole best model in all of them.
 
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/time_predict_cum_ms.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/time_fit_cum_ms.tex}
-\textcolor{red}{\dots}
 
-The scaling behavior of these execution times across varying stream lengths and dimensionalities is captured by \cref{fig:teda_time_scalability_a,fig:teda_time_scalability_b}. \textcolor{red}{\dots}
+The scaling behavior of these execution times across varying stream lengths and dimensionalities is captured by \cref{fig:teda_time_scalability_a,fig:teda_time_scalability_b}.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeA_time_predict_ms_dim2.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeA_time_fit_ms_dim2.png}
-    \caption{Sample-scaling trajectories for the prediction time at left and fitting time at right given a 2-dimensional space.}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeA_time_predict_ms_dim64.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeA_time_fit_ms_dim64.png}
+    \caption{Feature-scaling trajectories for the prediction time in the left plots and fitting time at right for 2 dimensions in the top plots and 64 dimensions in the bottom plots.}
     \label{fig:teda_time_scalability_a}
 \end{figure}
-\textcolor{red}{\dots}
+
+In \cref{fig:teda_time_scalability_a}, \textbf{AutoCloud} exibits the highest execution times for both stages for 2-dimensional data, with high variability between runs. \textbf{microTEDAclus} is the second slowest model in this feature set, but its execution time is more stable. For 64-dimensional data, \textbf{CEDAS} prediction and \textbf{microTEDAclus} fit times predominate. Furthermore, \textbf{AutoCloud}'s variability is not reduced.
 
 \begin{figure}[htbp]
     \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_time_predict_ms_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_time_fit_ms_batch10.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_time_predict_ms_batch33.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_time_fit_ms_batch33.png}
-    \caption{Feature-scaling trajectories for the prediction time in the left plot and fitting time at right corresponding to the penultimate batch.}
+    \caption{Feature-scaling trajectories for the prediction time in the left plots and fitting time at right for batch 10 in the top plots and the penultimate batch in the bottom plots.}
     \label{fig:teda_time_scalability_b}
 \end{figure}
-\textcolor{red}{\dots}
+
+While \textbf{TEDACloud} and \textbf{microTEDAclus} exibit a nearly stable execution time for both stages across the entire range of feature dimensions, \textbf{CEDAS} shows a clear increasing trend, in \cref{fig:teda_time_scalability_b}. It is also important to note that \textbf{AutoCloud}'s curve indicates pessimality for feature dimensions lower than 32, but it is tied with \textbf{TEDACloud} as the fastest model in higher dimensionality spaces.
 
 \subsubsection{Memory Footprint}
 
-\textcolor{red}{\dots} Regarding memory requirements, the algorithms' maximum and steady-state allocations are provided by \cref{tab:teda-micro-based_memory_max_bytes,tab:teda-micro-based_memory_penultimate_bytes}. \textcolor{red}{\dots}
+As for memory requirements, the algorithms' maximum and steady-state allocations are provided by \cref{tab:teda-micro-based_memory_max_bytes,tab:teda-micro-based_memory_penultimate_bytes}.
 
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/memory_max_bytes.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/memory_penultimate_bytes.tex}
-\textcolor{red}{\dots}
 
-\Cref{fig:teda_mem_scalability_a,fig:teda_mem_scalability_b} map the spatial scalability against increasing data volume and feature space. \textcolor{red}{\dots}
+Similarly to the execution time, \textbf{microTEDAclus} and \textbf{AutoCloud} are indistinguishable from the worst model in most datasets. In both \cref{tab:teda-micro-based_memory_max_bytes,tab:teda-micro-based_memory_penultimate_bytes}, however, differently from the execution time, \textbf{CEDAS} and \textbf{TEDACloud} alternate between being the sole best and sharing such rank between them.
+
+\Cref{fig:teda_mem_scalability_a,fig:teda_mem_scalability_b} map the spatial scalability against increasing data volume and feature space. Under two features, \textbf{AutoCloud}'s memory usage increases unboundedly, reaching \textbf{microTEDAclus}'s memory usage at nearly the midle batch. In 64 features, \textbf{CEDAS} and \textbf{microTEDAclus} are stable, but the more memory-consuming models. \textbf{TEDACloud} is the most memory-efficient and stable model for both feature sets. Memory consumption scales similarly to the execution time over the feature space: \textbf{CEDAS} is the only model for which memory consumption increases with the feature count, \textbf{TEDACloud} is stable, \textbf{microTEDAclus} decreases, and \textbf{AutoCloud} is pessimal for dimensions lower than 32.
 
 \begin{figure}[htbp]
     \centering
@@ -1085,7 +1085,6 @@ The scaling behavior of these execution times across varying stream lengths and 
     \caption{Memory footprint evaluated against stream length for 2 dimensions in the left plot and 64 dimensions at right.}
     \label{fig:teda_mem_scalability_a}
 \end{figure}
-\textcolor{red}{\dots}
 
 \begin{figure}[htbp]
     \centering
@@ -1094,18 +1093,13 @@ The scaling behavior of these execution times across varying stream lengths and 
     \caption{Memory footprint evaluated against feature count for batch 10 at left and the penultimate batch in the right plot.}
     \label{fig:teda_mem_scalability_b}
 \end{figure}
-\textcolor{red}{\dots}
 
 \subsubsection{Microcluster Dynamics}
 
-\textcolor{red}{\dots} \Cref{tab:teda-micro-based_mc_max,tab:teda-micro-based_mc_penultimate} present the algorithms' internal summarization profiles through their peak and steady-state microcluster counts. \textcolor{red}{\dots}
+\Cref{tab:teda-micro-based_mc_max,tab:teda-micro-based_mc_penultimate} present the algorithms' internal summarization profiles through their peak and steady-state microcluster counts. Those results, as well as the ones in \cref{fig:teda_mc_scalability_a,fig:teda_mc_scalability_b}, closely match the memory footprint results, as the microcluster count is the main source of memory consumption for those models. \textbf{CEDAS} and \textbf{TEDACloud} are the most memory-efficient models, while \textbf{microTEDAclus} and \textbf{AutoCloud} are the most memory-consuming ones.
 
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/mc_max.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/mc_penultimate.tex}
-\textcolor{red}{\dots}
-
-The trajectory of these microcluster allocations over growing datasets and feature dimensions is traced in \cref{fig:teda_mc_scalability_a,fig:teda_mc_scalability_b}. \textcolor{red}{\dots}
 
 \begin{figure}[htbp]
     \centering
@@ -1114,7 +1108,6 @@ The trajectory of these microcluster allocations over growing datasets and featu
     \caption{Microcluster count mapped to sample volume for 2 dimensions at left and 64 dimensions at right.}
     \label{fig:teda_mc_scalability_a}
 \end{figure}
-\textcolor{red}{\dots}
 
 \begin{figure}[htbp]
     \centering
@@ -1123,25 +1116,20 @@ The trajectory of these microcluster allocations over growing datasets and featu
     \caption{Microcluster count mapped to feature space at batch 10 in the left plot and the penultimate batch at right.}
     \label{fig:teda_mc_scalability_b}
 \end{figure}
-\textcolor{red}{\dots}
 
 % ---------------------------------------------------------
 \subsection{Complete Model Set}
 
 \subsubsection{Clustering Quality}
 
-\Cref{tab:all_ari_overall,tab:all_ari_penultimate,tab:all_ari_fifth,tab:all_ari_diff} capture the models' clustering accuracy at early and late stages of the stream, alongside their resilience to concept drift. \textcolor{red}{\dots}
+\Cref{tab:all_ari_overall} shows that \textbf{TEDACloud} is the sole best model on \textbf{Benchmark(1)} and \textbf{RandomRBFGeneratorEvents}, \textbf{StreamKM} is the sole best on \textbf{cassini}, and \textbf{CluStream} ties with \textbf{StreamKM} on \textbf{chameleon\_ds8} and \textbf{chameleon\_ds7} and with \textbf{MicroTEDAClus} on \textbf{Benchmark(2)}. \textbf{CEDAS} is indistinguishable from the worst model on five of the six datasets and \textbf{AutoCloud} on four, extending to the complete model set the poor overall performance already reported for both within their own subsets. \Cref{tab:all_ari_penultimate} shows a comparable picture at the penultimate batch: \textbf{CluStream} and \textbf{StreamKM} are each indistinguishable from the best model on four datasets, while \textbf{TEDACloud} is the sole winner only on \textbf{RandomRBFGeneratorEvents}; \textbf{CEDAS} and \textbf{AutoCloud} remain indistinguishable from the worst model on five and four datasets, respectively.
+
+At the fifth batch, \cref{tab:all_ari_fifth} shows a less stable ranking, with \textbf{CluStream} indistinguishable from the best model on three datasets and \textbf{CEDAS}, \textbf{TEDACloud}, \textbf{MicroTEDAClus}, and \textbf{StreamKM} each claiming that rank on at least one; \textbf{DenStream} is indistinguishable from the worst model on all datasets but \textbf{RandomRBFGeneratorEvents}. Regarding stability to concept drift, \cref{tab:all_ari_diff} shows \textbf{DenStream} and \textbf{CEDAS} each indistinguishable from the best model on three datasets and \textbf{AutoCloud} on two, while \textbf{MicroTEDAClus} is indistinguishable from the worst model on all six datasets -- a stronger result than within the original work's model subset, where it held that rank on only half of the datasets, indicating that its concept-drift instability is not an artifact of the smaller model subsets considered earlier.
 
 \input{MethodologyReassessment/artifacts/all/tables/ari_overall.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/all/tables/ari_penultimate.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/all/tables/ari_fifth.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/all/tables/ari_diff.tex}
-\textcolor{red}{\dots}
-
-The scalability of this performance under increasing observations and features is outlined by \cref{fig:all_ari_scalability_a,fig:all_ari_scalability_b}. \textcolor{red}{\dots}
 
 \begin{figure}[htbp]
     \centering
@@ -1150,7 +1138,6 @@ The scalability of this performance under increasing observations and features i
     \caption{Evolution of the ARI across stream samples with dimension 2 shown in the left plot and dimension 64 at right.}
     \label{fig:all_ari_scalability_a}
 \end{figure}
-\textcolor{red}{\dots}
 
 \begin{figure}[htbp]
     \centering
@@ -1159,47 +1146,44 @@ The scalability of this performance under increasing observations and features i
     \caption{Impact of dimensionality on the ARI at batch 10 at left and the penultimate batch in the right plot.}
     \label{fig:all_ari_scalability_b}
 \end{figure}
-\textcolor{red}{\dots}
+
+The scalability plots corroborate these results. In \cref{fig:all_ari_scalability_a}, for 2 feature dimensions \textbf{CEDAS} attains the highest scores throughout the stream, closely trailed by \textbf{CluStream}, \textbf{StreamKM}, and \textbf{MicroTEDAClus}, while \textbf{TEDACloud} and \textbf{AutoCloud} remain at intermediate levels and \textbf{DenStream} only recovers from zero after the first 1000 samples. For 64 dimensions, \textbf{CEDAS}, \textbf{CluStream}, and \textbf{StreamKM} sustain near-perfect scores across the entire stream, while \textbf{MicroTEDAClus} degrades from a competitive score to zero after approximately 1000 samples, reproducing the dimensionality-induced collapse already reported for the original work's model set. In \cref{fig:all_ari_scalability_b}, \textbf{MicroTEDAClus} displays the non-monotonic degradation already identified within the TEDA-based subset for 64 features, drastically declining after 16 dimensions, while \textbf{CluStream}, \textbf{StreamKM}, and \textbf{CEDAS} steadily converge toward an ARI of 1 as the feature count grows; \textbf{AutoCloud} remains flat across the whole range, and \textbf{DenStream} only attains non-zero scores for a narrow band of low dimensions.
 
 \subsubsection{Execution Time}
 
-\textcolor{red}{\dots} The total temporal overhead incurred during the prediction and fitting phases can be assessed through \cref{tab:all_time_predict_cum_ms,tab:all_time_fit_cum_ms}. \textcolor{red}{\dots}
+\cref{tab:all_time_predict_cum_ms} shows that \textbf{StreamKM} is the sole or tied-fastest model for prediction on all six datasets, while \textbf{AutoCloud} is indistinguishable from the worst model on five of them, exhibiting the highest variance among the evaluated models. \cref{tab:all_time_fit_cum_ms} shows an analogous pattern for fitting, with \textbf{CEDAS} the sole or tied-fastest model on every dataset. Differently from the original work's model subset, where \textbf{microTEDAclus} was the sole slowest fitter on all six datasets, under the complete model set it is indistinguishable from the worst model on four of them, while \textbf{AutoCloud} takes over as the pessimal fitter on five, indicating that \textbf{microTEDAclus}'s fitting overhead, although still substantial, is exceeded by \textbf{AutoCloud}'s once the additional models are considered.
 
 \input{MethodologyReassessment/artifacts/all/tables/time_predict_cum_ms.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/all/tables/time_fit_cum_ms.tex}
-\textcolor{red}{\dots}
-
-\Cref{fig:all_time_scalability_a,fig:all_time_scalability_b} provide a detailed view of the time complexity scaling relative to sample count and dimensionality. \textcolor{red}{\dots}
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeA_time_predict_ms_dim2.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeA_time_fit_ms_dim2.png}
-    \caption{Processing time mapped to stream length for prediction at left and fitting at right in a 2-dimensional setting.}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeA_time_predict_ms_dim64.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeA_time_fit_ms_dim64.png}
+    \caption{Processing time mapped to sample count for prediction in the left plots and fitting at right for 2 dimensions in the top plots and 64 dimensions in the bottom plots.}
     \label{fig:all_time_scalability_a}
 \end{figure}
-\textcolor{red}{\dots}
 
 \begin{figure}[htbp]
     \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_time_predict_ms_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_time_fit_ms_batch10.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_time_predict_ms_batch33.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_time_fit_ms_batch33.png}
-    \caption{Processing time mapped to feature count for prediction in the left plot and fitting at right during the penultimate batch.}
+    \caption{Processing time mapped to feature count for prediction in the left plots and fitting at right for batch 10 in the top plots and the penultimate batch in the bottom plots.}
     \label{fig:all_time_scalability_b}
 \end{figure}
-\textcolor{red}{\dots}
+
+\cref{fig:all_time_scalability_a} shows the sample-scalability of both stages. For 2 feature dimensions, \textbf{AutoCloud} is roughly an order of magnitude slower than the remaining models in both stages, followed by \textbf{MicroTEDAClus}; \textbf{StreamKM}, \textbf{CEDAS}, and \textbf{TEDACloud} remain the fastest, and \textbf{DenStream} shows a marked transient spike in fitting time around the 900th sample. At 64 dimensions, \textbf{CluStream} becomes the slowest model for both stages, while \textbf{MicroTEDAClus}'s execution time decreases as the stream progresses, eventually falling below \textbf{CEDAS} and \textbf{StreamKM}. Regarding feature-scalability, \cref{fig:all_time_scalability_b} shows \textbf{AutoCloud} pessimal for dimensions up to 16, after which its execution time collapses for both the tenth and the penultimate batches, mirroring the behavior already reported for the TEDA-based subset. \textbf{CluStream} becomes the slowest model beyond 32 dimensions for both stages, exceeding 1 second at 128 features. \textbf{MicroTEDAClus} peaks at low dimensionality and then steadily decreases, consistent with the dimensionality-driven microcluster collapse described in \cref{sss:dimensionality_penalty}, while \textbf{CEDAS}, \textbf{TEDACloud}, \textbf{DenStream}, and \textbf{StreamKM} increase more gradually across the evaluated range.
 
 \subsubsection{Memory Footprint}
 
-\textcolor{red}{\dots} To evaluate the memory efficiency of the models, \cref{tab:all_memory_max_bytes,tab:all_memory_penultimate_bytes} isolate both the absolute peak usage and the stabilized footprint. \textcolor{red}{\dots}
+\cref{tab:all_memory_max_bytes} shows that \textbf{TEDACloud} is indistinguishable from the best model on four of the six datasets, closely followed by \textbf{CEDAS} with the same count, whereas \textbf{DenStream} -- the most memory-efficient model within the original work's model subset -- is never the sole best model once the TEDA-based models are included. \textbf{MicroTEDAClus} is indistinguishable from the worst model on five of the six datasets, and \textbf{CluStream} and \textbf{AutoCloud} occupy that rank on three and four datasets, respectively. \cref{tab:all_memory_penultimate_bytes} corroborates this ranking at steady state, with \textbf{TEDACloud} indistinguishable from the best model on five datasets.
 
 \input{MethodologyReassessment/artifacts/all/tables/memory_max_bytes.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/all/tables/memory_penultimate_bytes.tex}
-\textcolor{red}{\dots}
-
-For a broader view of spatial scaling, memory consumption across escalating dataset sizes and dimensions is plotted in \cref{fig:all_mem_scalability_a,fig:all_mem_scalability_b}. \textcolor{red}{\dots}
 
 \begin{figure}[htbp]
     \centering
@@ -1208,7 +1192,6 @@ For a broader view of spatial scaling, memory consumption across escalating data
     \caption{Spatial complexity tracked over sample observations for 2 dimensions in the left plot and 64 dimensions at right.}
     \label{fig:all_mem_scalability_a}
 \end{figure}
-\textcolor{red}{\dots}
 
 \begin{figure}[htbp]
     \centering
@@ -1217,18 +1200,15 @@ For a broader view of spatial scaling, memory consumption across escalating data
     \caption{Spatial complexity tracked over feature dimensionality at batch 10 at left and the penultimate batch in the right plot.}
     \label{fig:all_mem_scalability_b}
 \end{figure}
-\textcolor{red}{\dots}
+
+\cref{fig:all_mem_scalability_a} shows that, for 2 feature dimensions, \textbf{MicroTEDAClus} peaks around the 700th sample and subsequently decreases to a level comparable with \textbf{CluStream}'s stable footprint, while \textbf{AutoCloud} grows unboundedly throughout the stream and overtakes both by its end. For 64 dimensions, \textbf{CluStream} maintains the highest and most stable footprint, whereas \textbf{MicroTEDAClus} again peaks early and then decreases until it converges with \textbf{CEDAS}, reproducing the dimensionality-driven memory reduction already discussed for the original work's model set. \cref{fig:all_mem_scalability_b} shows \textbf{CluStream} becoming the most memory-consuming model beyond roughly 8 feature dimensions, while \textbf{AutoCloud} is pessimal for dimensions up to 16 before its footprint collapses at 32, consistent with its execution-time pattern. \textbf{MicroTEDAClus} peaks at low dimensionality and decreases thereafter, while \textbf{CEDAS}, \textbf{DenStream}, and \textbf{TEDACloud} remain the most memory-efficient models across the whole range, and \textbf{StreamKM} increases more gradually than \textbf{CluStream}.
 
 \subsubsection{Microcluster Dynamics}
 
-\textcolor{red}{\dots} The structural complexity of the complete model set, defined by their maximum and operational microcluster limits, is detailed in \cref{tab:all_mc_max,tab:all_mc_penultimate}. \textcolor{red}{\dots}
+\cref{tab:all_mc_max} shows that \textbf{DenStream} is indistinguishable from the best model on four of the six datasets, while \textbf{CEDAS} and \textbf{TEDACloud} share that rank on \textbf{Benchmark(1)} and \textbf{Benchmark(2)}. \textbf{CluStream} and \textbf{AutoCloud} are indistinguishable from the worst model on three datasets each, whereas \textbf{MicroTEDAClus} holds that rank on only two -- a markedly smaller share than observed for the memory footprint, indicating that its microcluster count is a less reliable proxy for its memory consumption than for the other models. \cref{tab:all_mc_penultimate} corroborates this pattern at steady state, with \textbf{MicroTEDAClus} indistinguishable from the worst model on a single dataset only.
 
 \input{MethodologyReassessment/artifacts/all/tables/mc_max.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/all/tables/mc_penultimate.tex}
-\textcolor{red}{\dots}
-
-The corresponding scalability curves for these cluster boundaries are exhibited in \cref{fig:all_mc_scalability_a,fig:all_mc_scalability_b}. \textcolor{red}{\dots}
 
 \begin{figure}[htbp]
     \centering
@@ -1237,7 +1217,6 @@ The corresponding scalability curves for these cluster boundaries are exhibited 
     \caption{Internal model boundaries relative to stream progression for 2 dimensions at left and 64 dimensions at right.}
     \label{fig:all_mc_scalability_a}
 \end{figure}
-\textcolor{red}{\dots}
 
 \begin{figure}[htbp]
     \centering
@@ -1246,4 +1225,7 @@ The corresponding scalability curves for these cluster boundaries are exhibited 
     \caption{Internal model boundaries relative to feature dimensionality at batch 10 in the left plot and the penultimate batch at right.}
     \label{fig:all_mc_scalability_b}
 \end{figure}
-\textcolor{red}{\dots}
+
+\cref{fig:all_mc_scalability_a} shows that, for 2 feature dimensions, \textbf{AutoCloud}'s microcluster count grows unboundedly across the stream, while \textbf{MicroTEDAClus} peaks around the early before decreasing toward \textbf{CluStream}'s stable count. For 64 dimensions, \textbf{CluStream} remains the model with the largest count, whereas \textbf{MicroTEDAClus} again peaks early and subsequently decreases below \textbf{StreamKM} and \textbf{CEDAS}. \cref{fig:all_mc_scalability_b} shows \textbf{AutoCloud} pessimal for dimensions up to 16, collapsing sharply at 32, while \textbf{CluStream} increases slightly, approaching 200 microclusters at 128 features. \textbf{MicroTEDAClus} peaks at low dimensionality and decreases thereafter, mirroring its memory and execution-time behavior, while \textbf{CEDAS} and \textbf{StreamKM} remain comparatively stable and \textbf{TEDACloud} and \textbf{DenStream} sustain the smallest counts across the whole range.
+
+Contrasting both model subsets, no single one is uniformly preferable across all metrics. The original work's model set is stronger under clustering quality, as \textbf{StreamKM} and \textbf{CluStream} are the most frequent ARI winners, but it is comparatively costly in memory and microcluster count. The TEDA-based set, excluding \textbf{MicroTEDAClus} and \textbf{AutoCloud}, trades clustering quality for efficiency: \textbf{TEDACloud} dominates the memory footprint, \textbf{CEDAS} dominates fitting time, and \textbf{DenStream} dominates the microcluster count, yet \textbf{CEDAS} is indistinguishable from the worst model on five of the six datasets under the overall ARI, despite being fast and compact. Within the complete model set, \textbf{StreamKM} is the closest to an overall best model, being the sole or tied-fastest predictor on all six datasets, competitive to the best model on most ARI tables, and never indistinguishable from the worst model for memory or microcluster count, although it is not dominant, since \textbf{TEDACloud} surpasses it in memory, \textbf{CEDAS} surpasses it in fitting time, and \textbf{CluStream} occasionally surpasses it in ARI. Conversely, \textbf{MicroTEDAClus} and \textbf{AutoCloud} are the clear laggards, each indistinguishable from the worst model on a majority of datasets across most metrics, with \textbf{MicroTEDAClus} further exhibiting the dimensionality-driven collapse in quality, time, and memory discussed throughout this section. These results support a trade-off between clustering quality and computational footprint rather than a strict dominance relation among models or subsets, except at the lower end, where \textbf{MicroTEDAClus} and \textbf{AutoCloud} are dominated by nearly every alternative under nearly every metric.

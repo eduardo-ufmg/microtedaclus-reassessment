@@ -106,7 +106,7 @@ def generate_latex_tables(subset_name: str, subset_models: list, out_dir: str):
                 "\\bottomrule",
                 "\\end{tabular}",
                 "}",
-                f"\\caption{{Statistical analysis and (Q1, Q3) for the {readable_name}. A bolded value is not statistically distinguishable from the best value, and a red value is not statistically distinguishable from the worst value.}}",
+                f"\\caption{{Statistical analysis and (Q1, Q3) for the {readable_name}.}}",
                 f"\\label{{tab:{subset_name}_{metric}}}",
                 "\\end{table}",
             ]
