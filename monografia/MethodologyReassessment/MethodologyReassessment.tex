@@ -1229,3 +1229,36 @@ The scalability plots corroborate these results. In \cref{fig:all_ari_scalabilit
 \cref{fig:all_mc_scalability_a} shows that, for 2 feature dimensions, \textbf{AutoCloud}'s microcluster count grows unboundedly across the stream, while \textbf{MicroTEDAClus} peaks around the early before decreasing toward \textbf{CluStream}'s stable count. For 64 dimensions, \textbf{CluStream} remains the model with the largest count, whereas \textbf{MicroTEDAClus} again peaks early and subsequently decreases below \textbf{StreamKM} and \textbf{CEDAS}. \cref{fig:all_mc_scalability_b} shows \textbf{AutoCloud} pessimal for dimensions up to 16, collapsing sharply at 32, while \textbf{CluStream} increases slightly, approaching 200 microclusters at 128 features. \textbf{MicroTEDAClus} peaks at low dimensionality and decreases thereafter, mirroring its memory and execution-time behavior, while \textbf{CEDAS} and \textbf{StreamKM} remain comparatively stable and \textbf{TEDACloud} and \textbf{DenStream} sustain the smallest counts across the whole range.
 
 Contrasting both model subsets, no single one is uniformly preferable across all metrics. The original work's model set is stronger under clustering quality, as \textbf{StreamKM} and \textbf{CluStream} are the most frequent ARI winners, but it is comparatively costly in memory and microcluster count. The TEDA-based set, excluding \textbf{MicroTEDAClus} and \textbf{AutoCloud}, trades clustering quality for efficiency: \textbf{TEDACloud} dominates the memory footprint, \textbf{CEDAS} dominates fitting time, and \textbf{DenStream} dominates the microcluster count, yet \textbf{CEDAS} is indistinguishable from the worst model on five of the six datasets under the overall ARI, despite being fast and compact. Within the complete model set, \textbf{StreamKM} is the closest to an overall best model, being the sole or tied-fastest predictor on all six datasets, competitive to the best model on most ARI tables, and never indistinguishable from the worst model for memory or microcluster count, although it is not dominant, since \textbf{TEDACloud} surpasses it in memory, \textbf{CEDAS} surpasses it in fitting time, and \textbf{CluStream} occasionally surpasses it in ARI. Conversely, \textbf{MicroTEDAClus} and \textbf{AutoCloud} are the clear laggards, each indistinguishable from the worst model on a majority of datasets across most metrics, with \textbf{MicroTEDAClus} further exhibiting the dimensionality-driven collapse in quality, time, and memory discussed throughout this section. These results support a trade-off between clustering quality and computational footprint rather than a strict dominance relation among models or subsets, except at the lower end, where \textbf{MicroTEDAClus} and \textbf{AutoCloud} are dominated by nearly every alternative under nearly every metric.
+
+Disaggregating the ARI results by dataset type reveals that model performance is not uniform across static and drifting streams. \textbf{CluStream} and \textbf{StreamKM} are the strongest models on the static, shape-based datasets \textbf{chameleon\_ds8}, \textbf{chameleon\_ds7}, and \textbf{cassini}, rarely or never indistinguishable from the worst model there, but their advantage narrows considerably on the concept-drift datasets \textbf{Benchmark(1)}, \textbf{RandomRBFGeneratorEvents}, and \textbf{Benchmark(2)}. Conversely, \textbf{TEDACloud} shows the clearest drift-specific strength, being indistinguishable from the best model on the drifting datasets in a third of the evaluated instances and never indistinguishable from the worst, while contributing neither best nor worst ranks on the static datasets. \textbf{CEDAS} follows a similar directional pattern, ranking as the worst model on the static datasets in most instances yet remaining comparatively competitive under drift. \textbf{AutoCloud} and \textbf{MicroTEDAClus} drastically fails in both static and drifting datasets.
+
+\section{Parameter Variability} \label{sec:parameter_variability}
+
+The optimal hyperparameter configuration mapped by the prequential tuning phase is subject to variance across the $N=94$ independent evaluations. To assess the stability of the algorithms' parameter spaces, the dispersion of the selected hyperparameters is evaluated. For each parameter chosen for a model on a dataset, the sample median is reported alongside the interquartile range. To enable comparability across disparate hyperparameter scales and units, the dimensionless Quartile Coefficient of Dispersion is computed as:
+
+\begin{equation}
+\text{QCD} = \frac{Q_3 - Q_1}{Q_3 + Q_1}
+\end{equation}
+
+To provide a unified comparison of overall parameter space stability, the scalar sums of the QCDs across all parameters for each model are aggregated in \cref{tab:qcd_sum}. Because the QCD is a population-level aggregate rather than a run-level paired observation, non-parametric statistical significance testing is mathematically inapplicable. Furthermore, the dimensionality penalty introduced by the summation is accepted as an artifact that favors models with fewer hyperparameters, a characteristic that is often desirable in practice, as it reduces the burden of hyperparameter tuning \cite{andonie2019hyperparameter,tran2020hyperparameter}.
+
+\input{MethodologyReassessment/artifacts/parameters/qcd_sum.tex}
+
+\Cref{tab:qcd_sum} shows substantial differences in hyperparameter stability among the evaluated models. \textbf{AutoCloud} exhibits the isolated lowest aggregate dispersion, with QCD sums below \(0.2\) for every dataset and the absolute minimum on four of the six datasets. \textbf{TEDACloud} follows closely, with similarly low values throughout, while \textbf{DenStream} occupies an intermediate position. In contrast, \textbf{StreamKM} consistently presents the highest aggregate dispersion, attaining the absolute maximum on every dataset. \textbf{CEDAS}, \textbf{CluStream}, and \textbf{MicroTEDAClus} also exhibit considerable variability, although their aggregate behavior differs across datasets. These results indicate that parameter stability is strongly model-dependent: some algorithms converge to relatively consistent configurations across independent evaluations, whereas others require substantially different configurations depending on the dataset and tuning run.
+
+The detailed parameter stability profiles containing the independent bounds for the evaluated suite are provided in \cref{tab:params_microtedaclus,tab:params_denstream,tab:params_clustream,tab:params_streamkm,tab:params_autocloud,tab:params_cedas,tab:params_tedacloud}.
+
+\input{MethodologyReassessment/artifacts/parameters/MicroTEDAClus_parameters.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/parameters/DenStream_parameters.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/parameters/CluStream_parameters.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/parameters/StreamKM_parameters.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/parameters/AutoCloud_parameters.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/parameters/CEDAS_parameters.tex}
+\textcolor{red}{\dots}
+\input{MethodologyReassessment/artifacts/parameters/TEDACloud_parameters.tex}
+\textcolor{red}{\dots}

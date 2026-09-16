@@ -13,3 +13,4 @@ folders `experimentos` and `monografia`
 correct "\Cref" vs cref "usage" for captalization
 text's capitalization of MicroTEDAClus must match the code
 uniformize numbers in text between the number (e.g., 2) and the word (e.g, two)
+uniformize the active voice preference. use "we did" more often.
