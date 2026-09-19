@@ -28,6 +28,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 RNG_SEED = 0
 BATCH_SIZE = 100
 SCALABILITY_DIM = 2
+LABEL_PALETTE = plt.get_cmap("tab20", 20)
 
 CASSINI_BATCH_INDEX = 2
 CONCEPT_DRIFT_SPECS = [
@@ -126,13 +127,11 @@ def first_batch(X, y, batch_index=0, batch_size=BATCH_SIZE):
 
 def label_colors(y):
     labels = np.asarray(y).astype(int)
-    unique_labels = [label for label in np.unique(labels) if label != -1]
     color_map = {-1: "#202020"}
 
-    if unique_labels:
-        palette = plt.get_cmap("tab20", len(unique_labels))
-        for index, label in enumerate(unique_labels):
-            color_map[int(label)] = palette(index)
+    for label in np.unique(labels):
+        if label != -1:
+            color_map[int(label)] = str(LABEL_PALETTE((int(label) % 20) / 19))
 
     return [color_map[int(label)] for label in labels]
 

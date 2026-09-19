@@ -6,35 +6,14 @@ import pandas as pd
 from scipy.stats import friedmanchisquare, wilcoxon
 from statsmodels.stats.multitest import multipletests
 
-DIR_METRICS_NON_SCL = "./metrics/non_scalability"
-DIR_OUT = "./statistical_analysis"
+from editorial_config import SUBSETS
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DIR_METRICS_NON_SCL = os.path.join(SCRIPT_DIR, "metrics", "non_scalability")
+DIR_OUT = os.path.join(SCRIPT_DIR, "statistical_analysis")
 
 ALPHA = 0.05
 CLIFFS_DELTA_THRESHOLD = 0.147
-
-SUBSETS = {
-    "all": [
-        "CluStream",
-        "DenStream",
-        "MicroTEDAClus",
-        "CEDAS",
-        "TEDACloud",
-        "AutoCloud",
-        "StreamKM",
-    ],
-    "original-paper": [
-        "MicroTEDAClus",
-        "DenStream",
-        "CluStream",
-        "StreamKM",
-    ],
-    "teda-micro-based": [
-        "MicroTEDAClus",
-        "AutoCloud",
-        "CEDAS",
-        "TEDACloud",
-    ],
-}
 
 METRICS = {
     "ari_overall": {

@@ -1,19 +1,19 @@
 \begin{table}[htbp]
 \centering
+\caption{Statistical analysis and (Q1, Q3) for the Cumulative Fitting Time [ms].}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c }
 \toprule
-Dataset & MicroTEDAClus & AutoCloud & CEDAS & TEDACloud \\
+Dataset & \modelname{MicroTEDAClus} & \modelname{CEDAS} & \modelname{TEDACloud} & \modelname{AutoCloud} \\
 \midrule
-Benchmark(1) & \textcolor{red}{1000.0 (350.0, 2097.5)} & \textcolor{red}{7860.0 (80.0, 19942.5)} & \textbf{30.0 (20.0, 40.0)} & 110.0 (70.0, 140.0) \\
-chameleon\_ds8 & 18815.0 (14275.0, 38905.0) & \textcolor{red}{97150.0 (96862.5, 99115.0)} & \textbf{70.0 (70.0, 80.0)} & 310.0 (250.0, 750.0) \\
-chameleon\_ds7 & \textcolor{red}{27850.0 (17910.0, 47447.5)} & 445.0 (350.0, 500.0) & \textbf{90.0 (90.0, 100.0)} & 360.0 (310.0, 380.0) \\
-RandomRBFGeneratorEvents & \textcolor{red}{8200.0 (2240.0, 24752.5)} & \textcolor{red}{480.0 (260.0, 142910.0)} & \textbf{90.0 (70.0, 137.5)} & 535.0 (372.5, 717.5) \\
-cassini & 590.0 (490.0, 1292.5) & \textcolor{red}{16910.0 (70.0, 24527.5)} & \textbf{30.0 (20.0, 40.0)} & 270.0 (192.5, 360.0) \\
-Benchmark(2) & \textcolor{red}{575.0 (100.0, 797.5)} & \textcolor{red}{50.0 (30.0, 18645.0)} & \textbf{20.0 (10.0, 20.0)} & 50.0 (30.0, 67.5) \\
+\datasetname{Stream Benchmark 1} & \textcolor{red}{1000.0 (350.0, 2097.5)} & \textbf{30.0 (20.0, 40.0)} & 110.0 (70.0, 140.0) & \textcolor{red}{7860.0 (80.0, 19942.5)} \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{575.0 (100.0, 797.5)} & \textbf{20.0 (10.0, 20.0)} & 50.0 (30.0, 67.5) & \textcolor{red}{50.0 (30.0, 18645.0)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{8200.0 (2240.0, 24752.5)} & \textbf{90.0 (70.0, 137.5)} & 535.0 (372.5, 717.5) & \textcolor{red}{480.0 (260.0, 142910.0)} \\
+\datasetname{Cassini} & 590.0 (490.0, 1292.5) & \textbf{30.0 (20.0, 40.0)} & 270.0 (192.5, 360.0) & \textcolor{red}{16910.0 (70.0, 24527.5)} \\
+\datasetname{Chameleon DS3} & \textcolor{red}{27850.0 (17910.0, 47447.5)} & \textbf{90.0 (90.0, 100.0)} & 360.0 (310.0, 380.0) & 445.0 (350.0, 500.0) \\
+\datasetname{Chameleon DS4} & 18815.0 (14275.0, 38905.0) & \textbf{70.0 (70.0, 80.0)} & 310.0 (250.0, 750.0) & \textcolor{red}{97150.0 (96862.5, 99115.0)} \\
 \bottomrule
 \end{tabular}
 }
-\caption{Statistical analysis and (Q1, Q3) for the Cumulative Fitting Time [ms].}
 \label{tab:teda-micro-based_time_fit_cum_ms}
 \end{table}

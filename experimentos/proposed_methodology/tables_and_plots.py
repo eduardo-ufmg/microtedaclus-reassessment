@@ -4,31 +4,19 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-DIR_METRICS_NON_SCL = "./metrics/non_scalability"
-DIR_METRICS_SCL = "./metrics/scalability"
-DIR_STATS_BASE = "./statistical_analysis"
-DIR_OUT_BASE = "./artifacts"
+from editorial_config import DATASET_ORDER, MODEL_COLORS, SUBSETS, dataset_display_name
 
-SUBSETS = {
-    "all": [
-        "CluStream",
-        "DenStream",
-        "MicroTEDAClus",
-        "CEDAS",
-        "TEDACloud",
-        "AutoCloud",
-        "StreamKM",
-    ],
-    "original-paper": ["MicroTEDAClus", "DenStream", "CluStream", "StreamKM"],
-    "teda-micro-based": ["MicroTEDAClus", "AutoCloud", "CEDAS", "TEDACloud"],
-}
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
 
-COLORS = dict(
-    zip(
-        SUBSETS["all"],
-        ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2"],
-    )
+DIR_METRICS_NON_SCL = os.path.join(SCRIPT_DIR, "metrics", "non_scalability")
+DIR_METRICS_SCL = os.path.join(SCRIPT_DIR, "metrics", "scalability")
+DIR_STATS_BASE = os.path.join(SCRIPT_DIR, "statistical_analysis")
+DIR_OUT_BASE = os.path.join(
+    REPOSITORY_ROOT, "monografia", "MethodologyReassessment", "artifacts"
 )
+
+COLORS = MODEL_COLORS
 
 READABLE_METRICS = {
     "ari_overall": "Overall Adjusted Rand Index",
@@ -62,6 +50,15 @@ def format_latex_cell(stat_cell: str) -> str:
     return base
 
 
+def format_model_name(model: str) -> str:
+    return f"\\modelname{{{model}}}"
+
+
+def format_dataset_name(dataset: str) -> str:
+    escaped_dataset = dataset_display_name(dataset).replace("_", "\\_")
+    return f"\\datasetname{{{escaped_dataset}}}"
+
+
 def generate_latex_tables(subset_name: str, subset_models: list, out_dir: str):
     dir_stats = os.path.join(DIR_STATS_BASE, subset_name)
 
@@ -73,20 +70,29 @@ def generate_latex_tables(subset_name: str, subset_models: list, out_dir: str):
     for stat_file in stat_files:
         metric = stat_file.replace("_statistical_analysis.csv", "")
         df_stat = pd.read_csv(os.path.join(dir_stats, stat_file), index_col="dataset")
+        dataset_order = {dataset: index for index, dataset in enumerate(DATASET_ORDER)}
+        df_stat = df_stat.sort_index(
+            key=lambda index: index.map(
+                lambda dataset: dataset_order.get(dataset, len(DATASET_ORDER))
+            )
+        )
         readable_name = READABLE_METRICS.get(metric, metric.replace("_", " ").title())
 
         latex_lines = [
             "\\begin{table}[htbp]",
             "\\centering",
+            f"\\caption{{Statistical analysis and (Q1, Q3) for the {readable_name}.}}",
             "\\resizebox{\\textwidth}{!}{%",
             "\\begin{tabular}{l " + "c " * len(subset_models) + "}",
             "\\toprule",
-            "Dataset & " + " & ".join(subset_models) + " \\\\",
+            "Dataset & "
+            + " & ".join(format_model_name(model) for model in subset_models)
+            + " \\\\",
             "\\midrule",
         ]
 
         for dataset in df_stat.index:
-            tex_dataset = dataset.replace("_", "\\_")
+            tex_dataset = format_dataset_name(dataset)
             row_str = f"{tex_dataset}"
             for model in subset_models:
                 if model not in df_stat.columns:
@@ -106,7 +112,6 @@ def generate_latex_tables(subset_name: str, subset_models: list, out_dir: str):
                 "\\bottomrule",
                 "\\end{tabular}",
                 "}",
-                f"\\caption{{Statistical analysis and (Q1, Q3) for the {readable_name}.}}",
                 f"\\label{{tab:{subset_name}_{metric}}}",
                 "\\end{table}",
             ]

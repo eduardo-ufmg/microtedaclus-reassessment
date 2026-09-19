@@ -6,8 +6,9 @@ import pandas as pd
 from sklearn.isotonic import IsotonicRegression
 from tqdm.auto import tqdm
 
-RESULTS_DIR = "./results"
-FAMILIES = ["SCL2", "STR-B1", "STR-B2"]
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+RESULTS_DIR = os.path.join(SCRIPT_DIR, "results")
+FAMILIES = ["SCL2", "benchmark_1", "benchmark_2"]
 DATASET_SIZES = [4000]
 METRICS = ["ari", "total_time_ms", "memory_bytes", "microcluster_count"]
 

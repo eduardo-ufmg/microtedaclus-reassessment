@@ -2,18 +2,15 @@
 import os
 import sys
 
-DIR_RESULTS = "./results"
-DIR_PARAMS = "./results_params"
+from editorial_config import DATASET_ORDER, MODEL_ORDER
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DIR_RESULTS = os.path.join(SCRIPT_DIR, "results")
+DIR_PARAMS = os.path.join(SCRIPT_DIR, "results_params")
 
 RUNS = 94
 
-DATASETS = [
-    "cassini",
-    "chameleon_ds7",
-    "chameleon_ds8",
-    "RandomRBFGeneratorEvents",
-    "Benchmark(1)",
-    "Benchmark(2)",
+DATASETS = DATASET_ORDER + [
     "SCL-1",
     "SCL-2",
     "SCL-4",
@@ -24,15 +21,7 @@ DATASETS = [
     "SCL-128",
 ]
 
-MODELS = [
-    "CluStream",
-    "DenStream",
-    "MicroTEDAClus",
-    "CEDAS",
-    "TEDACloud",
-    "AutoCloud",
-    "StreamKM",
-]
+MODELS = MODEL_ORDER
 
 
 def main():

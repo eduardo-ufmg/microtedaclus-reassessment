@@ -1,19 +1,19 @@
 \begin{table}[htbp]
 \centering
+\caption{Statistical analysis and (Q1, Q3) for the Cumulative Prediction Time [ms].}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c }
 \toprule
-Dataset & MicroTEDAClus & DenStream & CluStream & StreamKM \\
+Dataset & \modelname{CluStream} & \modelname{DenStream} & \modelname{MicroTEDAClus} & \modelname{StreamKM} \\
 \midrule
-Benchmark(1) & \textcolor{red}{100.0 (30.0, 270.0)} & \textcolor{red}{90.0 (10.0, 990.0)} & \textcolor{red}{100.0 (70.0, 150.0)} & \textbf{10.0 (10.0, 10.0)} \\
-chameleon\_ds8 & \textcolor{red}{445.0 (262.5, 645.0)} & 110.0 (110.0, 110.0) & 200.0 (160.0, 300.0) & \textbf{30.0 (20.0, 30.0)} \\
-chameleon\_ds7 & \textcolor{red}{480.0 (280.0, 1010.0)} & 70.0 (62.5, 70.0) & 260.0 (220.0, 390.0) & \textbf{30.0 (30.0, 40.0)} \\
-RandomRBFGeneratorEvents & \textcolor{red}{800.0 (250.0, 4460.0)} & 150.0 (40.0, 350.0) & \textcolor{red}{1220.0 (640.0, 1840.0)} & \textbf{30.0 (30.0, 40.0)} \\
-cassini & 60.0 (50.0, 70.0) & \textcolor{red}{135.0 (110.0, 187.5)} & 80.0 (50.0, 120.0) & \textbf{10.0 (10.0, 10.0)} \\
-Benchmark(2) & 50.0 (20.0, 70.0) & \textcolor{red}{140.0 (90.0, 240.0)} & 80.0 (60.0, 110.0) & \textbf{10.0 (10.0, 10.0)} \\
+\datasetname{Stream Benchmark 1} & \textcolor{red}{100.0 (70.0, 150.0)} & \textcolor{red}{90.0 (10.0, 990.0)} & \textcolor{red}{100.0 (30.0, 270.0)} & \textbf{10.0 (10.0, 10.0)} \\
+\datasetname{Stream Benchmark 2} & 80.0 (60.0, 110.0) & \textcolor{red}{140.0 (90.0, 240.0)} & 50.0 (20.0, 70.0) & \textbf{10.0 (10.0, 10.0)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{1220.0 (640.0, 1840.0)} & 150.0 (40.0, 350.0) & \textcolor{red}{800.0 (250.0, 4460.0)} & \textbf{30.0 (30.0, 40.0)} \\
+\datasetname{Cassini} & 80.0 (50.0, 120.0) & \textcolor{red}{135.0 (110.0, 187.5)} & 60.0 (50.0, 70.0) & \textbf{10.0 (10.0, 10.0)} \\
+\datasetname{Chameleon DS3} & 260.0 (220.0, 390.0) & 70.0 (62.5, 70.0) & \textcolor{red}{480.0 (280.0, 1010.0)} & \textbf{30.0 (30.0, 40.0)} \\
+\datasetname{Chameleon DS4} & 200.0 (160.0, 300.0) & 110.0 (110.0, 110.0) & \textcolor{red}{445.0 (262.5, 645.0)} & \textbf{30.0 (20.0, 30.0)} \\
 \bottomrule
 \end{tabular}
 }
-\caption{Statistical analysis and (Q1, Q3) for the Cumulative Prediction Time [ms].}
 \label{tab:original-paper_time_predict_cum_ms}
 \end{table}

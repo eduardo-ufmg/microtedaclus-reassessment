@@ -4,11 +4,12 @@ import glob
 import pandas as pd
 import numpy as np
 
-DIR_RESULTS = "./results"
-DIR_PARAMS = "./results_params"
-DIR_OUT_NON_SCL = "./metrics/non_scalability"
-DIR_OUT_SCL = "./metrics/scalability"
-DIR_OUT_PARAMS = "./metrics/parameters"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DIR_RESULTS = os.path.join(SCRIPT_DIR, "results")
+DIR_PARAMS = os.path.join(SCRIPT_DIR, "results_params")
+DIR_OUT_NON_SCL = os.path.join(SCRIPT_DIR, "metrics", "non_scalability")
+DIR_OUT_SCL = os.path.join(SCRIPT_DIR, "metrics", "scalability")
+DIR_OUT_PARAMS = os.path.join(SCRIPT_DIR, "metrics", "parameters")
 
 for d in [DIR_OUT_NON_SCL, DIR_OUT_SCL, DIR_OUT_PARAMS]:
     os.makedirs(d, exist_ok=True)

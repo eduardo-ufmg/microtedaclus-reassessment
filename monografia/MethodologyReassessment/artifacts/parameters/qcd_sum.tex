@@ -1,19 +1,14 @@
 \begin{table}[htbp]
 \centering
+\caption{Unified sum of Quartile Coefficients of Dispersion per model. Bold indicates the absolute deterministic minimum, and red indicates the absolute deterministic maximum.}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c c c c }
 \toprule
-Dataset & CEDAS & MicroTEDAClus & DenStream & CluStream & StreamKM & AutoCloud & TEDACloud \\
+Dataset & \modelname{CluStream} & \modelname{DenStream} & \modelname{MicroTEDAClus} & \modelname{CEDAS} & \modelname{TEDACloud} & \modelname{AutoCloud} & \modelname{StreamKM} \\
 \midrule
-Benchmark(1) & 1.552 & 1.800 & 0.964 & 1.215 & \textcolor{red}{2.194} & \textbf{0.022} & 0.102 \\
-Benchmark(2) & 1.495 & 1.852 & 0.866 & 1.332 & \textcolor{red}{2.268} & 0.163 & \textbf{0.093} \\
-RandomRBFGeneratorEvents & 1.745 & 1.522 & 0.442 & 1.222 & \textcolor{red}{2.223} & \textbf{0.044} & 0.083 \\
-cassini & 2.095 & 1.003 & 0.939 & 1.323 & \textcolor{red}{2.119} & \textbf{0.053} & 0.067 \\
-chameleon\_ds7 & 1.771 & 0.743 & 0.863 & 0.953 & \textcolor{red}{2.045} & 0.018 & \textbf{0.007} \\
-chameleon\_ds8 & 1.840 & 1.129 & 0.689 & 1.189 & \textcolor{red}{1.863} & \textbf{0.002} & 0.131 \\
+\datasetname{Cassini} & 1.323 & 0.939 & 1.003 & 2.095 & 0.067 & \textbf{0.053} & \textcolor{red}{2.119} \\
 \bottomrule
 \end{tabular}
 }
-\caption{Unified sum of Quartile Coefficients of Dispersion per model. Bold indicates the absolute deterministic minimum, and red indicates the absolute deterministic maximum.}
 \label{tab:qcd_sum}
 \end{table}

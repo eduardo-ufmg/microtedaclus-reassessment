@@ -29,8 +29,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import brentq, fsolve
 
-PLOT_DIR = "./plot"
-TABLE_DIR = "./table"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
+PLOT_DIR = os.path.join(
+    REPOSITORY_ROOT, "monografia", "MethodologyReassessment", "figures"
+)
+TABLE_DIR = os.path.join(
+    REPOSITORY_ROOT,
+    "monografia",
+    "MethodologyReassessment",
+    "artifacts",
+    "standalone",
+)
 os.makedirs(PLOT_DIR, exist_ok=True)
 os.makedirs(TABLE_DIR, exist_ok=True)
 
@@ -185,9 +195,7 @@ def main():
     }
     table = latex_table(scores)
 
-    out_path = os.path.join(
-        TABLE_DIR, "complementary_scores_on_the_hypotetical_curves.tex"
-    )
+    out_path = os.path.join(TABLE_DIR, "complementary_scores_on_the_hypotheticals.tex")
     with open(out_path, "w") as f:
         f.write(table)
     print(f"Table saved to {out_path}")
@@ -227,6 +235,7 @@ def latex_table(scores):
     lines = [
         r"\begin{table}",
         r"    \centering",
+        r"    \caption{Complementary scores for the hypothetical score curves. The bold values indicate the best performance for each metric.}",
         r"    \begin{tabular}{|c|c|c|c|}",
         r"        \hline",
         r"        Curve & Penultimate batch & Fifth batch & Highest $-$ Last \\",
@@ -250,7 +259,6 @@ def latex_table(scores):
         [
             r"        \hline",
             r"    \end{tabular}",
-            r"    \caption{Complementary scores for the hypothetical score curves. The bold values indicate the best performance for each metric.}",
             r"    \label{tab:complementary_scores_on_the_hypotheticals}",
             r"\end{table}",
         ]

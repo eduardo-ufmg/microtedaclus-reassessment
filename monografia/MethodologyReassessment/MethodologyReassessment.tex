@@ -1,19 +1,19 @@
 \chapter{Methodology Reassessment}
 \label{chap:methodology_reassessment}
 
-The \textit{Evolving clustering algorithm based on mixture of typicalities for stream data mining} paper presents promising results for the microTEDAclus model \cite{maia2020evolvclus}. Before conclusions can be drawn from those results, however, it is important to assess the methodology used in the original work. In this chapter, only its methodology is reviewed, since the following paper, \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} \cite{galindo2021lastmile} assumes its validity and does not perform further investigation on it.
+The \textit{Evolving clustering algorithm based on mixture of typicalities for stream data mining} paper presents promising results for \MicroTEDAClus \cite{maia2020evolvclus}. Before conclusions can be drawn from those results, however, it is important to assess the methodology used in the original work. In this chapter, only its methodology is reviewed, since the following paper, \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} \cite{galindo2021lastmile} assumes its validity and does not perform further investigation on it.
 
-The next sections examine weaknesses from the evaluated model implementation to the experiments protocol, including the evaluation metrics and procedures. The goal of this reassessment is to identify potential issues in the original work's methodology that could affect the validity of its results and conclusions. By doing so, a more rigorous and accurate evaluation of the microTEDAclus model can be conducted, leading to more reliable conclusions about its performance and applicability in real-world scenarios.
+The next sections examine weaknesses from the evaluated model implementation to the experiments protocol, including the evaluation metrics and procedures. The goal of this reassessment is to identify potential issues in the original work's methodology that could affect the validity of its results and conclusions. By doing so, we conduct a more rigorous and accurate evaluation of \MicroTEDAClus, leading to more reliable conclusions about its performance and applicability in real-world scenarios.
 
 \section{Model Implementation} \label{sec:model_implementation}
 
-In the fifth section of the original work, \textbf{Methodology and experiments}, \cite{maia2020evolvclus} provides a URL to the public GitHub repository where the code for the experiments can be found: \url{https://github.com/cseveriano/evolving_clustering}. To ensure persistence of the code, a fork of the original repository was created at the commit \texttt{50dd2b4}, which is the last commit to the repository at the time of this reassessment \cite{eduardo2026evolvingclustering}. The implementation of the microTEDAclus model is found in the \texttt{src/models/evolving/EvolvingClustering.py} file of the repository.
+In the fifth section of the original work, \textbf{Methodology and experiments}, \cite{maia2020evolvclus} provides a URL to the public GitHub repository where the code for the experiments can be found: \url{https://github.com/cseveriano/evolving_clustering}. To ensure persistence of the code, we created a fork of the original repository at commit \codename{50dd2b4}, which is the last commit to the repository at the time of this reassessment \cite{eduardo2026evolvingclustering}. The repository implements \MicroTEDAClus in \codename{src/models/evolving/EvolvingClustering.py}.
 
-It is important to note that the implementation of the microTEDAclus model found in the public repository is not the same as the one described in the original work, but is the one that, when submitted to the repository experiments, produced the results shown in the original work. A closer inspection of the code reveals that said implementation have characteristics that are similar to the ones described in the updated version of microTEDAclus, which is presented in the PHD thesis \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} \cite{galindo2021lastmile}. Furthermore, it handles the outlier-condition logic's problem stated in \cref{sss:incorrect_condition_logic}, but introduces mathematical errors in the implementation of expressions \cref{eq:recursive_eccentricity} and \cref{eq:normalized_typicality}, which are the core of the microTEDAclus model. This is a problem because the results of the experiments are not comparable to the ones presented in the original work, and the conclusions drawn from those results may not be valid.
+It is important to note that the implementation of \MicroTEDAClus found in the public repository is not the same as the one described in the original work, but is the one that, when submitted to the repository experiments, produced the results shown in the original work. A closer inspection of the code reveals that this implementation has characteristics similar to those described in the updated version of \MicroTEDAClus, which is presented in the PHD thesis \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} \cite{galindo2021lastmile}. Furthermore, it handles the outlier-condition logic's problem stated in \cref{subsubsec:incorrect_condition_logic}, but introduces mathematical errors in the implementation of expressions \cref{eq:recursive_eccentricity} and \cref{eq:normalized_typicality}, which are the core of \MicroTEDAClus. This is a problem because the results of the experiments are not comparable to the ones presented in the original work, and the conclusions drawn from those results may not be valid.
 
 The most notable and critical change from the paper's formulation to the implementation is the introduction of an explicit decayment logic, specifically the one described in \cite{galindo2021lastmile}. The model constructor's signature is seen in \cref{snippet:maia_implementation_constructor}.
 
-\begin{lstlisting}[float, language=Python, caption={Constructor of the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_constructor}]
+\begin{lstlisting}[float, language=Python, caption={Constructor of the \MicroTEDAClus implementation found in the public repository}, label={snippet:maia_implementation_constructor}]
 def __init__(self, macro_cluster_update=1,
                 verbose=0, variance_limit=0.001, decay = 100, debug=False, plot_graph=False):
     self.verbose = verbose
@@ -31,9 +31,9 @@ def __init__(self, macro_cluster_update=1,
     self.fading_factor = 1 / decay
 \end{lstlisting}
 
-The introduced factor, $\text{fading\_factor} = \frac{1}{\text{decay}}$, corresponds to the $\rho$ parameter of the decayment logic described in \cite{galindo2021lastmile}, which is a value between 0 and 1 that determines the rate at which the model forgets old data. It is used in two distinct methods of the implementation. In \cref{snippet:maia_implementation_prune_microclusters}, it linearly decays the \texttt{life} of the microclusters that were considered 'not active' in the current \texttt{fit} iteration. Such functionality loosely corresponds to the one described in \cite{galindo2021lastmile}, but does not match it exactly; the paper states that the decayment is applied to the microclusters that are not updated by the sample being processed, while the "activeness" of a microcluster is determined in the macrocluster construction phase, and depends only on the comparison between the microcluster's and the macrocluster's densities.
+The introduced factor, $\text{fading\_factor} = \frac{1}{\text{decay}}$, corresponds to the $\rho$ parameter of the decayment logic described in \cite{galindo2021lastmile}, which is a value between 0 and 1 that determines the rate at which the model forgets old data. It is used in two distinct methods of the implementation. In \cref{snippet:maia_implementation_prune_microclusters}, it linearly decays the \codename{life} of the microclusters that were considered 'not active' in the current \codename{fit} iteration. Such functionality loosely corresponds to the one described in \cite{galindo2021lastmile}, but does not match it exactly; the paper states that the decayment is applied to the microclusters that are not updated by the sample being processed, while the "activeness" of a microcluster is determined in the macrocluster construction phase, and depends only on the comparison between the microcluster's and the macrocluster's densities.
 
-\begin{lstlisting}[float, language=Python, caption={Pruning of microclusters in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_prune_microclusters}]
+\begin{lstlisting}[float, language=Python, caption={Pruning of microclusters in the \MicroTEDAClus implementation found in the public repository}, label={snippet:maia_implementation_prune_microclusters}]
 def prune_micro_clusters(self):
     for mc in self.micro_clusters:
 
@@ -49,9 +49,9 @@ def prune_micro_clusters(self):
                 self.graph.remove_node(mc["id"])
 \end{lstlisting}
 
-The second method where the fading factor is used is \cref{snippet:maia_implementation_update_life}. In this method, the fading factor acts as a scaling coefficient for a dynamic reward or penalty. It evaluates the Euclidean distance of the new sample to the micro-cluster's center relative to its standard deviation. If the sample is closer than the standard deviation, \texttt{life} increases, otherwise it decreases. The fading factor scales the amount of increase or decrease, which means that the model will forget old data faster if the fading factor is higher.
+The second method where the fading factor is used is \cref{snippet:maia_implementation_update_life}. In this method, the fading factor acts as a scaling coefficient for a dynamic reward or penalty. It evaluates the Euclidean distance of the new sample to the micro-cluster's center relative to its standard deviation. If the sample is closer than the standard deviation, \codename{life} increases, otherwise it decreases. The fading factor scales the amount of increase or decrease, which means that the model will forget old data faster if the fading factor is higher.
 
-\begin{lstlisting}[float, language=Python, caption={Update of microclusters' life in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_update_life}]
+\begin{lstlisting}[float, language=Python, caption={Update of microclusters' life in the \MicroTEDAClus implementation found in the public repository}, label={snippet:maia_implementation_update_life}]
     def update_life(self, xk, micro_cluster):
         previous_mean = micro_cluster["mean"]
         previous_var = micro_cluster["variance"]
@@ -64,9 +64,9 @@ The second method where the fading factor is used is \cref{snippet:maia_implemen
             micro_cluster["life"] = 1
 \end{lstlisting}
 
-Such decayment logic is not present neither in the original work nor in the updated version of microTEDAclus, and its introduction in the implementation found in the public repository is not justified or explained in any of those works. This is a problem because it introduces a significant change to the model's behavior that is not accounted for in the original work, and it may affect the results of the experiments and the conclusions drawn from them.
+Such decayment logic is not present neither in the original work nor in the updated version of \MicroTEDAClus, and its introduction in the implementation found in the public repository is not justified or explained in any of those works. This is a problem because it introduces a significant change to the model's behavior that is not accounted for in the original work, and it may affect the results of the experiments and the conclusions drawn from them.
 
-Another significant change from the paper's formulation to the implementation is the handling of microcluster activation. \cref{info:microcluster_activation_criterion} and \cref{critique:use_of_unstable_density} present the criterion and use for microcluster activation stated in the original work. The implementation's procedure deviates from it and is described in \cref{alg:microcluster_activation_criterion_pseudocode}. Note that this pseudocode corresponds to the current work's interpretation of the code provided in the public repository, and it is not acknowledged or explained in neither the original work or the updated version of microTEDAclus' presentation.
+Another significant change from the paper's formulation to the implementation is the handling of microcluster activation. \Cref{info:microcluster_activation_criterion} and \cref{critique:use_of_unstable_density} present the criterion and use for microcluster activation stated in the original work. The implementation's procedure deviates from it and is described in \cref{alg:microcluster_activation_criterion_pseudocode}. Note that this pseudocode corresponds to the current work's interpretation of the code provided in the public repository, and it is not acknowledged or explained in neither the original work or the updated version of \MicroTEDAClus' presentation.
 
 \begin{algorithm}[htbp]
 \caption{Microcluster activation criterion used in the implementation found in the public repository}
@@ -88,13 +88,13 @@ Hence, it can be inferred that, because $\mathbb{G}_0$ is subject to the ill con
 
 The process is performed by \cref{snippet:maia_implementation_update_macroclusters}, which calls \cref{snippet:maia_implementation_define_macroclusters} to build the macroclusters from the graph $\mathbb{G}_0$ followed by \cref{snippet:maia_implementation_define_activations} to determine the active microclusters, capture the active graph $\mathbb{G}_1$, and extract the final macroclusters from it.
 
-\begin{lstlisting}[float, language=Python, caption={Update of macroclusters in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_update_macroclusters}]
+\begin{lstlisting}[float, language=Python, caption={Update of macroclusters in the \MicroTEDAClus implementation found in the public repository}, label={snippet:maia_implementation_update_macroclusters}]
 def update_macro_clusters(self):
     self.define_macro_clusters()
     self.define_activations()
 \end{lstlisting}
 
-\begin{lstlisting}[float, language=Python, caption={Definition of macroclusters from the graph $\mathbb{G}_0$ in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_define_macroclusters}]
+\begin{lstlisting}[float, language=Python, caption={Definition of macroclusters from the graph $\mathbb{G}_0$ in the \MicroTEDAClus implementation found in the public repository}, label={snippet:maia_implementation_define_macroclusters}]
 def define_macro_clusters(self):
     for mi in self.changed_micro_clusters:
         for mj in self.micro_clusters:
@@ -109,7 +109,7 @@ def define_macro_clusters(self):
     self.changed_micro_clusters.clear()
 \end{lstlisting}
 
-\begin{lstlisting}[float, language=Python, caption={Definition of active microclusters and macroclusters from the graph $\mathbb{G}_1$ in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_define_activations}]
+\begin{lstlisting}[float, language=Python, caption={Definition of active microclusters and macroclusters from the graph $\mathbb{G}_1$ in the \MicroTEDAClus implementation found in the public repository}, label={snippet:maia_implementation_define_activations}]
 def define_activations(self):
     self.active_graph = self.graph.copy()
     for mg in self.macro_clusters:
@@ -127,9 +127,9 @@ def define_activations(self):
     self.active_macro_clusters = list(nx.connected_components(self.active_graph))
 \end{lstlisting}
 
-\cref{snippet:maia_implementation_is_outlier} implements \cref{eq:outlier_condition} and substitutes \cref{critique:incorrect_condition_logic} by \cref{eq:corrected_condition_logic_for_outliers}.
+\Cref{snippet:maia_implementation_is_outlier} implements \cref{eq:outlier_condition} and substitutes \cref{critique:incorrect_condition_logic} by \cref{eq:corrected_condition_logic_for_outliers}.
 
-\begin{lstlisting}[float, language=Python, caption={Outlier detection in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_is_outlier}]
+\begin{lstlisting}[float, language=Python, caption={Outlier detection in the \MicroTEDAClus implementation found in the public repository}, label={snippet:maia_implementation_is_outlier}]
 def is_outlier(self, s_ik, var_ik, norm_ecc):
     if s_ik < 3:
         outlier = (var_ik > self.variance_limit)
@@ -142,7 +142,7 @@ def is_outlier(self, s_ik, var_ik, norm_ecc):
 
 Finally, \cref{eq:recursive_eccentricity} and \cref{eq:normalized_typicality} are implemented as \cref{snippet:maia_implementation_get_eccentricity} and the previous to last expression of \cref{snippet:maia_implementation_calculate_membership}, respectively.
 
-\begin{lstlisting}[float, language=Python, caption={Eccentricity calculation in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_get_eccentricity}]
+\begin{lstlisting}[float, language=Python, caption={Eccentricity calculation in the \MicroTEDAClus implementation found in the public repository}, label={snippet:maia_implementation_get_eccentricity}]
 def get_eccentricity(x, num_samples, mean, var):
     if var == 0 and num_samples > 1:
         result = (1/num_samples)
@@ -160,7 +160,7 @@ The mathematical expansion of the main expression in \cref{snippet:maia_implemen
     \label{eq:maia_implementation_eccentricity_eq}
 \end{equation}
 
-\begin{lstlisting}[float, language=Python, caption={Membership calculation in the microTEDAclus implementation found in the public repository}, label={snippet:maia_implementation_calculate_membership}]
+\begin{lstlisting}[float, language=Python, caption={Membership calculation in the \MicroTEDAClus implementation found in the public repository}, label={snippet:maia_implementation_calculate_membership}]
 def calculate_membership(x, active_micro_clusters):
     total_density = 0
     for m in active_micro_clusters:
@@ -177,15 +177,15 @@ def calculate_membership(x, active_micro_clusters):
 
 The expression for the intermediary typicality calculation in \cref{snippet:maia_implementation_calculate_membership} cannot be mathematically rewritten to match \cref{eq:normalized_typicality}, and is not equivalent to it.
 
-The updated implementation of microTEDAclus, which is presented in the PHD thesis \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} \cite{galindo2021lastmile}, was provided by the work's author, but is not publicly available. Its main improvements from the original implementation are the introduction of partial support to the use of the cossine distance as distance metric, the refactor of the decayment logic, and the extraction of the microcluster structure to a separate class.
+The updated implementation of \MicroTEDAClus, which is presented in the PHD thesis \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} \cite{galindo2021lastmile}, was provided by the work's author, but is not publicly available. Its main improvements from the original implementation are the introduction of partial support to the use of the cossine distance as distance metric, the refactor of the decayment logic, and the extraction of the microcluster structure to a separate class.
 
 \section{Benchmark Models}
 
 \subsection{Benchmark Models Implementation Used in the Original Work}
 
-In it's experiments, the original work compares the proposed microTEDAclus model against three benchmark models: DenStream \cite{cao2006density}, CluStream \cite{aggarwal2003framework}, and StreamKM++ \cite{ackermann2012streamkmpp}, commonly used in the literature for data stream clustering evaluation \cite{hyde2017fully,akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline} as benchmark models. The validity of the experiments, however, depends on the implementation and execution of those models. As stated in the article and verified in the public repository, the implementations of those models are sourced from the \texttt{R} package \texttt{streamMOA} through the binding provided by \texttt{rpy2}.
+In its experiments, the original work compares the proposed \MicroTEDAClus model against three benchmark models: \DenStream \cite{cao2006density}, \CluStream \cite{aggarwal2003framework}, and \StreamKM \cite{ackermann2012streamkmpp}, commonly used in the literature for data stream clustering evaluation \cite{hyde2017fully,akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline} as benchmark models. The validity of the experiments, however, depends on the implementation and execution of those models. As stated in the article and verified in the public repository, the implementations of those models are sourced from the \codename{R} package \codename{streamMOA} through the binding provided by \codename{rpy2}.
 
-However, because \texttt{streamMOA} is a wrapper for the Java-based MOA framework \cite{streamMOA2024}, two layers of interface overhead are introduced in the execution of the benchmark models. Such overhead is expected to have a significant impact on both the execution time and the memory footprint perceived by the \texttt{Python} experiment orchestrator. To verify such hypothesis, a benchmarking experiment was conducted as described in \cref{alg:benchmarking_experiment}.
+However, because \codename{streamMOA} is a wrapper for the Java-based MOA framework \cite{streamMOA2024}, two layers of interface overhead are introduced in the execution of the benchmark models. Such overhead is expected to have a significant impact on both the execution time and the memory footprint perceived by the \codename{Python} experiment orchestrator. To verify this hypothesis, we conducted a benchmarking experiment as described in \cref{alg:benchmarking_experiment}.
 
 \begin{algorithm}[htbp]
 \caption{Benchmarking experiment to evaluate the impact of interface overhead on the execution time and memory footprint of the benchmark models}
@@ -193,17 +193,17 @@ However, because \texttt{streamMOA} is a wrapper for the Java-based MOA framewor
 \begin{algorithmic}[1]
 \Require $M$ the set of benchmark models, $n = 100000$ the number of samples to be processed, $d = 10$ the dimensionality of the samples, $C = 5$ the number of classes, $c = 50$ the number of clusters, $r = 8$ the number of runs
 \Ensure $T$ the execution time and $F$ the memory footprint of each model
-\State $S \gets \texttt{generate\_dataset\_with\_riverRandomRBF}(n, d, C, c)$
+\State $S \gets \codename{generate\_dataset\_with\_riverRandomRBF}(n, d, C, c)$
 \For{each model $m \in M$}
     \State $T_m \gets []$
     \State $F_m \gets []$
     \For{$i = 1$ to $r$}
-        \State $t, f \gets \texttt{run\_model\_with\_time\_and\_memory\_measurement}(m, S)$
-        \State $T_m.\texttt{append}(t)$
-        \State $F_m.\texttt{append}(f)$
+        \State $t, f \gets \codename{run\_model\_with\_time\_and\_memory\_measurement}(m, S)$
+        \State $T_m.\codename{append}(t)$
+        \State $F_m.\codename{append}(f)$
     \EndFor
-    \State $T[m] \gets \texttt{compute\_statistics}(T_m)$
-    \State $F[m] \gets \texttt{compute\_statistics}(F_m)$
+    \State $T[m] \gets \codename{compute\_statistics}(T_m)$
+    \State $F[m] \gets \codename{compute\_statistics}(F_m)$
 \EndFor
 \end{algorithmic}
 \end{algorithm}
@@ -213,24 +213,24 @@ The results of the benchmarking experiment are shown in \cref{fig:benchmark_java
 \begin{figure}[thpb]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/benchmark_java_bridge.png}
-    \caption{Benchmarking experiment results showing the impact of interface overhead on the execution time and memory footprint of the benchmark models. The left bar chart shows the execution wall clock time of each model, while the right bar chart shows the memory footprint of each model. The models are executed both through the \texttt{rpy2} bridge and directly in \texttt{Python}.}
+    \caption{Benchmarking experiment results showing the impact of interface overhead on the execution time and memory footprint of the benchmark models. The left bar chart shows the execution wall clock time of each model, while the right bar chart shows the memory footprint of each model. The models are executed both through the \codename{rpy2} bridge and directly in \codename{Python}.}
     \label{fig:benchmark_java_bridge}
 \end{figure}
 
-The hypotesis that the interface overhead has a significant impact on the execution time is confirmed by the timing bar chart, which shows that the execution wall clock time of the models is significantly higher when those are executed through the \texttt{rpy2} bridge. The memory footprint, however, is not significantly affected by the interface overhead, as shown in the memory bar chart. The timing discrepancy is enough to support the requirement that the benchmark models must be stricly implemented in the same environment as the evaluated model.
+The hypotesis that the interface overhead has a significant impact on the execution time is confirmed by the timing bar chart, which shows that the execution wall clock time of the models is significantly higher when those are executed through the \codename{rpy2} bridge. The memory footprint, however, is not significantly affected by the interface overhead, as shown in the memory bar chart. The timing discrepancy is enough to support the requirement that the benchmark models must be stricly implemented in the same environment as the evaluated model.
 
-Because the original work's implementation of the microTEDAclus model is in \texttt{Python}, the benchmark models must also be implemented in \texttt{Python} to ensure a fair comparison. Since the \texttt{River} framework \cite{montiel2021river} provides implementations of the DenStream, CluStream, and StreamKM models in the required language, it is used as the source for the benchmark models in this reassessment. To verify the performance impact of this change, the benchmarking experiment was repeated with the \texttt{River} implementations of the benchmark models. The results are shown in \cref{fig:benchmark_river}.
+Because the original work implements \MicroTEDAClus in \codename{Python}, the benchmark models must also be implemented in \codename{Python} to ensure a fair comparison. Since the \codename{River} framework \cite{montiel2021river} provides implementations of \DenStream, \CluStream, and \StreamKM in the required language, we use it as the source for the benchmark models in this reassessment. To verify the performance impact of this change, we repeated the benchmarking experiment with the \codename{River} implementations of the benchmark models. The results are shown in \cref{fig:benchmark_river}.
 
 \begin{figure}[thpb]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/benchmark_river.png}
-    \caption{Benchmarking experiment results showing the execution time and memory footprint of the benchmark models implemented in \texttt{River}. The left bar chart shows the execution wall clock time of each model, while the right bar chart shows the memory footprint of each model.}
+    \caption{Benchmarking experiment results showing the execution time and memory footprint of the benchmark models implemented in \codename{River}. The left bar chart shows the execution wall clock time of each model, while the right bar chart shows the memory footprint of each model.}
     \label{fig:benchmark_river}
 \end{figure}
 
-The results show that the execution time of \texttt{river} implementations is comparable to the one of the native \texttt{streamMOA} implementations for \texttt{DenStream} and \texttt{StreamKM}, although \texttt{CluStream} is significantly slower. Besides that, its memory footprint is significantly lower for all models. Finally, the fact that \texttt{river} is a native \texttt{Python} implementation of the benchmark models ensures that the execution time and memory footprint are not affected by the interface overhead, which is a requirement for the validity of the experiments. Therefore, the \texttt{river} implementations of the benchmark models are used in this reassessment.
+The results show that the execution time of \codename{River} implementations is comparable to that of the native \codename{streamMOA} implementations for \DenStream and \StreamKM, although \CluStream is significantly slower. Besides that, its memory footprint is significantly lower for all models. Finally, the fact that \codename{River} is a native \codename{Python} implementation of the benchmark models ensures that the execution time and memory footprint are not affected by the interface overhead, which is a requirement for the validity of the experiments. Therefore, we use the \codename{River} implementations of the benchmark models in this reassessment.
 
-Since the \texttt{rpy2} bridge accesses the \texttt{streamMOA} package, both enviroments set exactly the same model parameters, exposed on tables \cref{tab:paramsmoa_clustream,tab:paramsmoa_denstream,tab:paramsmoa_streamkmpp}.
+Since the \codename{rpy2} bridge accesses the \codename{streamMOA} package, both enviroments set exactly the same model parameters, exposed on tables \cref{tab:paramsmoa_clustream,tab:paramsmoa_denstream,tab:paramsmoa_streamkmpp}.
 
 \begin{table}
     \centering
@@ -238,11 +238,11 @@ Since the \texttt{rpy2} bridge accesses the \texttt{streamMOA} package, both env
         \hline
         Parameter & Value \\
         \hline
-        \texttt{maxNumKernels} & 100 \\
-        \texttt{k} & 5 \\
+        \codename{maxNumKernels} & 100 \\
+        \codename{k} & 5 \\
         \hline
     \end{tabular}
-    \caption{Parameters used for the CluStream model in the \texttt{streamMOA} package}
+    \caption{Parameters used for the \CluStream model in the \codename{streamMOA} package}
     \label{tab:paramsmoa_clustream}
 \end{table}
 
@@ -252,15 +252,15 @@ Since the \texttt{rpy2} bridge accesses the \texttt{streamMOA} package, both env
         \hline
         Parameter & Value \\
         \hline
-        \texttt{epsilon} & 0.02 \\
-        \texttt{mu} & 1.0 \\
-        \texttt{beta} & 0.2 \\
-        \texttt{lambda} & 0.001 \\
-        \texttt{initPoints} & 100 \\
-        \texttt{offline} & 2.0 \\
+        \codename{epsilon} & 0.02 \\
+        \codename{mu} & 1.0 \\
+        \codename{beta} & 0.2 \\
+        \codename{lambda} & 0.001 \\
+        \codename{initPoints} & 100 \\
+        \codename{offline} & 2.0 \\
         \hline
     \end{tabular}
-    \caption{Parameters used for the DenStream model in the \texttt{streamMOA} package}
+    \caption{Parameters used for the \DenStream model in the \codename{streamMOA} package}
     \label{tab:paramsmoa_denstream}
 \end{table}
 
@@ -270,16 +270,16 @@ Since the \texttt{rpy2} bridge accesses the \texttt{streamMOA} package, both env
         \hline
         Parameter & Value \\
         \hline
-        \texttt{sizeCoreset} & 10000 \\
-        \texttt{numClusters} & 5 \\
-        \texttt{length} & 100000 \\
+        \codename{sizeCoreset} & 10000 \\
+        \codename{numClusters} & 5 \\
+        \codename{length} & 100000 \\
         \hline
     \end{tabular}
-    \caption{Parameters used for the StreamKM++ model in the \texttt{streamMOA} package}
+    \caption{Parameters used for the StreamKM++ model in the \codename{streamMOA} package}
     \label{tab:paramsmoa_streamkmpp}
 \end{table}
 
-Because \texttt{river} is a different implementation of the same models, a best-effort approach was used to set parameters that ensure a fair comparison. The parameters used for the \texttt{river} implementations are shown on tables \cref{tab:paramsriver_clustream,tab:paramsriver_denstream,tab:paramsriver_streamkmpp}.
+Because \codename{river} is a different implementation of the same models, a best-effort approach was used to set parameters that ensure a fair comparison. The parameters used for the \codename{river} implementations are shown on tables \cref{tab:paramsriver_clustream,tab:paramsriver_denstream,tab:paramsriver_streamkmpp}.
 
 \begin{table}
     \centering
@@ -287,11 +287,11 @@ Because \texttt{river} is a different implementation of the same models, a best-
         \hline
         Parameter & Value \\
         \hline
-        \texttt{n\_macro\_clusters} & 5 \\
-        \texttt{max\_micro\_clusters} & 100 \\
+        \codename{n\_macro\_clusters} & 5 \\
+        \codename{max\_micro\_clusters} & 100 \\
         \hline
     \end{tabular}
-    \caption{Parameters used for the CluStream model in the \texttt{river} package}
+    \caption{Parameters used for the \CluStream model in the \codename{river} package}
     \label{tab:paramsriver_clustream}
 \end{table}
 
@@ -301,14 +301,14 @@ Because \texttt{river} is a different implementation of the same models, a best-
         \hline
         Parameter & Value \\
         \hline
-        \texttt{decaying\_factor} & 0.001 \\
-        \texttt{beta} & 0.6 \\
-        \texttt{mu} & 2.0 \\
-        \texttt{epsilon} & 0.02 \\
-        \texttt{n\_samples\_init} & 100 \\
+        \codename{decaying\_factor} & 0.001 \\
+        \codename{beta} & 0.6 \\
+        \codename{mu} & 2.0 \\
+        \codename{epsilon} & 0.02 \\
+        \codename{n\_samples\_init} & 100 \\
         \hline
     \end{tabular}
-    \caption{Parameters used for the DenStream model in the \texttt{river} package. It is important to note that in \texttt{river}, \texttt{mu} maps to \texttt{streamMOA}'s $\texttt{mu} \times \texttt{offline}$, and thus the value is set to 2.0 to match the \texttt{streamMOA} configuration. Furthermore, \texttt{river} requires that $\mu\beta > 1$, thus the value of \texttt{beta} is set to 0.6 to satisfy this condition.}
+    \caption{Parameters used for the \DenStream model in the \codename{river} package. It is important to note that in \codename{river}, \codename{mu} maps to \codename{streamMOA}'s $\codename{mu} \times \codename{offline}$, and thus the value is set to 2.0 to match the \codename{streamMOA} configuration. Furthermore, \codename{river} requires that $\mu\beta > 1$, thus the value of \codename{beta} is set to 0.6 to satisfy this condition.}
     \label{tab:paramsriver_denstream}
 \end{table}
 
@@ -318,25 +318,25 @@ Because \texttt{river} is a different implementation of the same models, a best-
         \hline
         Parameter & Value \\
         \hline
-        \texttt{chunk\_size} & 10000 \\
-        \texttt{n\_clusters} & 5 \\
+        \codename{chunk\_size} & 10000 \\
+        \codename{n\_clusters} & 5 \\
         \hline
     \end{tabular}
-    \caption{Parameters used for the StreamKM++ model in the \texttt{river} package}
+    \caption{Parameters used for the \StreamKM model in the \codename{river} package}
     \label{tab:paramsriver_streamkmpp}
 \end{table}
 
 \subsection{TEDACloud and CEDAS}
 
-It is not clear why, even though the original work references TEDACloud \cite{bezerra2016tedacloud} and CEDAS \cite{hyde2017fully}, it does not include them in the experiments. CEDAS's introductory paper points to its official \texttt{MATLAB} implementation in \url{https://rhyde67.github.io/CEDAS/}, which was easily ported to \texttt{Python} and is available in the public repository of this reassessment. TEDACloud's introductory paper does not provide a public implementation, but a \texttt{Python} implementation was derived from the algorithm description in the paper and is also available in this work's public repository. Both implementations are included in this reassessment's experiments.
+It is not clear why, even though the original work references \TEDACloud \cite{bezerra2016tedacloud} and \CEDAS \cite{hyde2017fully}, it does not include them in the experiments. \CEDAS's introductory paper points to its official \codename{MATLAB} implementation in \url{https://rhyde67.github.io/CEDAS/}, which was easily ported to \codename{Python} and is available in the public repository of this reassessment. \TEDACloud's introductory paper does not provide a public implementation, but a \codename{Python} implementation was derived from the algorithm description in the paper and is also available in this work's public repository. Both implementations are included in this reassessment's experiments.
 
 \subsection{AutoCloud}
 
-AutoCloud's introductory paper \cite{bezerra2020autocloud} was published approximately at the same time as the microTEDAclus paper, thus it is not expected to have been included in the original work's experiments. The algorithm is presented as an improvement over TEDACloud, and since it is a recent and relevant work, it is included in this reassessment's experiments. A \texttt{Python} implementation was derived from the algorithm description in the paper and is available in this work's public repository.
+\AutoCloud's introductory paper \cite{bezerra2020autocloud} was published approximately at the same time as the \MicroTEDAClus paper, thus it is not expected to have been included in the original work's experiments. The algorithm is presented as an improvement over \TEDACloud, and since it is a recent and relevant work, it is included in this reassessment's experiments. A \codename{Python} implementation was derived from the algorithm description in the paper and is available in this work's public repository.
 
 \subsection{Hyperparameter Tuning} \label{subsec:hyperparameter_tuning}
 
-All the models evaluated in this reassessment have hyperparameters that can be tuned to improve their performance, even those for which the introductory paper chooses to use default values. To ensure that any model is not unfairly disadvantaged by the choice of hyperparameters, all the following experiments are preceded by a hyperparameter tuning phase in which the first 20\% of the samples of each stream is extracted to perform a Bayesian optimization \cite{ozaki2025optunahub} search for the best hyperparameters of each model. Such an approach prevents data leakage \cite{kaufman2012leakage,kapoor2023leakage} because the evaluation phase is performed on the unseen remaining 80\% of the samples of the stream. Furthermore, it is basically an automated and safer approach than the one taken by the experiments in the original work, in which the parameters that maximize the score over the entire dataset are selected for the evaluation experiment. The hyperparameter tuning is performed by a \texttt{Optuna} study set to maximize its objective function, shown in \cref{lst:objective_function}.
+All the models evaluated in this reassessment have hyperparameters that can be tuned to improve their performance, even those for which the introductory paper chooses to use default values. To ensure that any model is not unfairly disadvantaged by the choice of hyperparameters, all the following experiments are preceded by a hyperparameter tuning phase in which the first 20\% of the samples of each stream is extracted to perform a Bayesian optimization \cite{ozaki2025optunahub} search for the best hyperparameters of each model. Such an approach prevents data leakage \cite{kaufman2012leakage,kapoor2023leakage} because the evaluation phase is performed on the unseen remaining 80\% of the samples of the stream. Furthermore, it is basically an automated and safer approach than the one taken by the experiments in the original work, in which the parameters that maximize the score over the entire dataset are selected for the evaluation experiment. The hyperparameter tuning is performed by a \codename{Optuna} study set to maximize its objective function, shown in \cref{lst:objective_function}.
 
 \begin{lstlisting}[float, language=Python, caption={Objective function used for hyperparameter tuning of the evaluated models}, label={lst:objective_function}]
 def objective(trial, model_class, search_space_class, X_opt, y_opt, batch_size):
@@ -396,13 +396,13 @@ Such objective function may be expressed as in \cref{alg:hyperparameter_tuning_o
 
 This tuning strategy's goal is to both reduce error- and bias-prone subjective decisions regarding the choice of hyperparameters and to prevent the selection of parameters that provide a small increase in the score at the cost of a significant increase in the execution time.
 
-\subsection{Multi-run Statistics}
+\subsection{Multi-run Statistics} \label{subsec:multi_run_statistics}
 
 For empirical studies, statistics over multiple experiment runs are required to account for the stochastic nature of the models and the data. In this reassessment, each run starts at the randomized stream generation, goes through hyperparameter tuning, and ends with the evaluation of the tuned model over the remaining samples of the stream. Although the original work aggregates the results of multiple runs under the mean and standard deviation pair, this reassessment uses performs such aggregation under the median and interquartile range (IQR) pair. The reasons for this choice are:
 
 \begin{enumerate}
     \item The tuning phase may find local optima in the hyperparameter space, specially since it is performed over a randomized stream, which may lead to outlier runs with significantly worse performance than the actual performance of the model. The median and IQR are more robust to outliers than the mean and standard deviation, which may be significantly affected by those outlier runs.
-    \item \textbf{Matplotlib}'s logarithmic scale plotting does not support negative values, which the lower bounds may assume when computed as $\mu - \sigma$. $Q_1$, however, is guaranteed to greater than or equal to the minimum value of the sample, which is always non-negative for the metrics that are ploted in logarithmic scale for this reassessment.
+    \item \codename{Matplotlib}'s logarithmic scale plotting does not support negative values, which the lower bounds may assume when computed as $\mu - \sigma$. $Q_1$, however, is guaranteed to greater than or equal to the minimum value of the sample, which is always non-negative for the metrics that are ploted in logarithmic scale for this reassessment.
 \end{enumerate}
 
 It is assumed that $N=1000$ runs provide enough statistial power to propperly estimate the true performance of the model. Since such quantity imposes a prohibitive combinational cost, the number of runs $k^*$ required to closely approximate this reference is defined as \cref{eq:kneedle}.
@@ -426,7 +426,7 @@ where $\hat Y_{\mathrm{med}}$ is a monotonically non-increasing isotonic regress
 \begin{equation}
 \begin{gathered}
 Y_{\mathrm{med}}(k) = \max_{c \in \mathcal{C}} \mathrm{NMAE}^{\mathrm{med}}_c(k), \\
-\mathcal{C} = \{\text{SCL2}, \text{STR-B1}, \text{STR-B2}\} \times \{\texttt{ARI}, \texttt{Time}, \texttt{Memory}, \texttt{\#Microclusters}\}.
+\mathcal{C} = \{\text{SCL2}, \text{STR-B1}, \text{STR-B2}\} \times \{\codename{ARI}, \codename{Time}, \codename{Memory}, \codename{\#Microclusters}\}.
 \end{gathered}
 \end{equation}
 
@@ -462,7 +462,7 @@ with $\mathcal{D}_c$ the finite population of run-level metric values,
 \mathcal{D}_c = \{x_{c,i}\}_{i=1}^{N} \subset \mathbb{R}, \qquad x_{c,i} = \text{value of metric } c \text{ on run } i.
 \end{equation}
 
-For $N=1000$, $B=10^4$, $k_{\min}=3$, $k^* = 94$. \cref{fig:medianiqr_convergence_with_k} shows the convergence of the median and IQR maximum normalized absolute error over $k$ runs and highlights the $k^*$ value. The metrics are captured on the middle batch of the stream, in which the model is assumed to have reached a steady state and the metrics are expected to be stable.
+For $N=1000$, $B=10^4$, $k_{\min}=3$, $k^* = 94$. \Cref{fig:medianiqr_convergence_with_k} shows the convergence of the median and IQR maximum normalized absolute error over $k$ runs and highlights the $k^*$ value. The metrics are captured on the middle batch of the stream, in which the model is assumed to have reached a steady state and the metrics are expected to be stable.
 
 \begin{figure}[thpb]
     \centering
@@ -477,45 +477,45 @@ The original work organizes the datasets used in its experiments into three cate
 
 \subsection{Static}
 
-In \cite{maia2020evolvclus}, static datasets \textbf{ST-D1} and \textbf{ST-D2} are stated to correspond to datasets introduced in \cite{karypis1999chameleon} to evaluate the performance of the Chameleon clustering algorithm. From the original work's plots, it can be inferred that those corresponds to datasets \textbf{DS4} and \textbf{DS5} from the source paper. The public repository, however, loads its experiment's data from \url{https://query.data.world/s/faarcpz24ukr2g53druxljp4nghhzn} and \url{https://query.data.world/s/zry3yzt4ruwrlonziw2pfkegsdugw2}, which are cleaned, downsampled, scaled, and ordered versions of the original datasets, and no information regarding the preprocessing steps is provided in the original work. Those operations over the dataset guarantee severe data leakage given the streaming nature of the proposed application for which the model is designed. The following experiments investigate the impact of each of those preprocessing steps on the score chosen to evaluate the clustering quality, discussed in \cref{sec:evaluation_metrics}, and on the execution time of the model. Without loss of generality, \textbf{ST4} is chosen as the representative dataset for the experiments.
+In \cite{maia2020evolvclus}, static datasets \datasetname{ST-D1} and \datasetname{ST-D2} are stated to correspond to datasets introduced in \cite{karypis1999chameleon} to evaluate the performance of the Chameleon clustering algorithm. The original article links cleaned files named \codename{chameleon-ds3-clean.csv} and \codename{chameleon-ds4-clean.csv}; the Chameleon paper identifies the corresponding raw 10,000-point and 8,000-point patterns as \ChameleonDSThree and \ChameleonDSFour, respectively. This reassessment uses the raw files \codename{cluto-t7-10k.arff} and \codename{cluto-t8-8k.arff}, and uses \ChameleonDSThree and \ChameleonDSFour as the unambiguous dataset names rather than treating the original work's \datasetname{ST-D1} and \datasetname{ST-D2} labels as interchangeable with them. The public repository's cleaned, downsampled, scaled, and ordered files conceal preprocessing decisions that can introduce severe data leakage given the streaming nature of the proposed application. The following experiments investigate the impact of each preprocessing step on the score chosen to evaluate clustering quality, discussed in \cref{sec:evaluation_metrics}, and on the execution time of the model. Without loss of generality, we choose \ChameleonDSThree as the representative dataset for the experiments.
 
 \subsubsection{Raw Dataset}
 
-The original \textbf{DS4} dataset is loaded from \url{https://raw.githubusercontent.com/deric/clustering-benchmark/master/src/main/resources/datasets/artificial/cluto-t7-10k.arff}. It contains 10000 samples, 2 features, 9 clusters, and significant noise. \cref{fig:raw_ds4} shows a scatter plot of the dataset, where each feature corresponds to one of the axes, and each sample is colored according to its cluster label. The noise samples are colored in dark blue and are labeled as \texttt{-1} in the \texttt{.arff} file.
+The raw \ChameleonDSThree dataset is loaded from \url{https://raw.githubusercontent.com/deric/clustering-benchmark/master/src/main/resources/datasets/artificial/cluto-t7-10k.arff}. It contains 10000 samples, 2 features, 9 clusters, and significant noise. \Cref{fig:raw_ds3} shows a scatter plot of the dataset, where each feature corresponds to one of the axes, and each sample is colored according to its cluster label. The noise samples are colored in dark blue and are labeled as \codename{-1} in the \codename{.arff} file.
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/figures/raw_ds4.png}
-    \caption{Scatter plot of the original \textbf{DS4} dataset. Each sample is colored according to its cluster label, with noise samples colored in dark blue.}
-    \label{fig:raw_ds4}
+    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/figures/raw_ds3.png}
+    \caption{Scatter plot of the raw \ChameleonDSThree dataset. Each sample is colored according to its cluster label, with noise samples colored in dark blue.}
+    \label{fig:raw_ds3}
 \end{figure}
 
-\cref{fig:raw_metrics} shows the evolution of the adjusted rand index and the execution time of the microTEDAclus model over 100-sample batches of the original \textbf{DS4} dataset. An ARI of 1.0 indicates perfect clustering, while an ARI of 0.0 indicates random clustering. It is clear that, for the original dataset, the model's score is significantly lower than the one reported in the original work, kept around 0.25 throughout the entire stream. The time spent on the fitting stage is stable at nearly 400 milliseconds per batch, while the prediction stage's duration increases over time, reaching nearly 20 milliseconds per batch at the end of the stream.
+\Cref{fig:raw_metrics} shows the evolution of the adjusted rand index and the execution time of \MicroTEDAClus over 100-sample batches of the raw \ChameleonDSThree dataset. An ARI of 1.0 indicates perfect clustering, while an ARI of 0.0 indicates random clustering. It is clear that, for the raw dataset, the model's score is significantly lower than the one reported in the original work, kept around 0.25 throughout the entire stream. The time spent on the fitting stage is stable at nearly 400 milliseconds per batch, while the prediction stage's duration increases over time, reaching nearly 20 milliseconds per batch at the end of the stream.
 
 \begin{figure}[thpb]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/raw_metrics.png}
-    \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the original \textbf{DS4} dataset. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
+    \caption{Adjusted rand index and execution time of the \MicroTEDAClus model over 100-sample batches of the raw \ChameleonDSThree dataset. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
     \label{fig:raw_metrics}
 \end{figure}
 
 \subsubsection{Noise Removal}
 
-The noise removal step is performed by filtering out the samples labeled as \texttt{-1} in the \texttt{.arff} file. The resulting dataset contains 9208 samples and is shown in \cref{fig:noise_removed_ds4}.
+We perform noise removal by filtering out samples labeled as \codename{-1} in the \codename{.arff} file. The resulting dataset contains 9208 samples and is shown in \cref{fig:noise_removed_ds3}.
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/figures/noise_removed_ds4.png}
-    \caption{Scatter plot of the \textbf{DS4} dataset after noise removal. Each sample is colored according to its cluster label.}
-    \label{fig:noise_removed_ds4}
+    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/figures/noise_removed_ds3.png}
+    \caption{Scatter plot of the \ChameleonDSThree dataset after noise removal. Each sample is colored according to its cluster label.}
+    \label{fig:noise_removed_ds3}
 \end{figure}
 
-\cref{fig:noise_removed_metrics} shows a slight increase in the ARI of the microTEDAclus model over the noise-removed dataset, which reaches nearly 0.5 from batches 10 to 20, but then drops to nearly 0.25 for the rest of the stream. The execution time is also slightly reduced, with the fit stage 300 milliseconds per batch and the prediction stage taking nearly 10 milliseconds per batch at the end of the stream.
+\Cref{fig:noise_removed_metrics} shows a slight increase in the ARI of \MicroTEDAClus over the noise-removed dataset, which reaches nearly 0.5 from batches 10 to 20, but then drops to nearly 0.25 for the rest of the stream. The execution time is also slightly reduced, with the fit stage 300 milliseconds per batch and the prediction stage taking nearly 10 milliseconds per batch at the end of the stream.
 
 \begin{figure}[thpb]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/noise_removed_metrics.png}
-    \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the \textbf{DS4} dataset after noise removal. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
+    \caption{Adjusted rand index and execution time of the \MicroTEDAClus model over 100-sample batches of the \ChameleonDSThree dataset after noise removal. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
     \label{fig:noise_removed_metrics}
 \end{figure}
 
@@ -523,98 +523,98 @@ Although the noise removal step achieves a limited impact on the evaluation metr
 
 \subsubsection{Downsampling}
 
-Downsampling, on the other hand, does not necessarily constitute a form of data leakage, since it can be achieved without any information about the samples, past or future. It is performed by randomly selecting 50\% of the samples from the noise-removed dataset, resulting in a dataset with 4604 samples, shown in \cref{fig:downsampled_ds4}.
+Downsampling, on the other hand, does not necessarily constitute a form of data leakage, since it can be achieved without any information about the samples, past or future. It is performed by randomly selecting 50\% of the samples from the noise-removed dataset, resulting in a dataset with 4604 samples, shown in \cref{fig:downsampled_ds3}.
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/figures/downsampled_ds4.png}
-    \caption{Scatter plot of the \textbf{DS4} dataset after downsampling. Each sample is colored according to its cluster label.}
-    \label{fig:downsampled_ds4}
+    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/figures/downsampled_ds3.png}
+    \caption{Scatter plot of the \ChameleonDSThree dataset after downsampling. Each sample is colored according to its cluster label.}
+    \label{fig:downsampled_ds3}
 \end{figure}
 
-The curves in \cref{fig:downsampled_metrics} show that downsampling had negative impact on the ARI of the microTEDAclus model, which decreased to nearly 0.2. Execution time, however, is significantly reduced. Fitting is performed in approximately 200 milliseconds per batch, and prediction is performed in less than 5 milliseconds through the majority of the stream.
+The curves in \cref{fig:downsampled_metrics} show that downsampling had negative impact on the ARI of \MicroTEDAClus, which decreased to nearly 0.2. Execution time, however, is significantly reduced. Fitting is performed in approximately 200 milliseconds per batch, and prediction is performed in less than 5 milliseconds through the majority of the stream.
 
 \begin{figure}[thpb]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/downsampled_metrics.png}
-    \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the downsampled \textbf{DS4} dataset. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
+    \caption{Adjusted rand index and execution time of the \MicroTEDAClus model over 100-sample batches of the downsampled \ChameleonDSThree dataset. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
     \label{fig:downsampled_metrics}
 \end{figure}
 
 \subsubsection{Scaling}
 
-The scaling step is performed by applying a min-max normalization to the features of the downsampled dataset. Each feature is scaled to the range $[0, 1]$ by subtracting the minimum value and dividing by the range of the feature. \cref{fig:scaled_ds4} shows a scatter plot of the scaled dataset.
+The scaling step is performed by applying a min-max normalization to the features of the downsampled dataset. Each feature is scaled to the range $[0, 1]$ by subtracting the minimum value and dividing by the range of the feature. \Cref{fig:scaled_ds3} shows a scatter plot of the scaled dataset.
 
 \begin{figure}[thpb]
     \centering
-    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/figures/scaled_ds4.png}
-    \caption{Scatter plot of the ordered downsampled \textbf{DS4} dataset after scaling. Each sample is colored according to its cluster label.}
-    \label{fig:scaled_ds4}
+    \includegraphics[width=0.7\textwidth]{MethodologyReassessment/figures/scaled_ds3.png}
+    \caption{Scatter plot of the ordered downsampled \ChameleonDSThree dataset after scaling. Each sample is colored according to its cluster label.}
+    \label{fig:scaled_ds3}
 \end{figure}
 
 \begin{figure}[thpb]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/scaled_metrics.png}
-    \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the downsampled \textbf{DS4} dataset after scaling. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
+    \caption{Adjusted rand index and execution time of the \MicroTEDAClus model over 100-sample batches of the downsampled \ChameleonDSThree dataset after scaling. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
     \label{fig:scaled_metrics}
 \end{figure}
 
-\cref{fig:scaled_metrics} shows that scaling recovers the ARI of the microTEDAclus model to over 0.25 for most batches, and significantly reduces the execution time. Fitting is performed in approximately 20 milliseconds per batch, while prediction is performed in approximately2 milliseconds per batch. More importantly, scaling shifts the optimal parameter \texttt{variance\_limit} from $1 < r_0 < 10$ to $0.01 < r_0 < 0.1$. This contradicts the original work's claim that the model is robust to the choice of this parameter, since it is highly dependent on the scale of the data.
+\Cref{fig:scaled_metrics} shows that scaling recovers the ARI of \MicroTEDAClus to over 0.25 for most batches, and significantly reduces the execution time. Fitting is performed in approximately 20 milliseconds per batch, while prediction is performed in approximately2 milliseconds per batch. More importantly, scaling shifts the optimal parameter \codename{variance\_limit} from $1 < r_0 < 10$ to $0.01 < r_0 < 0.1$. This contradicts the original work's claim that the model is robust to the choice of this parameter, since it is highly dependent on the scale of the data.
 
-Scalling is a common preprocessing step in machine learning, and it is expected to be performed in any real-world application of the microTEDAclus model. However, it is important to note that the way it is performed in the original work's experiments, in which the minimum and maximum values of the features are computed over the entire dataset, constitutes a form of data leakage.
+Scalling is a common preprocessing step in machine learning, and it is expected to be performed in any real-world application of the \MicroTEDAClus model. However, it is important to note that the way it is performed in the original work's experiments, in which the minimum and maximum values of the features are computed over the entire dataset, constitutes a form of data leakage.
 
 \subsubsection{Ordering}
 
-Data ordering is expected to impose the most harm on the original work's experiments validity. Not only it represents a severe form of data leakage, because it completely disregards the chronological order of the samples, it also guarantees that, for the 100-sample batche length chosen for the experiments, most of the batches will contain samples from a single cluster. For this experiment, the downsampled dataset is reordered by the cluster labels, in a way that all samples from the same cluster are contiguous. \cref{fig:ordered_batches} show the scatter plot of the batches with index 0, 10, 20, and 30. \cref{fig:unordered_batches} shows the scatter plot of the same batches in the original downsampled dataset.
+Data ordering is expected to impose the most harm on the original work's experiments validity. Not only it represents a severe form of data leakage, because it completely disregards the chronological order of the samples, it also guarantees that, for the 100-sample batche length chosen for the experiments, most of the batches will contain samples from a single cluster. For this experiment, the downsampled dataset is reordered by the cluster labels, in a way that all samples from the same cluster are contiguous. \Cref{fig:ordered_batches} show the scatter plot of the batches with index 0, 10, 20, and 30. \Cref{fig:unordered_batches} shows the scatter plot of the same batches in the original downsampled dataset.
 
 \begin{figure}[thpb]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/ordered_batches.png}
-    \caption{Scatter plot of the ordered downsampled \textbf{DS4} dataset for batches 0, 10, 20, and 30. Each sample is colored according to its cluster label.}
+    \caption{Scatter plot of the ordered downsampled \ChameleonDSThree dataset for batches 0, 10, 20, and 30. Each sample is colored according to its cluster label.}
     \label{fig:ordered_batches}
 \end{figure}
 
 \begin{figure}[thpb]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/unordered_batches.png}
-    \caption{Scatter plot of the unordered downsampled \textbf{DS4} dataset for batches 0, 10, 20, and 30. Each sample is colored according to its cluster label.}
+    \caption{Scatter plot of the unordered downsampled \ChameleonDSThree dataset for batches 0, 10, 20, and 30. Each sample is colored according to its cluster label.}
     \label{fig:unordered_batches}
 \end{figure}
 
-\cref{fig:ordered_metrics} shows the results of the microTEDAclus model over the ordered dataset. Ordering the data has a significant impact on the ARI, which is 1.0 for most batches, and on the execution time, which is reduced to less than 1 millisecond per batch for both fitting and prediction. The batches for which the ARI is 0.0 are likelly the ones that contain samples from multiple clusters.
+\Cref{fig:ordered_metrics} shows the results of \MicroTEDAClus over the ordered dataset. Ordering the data has a significant impact on the ARI, which is 1.0 for most batches, and on the execution time, which is reduced to less than 1 millisecond per batch for both fitting and prediction. The batches for which the ARI is 0.0 are likely the ones that contain samples from multiple clusters.
 
 \begin{figure}[thpb]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/ordered_metrics.png}
-    \caption{Adjusted rand index and execution time of the microTEDAclus model over 100-sample batches of the ordered downsampled \textbf{DS4} dataset. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
+    \caption{Adjusted rand index and execution time of the \MicroTEDAClus model over 100-sample batches of the ordered downsampled \ChameleonDSThree dataset. The left plot shows the ARI, while the right plot shows the execution time in milliseconds.}
     \label{fig:ordered_metrics}
 \end{figure}
 
-Such results show that the experiments performed on datasets \textbf{ST-D1} and \textbf{ST-D2} are not valid for evaluating the performance of the microTEDAclus model in real-world online stream clustering scenarios. To ensure the validity of the experiments, this reassessment uses the original \textbf{DS4} and \textbf{DS5} datasets, without any preprocessing.
+Such results show that the experiments performed on datasets \datasetname{ST-D1} and \datasetname{ST-D2} are not valid for evaluating the performance of the \MicroTEDAClus model in real-world online stream clustering scenarios. To ensure the validity of the experiments, this reassessment uses the raw \ChameleonDSThree and \ChameleonDSFour datasets, without the original work's preprocessing.
 
-The third static dataset, \textbf{Cassini}, is generated in the original work by \textbf{R}'s library \texttt{mlbench} and used in its original form, without any preprocessing. Because it is originally ordered by cluster labels in the \texttt{mlbench} library, this work's experiments randomly shuffle the samples to avoid the same problem of data leakage and unrealistic batch composition. \cref{fig:cassini_batches} shows the scatter plots of the batch with index 2 of the original and shuffled \textbf{Cassini} dataset
+The third static dataset, \Cassini, is generated in the original work by \codename{R}'s library \codename{mlbench} and used in its original form, without any preprocessing. Because it is originally ordered by cluster labels in the \codename{mlbench} library, we randomly shuffle the samples to avoid the same problem of data leakage and unrealistic batch composition. \Cref{fig:cassini_batches} shows the scatter plots of batch 2 of the original and shuffled \Cassini dataset.
 
 \begin{figure}[thpb]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/cassini_batches.png}
-    \caption{Scatter plot of the \textbf{Cassini} dataset. The left plot shows the complete dataset, the middle plot shows the batch with index 2 of the original ordered dataset, and the right plot shows the batch with index 2 of the shuffled dataset. Each sample is colored according to its cluster label.}
+    \caption{Scatter plot of the \Cassini dataset. The left plot shows the complete dataset, the middle plot shows the batch with index 2 of the original ordered dataset, and the right plot shows the batch with index 2 of the shuffled dataset. Each sample is colored according to its cluster label.}
     \label{fig:cassini_batches}
 \end{figure}
 
 \subsection{Concept Drift}
 
-The \texttt{streamMOA} concept drift datasets used in the original work are \textbf{STR-B1}, \textbf{STR-B2}, and \textbf{RBF}. The scatter plots shown in the original work suggest that the noise samples of those datasets, labeled by the library as \texttt{NA}, are removed from the evaluation. Because of the reasons previously discussed, this reassessment includes the noise samples in the evaluation, as they are part of the dataset and can have a significant impact on the results. To prevent parsing issues, the noise samples are relabeled as \texttt{-1} once each dataset is loaded. \cref{fig:concept_drift_noise_handling} compares the complete denoised and relabeled datasets.
+The \codename{streamMOA} concept drift datasets used in the original work are \textbf{STR-B1}, \textbf{STR-B2}, and \textbf{RBF}. The scatter plots shown in the original work suggest that the noise samples of those datasets, labeled by the library as \codename{NA}, are removed from the evaluation. Because of the reasons previously discussed, this reassessment includes the noise samples in the evaluation, as they are part of the dataset and can have a significant impact on the results. To prevent parsing issues, the noise samples are relabeled as \codename{-1} once each dataset is loaded. \Cref{fig:concept_drift_noise_handling} compares the complete denoised and relabeled datasets.
 
 \begin{figure}[thpb]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/concept_drift_noise_handling.png}
-    \caption{Scatter plot of the concept drift datasets. The left plots show the datasets with noise samples removed, while the right plots show the complete datasets with noise samples relabeled as \texttt{-1}. Each sample is colored according to its cluster label.}
+    \caption{Scatter plot of the concept drift datasets. The left plots show the datasets with noise samples removed, while the right plots show the complete datasets with noise samples relabeled as \codename{-1}. Each sample is colored according to its cluster label.}
     \label{fig:concept_drift_noise_handling}
 \end{figure}
 
 \subsection{Scalability}
 
-For the scalability experiments, in which memory and execution time are profiled for increasing numbers of samples or feature dimensions, the original work uses synthetic datasets generated by the \texttt{streamMOA} library. The generation process and conditions are well described in the original work, and shows that the synthetic datasets lack the introduction of noise. To ensure that the scalability experiments reflect real-world scenarios, this reassessment generates synthetic datasets with noise. \cref{fig:scalability_noise_comparison} shows the scatter plots of the synthetic dataset \texttt{SCL-2} with and without noise.
+For the scalability experiments, in which memory and execution time are profiled for increasing numbers of samples or feature dimensions, the original work uses synthetic datasets generated by the \codename{streamMOA} library. The generation process and conditions are well described in the original work, and shows that the synthetic datasets lack the introduction of noise. To ensure that the scalability experiments reflect real-world scenarios, this reassessment generates synthetic datasets with noise. \Cref{fig:scalability_noise_comparison} shows the scatter plots of the synthetic dataset \texttt{SCL-2} with and without noise.
 
 \begin{figure}[thpb]
     \centering
@@ -629,7 +629,7 @@ The original work evaluates its proposed model against the selected benchmark mo
 
 \subsection{ARI}
 
-The adjusted rand index is a widely used metric for evaluating the quality of clustering algorithms \cite{hubert1985ari}. Because it is an external metric \cite{halkidi2001validation}, it does not depends on the data distribution or the number of clusters, which makes it suitable for evaluating the performance of clustering algorithms in a streaming setting over non-gaussian datasets. The predictions over which it is computed in the original work, and the analysis of the results, however, do not match the standard practice for evaluating clustering algorithms in streaming or offline settings \cite{akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline,zhang2022extension,zubaroglu2023emcstream}. \cref{sec:prequential_sequential_offline_evaluation} discusses the protocol under which the models' predictions are captured.
+The adjusted rand index is a widely used metric for evaluating the quality of clustering algorithms \cite{hubert1985ari}. Because it is an external metric \cite{halkidi2001validation}, it does not depends on the data distribution or the number of clusters, which makes it suitable for evaluating the performance of clustering algorithms in a streaming setting over non-gaussian datasets. The predictions over which it is computed in the original work, and the analysis of the results, however, do not match the standard practice for evaluating clustering algorithms in streaming or offline settings \cite{akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline,zhang2022extension,zubaroglu2023emcstream}. \Cref{sec:prequential_sequential_offline_evaluation} discusses the protocol under which the models' predictions are captured.
 
 Even if computed under suitable evaluation protocols, a single "mean plus standard deviation" over multiple runs is not descriptive for algorithms that are expected to handle evolving data streams. Some questions that are not answered by such measure are:
 
@@ -638,7 +638,7 @@ Even if computed under suitable evaluation protocols, a single "mean plus standa
     \item Does its performance degrade over time, and if so, how much?
 \end{itemize}
 
-\cref{fig:similar_stats_different_shapes} shows three hypothetical evolutions of the ARI over evaluation batches. For each of them, the answer to the questions above is different, but their central tendency and dispersion measures are the same. The first evolution shows a model that slowly but consistently improves its performance over time, the second shows a model that quickly reaches a high score but then degrades over time, and the third shows a model scores randomly over the batches. The first model is likely the best choice for a real-world application, but the mean and standard deviation of the ARI do not provide enough information to make such decision.
+\Cref{fig:similar_stats_different_shapes} shows three hypothetical evolutions of the ARI over evaluation batches. For each of them, the answer to the questions above is different, but their central tendency and dispersion measures are the same. The first evolution shows a model that slowly but consistently improves its performance over time, the second shows a model that quickly reaches a high score but then degrades over time, and the third shows a model scores randomly over the batches. The first model is likely the best choice for a real-world application, but the mean and standard deviation of the ARI do not provide enough information to make such decision.
 
 \begin{figure}[thpb]
     \centering
@@ -661,7 +661,7 @@ For each run, the fifth evaluation batch's ARI is computed. Such score is expect
 
 For each run, the difference between the highest ARI and the ARI of the last evaluation batch is computed. It represents specifically the robustness of the model to concept drift. The highest score is expected to be reached in a steady state, before any concept drift has occurred. Since concept drift is expected to degrade the model's performance, this metric is expected to have a smaller value for a model that is less harmed by it than for a sensible that is more sensible to it.
 
-\cref{tab:complementary_scores_on_the_hypotheticals} shows the values of the proposed complementary scores for the three hypothetical evolutions of the ARI shown in \cref{fig:similar_stats_different_shapes}. The first model, which slowly improves its performance over time, has a low ARI at the fifth batch ($0.005$), the optimal ARI at the penultimate batch ($1.000$), and zero difference between its highest and final batch scores ($0.000$). The second model, which quickly reaches a high score but then degrades over time, has the highest ARI at the fifth batch ($0.463$), a low ARI at the penultimate batch ($0.081$), and a large difference between its highest and final batch scores ($0.922$). The third model coincidently yields an ARI of $0.000$ for both the fifth and penultimate batches, while presenting the maximum possible difference between its highest and final batch scores ($1.000$). It is important to note that a randomly scoring model may achieve a high ARI in a single batch, which is handled by the multi-run aggregation statistics discussed in \cref{subsec:multi_run_statistics}.
+\Cref{tab:complementary_scores_on_the_hypotheticals} shows the values of the proposed complementary scores for the three hypothetical evolutions of the ARI shown in \cref{fig:similar_stats_different_shapes}. The first model, which slowly improves its performance over time, has a low ARI at the fifth batch ($0.005$), the optimal ARI at the penultimate batch ($1.000$), and zero difference between its highest and final batch scores ($0.000$). The second model, which quickly reaches a high score but then degrades over time, has the highest ARI at the fifth batch ($0.463$), a low ARI at the penultimate batch ($0.081$), and a large difference between its highest and final batch scores ($0.922$). The third model coincidently yields an ARI of $0.000$ for both the fifth and penultimate batches, while presenting the maximum possible difference between its highest and final batch scores ($1.000$). It is important to note that a randomly scoring model may achieve a high ARI in a single batch, which is handled by the multi-run aggregation statistics discussed in \cref{subsec:multi_run_statistics}.
 
 \begin{table}
     \centering
@@ -691,7 +691,7 @@ In \cite{maia2020evolvclus}, execution time is only assessed on for the scalabil
         \item Execution time versus the number of samples, for each of two fixed feature dimensions (2 and 64).
         \item Execution time versus the feature dimension, for each of two fixed batch indexes (10 and last - 1).
     \end{itemize}
-    This report strategy's goal is to further investigate how the feature dimension impacts on the sample-scalability of the evaluated models, and how the number of samples impacts on the feature-scalability of the evaluated models. Median and quartiles are selected because preeliminary experiments show that a logarithmic scale is more suitable for this metric -- since the models differ by orders of magnitude -- and the high variability of the execution time increase the risk of negative bounds when defined as $\mu - \sigma$. Because \textbf{Matplotlib}'s logarithmic scale does not support negative values, the quartile-pair is preferred to avoid artificially clipping the lower bound of the error bars to zero, since the quartiles are guaranteed to be bounded by the values actually observed in the experiments.
+    This report strategy's goal is to further investigate how the feature dimension impacts on the sample-scalability of the evaluated models, and how the number of samples impacts on the feature-scalability of the evaluated models. Median and quartiles are selected because preeliminary experiments show that a logarithmic scale is more suitable for this metric -- since the models differ by orders of magnitude -- and the high variability of the execution time increase the risk of negative bounds when defined as $\mu - \sigma$. Because \codename{Matplotlib}'s logarithmic scale does not support negative values, the quartile-pair is preferred to avoid artificially clipping the lower bound of the error bars to zero, since the quartiles are guaranteed to be bounded by the values actually observed in the experiments.
 \end{itemize}
 
 \subsection{Memory Usage}
@@ -710,7 +710,7 @@ The original work reports memory consumption only through a plot of memory usage
 
 \subsection{MicroCluster Count}
 
-In the set of models that this work evaluates, only \textbf{StreamKM++} do not employ microclustering techniques. The remaining models are compared in terms of how well they can summarize the data stream into a set of microclusters, which is expected to impact on their performance in terms of clustering quality, execution time, and memory usage. This metric is captured, reported, and analyzed in the same way as the memory usage metric.
+In the set of models that we evaluate, only \StreamKM does not employ microclustering techniques. We compare the remaining models in terms of how well they can summarize the data stream into a set of microclusters, which is expected to impact their performance in terms of clustering quality, execution time, and memory usage. We capture, report, and analyze this metric in the same way as the memory usage metric.
 
 \section{Prequential, Sequential, and Offline Evaluation} \label{sec:prequential_sequential_offline_evaluation}
 
@@ -742,9 +742,9 @@ For the remaining datasets, the implemented protocol is exemplified in \cref{sni
   accum_error, error_list = Benchmarks.prequential_evaluation(evol_model, X, y, adjusted_rand_score, train_size, window_size)
 \end{lstlisting}
 
-The name of the function \texttt{prequential\_evaluation} may suggest that it implements prequential evaluation, but its definition is provided in \cref{snippet:original_work_prequential_evaluation_function}:
+The name of the function \codename{prequential\_evaluation} may suggest that it implements prequential evaluation, but its definition is provided in \cref{snippet:original_work_prequential_evaluation_function}:
 
-\begin{lstlisting}[float, language=Python, caption={Original work's implementation of the function named \texttt{prequential\_evaluation}}, label={snippet:original_work_prequential_evaluation_function}]
+\begin{lstlisting}[float, language=Python, caption={Original work's implementation of the function named \codename{prequential\_evaluation}}, label={snippet:original_work_prequential_evaluation_function}]
 def prequential_evaluation(
     method, data, labels, metric, train_size, window_size=1, fading_factor=1, adjust_labels=0, elapsed_time=False,
 ):
@@ -791,7 +791,7 @@ def prequential_evaluation(
 
 of which the excerpt \cref{snippet:original_work_prequential_evaluation_function_steps} shows that the model is trained on the batch before performing the estimation of the labels of its samples:
 
-\begin{lstlisting}[float, language=Python, caption={Excerpt of the original work's implementation of the function named \texttt{prequential\_evaluation}}, label={snippet:original_work_prequential_evaluation_function_steps}]
+\begin{lstlisting}[float, language=Python, caption={Excerpt of the original work's implementation of the function named \codename{prequential\_evaluation}}, label={snippet:original_work_prequential_evaluation_function_steps}]
         if elapsed_time:
             time_start = time.time()
         method.fit(train_data)
@@ -801,7 +801,7 @@ of which the excerpt \cref{snippet:original_work_prequential_evaluation_function
 
 which is exactly the opposite of prequential evaluation, in which the model is evaluated on the batch before being trained on it.
 
-The second hint that the original work does not implement prequential evaluation is in its own batchwise plots. Since, under prequential evaluation, predictions are performed before learning, the ARI of the first batch is expected to be near 0.0, as the model has not yet learned anything about the data. \cref{fig:original_curves} shows the $\text{ARI}(\text{first\_batch}) > 0.5$ for all the reported experiments, and $> 0.8$ for 10 out of 15 curves. Thus, independently of external code inspection, those results cast doubt on the validity of the work's conclusions.
+The second hint that the original work does not implement prequential evaluation is in its own batchwise plots. Since, under prequential evaluation, predictions are performed before learning, the ARI of the first batch is expected to be near 0.0, as the model has not yet learned anything about the data. \Cref{fig:original_curves} shows the $\text{ARI}(\text{first\_batch}) > 0.5$ for all the reported experiments, and $> 0.8$ for 10 out of 15 curves. Thus, independently of external code inspection, those results cast doubt on the validity of the work's conclusions.
 
 \begin{figure}[thpb]
     \centering
@@ -833,13 +833,13 @@ D(m_i, m_{\text{ref}}) \iff (p_{\text{adj}} < \alpha) \land (\vert d \vert \ge 0
 
 where $p_{\text{adj}}$ is the Holm-Bonferroni adjusted $p$-value, $d$ is Cliff's Delta \cite{cliff1993dominance}, and $\vert d \vert \ge 0.147$ is the empirical boundary for a non-negligible effect size \cite{romano2006appropriate}.
 
-\section{microTEDAclus Evaluation Under the Reassessment's Methodology}
+\section{\MicroTEDAClus Evaluation Under the Reassessment's Methodology}
 
 The results' analysis is performed over three model subsets:
 
 \begin{enumerate}
-    \item The original work's model set: \textbf{microTEDAclus}, \textbf{StreamKM++}, \textbf{DenStream}, and \textbf{CluStream}.
-    \item The set of models that are TEDA-based: \textbf{microTEDAclus}, \textbf{AutoCloud}, \textbf{CEDAS} and \textbf{TEDACloud}.
+    \item The original work's model set: \MicroTEDAClus, \StreamKM, \DenStream, and \CluStream.
+    \item The set of models that are TEDA-based: \MicroTEDAClus, \AutoCloud, \CEDAS, and \TEDACloud.
     \item The complete set of models.
 \end{enumerate}
 
@@ -847,7 +847,7 @@ In the non-scalability-oriented tables, a bolded value indicates that the model 
 
 \subsection{Original Work's Model Set}
 
-This set's analysis goal is to evaluate the original work's claims regarding the performance of its proposed model, \textbf{microTEDAclus}, against the selected benchmark models. While the original work's results indicates an approximate equivalence between the evaluated models, this reassessment's results show that \textbf{microTEDAclus} is significantly outperformed by the other models in some metrics, and slightly equivalent to them in others. The following subsections detail the results of the evaluation of this model set.
+This set's analysis goal is to evaluate the original work's claims regarding the performance of its proposed model, \MicroTEDAClus, against the selected benchmark models. While the original work's results indicate an approximate equivalence between the evaluated models, our results show that \MicroTEDAClus is significantly outperformed by the other models in some metrics and is approximately equivalent to them in others. The following subsections detail the results of the evaluation of this model set.
 
 \subsubsection{Clustering Quality}
 
@@ -855,19 +855,19 @@ The models' overall adjusted rand index, alongside the scores at the penultimate
 
 \input{MethodologyReassessment/artifacts/original-paper/tables/ari_overall.tex}
 
-\cref{tab:original-paper_ari_overall} shows that, overall, \textbf{microTEDAclus} is outperformed by the other models under the median ARI score for most datasets, and is indistinguishable from the worst model on half of them. It is indistinguishable from the best model on \textbf{RandomRBFGeneratorEvents} and \textbf{Benchmark(2)}, which feature concept drift. Because it is the sole worst for \textbf{Benchmark(1)}, which also features concept drift, the claim that it is the most adaptable model to concept drift is not fully supported. Under this metric, the clear winner is \textbf{StreamKM}, which is indistiguishable from the best model for 4/6 datasets, is not indistinguishable from the worst model for any dataset, and is the sole best model for \textbf{cassini}.
+\Cref{tab:original-paper_ari_overall} shows that, overall, \MicroTEDAClus is outperformed by the other models under the median ARI score for most datasets, and is indistinguishable from the worst model on half of them. It is indistinguishable from the best model on \RandomRBFGeneratorEvents and \BenchmarkTwo, which feature concept drift. Because it is the sole worst for \BenchmarkOne, which also features concept drift, the claim that it is the most adaptable model to concept drift is not fully supported. Under this metric, the clear winner is \StreamKM, which is indistiguishable from the best model for 4/6 datasets, is not indistinguishable from the worst model for any dataset, and is the sole best model for \Cassini.
 
 \input{MethodologyReassessment/artifacts/original-paper/tables/ari_penultimate.tex}
 
-At the penultimate batch, \textbf{microTEDAclus} is indistinguishable from the worst model for all the datasets, and the sole worst in half of them, as seem in \cref{tab:original-paper_ari_penultimate}. It is worth noting that, even though the elevated variability of this score yelds ties between models with highly different median scores, \text{microTEDAclus} is consistently on the lower end of the performance spectrum. \textbf{StreamKM} is indistinguishable from the best model for five datasets, and distinguishable from the worst model in all of them. However, \textbf{CluStream} achieve higher medians in \textbf{Benchmark(1)}, \textbf{chameleon\_ds7}, and \textbf{cassini}, which invalidates the selection of a clear winner for this metric.
+At the penultimate batch, \MicroTEDAClus is indistinguishable from the worst model for all the datasets, and the sole worst in half of them, as seen in \cref{tab:original-paper_ari_penultimate}. It is worth noting that, even though the elevated variability of this score yields ties between models with highly different median scores, \MicroTEDAClus is consistently on the lower end of the performance spectrum. \StreamKM is indistinguishable from the best model for five datasets, and distinguishable from the worst model in all of them. However, \CluStream achieves higher medians in \BenchmarkOne, \ChameleonDSSeven, and \Cassini, which invalidates the selection of a clear winner for this metric.
 
 \input{MethodologyReassessment/artifacts/original-paper/tables/ari_fifth.tex}
 
-The fifth batch's ARI, presented in \cref{tab:original-paper_ari_fifth}, is the quality score in which \textbf{microTEDAclus} performs the best, being indistinguishable from the best model for half of the datasets, and indistinguishable from the worst model for only one of them. \textbf{DenStream} is indistinguishable from the worst model in five datasets, and is only distinguishable for \textbf{chameleon\_ds7} -- although it median and interquatile range match those of \textbf{microTEDAclus}, the tie is broken by the paired Wilcoxon signed-rank test, which includes runs that are not in the interquartile range. \textbf{StreamKM} is indistinguishable from the best model for two datasets, and \textbf{CluStream} is indistinguishable from the best model for three datasets. \textbf{microTEDAclus} is not a clear winner, but none of those are.
+The fifth batch's ARI, presented in \cref{tab:original-paper_ari_fifth}, is the quality score in which \MicroTEDAClus performs the best, being indistinguishable from the best model for half of the datasets, and indistinguishable from the worst model for only one of them. \DenStream is indistinguishable from the worst model in five datasets, and is only distinguishable for \ChameleonDSSeven -- although its median and interquartile range match those of \MicroTEDAClus, the tie is broken by the paired Wilcoxon signed-rank test, which includes runs that are not in the interquartile range. \StreamKM is indistinguishable from the best model for two datasets, and \CluStream is indistinguishable from the best model for three datasets. \MicroTEDAClus is not a clear winner, but none of those are.
 
 \input{MethodologyReassessment/artifacts/original-paper/tables/ari_diff.tex}
 
-Under the stability to handle concept drift, \textbf{microTEDAclus} is indistinguishable from the worst model for all datasets, and is the sole worst model for half of them, \cref{tab:original-paper_ari_diff} shows. \textbf{DenStream} is the clear winner, indistinguishable from the best model for five of the datasets, and only indistinguishable from the worst model for \textbf{Benchmark(2)}, in which three of the four models are too.
+Under the stability to handle concept drift, \MicroTEDAClus is indistinguishable from the worst model for all datasets, and is the sole worst model for half of them, \cref{tab:original-paper_ari_diff} shows. \DenStream is the clear winner, indistinguishable from the best model for five of the datasets, and only indistinguishable from the worst model for \textbf{Benchmark(2)}, in which three of the four models are too.
 
 The sample- and feature-scalability of the clustering quality are illustrated in \cref{fig:orig_ari_scalability_a,fig:orig_ari_scalability_b}.
 
@@ -879,7 +879,7 @@ The sample- and feature-scalability of the clustering quality are illustrated in
     \label{fig:orig_ari_scalability_a}
 \end{figure}
 
-Under two dimensions, most of the models tie through the entire stream, as shown in \cref{fig:orig_ari_scalability_a}. \textbf{DenStream} is the only exception, as it takes up to 1000 samples to achieve an ARI higher than 0 and, even then, scores lower than the other models. Under 64 dimensions, \textbf{microTEDAclus} achieve high scores in the first batches, but its performance drastically degrades as the stream progresses, dropping to 0.0 after around 2500 of the 3400 samples.
+Under two dimensions, most of the models tie through the entire stream, as shown in \cref{fig:orig_ari_scalability_a}. \DenStream is the only exception, as it takes up to 1000 samples to achieve an ARI higher than 0 and, even then, scores lower than the other models. Under 64 dimensions, \MicroTEDAClus achieve high scores in the first batches, but its performance drastically degrades as the stream progresses, dropping to 0.0 after around 2500 of the 3400 samples.
 
 \begin{figure}[htbp]
     \centering
@@ -889,7 +889,7 @@ Under two dimensions, most of the models tie through the entire stream, as shown
     \label{fig:orig_ari_scalability_b}
 \end{figure}
 
-In the tenth batch, \textbf{microTEDAclus} is comparable to the best models through the entire range of feature dimensions. In the penultimate batch, however, both \textbf{microTEDAclus} and \textbf{DenStream} performances degrades as the feature dimension increases, while \textbf{StreamKM} and \textbf{CluStream} maintain high scores. It is worth noting that both fail to complete the experiment under 128 feature axes, as indicated by the missing data points in \cref{fig:orig_ari_scalability_b}.
+In the tenth batch, \MicroTEDAClus is comparable to the best models through the entire range of feature dimensions. In the penultimate batch, however, both \MicroTEDAClus and \DenStream performances degrades as the feature dimension increases, while \StreamKM and \CluStream maintain high scores. It is worth noting that both fail to complete the experiment under 128 feature axes, as indicated by the missing data points in \cref{fig:orig_ari_scalability_b}.
 
 \subsubsection{Execution Time}
 
@@ -897,11 +897,11 @@ Cumulative execution times for the prediction and fitting stages are presented i
 
 \input{MethodologyReassessment/artifacts/original-paper/tables/time_predict_cum_ms.tex}
 
-\textbf{StreamKM} is the sole fastest model for all datasets, while \textbf{microTEDAclus} is indistinguishable from the worst model for four of them. A clear loser, however, is not identified, as \cref{tab:original-paper_time_predict_cum_ms} shows that \textbf{DenStream} and \textbf{CluStream} also achieve poor performance for some datasets.
+\StreamKM is the sole fastest model for all datasets, while \MicroTEDAClus is indistinguishable from the worst model for four of them. A clear loser, however, is not identified, as \cref{tab:original-paper_time_predict_cum_ms} shows that \DenStream and \CluStream also achieve poor performance for some datasets.
 
 \input{MethodologyReassessment/artifacts/original-paper/tables/time_fit_cum_ms.tex}
 
-Under fitting, in \cref{tab:original-paper_time_fit_cum_ms}, however, \textbf{microTEDAclus} is the sole slowest model for all datasets, and \textbf{StreamKM} is the sole fastest model on all of them.
+Under fitting, in \cref{tab:original-paper_time_fit_cum_ms}, however, \MicroTEDAClus is the sole slowest model for all datasets, and \StreamKM is the sole fastest model on all of them.
 
 To evaluate the computational overhead under expanding data streams, \cref{fig:orig_time_scalability_a,fig:orig_time_scalability_b} report the sample- and feature-scalability of the execution times for both stages. Such analysis complements the original work's analytical formulation of the model's time complexity.
 
@@ -915,7 +915,7 @@ To evaluate the computational overhead under expanding data streams, \cref{fig:o
     \label{fig:orig_time_scalability_a}
 \end{figure}
 
-\cref{fig:orig_time_scalability_a} shows that, under 2 feature dimensions, \textbf{microTEDAclus} is the slowest model for both stages, while \textbf{StreamKM} and \textbf{DenStream} are the fastest. For 64 feature dimensions, however, \textbf{microTEDAclus} achieve lower execution times than \textbf{StreamKM}, and achieve a performance comparable to \textbf{DenStream}.
+\Cref{fig:orig_time_scalability_a} shows that, under 2 feature dimensions, \MicroTEDAClus is the slowest model for both stages, while \StreamKM and \DenStream are the fastest. For 64 feature dimensions, however, \MicroTEDAClus achieve lower execution times than \StreamKM, and achieve a performance comparable to \DenStream.
 
 \begin{figure}[htbp]
     \centering
@@ -927,7 +927,7 @@ To evaluate the computational overhead under expanding data streams, \cref{fig:o
     \label{fig:orig_time_scalability_b}
 \end{figure}
 
-As the feature count increases, \textbf{microTEDAclus} the only model for which execution time decreases. Such behavior, when evaluated in conjunction with the ARI's feature-scalability, indicates that the catastrophic failure caused by the flaw described in \cref{sss:dimensionality_penalty} causes the microclusters to collapse into fewer, poor quality microclusters, which are faster to update and query, but yield worst clustering quality.
+As the feature count increases, \MicroTEDAClus the only model for which execution time decreases. Such behavior, when evaluated in conjunction with the ARI's feature-scalability, indicates that the catastrophic failure caused by the flaw described in \cref{subsubsec:dimensionality_penalty} causes the microclusters to collapse into fewer, poor quality microclusters, which are faster to update and query, but yield worst clustering quality.
 
 \subsubsection{Memory Footprint}
 
@@ -935,11 +935,11 @@ As for the spatial complexity, \cref{tab:original-paper_memory_max_bytes,tab:ori
 
 \input{MethodologyReassessment/artifacts/original-paper/tables/memory_max_bytes.tex}
 
-Although \textbf{microTEDAclus} is indistinguishable from the worst model for all datasets in \cref{tab:original-paper_mc_max}, \textbf{CluStream} ties with it on four of them. The clear winner is \textbf{DenStream}, which is indistinguishable from the best model for all datasets, and is the sole best model on four of them.
+Although \MicroTEDAClus is indistinguishable from the worst model for all datasets in \cref{tab:original-paper_mc_max}, \CluStream ties with it on four of them. The clear winner is \DenStream, which is indistinguishable from the best model for all datasets, and is the sole best model on four of them.
 
 \input{MethodologyReassessment/artifacts/original-paper/tables/memory_penultimate_bytes.tex}
 
-\cref{tab:original-paper_mc_penultimate} provide similar results to \cref{tab:original-paper_mc_max}, as \textbf{microTEDAclus} and \textbf{CluStream} consume the most memory in most datasets and \textbf{DenStream} is the most memory-efficient model.
+\Cref{tab:original-paper_mc_penultimate} provide similar results to \cref{tab:original-paper_mc_max}, as \MicroTEDAClus and \CluStream consume the most memory in most datasets and \DenStream is the most memory-efficient model.
 
 Memory consumption scalability is depicted in \cref{fig:orig_mem_scalability_a,fig:orig_mem_scalability_b} as a function of the sample volume and feature dimensionality.
 
@@ -951,7 +951,7 @@ Memory consumption scalability is depicted in \cref{fig:orig_mem_scalability_a,f
     \label{fig:orig_mem_scalability_a}
 \end{figure}
 
-\cref{fig:orig_mem_scalability_a} shows that, for 2 feature dimensions, \textbf{microTEDAclus} and \textbf{CluStream} are the most memory-consuming models, while \textbf{DenStream} is the most memory-efficient. For 64 feature dimensions, however, \textbf{microTEDAclus}'s memory consumption is comparable to \textbf{DenStream}'s, and \textbf{CluStream} is the most memory-consuming through the entire stream.
+\Cref{fig:orig_mem_scalability_a} shows that, for 2 feature dimensions, \MicroTEDAClus and \CluStream are the most memory-consuming models, while \DenStream is the most memory-efficient. For 64 feature dimensions, however, \MicroTEDAClus's memory consumption is comparable to \DenStream's, and \CluStream is the most memory-consuming through the entire stream.
 
 \begin{figure}[htbp]
     \centering
@@ -961,7 +961,7 @@ Memory consumption scalability is depicted in \cref{fig:orig_mem_scalability_a,f
     \label{fig:orig_mem_scalability_b}
 \end{figure}
 
-Memory consumption feature-scalability, in \cref{fig:orig_mem_scalability_b}, is similar to the time feature-scalability shown in \cref{fig:orig_time_scalability_b}, as \textbf{microTEDAclus} is the only model for which memory consumption decreases as the feature dimension increases. Again, such behavior is explained by the flaw described in \cref{sss:dimensionality_penalty}.
+Memory consumption feature-scalability, in \cref{fig:orig_mem_scalability_b}, is similar to the time feature-scalability shown in \cref{fig:orig_time_scalability_b}, as \MicroTEDAClus is the only model for which memory consumption decreases as the feature dimension increases. Again, such behavior is explained by the flaw described in \cref{subsubsec:dimensionality_penalty}.
 
 \subsubsection{Microcluster Dynamics}
 
@@ -969,12 +969,12 @@ The peak and steady-state microcluster counts allocated by each model can be fou
 
 \input{MethodologyReassessment/artifacts/original-paper/tables/mc_max.tex}
 
-As well as for the memory footprint, \textbf{microTEDAclus} and \textbf{CluStream} are indistinguishable from the worst model in many datasets, while \textbf{DenStream} and \textbf{StreamKM} are indistinguishable from the best model in some of them, shows \cref{tab:original-paper_mc_max}.
+As well as for the memory footprint, \MicroTEDAClus and \CluStream are indistinguishable from the worst model in many datasets, while \DenStream and \StreamKM are indistinguishable from the best model in some of them, shows \cref{tab:original-paper_mc_max}.
 
 \input{MethodologyReassessment/artifacts/original-paper/tables/mc_penultimate.tex}
 
 
-Under steady-state, \textbf{CluStream} is a clear loser, being indistinguishable from the worst model for four out of six datasets, while \textbf{DenStream} is a clear winner, as indistiguishable from the best model for four dataset. \textbf{StreamKM} scores closer to \textbf{DenStream} in all datasets, and \textbf{microTEDAclus} sits in the higher end, closer to \textbf{CluStream} than to \textbf{DenStream}, as shown in \cref{tab:original-paper_mc_penultimate}.
+Under steady-state, \CluStream is a clear loser, being indistinguishable from the worst model for four out of six datasets, while \DenStream is a clear winner, as indistiguishable from the best model for four dataset. \StreamKM scores closer to \DenStream in all datasets, and \MicroTEDAClus sits in the higher end, closer to \CluStream than to \DenStream, as shown in \cref{tab:original-paper_mc_penultimate}.
 
 Finally, \cref{fig:orig_mc_scalability_a,fig:orig_mc_scalability_b} show the evolution of the microcluster counts under expanding sample volumes and feature dimensions.
 
@@ -986,7 +986,7 @@ Finally, \cref{fig:orig_mc_scalability_a,fig:orig_mc_scalability_b} show the evo
     \label{fig:orig_mc_scalability_a}
 \end{figure}
 
-Similarly to the memory footprint and execution time, \textbf{microTEDAclus}'s microcluster count is similar to \textbf{CluStream}'s for 2 feature dimensions, and drastically decreases for 64 feature dimensions, as shown in \cref{fig:orig_mc_scalability_a}.
+Similarly to the memory footprint and execution time, \MicroTEDAClus's microcluster count is similar to \CluStream's for 2 feature dimensions, and drastically decreases for 64 feature dimensions, as shown in \cref{fig:orig_mc_scalability_a}.
 
 \begin{figure}[htbp]
     \centering
@@ -996,14 +996,14 @@ Similarly to the memory footprint and execution time, \textbf{microTEDAclus}'s m
     \label{fig:orig_mc_scalability_b}
 \end{figure}
 
-Unexpectedly, \textbf{CluStream}'s microcluster count is the only one that increases as the feature dimension increases. \textbf{microTEDAclus} and \textbf{DenStream} microcluster counts decrease, while \textbf{StreamKM}'s microcluster count remains stable through the entire range of feature dimensions, as shown in \cref{fig:orig_mc_scalability_b}. Against the memory profiles, such behavior indicates that \textbf{StreamKM} and \textbf{DenStream} tradeoff smaller but more numerous microclusters for more complex but fewer microclusters. This characteristic makes the microcluster count a less reliable proxy for the memory footprint for those models, as the memory consumption is more dependent on the microcluster's internal data structures than on their count.
+Unexpectedly, \CluStream's microcluster count is the only one that increases as the feature dimension increases. \MicroTEDAClus and \DenStream microcluster counts decrease, while \StreamKM's microcluster count remains stable through the entire range of feature dimensions, as shown in \cref{fig:orig_mc_scalability_b}. Against the memory profiles, such behavior indicates that \StreamKM and \DenStream tradeoff smaller but more numerous microclusters for more complex but fewer microclusters. This characteristic makes the microcluster count a less reliable proxy for the memory footprint for those models, as the memory consumption is more dependent on the microcluster's internal data structures than on their count.
 
-With all those metrics under consideration, \textbf{microTEDAclus}'s current mathematical formulation and implementation is shown to be frequently outperformed by another model. Furthermore, it does not stand out in any of the evaluated metrics. \textbf{CluStream} achieve competitive ARI scores, and \textbf{DenStream} is the most memory-efficient model. \textbf{StreamKM} is clearly the best model between those, as it is the sole winner in many metrics and is not a clear loser in any of them. The following section evaluates the TEDA-based models, which are expected to be more similar to \textbf{microTEDAclus} than the other models.
+With all those metrics under consideration, \MicroTEDAClus's current mathematical formulation and implementation is shown to be frequently outperformed by another model. Furthermore, it does not stand out in any of the evaluated metrics. \CluStream achieve competitive ARI scores, and \DenStream is the most memory-efficient model. \StreamKM is clearly the best model between those, as it is the sole winner in many metrics and is not a clear loser in any of them. The following section evaluates the TEDA-based models, which are expected to be more similar to \MicroTEDAClus than the other models.
 
 % ---------------------------------------------------------
 \subsection{TEDA-based Models}
 
-The TEDA-based model set is composed of \textbf{microTEDAclus}, \textbf{AutoCloud}, \textbf{CEDAS}, and \textbf{TEDACloud}. The goal of this analysis is to evaluate the performance of the original work's model against other models that share the same theoretical foundation, and to identify whether the observed performance issues are specific to \textbf{microTEDAclus} or are inherent to the TEDA-based approach.
+The TEDA-based model set is composed of \MicroTEDAClus, \AutoCloud, \CEDAS, and \TEDACloud. The goal of this analysis is to evaluate the performance of the original work's model against other models that share the same theoretical foundation, and to identify whether the observed performance issues are specific to \MicroTEDAClus or are inherent to the TEDA-based approach.
 
 \subsubsection{Clustering Quality}
 
@@ -1014,9 +1014,9 @@ The evaluation of the overall adjusted rand index, as well as it across the penu
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/ari_fifth.tex}
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/ari_diff.tex}
 
-In tables \cref{tab:teda-micro-based_ari_overall,tab:teda-micro-based_ari_penultimate,tab:teda-micro-based_ari_fifth}, \textbf{microTEDAclus} achieves competitive scores and is indistinguishable from the best model in many datasets, while \textbf{TEDACloud} matches its performance only under the penultimate batch's ARI. \textbf{CEDAS} and \textbf{AutoCloud} are indistinguishable from the worst model in most datasets. For the ARI drop, \textbf{microTEDAclus} is indistinguishable from the worst model in all datasets, and the sole worst in five of them. \textbf{AutoCloud}, \textbf{CEDAS}, and \textbf{TEDACloud} compete closer to each other, and a clear winner is not identified.
+In tables \cref{tab:teda-micro-based_ari_overall,tab:teda-micro-based_ari_penultimate,tab:teda-micro-based_ari_fifth}, \MicroTEDAClus achieves competitive scores and is indistinguishable from the best model in many datasets, while \TEDACloud matches its performance only under the penultimate batch's ARI. \CEDAS and \AutoCloud are indistinguishable from the worst model in most datasets. For the ARI drop, \MicroTEDAClus is indistinguishable from the worst model in all datasets, and the sole worst in five of them. \AutoCloud, \CEDAS, and \TEDACloud compete closer to each other, and a clear winner is not identified.
 
-\Cref{fig:teda_ari_scalability_a,fig:teda_ari_scalability_b} demonstrate how clustering quality scales with respect to sample size and feature dimensions. It shows that in lower dimensionality spaces, \textbf{microTEDAclus} and \textbf{CEDAS} achieve a similarly high score, while \textbf{AutoCloud} and \textbf{TEDACloud}'s ARI are lower. In higher dimensionality spaces, however, \textbf{microTEDAclus}'s performance degrades drastically, achieving the worst score among the TEDA-based models for the final samples. \textbf{CEDAS}'s performance is not affected by the dimensionality, and \textbf{TEDACloud}'s score is higher for the initial batches, but degrades as the stream progresses.
+\Cref{fig:teda_ari_scalability_a,fig:teda_ari_scalability_b} demonstrate how clustering quality scales with respect to sample size and feature dimensions. It shows that in lower dimensionality spaces, \MicroTEDAClus and \CEDAS achieve a similarly high score, while \AutoCloud and \TEDACloud's ARI are lower. In higher dimensionality spaces, however, \MicroTEDAClus's performance degrades drastically, achieving the worst score among the TEDA-based models for the final samples. \CEDAS's performance is not affected by the dimensionality, and \TEDACloud's score is higher for the initial batches, but degrades as the stream progresses.
 
 \begin{figure}[htbp]
     \centering
@@ -1036,7 +1036,7 @@ In tables \cref{tab:teda-micro-based_ari_overall,tab:teda-micro-based_ari_penult
 
 \subsubsection{Execution Time}
 
-\Cref{tab:teda-micro-based_time_predict_cum_ms,tab:teda-micro-based_time_fit_cum_ms} summarize the cumulative processing times required for the prediction and model fitting operations. For both stages, \textbf{microTEDAclus} and \textbf{AutoCloud} are indistinguishable from the worst model in most datasets, and \textbf{CEDAS} is the sole best model in all of them.
+\Cref{tab:teda-micro-based_time_predict_cum_ms,tab:teda-micro-based_time_fit_cum_ms} summarize the cumulative processing times required for the prediction and model fitting operations. For both stages, \MicroTEDAClus and \AutoCloud are indistinguishable from the worst model in most datasets, and \CEDAS is the sole best model in all of them.
 
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/time_predict_cum_ms.tex}
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/time_fit_cum_ms.tex}
@@ -1053,7 +1053,7 @@ The scaling behavior of these execution times across varying stream lengths and 
     \label{fig:teda_time_scalability_a}
 \end{figure}
 
-In \cref{fig:teda_time_scalability_a}, \textbf{AutoCloud} exibits the highest execution times for both stages for 2-dimensional data, with high variability between runs. \textbf{microTEDAclus} is the second slowest model in this feature set, but its execution time is more stable. For 64-dimensional data, \textbf{CEDAS} prediction and \textbf{microTEDAclus} fit times predominate. Furthermore, \textbf{AutoCloud}'s variability is not reduced.
+In \cref{fig:teda_time_scalability_a}, \AutoCloud exibits the highest execution times for both stages for 2-dimensional data, with high variability between runs. \MicroTEDAClus is the second slowest model in this feature set, but its execution time is more stable. For 64-dimensional data, \CEDAS prediction and \MicroTEDAClus fit times predominate. Furthermore, \AutoCloud's variability is not reduced.
 
 \begin{figure}[htbp]
     \centering
@@ -1065,7 +1065,7 @@ In \cref{fig:teda_time_scalability_a}, \textbf{AutoCloud} exibits the highest ex
     \label{fig:teda_time_scalability_b}
 \end{figure}
 
-While \textbf{TEDACloud} and \textbf{microTEDAclus} exibit a nearly stable execution time for both stages across the entire range of feature dimensions, \textbf{CEDAS} shows a clear increasing trend, in \cref{fig:teda_time_scalability_b}. It is also important to note that \textbf{AutoCloud}'s curve indicates pessimality for feature dimensions lower than 32, but it is tied with \textbf{TEDACloud} as the fastest model in higher dimensionality spaces.
+While \TEDACloud and \MicroTEDAClus exibit a nearly stable execution time for both stages across the entire range of feature dimensions, \CEDAS shows a clear increasing trend, in \cref{fig:teda_time_scalability_b}. It is also important to note that \AutoCloud's curve indicates pessimality for feature dimensions lower than 32, but it is tied with \TEDACloud as the fastest model in higher dimensionality spaces.
 
 \subsubsection{Memory Footprint}
 
@@ -1074,9 +1074,9 @@ As for memory requirements, the algorithms' maximum and steady-state allocations
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/memory_max_bytes.tex}
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/memory_penultimate_bytes.tex}
 
-Similarly to the execution time, \textbf{microTEDAclus} and \textbf{AutoCloud} are indistinguishable from the worst model in most datasets. In both \cref{tab:teda-micro-based_memory_max_bytes,tab:teda-micro-based_memory_penultimate_bytes}, however, differently from the execution time, \textbf{CEDAS} and \textbf{TEDACloud} alternate between being the sole best and sharing such rank between them.
+Similarly to the execution time, \MicroTEDAClus and \AutoCloud are indistinguishable from the worst model in most datasets. In both \cref{tab:teda-micro-based_memory_max_bytes,tab:teda-micro-based_memory_penultimate_bytes}, however, differently from the execution time, \CEDAS and \TEDACloud alternate between being the sole best and sharing such rank between them.
 
-\Cref{fig:teda_mem_scalability_a,fig:teda_mem_scalability_b} map the spatial scalability against increasing data volume and feature space. Under two features, \textbf{AutoCloud}'s memory usage increases unboundedly, reaching \textbf{microTEDAclus}'s memory usage at nearly the midle batch. In 64 features, \textbf{CEDAS} and \textbf{microTEDAclus} are stable, but the more memory-consuming models. \textbf{TEDACloud} is the most memory-efficient and stable model for both feature sets. Memory consumption scales similarly to the execution time over the feature space: \textbf{CEDAS} is the only model for which memory consumption increases with the feature count, \textbf{TEDACloud} is stable, \textbf{microTEDAclus} decreases, and \textbf{AutoCloud} is pessimal for dimensions lower than 32.
+\Cref{fig:teda_mem_scalability_a,fig:teda_mem_scalability_b} map the spatial scalability against increasing data volume and feature space. Under two features, \AutoCloud's memory usage increases unboundedly, reaching \MicroTEDAClus's memory usage at nearly the midle batch. In 64 features, \CEDAS and \MicroTEDAClus are stable, but the more memory-consuming models. \TEDACloud is the most memory-efficient and stable model for both feature sets. Memory consumption scales similarly to the execution time over the feature space: \CEDAS is the only model for which memory consumption increases with the feature count, \TEDACloud is stable, \MicroTEDAClus decreases, and \AutoCloud is pessimal for dimensions lower than 32.
 
 \begin{figure}[htbp]
     \centering
@@ -1096,7 +1096,7 @@ Similarly to the execution time, \textbf{microTEDAclus} and \textbf{AutoCloud} a
 
 \subsubsection{Microcluster Dynamics}
 
-\Cref{tab:teda-micro-based_mc_max,tab:teda-micro-based_mc_penultimate} present the algorithms' internal summarization profiles through their peak and steady-state microcluster counts. Those results, as well as the ones in \cref{fig:teda_mc_scalability_a,fig:teda_mc_scalability_b}, closely match the memory footprint results, as the microcluster count is the main source of memory consumption for those models. \textbf{CEDAS} and \textbf{TEDACloud} are the most memory-efficient models, while \textbf{microTEDAclus} and \textbf{AutoCloud} are the most memory-consuming ones.
+\Cref{tab:teda-micro-based_mc_max,tab:teda-micro-based_mc_penultimate} present the algorithms' internal summarization profiles through their peak and steady-state microcluster counts. Those results, as well as the ones in \cref{fig:teda_mc_scalability_a,fig:teda_mc_scalability_b}, closely match the memory footprint results, as the microcluster count is the main source of memory consumption for those models. \CEDAS and \TEDACloud are the most memory-efficient models, while \MicroTEDAClus and \AutoCloud are the most memory-consuming ones.
 
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/mc_max.tex}
 \input{MethodologyReassessment/artifacts/teda-micro-based/tables/mc_penultimate.tex}
@@ -1122,9 +1122,9 @@ Similarly to the execution time, \textbf{microTEDAclus} and \textbf{AutoCloud} a
 
 \subsubsection{Clustering Quality}
 
-\Cref{tab:all_ari_overall} shows that \textbf{TEDACloud} is the sole best model on \textbf{Benchmark(1)} and \textbf{RandomRBFGeneratorEvents}, \textbf{StreamKM} is the sole best on \textbf{cassini}, and \textbf{CluStream} ties with \textbf{StreamKM} on \textbf{chameleon\_ds8} and \textbf{chameleon\_ds7} and with \textbf{MicroTEDAClus} on \textbf{Benchmark(2)}. \textbf{CEDAS} is indistinguishable from the worst model on five of the six datasets and \textbf{AutoCloud} on four, extending to the complete model set the poor overall performance already reported for both within their own subsets. \Cref{tab:all_ari_penultimate} shows a comparable picture at the penultimate batch: \textbf{CluStream} and \textbf{StreamKM} are each indistinguishable from the best model on four datasets, while \textbf{TEDACloud} is the sole winner only on \textbf{RandomRBFGeneratorEvents}; \textbf{CEDAS} and \textbf{AutoCloud} remain indistinguishable from the worst model on five and four datasets, respectively.
+\Cref{tab:all_ari_overall} shows that \TEDACloud is the sole best model on \textbf{Benchmark(1)} and \textbf{RandomRBFGeneratorEvents}, \StreamKM is the sole best on \Cassini, and \CluStream ties with \StreamKM on \textbf{chameleon\_ds8} and \textbf{chameleon\_ds7} and with \MicroTEDAClus on \textbf{Benchmark(2)}. \CEDAS is indistinguishable from the worst model on five of the six datasets and \AutoCloud on four, extending to the complete model set the poor overall performance already reported for both within their own subsets. \Cref{tab:all_ari_penultimate} shows a comparable picture at the penultimate batch: \CluStream and \StreamKM are each indistinguishable from the best model on four datasets, while \TEDACloud is the sole winner only on \textbf{RandomRBFGeneratorEvents}; \CEDAS and \AutoCloud remain indistinguishable from the worst model on five and four datasets, respectively.
 
-At the fifth batch, \cref{tab:all_ari_fifth} shows a less stable ranking, with \textbf{CluStream} indistinguishable from the best model on three datasets and \textbf{CEDAS}, \textbf{TEDACloud}, \textbf{MicroTEDAClus}, and \textbf{StreamKM} each claiming that rank on at least one; \textbf{DenStream} is indistinguishable from the worst model on all datasets but \textbf{RandomRBFGeneratorEvents}. Regarding stability to concept drift, \cref{tab:all_ari_diff} shows \textbf{DenStream} and \textbf{CEDAS} each indistinguishable from the best model on three datasets and \textbf{AutoCloud} on two, while \textbf{MicroTEDAClus} is indistinguishable from the worst model on all six datasets -- a stronger result than within the original work's model subset, where it held that rank on only half of the datasets, indicating that its concept-drift instability is not an artifact of the smaller model subsets considered earlier.
+At the fifth batch, \cref{tab:all_ari_fifth} shows a less stable ranking, with \CluStream indistinguishable from the best model on three datasets and \CEDAS, \TEDACloud, \MicroTEDAClus, and \StreamKM each claiming that rank on at least one; \DenStream is indistinguishable from the worst model on all datasets but \textbf{RandomRBFGeneratorEvents}. Regarding stability to concept drift, \cref{tab:all_ari_diff} shows \DenStream and \CEDAS each indistinguishable from the best model on three datasets and \AutoCloud on two, while \MicroTEDAClus is indistinguishable from the worst model on all six datasets -- a stronger result than within the original work's model subset, where it held that rank on only half of the datasets, indicating that its concept-drift instability is not an artifact of the smaller model subsets considered earlier.
 
 \input{MethodologyReassessment/artifacts/all/tables/ari_overall.tex}
 \input{MethodologyReassessment/artifacts/all/tables/ari_penultimate.tex}
@@ -1147,11 +1147,11 @@ At the fifth batch, \cref{tab:all_ari_fifth} shows a less stable ranking, with \
     \label{fig:all_ari_scalability_b}
 \end{figure}
 
-The scalability plots corroborate these results. In \cref{fig:all_ari_scalability_a}, for 2 feature dimensions \textbf{CEDAS} attains the highest scores throughout the stream, closely trailed by \textbf{CluStream}, \textbf{StreamKM}, and \textbf{MicroTEDAClus}, while \textbf{TEDACloud} and \textbf{AutoCloud} remain at intermediate levels and \textbf{DenStream} only recovers from zero after the first 1000 samples. For 64 dimensions, \textbf{CEDAS}, \textbf{CluStream}, and \textbf{StreamKM} sustain near-perfect scores across the entire stream, while \textbf{MicroTEDAClus} degrades from a competitive score to zero after approximately 1000 samples, reproducing the dimensionality-induced collapse already reported for the original work's model set. In \cref{fig:all_ari_scalability_b}, \textbf{MicroTEDAClus} displays the non-monotonic degradation already identified within the TEDA-based subset for 64 features, drastically declining after 16 dimensions, while \textbf{CluStream}, \textbf{StreamKM}, and \textbf{CEDAS} steadily converge toward an ARI of 1 as the feature count grows; \textbf{AutoCloud} remains flat across the whole range, and \textbf{DenStream} only attains non-zero scores for a narrow band of low dimensions.
+The scalability plots corroborate these results. In \cref{fig:all_ari_scalability_a}, for 2 feature dimensions \CEDAS attains the highest scores throughout the stream, closely trailed by \CluStream, \StreamKM, and \MicroTEDAClus, while \TEDACloud and \AutoCloud remain at intermediate levels and \DenStream only recovers from zero after the first 1000 samples. For 64 dimensions, \CEDAS, \CluStream, and \StreamKM sustain near-perfect scores across the entire stream, while \MicroTEDAClus degrades from a competitive score to zero after approximately 1000 samples, reproducing the dimensionality-induced collapse already reported for the original work's model set. In \cref{fig:all_ari_scalability_b}, \MicroTEDAClus displays the non-monotonic degradation already identified within the TEDA-based subset for 64 features, drastically declining after 16 dimensions, while \CluStream, \StreamKM, and \CEDAS steadily converge toward an ARI of 1 as the feature count grows; \AutoCloud remains flat across the whole range, and \DenStream only attains non-zero scores for a narrow band of low dimensions.
 
 \subsubsection{Execution Time}
 
-\cref{tab:all_time_predict_cum_ms} shows that \textbf{StreamKM} is the sole or tied-fastest model for prediction on all six datasets, while \textbf{AutoCloud} is indistinguishable from the worst model on five of them, exhibiting the highest variance among the evaluated models. \cref{tab:all_time_fit_cum_ms} shows an analogous pattern for fitting, with \textbf{CEDAS} the sole or tied-fastest model on every dataset. Differently from the original work's model subset, where \textbf{microTEDAclus} was the sole slowest fitter on all six datasets, under the complete model set it is indistinguishable from the worst model on four of them, while \textbf{AutoCloud} takes over as the pessimal fitter on five, indicating that \textbf{microTEDAclus}'s fitting overhead, although still substantial, is exceeded by \textbf{AutoCloud}'s once the additional models are considered.
+\Cref{tab:all_time_predict_cum_ms} shows that \StreamKM is the sole or tied-fastest model for prediction on all six datasets, while \AutoCloud is indistinguishable from the worst model on five of them, exhibiting the highest variance among the evaluated models. \Cref{tab:all_time_fit_cum_ms} shows an analogous pattern for fitting, with \CEDAS the sole or tied-fastest model on every dataset. Differently from the original work's model subset, where \MicroTEDAClus was the sole slowest fitter on all six datasets, under the complete model set it is indistinguishable from the worst model on four of them, while \AutoCloud takes over as the pessimal fitter on five, indicating that \MicroTEDAClus's fitting overhead, although still substantial, is exceeded by \AutoCloud's once the additional models are considered.
 
 \input{MethodologyReassessment/artifacts/all/tables/time_predict_cum_ms.tex}
 \input{MethodologyReassessment/artifacts/all/tables/time_fit_cum_ms.tex}
@@ -1176,11 +1176,11 @@ The scalability plots corroborate these results. In \cref{fig:all_ari_scalabilit
     \label{fig:all_time_scalability_b}
 \end{figure}
 
-\cref{fig:all_time_scalability_a} shows the sample-scalability of both stages. For 2 feature dimensions, \textbf{AutoCloud} is roughly an order of magnitude slower than the remaining models in both stages, followed by \textbf{MicroTEDAClus}; \textbf{StreamKM}, \textbf{CEDAS}, and \textbf{TEDACloud} remain the fastest, and \textbf{DenStream} shows a marked transient spike in fitting time around the 900th sample. At 64 dimensions, \textbf{CluStream} becomes the slowest model for both stages, while \textbf{MicroTEDAClus}'s execution time decreases as the stream progresses, eventually falling below \textbf{CEDAS} and \textbf{StreamKM}. Regarding feature-scalability, \cref{fig:all_time_scalability_b} shows \textbf{AutoCloud} pessimal for dimensions up to 16, after which its execution time collapses for both the tenth and the penultimate batches, mirroring the behavior already reported for the TEDA-based subset. \textbf{CluStream} becomes the slowest model beyond 32 dimensions for both stages, exceeding 1 second at 128 features. \textbf{MicroTEDAClus} peaks at low dimensionality and then steadily decreases, consistent with the dimensionality-driven microcluster collapse described in \cref{sss:dimensionality_penalty}, while \textbf{CEDAS}, \textbf{TEDACloud}, \textbf{DenStream}, and \textbf{StreamKM} increase more gradually across the evaluated range.
+\Cref{fig:all_time_scalability_a} shows the sample-scalability of both stages. For 2 feature dimensions, \AutoCloud is roughly an order of magnitude slower than the remaining models in both stages, followed by \MicroTEDAClus; \StreamKM, \CEDAS, and \TEDACloud remain the fastest, and \DenStream shows a marked transient spike in fitting time around the 900th sample. At 64 dimensions, \CluStream becomes the slowest model for both stages, while \MicroTEDAClus's execution time decreases as the stream progresses, eventually falling below \CEDAS and \StreamKM. Regarding feature-scalability, \cref{fig:all_time_scalability_b} shows \AutoCloud pessimal for dimensions up to 16, after which its execution time collapses for both the tenth and the penultimate batches, mirroring the behavior already reported for the TEDA-based subset. \CluStream becomes the slowest model beyond 32 dimensions for both stages, exceeding 1 second at 128 features. \MicroTEDAClus peaks at low dimensionality and then steadily decreases, consistent with the dimensionality-driven microcluster collapse described in \cref{subsubsec:dimensionality_penalty}, while \CEDAS, \TEDACloud, \DenStream, and \StreamKM increase more gradually across the evaluated range.
 
 \subsubsection{Memory Footprint}
 
-\cref{tab:all_memory_max_bytes} shows that \textbf{TEDACloud} is indistinguishable from the best model on four of the six datasets, closely followed by \textbf{CEDAS} with the same count, whereas \textbf{DenStream} -- the most memory-efficient model within the original work's model subset -- is never the sole best model once the TEDA-based models are included. \textbf{MicroTEDAClus} is indistinguishable from the worst model on five of the six datasets, and \textbf{CluStream} and \textbf{AutoCloud} occupy that rank on three and four datasets, respectively. \cref{tab:all_memory_penultimate_bytes} corroborates this ranking at steady state, with \textbf{TEDACloud} indistinguishable from the best model on five datasets.
+\Cref{tab:all_memory_max_bytes} shows that \TEDACloud is indistinguishable from the best model on four of the six datasets, closely followed by \CEDAS with the same count, whereas \DenStream -- the most memory-efficient model within the original work's model subset -- is never the sole best model once the TEDA-based models are included. \MicroTEDAClus is indistinguishable from the worst model on five of the six datasets, and \CluStream and \AutoCloud occupy that rank on three and four datasets, respectively. \Cref{tab:all_memory_penultimate_bytes} corroborates this ranking at steady state, with \TEDACloud indistinguishable from the best model on five datasets.
 
 \input{MethodologyReassessment/artifacts/all/tables/memory_max_bytes.tex}
 \input{MethodologyReassessment/artifacts/all/tables/memory_penultimate_bytes.tex}
@@ -1201,11 +1201,11 @@ The scalability plots corroborate these results. In \cref{fig:all_ari_scalabilit
     \label{fig:all_mem_scalability_b}
 \end{figure}
 
-\cref{fig:all_mem_scalability_a} shows that, for 2 feature dimensions, \textbf{MicroTEDAClus} peaks around the 700th sample and subsequently decreases to a level comparable with \textbf{CluStream}'s stable footprint, while \textbf{AutoCloud} grows unboundedly throughout the stream and overtakes both by its end. For 64 dimensions, \textbf{CluStream} maintains the highest and most stable footprint, whereas \textbf{MicroTEDAClus} again peaks early and then decreases until it converges with \textbf{CEDAS}, reproducing the dimensionality-driven memory reduction already discussed for the original work's model set. \cref{fig:all_mem_scalability_b} shows \textbf{CluStream} becoming the most memory-consuming model beyond roughly 8 feature dimensions, while \textbf{AutoCloud} is pessimal for dimensions up to 16 before its footprint collapses at 32, consistent with its execution-time pattern. \textbf{MicroTEDAClus} peaks at low dimensionality and decreases thereafter, while \textbf{CEDAS}, \textbf{DenStream}, and \textbf{TEDACloud} remain the most memory-efficient models across the whole range, and \textbf{StreamKM} increases more gradually than \textbf{CluStream}.
+\Cref{fig:all_mem_scalability_a} shows that, for 2 feature dimensions, \MicroTEDAClus peaks around the 700th sample and subsequently decreases to a level comparable with \CluStream's stable footprint, while \AutoCloud grows unboundedly throughout the stream and overtakes both by its end. For 64 dimensions, \CluStream maintains the highest and most stable footprint, whereas \MicroTEDAClus again peaks early and then decreases until it converges with \CEDAS, reproducing the dimensionality-driven memory reduction already discussed for the original work's model set. \Cref{fig:all_mem_scalability_b} shows \CluStream becoming the most memory-consuming model beyond roughly 8 feature dimensions, while \AutoCloud is pessimal for dimensions up to 16 before its footprint collapses at 32, consistent with its execution-time pattern. \MicroTEDAClus peaks at low dimensionality and decreases thereafter, while \CEDAS, \DenStream, and \TEDACloud remain the most memory-efficient models across the whole range, and \StreamKM increases more gradually than \CluStream.
 
 \subsubsection{Microcluster Dynamics}
 
-\cref{tab:all_mc_max} shows that \textbf{DenStream} is indistinguishable from the best model on four of the six datasets, while \textbf{CEDAS} and \textbf{TEDACloud} share that rank on \textbf{Benchmark(1)} and \textbf{Benchmark(2)}. \textbf{CluStream} and \textbf{AutoCloud} are indistinguishable from the worst model on three datasets each, whereas \textbf{MicroTEDAClus} holds that rank on only two -- a markedly smaller share than observed for the memory footprint, indicating that its microcluster count is a less reliable proxy for its memory consumption than for the other models. \cref{tab:all_mc_penultimate} corroborates this pattern at steady state, with \textbf{MicroTEDAClus} indistinguishable from the worst model on a single dataset only.
+\Cref{tab:all_mc_max} shows that \DenStream is indistinguishable from the best model on four of the six datasets, while \CEDAS and \TEDACloud share that rank on \textbf{Benchmark(1)} and \textbf{Benchmark(2)}. \CluStream and \AutoCloud are indistinguishable from the worst model on three datasets each, whereas \MicroTEDAClus holds that rank on only two -- a markedly smaller share than observed for the memory footprint, indicating that its microcluster count is a less reliable proxy for its memory consumption than for the other models. \Cref{tab:all_mc_penultimate} corroborates this pattern at steady state, with \MicroTEDAClus indistinguishable from the worst model on a single dataset only.
 
 \input{MethodologyReassessment/artifacts/all/tables/mc_max.tex}
 \input{MethodologyReassessment/artifacts/all/tables/mc_penultimate.tex}
@@ -1226,39 +1226,44 @@ The scalability plots corroborate these results. In \cref{fig:all_ari_scalabilit
     \label{fig:all_mc_scalability_b}
 \end{figure}
 
-\cref{fig:all_mc_scalability_a} shows that, for 2 feature dimensions, \textbf{AutoCloud}'s microcluster count grows unboundedly across the stream, while \textbf{MicroTEDAClus} peaks around the early before decreasing toward \textbf{CluStream}'s stable count. For 64 dimensions, \textbf{CluStream} remains the model with the largest count, whereas \textbf{MicroTEDAClus} again peaks early and subsequently decreases below \textbf{StreamKM} and \textbf{CEDAS}. \cref{fig:all_mc_scalability_b} shows \textbf{AutoCloud} pessimal for dimensions up to 16, collapsing sharply at 32, while \textbf{CluStream} increases slightly, approaching 200 microclusters at 128 features. \textbf{MicroTEDAClus} peaks at low dimensionality and decreases thereafter, mirroring its memory and execution-time behavior, while \textbf{CEDAS} and \textbf{StreamKM} remain comparatively stable and \textbf{TEDACloud} and \textbf{DenStream} sustain the smallest counts across the whole range.
+\Cref{fig:all_mc_scalability_a} shows that, for 2 feature dimensions, \AutoCloud's microcluster count grows unboundedly across the stream, while \MicroTEDAClus peaks around the early before decreasing toward \CluStream's stable count. For 64 dimensions, \CluStream remains the model with the largest count, whereas \MicroTEDAClus again peaks early and subsequently decreases below \StreamKM and \CEDAS. \Cref{fig:all_mc_scalability_b} shows \AutoCloud pessimal for dimensions up to 16, collapsing sharply at 32, while \CluStream increases slightly, approaching 200 microclusters at 128 features. \MicroTEDAClus peaks at low dimensionality and decreases thereafter, mirroring its memory and execution-time behavior, while \CEDAS and \StreamKM remain comparatively stable and \TEDACloud and \DenStream sustain the smallest counts across the whole range.
 
-Contrasting both model subsets, no single one is uniformly preferable across all metrics. The original work's model set is stronger under clustering quality, as \textbf{StreamKM} and \textbf{CluStream} are the most frequent ARI winners, but it is comparatively costly in memory and microcluster count. The TEDA-based set, excluding \textbf{MicroTEDAClus} and \textbf{AutoCloud}, trades clustering quality for efficiency: \textbf{TEDACloud} dominates the memory footprint, \textbf{CEDAS} dominates fitting time, and \textbf{DenStream} dominates the microcluster count, yet \textbf{CEDAS} is indistinguishable from the worst model on five of the six datasets under the overall ARI, despite being fast and compact. Within the complete model set, \textbf{StreamKM} is the closest to an overall best model, being the sole or tied-fastest predictor on all six datasets, competitive to the best model on most ARI tables, and never indistinguishable from the worst model for memory or microcluster count, although it is not dominant, since \textbf{TEDACloud} surpasses it in memory, \textbf{CEDAS} surpasses it in fitting time, and \textbf{CluStream} occasionally surpasses it in ARI. Conversely, \textbf{MicroTEDAClus} and \textbf{AutoCloud} are the clear laggards, each indistinguishable from the worst model on a majority of datasets across most metrics, with \textbf{MicroTEDAClus} further exhibiting the dimensionality-driven collapse in quality, time, and memory discussed throughout this section. These results support a trade-off between clustering quality and computational footprint rather than a strict dominance relation among models or subsets, except at the lower end, where \textbf{MicroTEDAClus} and \textbf{AutoCloud} are dominated by nearly every alternative under nearly every metric.
+Contrasting both model subsets, no single one is uniformly preferable across all metrics. The original work's model set is stronger under clustering quality, as \StreamKM and \CluStream are the most frequent ARI winners, but it is comparatively costly in memory and microcluster count. The TEDA-based set, excluding \MicroTEDAClus and \AutoCloud, trades clustering quality for efficiency: \TEDACloud dominates the memory footprint, \CEDAS dominates fitting time, and \DenStream dominates the microcluster count, yet \CEDAS is indistinguishable from the worst model on five of the six datasets under the overall ARI, despite being fast and compact. Within the complete model set, \StreamKM is the closest to an overall best model, being the sole or tied-fastest predictor on all six datasets, competitive to the best model on most ARI tables, and never indistinguishable from the worst model for memory or microcluster count, although it is not dominant, since \TEDACloud surpasses it in memory, \CEDAS surpasses it in fitting time, and \CluStream occasionally surpasses it in ARI. Conversely, \MicroTEDAClus and \AutoCloud are the clear laggards, each indistinguishable from the worst model on a majority of datasets across most metrics, with \MicroTEDAClus further exhibiting the dimensionality-driven collapse in quality, time, and memory discussed throughout this section. These results support a trade-off between clustering quality and computational footprint rather than a strict dominance relation among models or subsets, except at the lower end, where \MicroTEDAClus and \AutoCloud are dominated by nearly every alternative under nearly every metric.
 
-Disaggregating the ARI results by dataset type reveals that model performance is not uniform across static and drifting streams. \textbf{CluStream} and \textbf{StreamKM} are the strongest models on the static, shape-based datasets \textbf{chameleon\_ds8}, \textbf{chameleon\_ds7}, and \textbf{cassini}, rarely or never indistinguishable from the worst model there, but their advantage narrows considerably on the concept-drift datasets \textbf{Benchmark(1)}, \textbf{RandomRBFGeneratorEvents}, and \textbf{Benchmark(2)}. Conversely, \textbf{TEDACloud} shows the clearest drift-specific strength, being indistinguishable from the best model on the drifting datasets in a third of the evaluated instances and never indistinguishable from the worst, while contributing neither best nor worst ranks on the static datasets. \textbf{CEDAS} follows a similar directional pattern, ranking as the worst model on the static datasets in most instances yet remaining comparatively competitive under drift. \textbf{AutoCloud} and \textbf{MicroTEDAClus} drastically fails in both static and drifting datasets.
+Disaggregating the ARI results by dataset type reveals that model performance is not uniform across static and drifting streams. \CluStream and \StreamKM are the strongest models on the static, shape-based datasets \textbf{chameleon\_ds8}, \textbf{chameleon\_ds7}, and \Cassini, rarely or never indistinguishable from the worst model there, but their advantage narrows considerably on the concept-drift datasets \textbf{Benchmark(1)}, \textbf{RandomRBFGeneratorEvents}, and \textbf{Benchmark(2)}. Conversely, \TEDACloud shows the clearest drift-specific strength, being indistinguishable from the best model on the drifting datasets in a third of the evaluated instances and never indistinguishable from the worst, while contributing neither best nor worst ranks on the static datasets. \CEDAS follows a similar directional pattern, ranking as the worst model on the static datasets in most instances yet remaining comparatively competitive under drift. \AutoCloud and \MicroTEDAClus drastically fails in both static and drifting datasets.
 
 \section{Parameter Variability} \label{sec:parameter_variability}
 
-The optimal hyperparameter configuration mapped by the prequential tuning phase is subject to variance across the $N=94$ independent evaluations. To assess the stability of the algorithms' parameter spaces, the dispersion of the selected hyperparameters is evaluated. For each parameter chosen for a model on a dataset, the sample median is reported alongside the interquartile range. To enable comparability across disparate hyperparameter scales and units, the dimensionless Quartile Coefficient of Dispersion is computed as:
+Data stream clustering algorithms frequently depend on stochastic optimization procedures and rigid topological initializations. Consequently, the optimal hyperparameter configuration mapped by the prequential tuning phase is subject to variance across the $N=94$ independent evaluations. To assess the behavior of the selected parameters under different stream dynamics, the dispersion of each hyperparameter is examined separately for datasets with and without concept drift.
+
+For each parameter chosen by a model on a dataset, the sample median is reported alongside the interquartile range. To enable comparability across disparate hyperparameter scales and units, the dimensionless Quartile Coefficient of Dispersion is computed as
 
 \begin{equation}
-\text{QCD} = \frac{Q_3 - Q_1}{Q_3 + Q_1}
+\text{QCD} = \frac{Q_3-Q_1}{Q_3+Q_1}.
 \end{equation}
 
-To provide a unified comparison of overall parameter space stability, the scalar sums of the QCDs across all parameters for each model are aggregated in \cref{tab:qcd_sum}. Because the QCD is a population-level aggregate rather than a run-level paired observation, non-parametric statistical significance testing is mathematically inapplicable. Furthermore, the dimensionality penalty introduced by the summation is accepted as an artifact that favors models with fewer hyperparameters, a characteristic that is often desirable in practice, as it reduces the burden of hyperparameter tuning \cite{andonie2019hyperparameter,tran2020hyperparameter}.
-
-\input{MethodologyReassessment/artifacts/parameters/qcd_sum.tex}
-
-\Cref{tab:qcd_sum} shows substantial differences in hyperparameter stability among the evaluated models. \textbf{AutoCloud} exhibits the isolated lowest aggregate dispersion, with QCD sums below \(0.2\) for every dataset and the absolute minimum on four of the six datasets. \textbf{TEDACloud} follows closely, with similarly low values throughout, while \textbf{DenStream} occupies an intermediate position. In contrast, \textbf{StreamKM} consistently presents the highest aggregate dispersion, attaining the absolute maximum on every dataset. \textbf{CEDAS}, \textbf{CluStream}, and \textbf{MicroTEDAClus} also exhibit considerable variability, although their aggregate behavior differs across datasets. These results indicate that parameter stability is strongly model-dependent: some algorithms converge to relatively consistent configurations across independent evaluations, whereas others require substantially different configurations depending on the dataset and tuning run.
-
-The detailed parameter stability profiles containing the independent bounds for the evaluated suite are provided in \cref{tab:params_microtedaclus,tab:params_denstream,tab:params_clustream,tab:params_streamkm,tab:params_autocloud,tab:params_cedas,tab:params_tedacloud}.
+The detailed parameter profiles are presented in \cref{tab:params_microtedaclus,tab:params_denstream,tab:params_clustream,tab:params_streamkm,tab:params_autocloud,tab:params_cedas,tab:params_tedacloud}. The concept-drift group comprises \BenchmarkOne, \BenchmarkTwo, and \RandomRBFGeneratorEvents, whereas \Cassini, \ChameleonDSThree, and \ChameleonDSFour do not contain concept-drift events.
 
 \input{MethodologyReassessment/artifacts/parameters/MicroTEDAClus_parameters.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/parameters/DenStream_parameters.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/parameters/CluStream_parameters.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/parameters/StreamKM_parameters.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/parameters/AutoCloud_parameters.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/parameters/CEDAS_parameters.tex}
-\textcolor{red}{\dots}
 \input{MethodologyReassessment/artifacts/parameters/TEDACloud_parameters.tex}
-\textcolor{red}{\dots}
+
+For \MicroTEDAClus, both parameters exhibit greater dispersion in the concept-drift datasets. The QCD of \codename{decay} is $0.874$, $0.867$, and $0.936$ for the three drift datasets, compared with $0.566$, $0.514$, and $0.539$ without drift. Thus, the selected decay parameter varies substantially between runs under drift, whereas its dispersion is lower on the three non-drifting datasets. The central values, however, do not follow the same directional pattern: the drift datasets produce medians of $363$, $32.5$, and $1040$, while the non-drift datasets produce $35$, $422$, and $367$. The \codename{variance\_limit} parameter shows a similar dispersion pattern, with QCDs of $0.927$, $0.985$, and $0.586$ under drift and $0.437$, $0.228$, and $0.589$ without it. Its selected medians are also generally much smaller under drift. Therefore, for MicroTEDAClus, the two parameters are substantially more dispersed in the presence of concept drift, but their selected central values do not exhibit a common shift.
+
+For \CEDAS, the behavior differs between parameters. The \codename{codename\_period} parameter is highly dispersed on all three concept-drift datasets, with QCDs of $0.968$, $0.921$, and $0.947$. Without drift, its QCD is only $0.048$ for both Chameleon datasets, although it remains high for \Cassini at $0.936$. This indicates a pronounced increase in parameter variability under drift for the Benchmark and RBF datasets, but the static datasets themselves are not homogeneous. The \codename{min\_samples} parameter presents the opposite pattern: its QCD is $0.360$--$0.495$ under drift and $0.724$--$0.850$ without drift, indicating greater variation in the non-drifting cases. The same is observed for \codename{r0}, whose QCD ranges from $0.100$ to $0.303$ under drift but reaches $0.999$ and $1.000$ on the two Chameleon datasets. Consequently, CEDAS does not exhibit a uniform drift-related increase or decrease in parameter variability; the effect depends strongly on the parameter and dataset.
+
+For \CluStream, the distinction between the two conditions is comparatively weak. The QCD of \codename{max\_micro\_clusters} is $0.421$, $0.414$, and $0.490$ under drift and $0.501$, $0.341$, and $0.377$ without drift. The values therefore remain in a similar range, with no consistent separation between the two conditions. \codename{micro\_cluster\_r\_factor} is somewhat more dispersed under drift, with QCDs of $0.455$, $0.500$, and $0.385$, compared with $0.455$, $0.231$, and $0.333$ without drift. In contrast, \codename{time\_window} is slightly more dispersed without drift, with QCDs of $0.339$, $0.418$, and $0.347$ under drift and $0.367$, $0.381$, and $0.478$ without drift. Overall, the three parameters do not show a common response to concept drift.
+
+The three \DenStream parameters are also comparatively insensitive to the distinction. The QCDs of \codename{beta} remain close in both conditions, ranging from $0.151$ to $0.176$ under drift and from $0.143$ to $0.166$ without drift. The \codename{mu} parameter behaves similarly, with QCDs between $0.163$ and $0.375$ under drift and between $0.224$ and $0.311$ without drift. The largest difference occurs for \codename{epsilon}: its QCDs are $0.426$, $0.386$, and $0.128$ under drift, compared with $0.494$, $0.407$, and $0.322$ without drift. This parameter is therefore somewhat more dispersed without drift, although the difference is not consistent across all datasets. These results provide no general evidence that concept drift systematically changes the variability of DenStream's selected parameters.
+
+For \StreamKM, some parameters show a clearer separation. The \codename{chunk\_size} parameter is moderately more dispersed under drift, with QCDs of $0.542$, $0.358$, and $0.789$, compared with $0.374$, $0.580$, and $0.509$ without drift. The \codename{halflife} parameter shows a more consistent difference: its QCDs are $0.453$, $0.279$, and $0.444$ under drift, versus $0.216$, $0.159$, and $0.122$ without drift. Thus, the selected half-life varies more between runs when the stream contains concept drift. The \codename{n\_clusters} parameter does not display such a difference, with QCDs of $0.259$, $0.680$, and $0.204$ under drift and $0.642$, $0.308$, and $0.235$ without drift. Finally, \codename{sigma} is highly dispersed in both conditions, reaching QCDs above $0.78$ in every dataset and approximately $1.0$ for both Chameleon datasets. Its values are slightly more dispersed without drift, so no drift-related increase can be established for this parameter.
+
+For \AutoCloud, the only tunable parameter, \codename{m}, has relatively low dispersion in all datasets. Its QCDs are $0.022$, $0.163$, and $0.044$ under drift, compared with $0.053$, $0.018$, and $0.002$ without drift. The largest value occurs for \BenchmarkTwo, while the remaining datasets exhibit much smaller values. The difference between conditions is therefore modest and does not establish a consistent relationship between concept drift and the variability of the selected parameter.
+
+\TEDACloud presents a similar pattern. Its \codename{m} parameter has QCDs of $0.102$, $0.093$, and $0.083$ under concept drift and $0.067$, $0.007$, and $0.131$ without it. The parameter remains comparatively concentrated in both conditions, with no consistent increase in dispersion associated with concept drift.
+
+Taken together, the parameter profiles do not support a general relationship between concept drift and hyperparameter variability. Some parameters, notably MicroTEDAClus's \codename{decay} and \codename{variance\_limit}, CEDAS's \codename{decay\_period}, and StreamKM's \codename{halflife}, are more variable when drift is present. Other parameters, such as CEDAS's \codename{min\_samples} and \codename{r0}, show the opposite behavior, while several CluStream and DenStream parameters exhibit similar dispersion in both conditions. Even within a single model, different parameters can respond in different ways. Therefore, the observed parameter variability appears to depend on the interaction between the individual hyperparameter and the dataset rather than on the presence of concept drift alone. In particular, the results do not justify treating parameter variability as a direct proxy for an algorithm's ability to handle concept drift.

@@ -1,19 +1,19 @@
 \begin{table}[htbp]
 \centering
+\caption{Statistical analysis and (Q1, Q3) for the Adjusted Rand Index at the Fifth Batch.}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c }
 \toprule
-Dataset & MicroTEDAClus & DenStream & CluStream & StreamKM \\
+Dataset & \modelname{CluStream} & \modelname{DenStream} & \modelname{MicroTEDAClus} & \modelname{StreamKM} \\
 \midrule
-Benchmark(1) & \textbf{0.847 (0.808, 0.904)} & \textcolor{red}{0.000 (0.000, 0.000)} & 0.738 (0.000, 0.846) & \textbf{0.875 (0.824, 0.911)} \\
-chameleon\_ds8 & 0.072 (0.000, 0.134) & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.332 (0.272, 0.388)} & 0.248 (0.203, 0.312) \\
-chameleon\_ds7 & \textcolor{red}{0.000 (0.000, 0.000)} & 0.000 (0.000, 0.000) & \textbf{0.267 (0.242, 0.308)} & 0.205 (0.175, 0.240) \\
-RandomRBFGeneratorEvents & \textbf{0.587 (0.405, 0.726)} & \textcolor{red}{0.000 (0.000, 0.000)} & 0.000 (0.000, 0.000) & 0.015 (0.000, 0.351) \\
-cassini & 0.461 (0.151, 0.605) & \textcolor{red}{0.000 (0.000, 0.000)} & 0.580 (0.457, 0.613) & \textbf{0.859 (0.796, 0.919)} \\
-Benchmark(2) & \textbf{0.593 (0.536, 0.644)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.565 (0.526, 0.618)} & 0.439 (0.366, 0.485) \\
+\datasetname{Stream Benchmark 1} & 0.738 (0.000, 0.846) & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.847 (0.808, 0.904)} & \textbf{0.875 (0.824, 0.911)} \\
+\datasetname{Stream Benchmark 2} & \textbf{0.565 (0.526, 0.618)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.593 (0.536, 0.644)} & 0.439 (0.366, 0.485) \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{0.000 (0.000, 0.000)} & 0.000 (0.000, 0.000) & \textbf{0.587 (0.405, 0.726)} & 0.015 (0.000, 0.351) \\
+\datasetname{Cassini} & 0.580 (0.457, 0.613) & \textcolor{red}{0.000 (0.000, 0.000)} & 0.461 (0.151, 0.605) & \textbf{0.859 (0.796, 0.919)} \\
+\datasetname{Chameleon DS3} & \textbf{0.267 (0.242, 0.308)} & \textcolor{red}{0.000 (0.000, 0.000)} & 0.000 (0.000, 0.000) & 0.205 (0.175, 0.240) \\
+\datasetname{Chameleon DS4} & \textbf{0.332 (0.272, 0.388)} & \textcolor{red}{0.000 (0.000, 0.000)} & 0.072 (0.000, 0.134) & 0.248 (0.203, 0.312) \\
 \bottomrule
 \end{tabular}
 }
-\caption{Statistical analysis and (Q1, Q3) for the Adjusted Rand Index at the Fifth Batch.}
 \label{tab:original-paper_ari_fifth}
 \end{table}

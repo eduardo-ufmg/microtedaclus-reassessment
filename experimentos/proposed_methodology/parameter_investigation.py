@@ -3,10 +3,30 @@ import os
 import pandas as pd
 import numpy as np
 
-DIR_PARAMS = "./metrics/parameters"
-DIR_METRICS = "./metrics/non_scalability"
-DIR_OUT = "./artifacts/parameters"
+from editorial_config import DATASET_ORDER, MODEL_ORDER, dataset_display_name
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
+
+DIR_PARAMS = os.path.join(SCRIPT_DIR, "metrics", "parameters")
+DIR_METRICS = os.path.join(SCRIPT_DIR, "metrics", "non_scalability")
+DIR_OUT = os.path.join(
+    REPOSITORY_ROOT,
+    "monografia",
+    "MethodologyReassessment",
+    "artifacts",
+    "parameters",
+)
 os.makedirs(DIR_OUT, exist_ok=True)
+
+
+def format_model_name(model: str) -> str:
+    return f"\\modelname{{{model}}}"
+
+
+def format_dataset_name(dataset: str) -> str:
+    escaped_dataset = dataset_display_name(dataset).replace("_", "\\_")
+    return f"\\datasetname{{{escaped_dataset}}}"
 
 
 def format_val(val) -> str:
@@ -45,6 +65,7 @@ def process_model_parameters(df_params: pd.DataFrame, model: str) -> dict:
     latex_lines = [
         "\\begin{table}[htbp]",
         "\\centering",
+        f"\\caption{{Hyperparameter dispersion for {model}: median $(Q_1, Q_3)$ [QCD].}}",
         "\\resizebox{\\textwidth}{!}{%",
         "\\begin{tabular}{l " + "c " * len(param_cols) + "}",
         "\\toprule",
@@ -54,12 +75,16 @@ def process_model_parameters(df_params: pd.DataFrame, model: str) -> dict:
         "\\midrule",
     ]
 
-    datasets = df_m_params["dataset"].unique()
+    dataset_order = {dataset: index for index, dataset in enumerate(DATASET_ORDER)}
+    datasets = sorted(
+        df_m_params["dataset"].unique(),
+        key=lambda dataset: dataset_order.get(dataset, len(DATASET_ORDER)),
+    )
     qcd_sums = {}
 
     for dataset in datasets:
         df_dp = df_m_params[df_m_params["dataset"] == dataset]
-        row_str = f"{dataset.replace('_', '\\_')}"
+        row_str = format_dataset_name(dataset)
         sum_qcd = 0.0
 
         for p in param_cols:
@@ -87,7 +112,6 @@ def process_model_parameters(df_params: pd.DataFrame, model: str) -> dict:
             "\\bottomrule",
             "\\end{tabular}",
             "}",
-            f"\\caption{{Hyperparameter dispersion for {model}: median $(Q_1, Q_3)$ [QCD].}}",
             f"\\label{{tab:params_{model.lower()}}}",
             "\\end{table}",
         ]
@@ -105,10 +129,13 @@ def generate_qcd_sum_table(all_qcd_sums: dict, models: list):
     latex_lines = [
         "\\begin{table}[htbp]",
         "\\centering",
+        "\\caption{Unified sum of Quartile Coefficients of Dispersion per model. Bold indicates the absolute deterministic minimum, and red indicates the absolute deterministic maximum.}",
         "\\resizebox{\\textwidth}{!}{%",
         "\\begin{tabular}{l " + "c " * len(models) + "}",
         "\\toprule",
-        "Dataset & " + " & ".join(models) + " \\\\",
+        "Dataset & "
+        + " & ".join(format_model_name(model) for model in models)
+        + " \\\\",
         "\\midrule",
     ]
 
@@ -117,7 +144,7 @@ def generate_qcd_sum_table(all_qcd_sums: dict, models: list):
         min_val = row.min()
         max_val = row.max()
 
-        row_str = f"{dataset.replace('_', '\\_')}"
+        row_str = format_dataset_name(dataset)
         for m in models:
             val = row.get(m, np.nan)
             if pd.isna(val):
@@ -139,7 +166,6 @@ def generate_qcd_sum_table(all_qcd_sums: dict, models: list):
             "\\bottomrule",
             "\\end{tabular}",
             "}",
-            "\\caption{Unified sum of Quartile Coefficients of Dispersion per model. Bold indicates the absolute deterministic minimum, and red indicates the absolute deterministic maximum.}",
             "\\label{tab:qcd_sum}",
             "\\end{table}",
         ]
@@ -163,7 +189,7 @@ def main():
     valid_datasets = df_metrics["dataset"].unique()
     df_params = df_params[df_params["dataset"].isin(valid_datasets)]
 
-    models = df_params["model"].unique().tolist()
+    models = [model for model in MODEL_ORDER if model in df_params["model"].unique()]
     all_qcd_sums = {}
 
     for model in models:

@@ -28,15 +28,16 @@ except Exception as e:
 # --------------------------------------------------------------------------
 # CONFIG
 # --------------------------------------------------------------------------
-RESULTS_DIR = "./results"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+RESULTS_DIR = os.path.join(SCRIPT_DIR, "results")
 
 DATASET_SIZES = [4000]
-FAMILIES = ["SCL2", "STR-B1", "STR-B2"]
+FAMILIES = ["SCL2", "benchmark_1", "benchmark_2"]
 DATASET_CONFIGS = [(family, n) for family in FAMILIES for n in DATASET_SIZES]
 
 # Disjoint seed offsets so the three families never collide even though
 # n_total and run_idx repeat across them.
-FAMILY_SEED_OFFSET = {"SCL2": 0, "STR-B1": 100_000_000, "STR-B2": 200_000_000}
+FAMILY_SEED_OFFSET = {"SCL2": 0, "benchmark_1": 100_000_000, "benchmark_2": 200_000_000}
 
 N_RUNS_TOTAL = 1000
 SCL_DIM = 2
@@ -96,9 +97,9 @@ def make_dataset(family, n_total, seed):
     if family == "SCL2":
         rng = np.random.default_rng(seed)
         return generate_scl_total(n_total, rng=rng)
-    elif family == "STR-B1":
+    elif family == "benchmark_1":
         return get_benchmark_total(1, n_total, seed)
-    elif family == "STR-B2":
+    elif family == "benchmark_2":
         return get_benchmark_total(2, n_total, seed)
     else:
         raise ValueError(f"Unknown family: {family}")

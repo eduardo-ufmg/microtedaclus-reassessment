@@ -1,19 +1,19 @@
 \begin{table}[htbp]
 \centering
+\caption{Statistical analysis and (Q1, Q3) for the Steady-State Memory Footprint at the Penultimate Batch [B].}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c }
 \toprule
-Dataset & MicroTEDAClus & DenStream & CluStream & StreamKM \\
+Dataset & \modelname{CluStream} & \modelname{DenStream} & \modelname{MicroTEDAClus} & \modelname{StreamKM} \\
 \midrule
-Benchmark(1) & \textcolor{red}{158720 (41984, 390144)} & \textbf{12288 (4096, 23552)} & \textcolor{red}{214016 (146432, 347136)} & 16384 (13312, 23552) \\
-chameleon\_ds8 & \textcolor{red}{640512 (528128, 1103360)} & \textbf{9216 (9216, 9216)} & 205824 (149504, 325120) & 28160 (20480, 41216) \\
-chameleon\_ds7 & \textcolor{red}{715264 (518400, 1152768)} & \textbf{6144 (6144, 6144)} & 222720 (172544, 342784) & 20480 (17408, 32768) \\
-RandomRBFGeneratorEvents & \textcolor{red}{433152 (231424, 1577984)} & \textbf{9216 (4096, 14336)} & \textcolor{red}{1091584 (568320, 1679360)} & 31744 (17408, 107520) \\
-cassini & 120320 (43008, 170496) & \textbf{18944 (16384, 24576)} & \textcolor{red}{151040 (89088, 257536)} & \textbf{17408 (13312, 29696)} \\
-Benchmark(2) & 108544 (14336, 140288) & 23552 (18432, 28672) & \textcolor{red}{155648 (96256, 220160)} & \textbf{17408 (13312, 25600)} \\
+\datasetname{Stream Benchmark 1} & \textcolor{red}{214016 (146432, 347136)} & \textbf{12288 (4096, 23552)} & \textcolor{red}{158720 (41984, 390144)} & 16384 (13312, 23552) \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{155648 (96256, 220160)} & 23552 (18432, 28672) & 108544 (14336, 140288) & \textbf{17408 (13312, 25600)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{1091584 (568320, 1679360)} & \textbf{9216 (4096, 14336)} & \textcolor{red}{433152 (231424, 1577984)} & 31744 (17408, 107520) \\
+\datasetname{Cassini} & \textcolor{red}{151040 (89088, 257536)} & \textbf{18944 (16384, 24576)} & 120320 (43008, 170496) & \textbf{17408 (13312, 29696)} \\
+\datasetname{Chameleon DS3} & 222720 (172544, 342784) & \textbf{6144 (6144, 6144)} & \textcolor{red}{715264 (518400, 1152768)} & 20480 (17408, 32768) \\
+\datasetname{Chameleon DS4} & 205824 (149504, 325120) & \textbf{9216 (9216, 9216)} & \textcolor{red}{640512 (528128, 1103360)} & 28160 (20480, 41216) \\
 \bottomrule
 \end{tabular}
 }
-\caption{Statistical analysis and (Q1, Q3) for the Steady-State Memory Footprint at the Penultimate Batch [B].}
 \label{tab:original-paper_memory_penultimate_bytes}
 \end{table}

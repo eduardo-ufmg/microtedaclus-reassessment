@@ -29,6 +29,7 @@ from models.MicroTEDAClus.MicroTEDAClus import (
 )
 from models.StreamKM.StreamKM import StreamKM, StreamKMParameterSearchSpace
 from models.TEDACloud.TEDACloud import TEDACloud, TEDACloudParameterSearchSpace
+from editorial_config import DATASET_ORDER
 
 rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR)
 optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -60,12 +61,7 @@ SPLIT_FRACTION = 0.2
 BASE_SEED = 42
 
 DATASETS = [
-    "cassini",
-    "chameleon_ds7",
-    "chameleon_ds8",
-    "RandomRBFGeneratorEvents",
-    "Benchmark(1)",
-    "Benchmark(2)",
+    *DATASET_ORDER,
     "SCL-1",
     "SCL-2",
     "SCL-4",
@@ -117,16 +113,16 @@ def get_r_stream(name: str, seed: int) -> tuple[np.ndarray, np.ndarray]:
         shuffle_idx = rng.permutation(len(X))
         return X[shuffle_idx], y[shuffle_idx]
 
-    elif name == "RandomRBFGeneratorEvents":
+    elif name == "random_rbf_events":
         robjects.r("""
             dsd <- DSD_RandomRBFGeneratorEvents(eventFrequency=1000L, eventMergeSplitOption=TRUE, eventDeleteCreate=TRUE)
             data <- get_points(dsd, n=10000, info=TRUE)
         """)
-    elif name == "Benchmark(1)":
+    elif name == "benchmark_1":
         robjects.r(
             "dsd <- DSD_Benchmark(1)\ndata <- get_points(dsd, n=4000, info=TRUE)"
         )
-    elif name == "Benchmark(2)":
+    elif name == "benchmark_2":
         robjects.r(
             "dsd <- DSD_Benchmark(2)\ndata <- get_points(dsd, n=4000, info=TRUE)"
         )
@@ -157,11 +153,11 @@ def generate_scl(dim: int, seed: int) -> tuple[np.ndarray, np.ndarray]:
 def get_dataset(dataset_name: str, seed: int) -> tuple[np.ndarray, np.ndarray]:
     if dataset_name.startswith("SCL-"):
         return generate_scl(int(dataset_name.split("-")[1]), seed)
-    if dataset_name == "chameleon_ds7":
+    if dataset_name == "chameleon_ds3":
         return get_chameleon(
             "https://raw.githubusercontent.com/deric/clustering-benchmark/master/src/main/resources/datasets/artificial/cluto-t7-10k.arff"
         )
-    if dataset_name == "chameleon_ds8":
+    if dataset_name == "chameleon_ds4":
         return get_chameleon(
             "https://raw.githubusercontent.com/deric/clustering-benchmark/master/src/main/resources/datasets/artificial/cluto-t8-8k.arff"
         )

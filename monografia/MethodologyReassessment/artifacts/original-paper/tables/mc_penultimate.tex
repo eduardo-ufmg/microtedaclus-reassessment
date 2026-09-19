@@ -1,19 +1,19 @@
 \begin{table}[htbp]
 \centering
+\caption{Statistical analysis and (Q1, Q3) for the Steady-State Microcluster Count at the Penultimate Batch.}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c }
 \toprule
-Dataset & MicroTEDAClus & DenStream & CluStream & StreamKM \\
+Dataset & \modelname{CluStream} & \modelname{DenStream} & \modelname{MicroTEDAClus} & \modelname{StreamKM} \\
 \midrule
-Benchmark(1) & 43 (8, 142) & \textbf{6 (1, 12)} & \textcolor{red}{101 (68, 169)} & 13 (10, 17) \\
-chameleon\_ds8 & \textcolor{red}{426 (329, 864)} & \textbf{4 (4, 4)} & 97 (70, 156) & 15 (11, 18) \\
-chameleon\_ds7 & \textcolor{red}{506 (319, 866)} & \textbf{2 (2, 2)} & 105 (82, 166) & 14 (9, 17) \\
-RandomRBFGeneratorEvents & 102 (35, 504) & \textbf{4 (1, 7)} & \textcolor{red}{528 (274, 806)} & 15 (12, 17) \\
-cassini & 34 (20, 62) & 10 (8, 13) & \textcolor{red}{71 (41, 123)} & \textbf{5 (3, 14)} \\
-Benchmark(2) & 29 (6, 47) & 12 (9, 16) & \textcolor{red}{73 (43, 104)} & \textbf{7 (3, 16)} \\
+\datasetname{Stream Benchmark 1} & \textcolor{red}{101 (68, 169)} & \textbf{6 (1, 12)} & 43 (8, 142) & 13 (10, 17) \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{73 (43, 104)} & 12 (9, 16) & 29 (6, 47) & \textbf{7 (3, 16)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{528 (274, 806)} & \textbf{4 (1, 7)} & 102 (35, 504) & 15 (12, 17) \\
+\datasetname{Cassini} & \textcolor{red}{71 (41, 123)} & 10 (8, 13) & 34 (20, 62) & \textbf{5 (3, 14)} \\
+\datasetname{Chameleon DS3} & 105 (82, 166) & \textbf{2 (2, 2)} & \textcolor{red}{506 (319, 866)} & 14 (9, 17) \\
+\datasetname{Chameleon DS4} & 97 (70, 156) & \textbf{4 (4, 4)} & \textcolor{red}{426 (329, 864)} & 15 (11, 18) \\
 \bottomrule
 \end{tabular}
 }
-\caption{Statistical analysis and (Q1, Q3) for the Steady-State Microcluster Count at the Penultimate Batch.}
 \label{tab:original-paper_mc_penultimate}
 \end{table}

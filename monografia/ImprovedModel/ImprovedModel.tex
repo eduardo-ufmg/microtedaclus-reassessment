@@ -9,7 +9,7 @@ The function may be generalized as
     m(k) = \frac{\text{up}}{1 + e^{-a(k-b)}}, \text{up} > 1
 \end{equation}
 
-microTEDAClus sets
+\MicroTEDAClus sets
 
 \begin{align}
     \text{up} &= 3 \\
@@ -48,7 +48,7 @@ and
     b &= 3 + \frac{\ln(\text{up} - 1)}{a} \label{eq:b_of_a}
 \end{align}
 
-which reduces the tunable parameters in \cref{eq:generalized_m} from $(a, b, \text{up})$ to $(a, \text{up})$. It is worth noting that because $k \in \mathbb{N}$ and \cref{sss:incorrect_condition_logic} shows that $m(2)$ does not matter for \cref{eq:corrected_condition_logic_for_outliers}, $k = 3$ is the actual lower bound the function's domain. From \cref{eq:b_of_a} and \cref{eq:generalized_m},
+which reduces the tunable parameters in \cref{eq:generalized_m} from $(a, b, \text{up})$ to $(a, \text{up})$. It is worth noting that because $k \in \mathbb{N}$ and \cref{subsubsec:incorrect_condition_logic} shows that $m(2)$ does not matter for \cref{eq:corrected_condition_logic_for_outliers}, $k = 3$ is the actual lower bound the function's domain. From \cref{eq:b_of_a} and \cref{eq:generalized_m},
 
 \begin{align}
     m(k) &= \frac{\text{up}}{1 + e^{-a(k-(3 + \frac{\ln(\text{up} - 1)}{a}))}} \\

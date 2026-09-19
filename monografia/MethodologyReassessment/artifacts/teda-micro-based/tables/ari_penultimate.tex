@@ -1,19 +1,19 @@
 \begin{table}[htbp]
 \centering
+\caption{Statistical analysis and (Q1, Q3) for the Adjusted Rand Index at the Penultimate Batch.}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c }
 \toprule
-Dataset & MicroTEDAClus & AutoCloud & CEDAS & TEDACloud \\
+Dataset & \modelname{MicroTEDAClus} & \modelname{CEDAS} & \modelname{TEDACloud} & \modelname{AutoCloud} \\
 \midrule
-Benchmark(1) & \textcolor{red}{0.000 (0.000, 0.078)} & \textcolor{red}{0.020 (0.000, 0.215)} & 0.210 (0.134, 0.891) & \textbf{0.764 (0.343, 0.970)} \\
-chameleon\_ds8 & \textbf{0.124 (0.095, 0.161)} & 0.070 (0.048, 0.070) & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.091 (0.069, 0.171)} \\
-chameleon\_ds7 & \textbf{0.126 (0.091, 0.182)} & 0.073 (0.012, 0.095) & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.117 (0.106, 0.141)} \\
-RandomRBFGeneratorEvents & \textcolor{red}{0.000 (0.000, 0.361)} & \textcolor{red}{0.038 (0.000, 0.452)} & 0.151 (0.009, 0.528) & \textbf{0.540 (0.344, 0.767)} \\
-cassini & \textbf{0.436 (0.143, 0.544)} & \textcolor{red}{0.052 (0.000, 0.293)} & \textcolor{red}{0.000 (0.000, 0.449)} & \textbf{0.366 (0.218, 0.439)} \\
-Benchmark(2) & \textbf{0.528 (0.000, 0.780)} & \textcolor{red}{0.139 (0.000, 0.462)} & \textcolor{red}{0.000 (0.000, 0.501)} & 0.510 (0.000, 0.659) \\
+\datasetname{Stream Benchmark 1} & \textcolor{red}{0.000 (0.000, 0.078)} & 0.210 (0.134, 0.891) & \textbf{0.764 (0.343, 0.970)} & \textcolor{red}{0.020 (0.000, 0.215)} \\
+\datasetname{Stream Benchmark 2} & \textbf{0.528 (0.000, 0.780)} & \textcolor{red}{0.000 (0.000, 0.501)} & 0.510 (0.000, 0.659) & \textcolor{red}{0.139 (0.000, 0.462)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{0.000 (0.000, 0.361)} & 0.151 (0.009, 0.528) & \textbf{0.540 (0.344, 0.767)} & \textcolor{red}{0.038 (0.000, 0.452)} \\
+\datasetname{Cassini} & \textbf{0.436 (0.143, 0.544)} & \textcolor{red}{0.000 (0.000, 0.449)} & \textbf{0.366 (0.218, 0.439)} & \textcolor{red}{0.052 (0.000, 0.293)} \\
+\datasetname{Chameleon DS3} & \textbf{0.126 (0.091, 0.182)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.117 (0.106, 0.141)} & 0.073 (0.012, 0.095) \\
+\datasetname{Chameleon DS4} & \textbf{0.124 (0.095, 0.161)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.091 (0.069, 0.171)} & 0.070 (0.048, 0.070) \\
 \bottomrule
 \end{tabular}
 }
-\caption{Statistical analysis and (Q1, Q3) for the Adjusted Rand Index at the Penultimate Batch.}
 \label{tab:teda-micro-based_ari_penultimate}
 \end{table}

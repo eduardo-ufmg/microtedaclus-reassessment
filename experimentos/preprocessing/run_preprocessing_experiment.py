@@ -4,7 +4,7 @@ run_preprocessing_experiment.py
 Preprocessing-impact experiment — RUN stage.
 
 Investigates how a cumulative chain of offline preprocessing steps affects
-MicroTEDAClus on the `cluto-t7-10k` (chameleon ds7) dataset.
+MicroTEDAClus on the `cluto-t7-10k` (Chameleon DS3) dataset.
 
 Pipeline (cumulative — each stage is derived from the previous one):
 
@@ -61,7 +61,7 @@ PLOTS_DIR = "./plots/preprocessing_study"
 os.makedirs(RESULTS_DIR, exist_ok=True)
 os.makedirs(PLOTS_DIR, exist_ok=True)
 
-CHAMELEON_DS7_URL = (
+CHAMELEON_DS3_URL = (
     "https://raw.githubusercontent.com/deric/clustering-benchmark/master/"
     "src/main/resources/datasets/artificial/cluto-t7-10k.arff"
 )
@@ -75,6 +75,7 @@ RNG_SEED = 0
 N_RUNS = 94
 
 STAGES = ["raw", "noise_removed", "downsampled", "ordered", "scaled"]
+LABEL_PALETTE = plt.get_cmap("tab20", 20)
 
 
 # --------------------------------------------------------------------------
@@ -289,7 +290,11 @@ def persist_run(stage, run_idx, params, ari, t_predict_ms, t_fit_ms):
 # --------------------------------------------------------------------------
 def plot_dataset(X, y, stage, out_dir):
     fig, ax = plt.subplots()
-    scatter = ax.scatter(X[:, 0], X[:, 1], c=y)
+    colors = [
+        "#202020" if label == -1 else LABEL_PALETTE((int(label) % 20) / 19)
+        for label in y
+    ]
+    ax.scatter(X[:, 0], X[:, 1], c=colors)
     ax.set_title(f"{stage} (n={len(X)})")
     ax.set_xlabel("$x_0$")
     ax.set_ylabel("$x_1$")
@@ -302,8 +307,8 @@ def plot_dataset(X, y, stage, out_dir):
 # Main
 # --------------------------------------------------------------------------
 def main():
-    print("Loading chameleon ds7 (cluto-t7-10k)...")
-    X0, y0 = get_chameleon(CHAMELEON_DS7_URL)
+    print("Loading Chameleon DS3 (cluto-t7-10k)...")
+    X0, y0 = get_chameleon(CHAMELEON_DS3_URL)
 
     print("Building cumulative preprocessing pipeline...")
     datasets = build_pipeline(X0, y0)
@@ -312,6 +317,8 @@ def main():
         X, y = datasets[stage]
 
         plot_dataset(X, y, stage, PLOTS_DIR)
+
+        continue
 
         n_samples = len(X)
         split_idx = int(SPLIT_FRAC * n_samples)
