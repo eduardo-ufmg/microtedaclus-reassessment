@@ -6,6 +6,7 @@ Use without arguments for a dry run; pass ``--apply`` to perform renames.
 """
 
 import argparse
+import csv
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -43,6 +44,34 @@ def plan_renames():
     return renames
 
 
+def rewrite_dataset_columns():
+    rewrites = []
+    for directory in MIGRATION_DIRS:
+        if not directory.is_dir():
+            continue
+        for path in sorted(directory.glob("*.csv")):
+            with path.open(newline="", encoding="utf-8") as source_file:
+                rows = list(csv.reader(source_file))
+
+            if not rows or "dataset" not in rows[0]:
+                continue
+
+            dataset_index = rows[0].index("dataset")
+            changed = False
+            for row in rows[1:]:
+                if dataset_index >= len(row):
+                    continue
+                new_id = DATASET_ID_MAP.get(row[dataset_index])
+                if new_id is not None:
+                    row[dataset_index] = new_id
+                    changed = True
+
+            if changed:
+                rewrites.append((path, rows))
+
+    return rewrites
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -53,6 +82,7 @@ def main() -> None:
     args = parser.parse_args()
 
     renames = plan_renames()
+    rewrites = rewrite_dataset_columns()
     collisions = [destination for _, destination in renames if destination.exists()]
     if collisions:
         names = "\n".join(str(path) for path in collisions)
@@ -64,7 +94,15 @@ def main() -> None:
         if args.apply:
             source.rename(destination)
 
+    rewrite_action = "Rewriting" if args.apply else "Would rewrite"
+    for path, rows in rewrites:
+        print(f"{rewrite_action} dataset column: {path.name}")
+        if args.apply:
+            with path.open("w", newline="", encoding="utf-8") as target_file:
+                csv.writer(target_file).writerows(rows)
+
     print(f"Planned renames: {len(renames)}")
+    print(f"Planned CSV content rewrites: {len(rewrites)}")
     if not args.apply:
         print("Dry run only. Re-run with --apply to perform these file renames.")
 

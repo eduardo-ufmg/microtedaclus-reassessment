@@ -32,9 +32,11 @@
 \usepackage[a4paper,top=30mm,bottom=30mm,inner=30mm,outer=25mm,headheight=7mm,headsep=6mm,footskip=7mm]{geometry}
 \usepackage{enumerate}
 
-\newcommand{\modelname}[1]{\textbf{#1}}
-\newcommand{\datasetname}[1]{\textbf{#1}}
-\newcommand{\codename}[1]{\texttt{#1}}
+\usepackage{xspace}
+
+\newcommand{\modelname}[1]{\textbf{#1}\xspace}
+\newcommand{\datasetname}[1]{\textbf{#1}\xspace}
+\newcommand{\codename}[1]{\texttt{#1}\xspace}
 \newcommand{\MicroTEDAClus}{\modelname{MicroTEDAClus}}
 \newcommand{\StreamKM}{\modelname{StreamKM}}
 \newcommand{\DenStream}{\modelname{DenStream}}
@@ -43,8 +45,8 @@
 \newcommand{\TEDACloud}{\modelname{TEDACloud}}
 \newcommand{\AutoCloud}{\modelname{AutoCloud}}
 \newcommand{\Cassini}{\datasetname{Cassini}}
-\newcommand{\BenchmarkOne}{\datasetname{Benchmark(1)}}
-\newcommand{\BenchmarkTwo}{\datasetname{Benchmark(2)}}
+\newcommand{\BenchmarkOne}{\datasetname{StreamBenchmark(1)}}
+\newcommand{\BenchmarkTwo}{\datasetname{StreamBenchmark(2)}}
 \newcommand{\RandomRBFGeneratorEvents}{\datasetname{RandomRBFGeneratorEvents}}
 \newcommand{\ChameleonDSSeven}{\datasetname{chameleon\_ds7}}
 \newcommand{\ChameleonDSEight}{\datasetname{chameleon\_ds8}}

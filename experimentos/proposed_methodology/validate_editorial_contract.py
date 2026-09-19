@@ -5,7 +5,13 @@ import os
 import re
 import sys
 
-from editorial_config import DATASET_ORDER, MODEL_COLORS, MODEL_ORDER, SUBSETS
+from editorial_config import (
+    DATASET_ORDER,
+    DATASET_SPECS,
+    MODEL_COLORS,
+    MODEL_ORDER,
+    SUBSETS,
+)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
@@ -70,6 +76,39 @@ def validate_generated_tables() -> None:
                 fail(f"table caption is not above tabular content: {table_path}")
 
 
+def validate_result_content() -> None:
+    allowed_ids = set(DATASET_SPECS) | {
+        "SCL-1",
+        "SCL-2",
+        "SCL-4",
+        "SCL-8",
+        "SCL-16",
+        "SCL-32",
+        "SCL-64",
+        "SCL-128",
+    }
+    params_dir = os.path.join(SCRIPT_DIR, "results_params")
+    for filename in os.listdir(params_dir):
+        if not filename.endswith(".csv"):
+            continue
+        path = os.path.join(params_dir, filename)
+        with open(path, encoding="utf-8") as params_file:
+            header = params_file.readline().rstrip("\n").split(",")
+            if "dataset" not in header:
+                continue
+            dataset_index = header.index("dataset")
+            for line_number, line in enumerate(params_file, start=2):
+                fields = line.rstrip("\n").split(",")
+                if (
+                    dataset_index < len(fields)
+                    and fields[dataset_index] not in allowed_ids
+                ):
+                    fail(
+                        f"legacy or unknown dataset ID {fields[dataset_index]!r} "
+                        f"in {path}:{line_number}"
+                    )
+
+
 def validate_thesis_inputs() -> None:
     thesis_source = os.path.join(
         THESIS_DIR, "MethodologyReassessment", "MethodologyReassessment.tex"
@@ -86,6 +125,7 @@ def validate_thesis_inputs() -> None:
 
 def main() -> None:
     validate_configuration()
+    validate_result_content()
     validate_generated_tables()
     validate_thesis_inputs()
     print("editorial-contract: ok")
