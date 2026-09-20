@@ -104,7 +104,7 @@ def main():
                     "ari_overall": np.median(ari_array),
                     "ari_penultimate": ari_array[-2],
                     "ari_fifth": ari_array[4],
-                    "ari_diff": np.max(ari_array) - ari_array[-1],
+                    "ari_diff": np.max(ari_array) - ari_array[-2],
                     "time_predict_cum_ms": df["time_predict_ms"].sum(),
                     "time_fit_cum_ms": df["time_fit_ms"].sum(),
                     "memory_max_bytes": np.max(mem_array),

@@ -24,34 +24,18 @@
 \usepackage{multirow}         % Multirow cells
 \usepackage{adjustbox}        % Resize
 \usepackage{makecell}         % Allow line breaks in table cells
-\usepackage{booktabs} % Provides \toprule, \midrule, \bottomrule
+\usepackage{booktabs}         % Provides \toprule, \midrule, \bottomrule
 \usepackage{caption}          % Consistent caption spacing and placement
+
+\usepackage{enumerate}
+\usepackage{xspace}
+\usepackage{seqsplit}
 
 \usepackage{labeltext}
 
 \usepackage[a4paper,top=30mm,bottom=30mm,inner=30mm,outer=25mm,headheight=7mm,headsep=6mm,footskip=7mm]{geometry}
-\usepackage{enumerate}
 
-\usepackage{xspace}
-
-\newcommand{\modelname}[1]{\textbf{#1}\xspace}
-\newcommand{\datasetname}[1]{\textbf{#1}\xspace}
-\newcommand{\codename}[1]{\texttt{#1}\xspace}
-\newcommand{\MicroTEDAClus}{\modelname{MicroTEDAClus}}
-\newcommand{\StreamKM}{\modelname{StreamKM}}
-\newcommand{\DenStream}{\modelname{DenStream}}
-\newcommand{\CluStream}{\modelname{CluStream}}
-\newcommand{\CEDAS}{\modelname{CEDAS}}
-\newcommand{\TEDACloud}{\modelname{TEDACloud}}
-\newcommand{\AutoCloud}{\modelname{AutoCloud}}
-\newcommand{\Cassini}{\datasetname{Cassini}}
-\newcommand{\BenchmarkOne}{\datasetname{StreamBenchmark(1)}}
-\newcommand{\BenchmarkTwo}{\datasetname{StreamBenchmark(2)}}
-\newcommand{\RandomRBFGeneratorEvents}{\datasetname{RandomRBFGeneratorEvents}}
-\newcommand{\ChameleonDSSeven}{\datasetname{chameleon\_ds7}}
-\newcommand{\ChameleonDSEight}{\datasetname{chameleon\_ds8}}
-\newcommand{\ChameleonDSThree}{\datasetname{DS3}}
-\newcommand{\ChameleonDSFour}{\datasetname{DS4}}
+\input{NamedMacros.tex}
 
 \captionsetup[table]{position=top}
 \captionsetup[figure]{position=bottom}

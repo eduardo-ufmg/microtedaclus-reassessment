@@ -85,7 +85,6 @@ def validate_result_content() -> None:
         "SCL-16",
         "SCL-32",
         "SCL-64",
-        "SCL-128",
     }
     params_dir = os.path.join(SCRIPT_DIR, "results_params")
     for filename in os.listdir(params_dir):

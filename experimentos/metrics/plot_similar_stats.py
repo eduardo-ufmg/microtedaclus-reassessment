@@ -205,7 +205,7 @@ def complementary_scores(y):
     return {
         "penultimate": y[-2],
         "fifth": y[4],
-        "peak_drop": y.max() - y[-1],
+        "peak_drop": y.max() - y[-2],
     }
 
 
@@ -238,7 +238,7 @@ def latex_table(scores):
         r"    \caption{Complementary scores for the hypothetical score curves. The bold values indicate the best performance for each metric.}",
         r"    \begin{tabular}{|c|c|c|c|}",
         r"        \hline",
-        r"        Curve & Penultimate batch & Fifth batch & Highest $-$ Last \\",
+        r"        Curve & Penultimate batch & Fifth batch & Highest $-$ Penultimate \\",
         r"        \hline",
     ]
 

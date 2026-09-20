@@ -194,7 +194,6 @@ def plot_scalability(subset_models: list, out_dir: str):
             ax.set_ylabel(metric.replace("_", " ").title())
             if is_log:
                 ax.set_yscale("log")
-            ax.set_xscale("log", base=2)
             ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.25), ncol=4)
             plt.tight_layout()
             fig.savefig(

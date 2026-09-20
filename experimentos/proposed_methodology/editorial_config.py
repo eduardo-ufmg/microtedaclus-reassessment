@@ -6,6 +6,7 @@ MODEL_ORDER = [
     "CluStream",
     "DenStream",
     "MicroTEDAClus",
+    "MicroTEDAClusCorrected",
     "CEDAS",
     "TEDACloud",
     "AutoCloud",
@@ -57,9 +58,10 @@ def dataset_display_name(dataset_id: str) -> str:
 
 
 SUBSET_MODEL_NAMES = {
-    "all": set(MODEL_ORDER),
+    "all": set(MODEL_ORDER) - {"MicroTEDAClusCorrected"},
     "original-paper": {"MicroTEDAClus", "DenStream", "CluStream", "StreamKM"},
     "teda-micro-based": {"MicroTEDAClus", "AutoCloud", "CEDAS", "TEDACloud"},
+    "microtedaclus": {"MicroTEDAClus", "MicroTEDAClusCorrected"},
 }
 
 SUBSETS = {
@@ -74,6 +76,7 @@ MODEL_COLORS = dict(
             "#1f77b4",
             "#ff7f0e",
             "#2ca02c",
+            "#ffdead",
             "#d62728",
             "#9467bd",
             "#8c564b",

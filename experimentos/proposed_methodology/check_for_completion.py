@@ -18,7 +18,6 @@ DATASETS = DATASET_ORDER + [
     "SCL-16",
     "SCL-32",
     "SCL-64",
-    "SCL-128",
 ]
 
 MODELS = MODEL_ORDER

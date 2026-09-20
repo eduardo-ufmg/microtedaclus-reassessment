@@ -27,6 +27,10 @@ from models.MicroTEDAClus.MicroTEDAClus import (
     MicroTEDAClus,
     MicroTEDAClusParameterSearchSpace,
 )
+from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected import (
+    MicroTEDAClusCorrected,
+    MicroTEDAClusCorrectedParameterSearchSpace,
+)
 from models.StreamKM.StreamKM import StreamKM, StreamKMParameterSearchSpace
 from models.TEDACloud.TEDACloud import TEDACloud, TEDACloudParameterSearchSpace
 from editorial_config import DATASET_ORDER
@@ -58,7 +62,7 @@ OPT_TRIALS = 100
 OPT_TIMEOUT = 300
 BURN_IN_FRACTION = 0.05
 SPLIT_FRACTION = 0.2
-BASE_SEED = 42
+BASE_SEED = 0
 
 DATASETS = [
     *DATASET_ORDER,
@@ -69,13 +73,16 @@ DATASETS = [
     "SCL-16",
     "SCL-32",
     "SCL-64",
-    "SCL-128",
 ]
 
 MODEL_MAP = {
     "CluStream": (CluStream, CluStreamParameterSearchSpace),
     "DenStream": (DenStream, DenStreamParameterSearchSpace),
     "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
+    "MicroTEDAClusCorrected": (
+        MicroTEDAClusCorrected,
+        MicroTEDAClusCorrectedParameterSearchSpace,
+    ),
     "CEDAS": (CEDAS, CEDASParameterSearchSpace),
     "TEDACloud": (TEDACloud, TEDACloudParameterSearchSpace),
     "AutoCloud": (AutoCloud, AutoCloudParameterSearchSpace),

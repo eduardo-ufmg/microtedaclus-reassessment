@@ -32,9 +32,9 @@ LABEL_PALETTE = plt.get_cmap("tab20", 20)
 
 CASSINI_BATCH_INDEX = 2
 CONCEPT_DRIFT_SPECS = [
-    ("STR-B1", "Benchmark(1)", 4000),
-    ("STR-B2", "Benchmark(2)", 4000),
-    ("RBF", "RandomRBFGeneratorEvents", 10000),
+    ("StreamBenchmark(1)", "Benchmark(1)", 4000),
+    ("StreamBenchmark(2)", "Benchmark(2)", 4000),
+    ("RandomRBFGeneratorEvents", "RandomRBFGeneratorEvents", 10000),
 ]
 
 try:
@@ -127,11 +127,13 @@ def first_batch(X, y, batch_index=0, batch_size=BATCH_SIZE):
 
 def label_colors(y):
     labels = np.asarray(y).astype(int)
-    color_map = {-1: "#202020"}
+    color_map: dict[int, str | tuple[float, float, float, float]] = {-1: "#202020"}
 
     for label in np.unique(labels):
         if label != -1:
-            color_map[int(label)] = str(LABEL_PALETTE((int(label) % 20) / 19))
+            # Keep the RGBA tuple returned by the colormap. Converting it to
+            # a string makes newer Matplotlib versions reject the color.
+            color_map[int(label)] = LABEL_PALETTE((int(label) % 20) / 19)
 
     return [color_map[int(label)] for label in labels]
 

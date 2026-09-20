@@ -3,7 +3,7 @@
 
 The TEDA framework is introduced by Angelov in \textit{Outside the Box: An Alternative Data Analytics Framework} as an alternative to probability theory for handling data in non-deterministic scenarios \cite{angelov2014outside}. The first part of this section presents the \textbf{eccentricity} and \textbf{typicality} metrics and their recursive expressions, which form the basis of the TEDA mathematical formulation.
 
-In the original presentation of the \MicroTEDAClus model, \textit{Evolving Clustering Algorithm Based on Mixture of Typicalities for Stream Data Mining}, the author applies these metrics to determine if a sample is an outlier to a microcluster and if microclusters are suitable candidates to form a macrocluster \cite{maia2020evolvclus}. The second part of this section presents the original \MicroTEDAClus formulation, alongside a detailed review of several issues in its mathematical and logical formulation.
+In the original presentation of the \MicroTEDAClus model, \textit{Evolving Clustering Algorithm Based on Mixture of Typicalities for Stream Data Mining}, the author applies these metrics to determine if a sample is an outlier to a microcluster, if microclusters are suitable candidates to form a macrocluster, and to which macrocluster a sample belongs \cite{maia2020evolvclus}. The second part of this section presents the original \MicroTEDAClus formulation, alongside a detailed review of some issues in its mathematical and logical formulation.
 
 Finally, while evaluating the performance of the previous model in the last-mile problem, the authors of \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} refactor the decay logic and variance computation \cite{galindo2021lastmile}. The corresponding subsection describes the changes made relative to the original \MicroTEDAClus and highlights new issues arising from these modifications.
 
@@ -50,7 +50,7 @@ Both are, by definition, bounded: $0 < \xi^k_j < 1$ and $0 < \tau^k_j < 1$. The 
 
 The paper states that samples for which the normalized eccentricity $\zeta^k_j > 1/k$ are considered anomalous, and those for which the normalized typicality $t^k_j > 1/k$ are considered typical.
 
-Furthermore, it provides recursive, or incremental, formulas for updating $\sum_{i=1}^{k} \pi^k_i$ in the squared Euclidean distance, as in \cref{eq:recursive_mu_X}:
+Furthermore, it provides recursive, or incremental, formulas for updating $\sum_{i=1}^{k} \pi^k_i$ in the squared Euclidean distance, as in \cref{eq:recursive_sum_pi}:
 
 The mean and the scalar product of the samples in the moment $k$ are
 
@@ -71,9 +71,10 @@ and
 
 \begin{equation}
     \sum_{i=1}^{k} \pi^k_i = \sum_{i=1}^{k-1} \pi^{k-1}_i + 2 \pi^k_k \\
+    \label{eq:recursive_sum_pi}
 \end{equation}
 
-Finally, it is made clear \labeltext[Angelov's statement about the use of other proximity functions]{those metrics suit various proximity functions, among which are the cosine similarity and the Mahalanobis distance}{info:mahalanobis_as_teda_metric} \cite{mahalanobis1936generalized}.
+Finally, Angelov states that \labeltext[Angelov's statement about the use of other proximity functions]{those metrics suit various proximity functions, among which are the cosine similarity and the Mahalanobis distance}{info:mahalanobis_as_teda_metric} \cite{mahalanobis1936generalized}.
 
 \section{Original \MicroTEDAClus}
 
@@ -326,8 +327,8 @@ The issues in \cref{subsubsec:order_dependent_characteristics,subsubsec:dimensio
 
 \subsubsection{Import of an Incompatible Outlier Condition from Angelov's Paper}
 
-\cite{angelov2014anomaly} derives \cref{eq:angelovs_outlier} from \cref{critique:imports_euclidean_condition_from_angelov} explicitly for the euclidean distance, and states that a similar condition can be derived for the cosine similarity, but does not provide any such condition. The employment of such an incompatible condition in the updated model is not justified by any theoretical or empirical evidence, and it suggests a fundamental error in the algorithm's design.
+\cite{angelov2014anomaly} derives \cref{eq:angelovs_outlier} from \cref{critique:imports_euclidean_condition_from_angelov} explicitly for the euclidean distance, and states that a similar condition can be derived for the cosine similarity, but does not provide any such condition. The employment of such an incompatible condition in the updated model is not justified by any theoretical or empirical evidence..
 
 \subsubsection{Usage of Euclidean Variance with Cosine Similarity}
 
-Although it updates the eccentricity formula to be compatible with the cosine similarity, the updated model retains the original variance computation through \cref{critique:euclidean_variance}, which is explicitly derived for the euclidean distance. There is no theoretical or empirical evidence that this variance computation is compatible with the cosine similarity, and it suggests another fundamental error in the algorithm's design.
+Although it updates the eccentricity formula to be compatible with the cosine similarity, the updated model retains the original variance computation through \cref{critique:euclidean_variance}, which is explicitly derived for the euclidean distance. There is no theoretical or empirical evidence that this variance computation is compatible with the cosine similarity.
