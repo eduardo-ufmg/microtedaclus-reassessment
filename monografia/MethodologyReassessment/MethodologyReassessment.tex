@@ -185,8 +185,7 @@ The updated implementation of \MicroTEDAClus, which is presented in the PHD thes
 
 In its experiments, the original work compares the proposed \MicroTEDAClus model against three benchmark models: \DenStream \cite{cao2006density}, \CluStream \cite{aggarwal2003framework}, and \StreamKM++ \cite{ackermann2012streamkmpp}, commonly used in the literature for data stream clustering evaluation \cite{hyde2017fully,akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline} as benchmark models. The validity of the experiments, however, depends on the implementation and execution of those models. As stated in the article and verified in the public repository, the implementations of those models are sourced from the \codename{R} package \codename{streamMOA} through the binding provided by \codename{rpy2}.
 
-However, because \codename{streamMOA} is a wrapper for the Java-based MOA framework \cite{streamMOA2024}, two layers of interface overhead are introduced in the execution of the benchmark models. Such overhead is expected to have a significant impact on both the execution time and the memory footprint perceived by the \codename{Python} experiment orchestrator. To verify this hypothesis, we conducted a benchmarking experiment as described in \cref{alg:benchmarking_experiment}.
-The results of the benchmarking experiment are shown in \cref{fig:benchmark_java_bridge}.
+However, because \codename{streamMOA} is a wrapper for the Java-based MOA framework \cite{streamMOA2024}, two layers of interface overhead are introduced in the execution of the benchmark models. Such overhead is expected to have a significant impact on both the execution time and the memory footprint perceived by the \codename{Python} experiment orchestrator. To verify this hypothesis, we conducted a benchmarking experiment as described in \cref{alg:benchmarking_experiment}. The results of the benchmarking experiment are shown in \cref{fig:benchmark_java_bridge}.
 
 \begin{algorithm}[htbp]
 \caption{Benchmarking experiment to evaluate the impact of interface overhead on the execution time and memory footprint of the benchmark models}
@@ -463,7 +462,7 @@ For $N=1000$, $B=10^4$, $k_{\min}=3$, $k^* = 94$. \Cref{fig:medianiqr_convergenc
 \begin{figure}[thpb]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/medianiqr_convergence_with_k.png}
-    \caption{Convergence of the median and IQR maximum normalized absolute error over $k$ runs. The left plot shows the convergence of the median, while the right plot shows the convergence of the IQR. The vertical dashed line indicates the $k^*$ value, which is aaproximately the point of diminishing returns in the convergence of the metrics.}
+    \caption{Convergence of the median and IQR maximum normalized absolute error over $k$ runs. The left plot shows the convergence of the median, while the right plot shows the convergence of the IQR. The vertical dashed line indicates the $k^*$ value, which is aproximately the point of diminishing returns in the convergence of the metrics.}
     \label{fig:medianiqr_convergence_with_k}
 \end{figure}
 
@@ -659,20 +658,7 @@ For each run, we compute the difference between the highest ARI and the ARI of t
 
 \Cref{tab:complementary_scores_on_the_hypotheticals} shows the values of the proposed complementary scores for the three hypothetical evolutions of the ARI shown in \cref{fig:similar_stats_different_shapes}. The first model, which slowly improves its performance over time, has a low ARI at the fifth batch ($0.005$), the optimal ARI at the penultimate batch ($1.000$), and zero difference between its highest and penultimate batch scores ($0.000$). The second model, which quickly reaches a high score but then degrades over time, has the highest ARI at the fifth batch ($0.463$), a low ARI at the penultimate batch ($0.081$), and a large difference between its highest and penultimate batch scores ($0.919$). The third model coincidently yields an ARI of $0.000$ for both the fifth and penultimate batches, while presenting the maximum possible difference between its highest and penultimate batch scores ($1.000$). It is important to note that a randomly scoring model may achieve a high ARI in a single batch, which is handled by the multi-run aggregation statistics discussed in \cref{subsec:multi_run_statistics}.
 
-\begin{table}
-    \centering
-    \begin{tabular}{|c|c|c|c|}
-        \hline
-        Curve & Penultimate batch & Fifth batch & Highest $-$ Penultimate \\
-        \hline
-        Smooth & \textbf{1.000} & 0.005 & \textbf{0.000} \\
-        Spike & 0.081 & \textbf{0.463} & 0.919 \\
-        Plateau & 0.000 & 0.000 & 1.000 \\
-        \hline
-    \end{tabular}
-    \caption{Complementary scores for the hypothetical score curves. The bold values indicate the best performance for each metric.}
-    \label{tab:complementary_scores_on_the_hypotheticals}
-\end{table}
+\input{MethodologyReassessment/artifacts/standalone/complementary_scores_on_the_hypotheticals.tex}
 
 Thus, for the datasets that are not scalability-oriented, we report the overall ARI, the penultimate batch's ARI, the fifth batch's ARI, and the difference between the highest ARI and the ARI of the penultimate batch. For the scalability-oriented datasets, tables are not reported. Instead, ARI is reported and analyzed through plots of the evolution of the ARI over the evaluation batches, as in the original work.
 

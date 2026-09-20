@@ -318,8 +318,6 @@ def main():
 
         plot_dataset(X, y, stage, PLOTS_DIR)
 
-        continue
-
         n_samples = len(X)
         split_idx = int(SPLIT_FRAC * n_samples)
         X_opt, y_opt = X[:split_idx], y[:split_idx]
