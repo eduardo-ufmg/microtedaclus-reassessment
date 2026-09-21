@@ -161,6 +161,29 @@ def main():
             os.path.join(DIR_OUT_SCL, "aggregated_by_batch.parquet"), index=False
         )
 
+        # Per-dimension scalar aggregation (across batches within each run)
+        scl_by_run = (
+            df_scl.groupby(["dataset", "dim", "model", "run"])
+            .agg(
+                time_predict_cum_ms=("time_predict_ms", "sum"),
+                time_fit_cum_ms=("time_fit_ms", "sum"),
+                memory_max_bytes=("memory_bytes", "max"),
+                mc_max=("microcluster_count", "max"),
+            )
+            .reset_index()
+        )
+        scl_dim_cols = [
+            "time_predict_cum_ms",
+            "time_fit_cum_ms",
+            "memory_max_bytes",
+            "mc_max",
+        ]
+        aggregate_quantiles(
+            scl_by_run, ["dataset", "dim", "model"], scl_dim_cols
+        ).to_parquet(
+            os.path.join(DIR_OUT_SCL, "aggregated_by_dim.parquet"), index=False
+        )
+
 
 if __name__ == "__main__":
     main()

@@ -472,7 +472,7 @@ The original work organizes the datasets used in its experiments into three cate
 
 \subsection{Static}
 
-In \cite{maia2020evolvclus}, static datasets \datasetname{ST-D1} and \datasetname{ST-D2} are stated to correspond to datasets introduced in \cite{karypis1999chameleon} to evaluate the performance of the Chameleon clustering algorithm. The original article links cleaned files named \codename{chameleon-ds3-clean.csv} and \codename{chameleon-ds4-clean.csv}, but the Chameleon paper identifies the corresponding raw 10,000-point and 8,000-point patterns as \ChameleonDSThree and \ChameleonDSFour, respectively. We use the raw files \codename{cluto-t7-10k.arff} and \codename{cluto-t8-8k.arff} as the data sources, and \ChameleonDSThree and \ChameleonDSFour as the unambiguous dataset names. The public repository's cleaned, downsampled, scaled, and ordered files conceal preprocessing decisions that can introduce severe data leakage given the streaming nature of the proposed application. The following experiments investigate the impact of each preprocessing step on the score chosen to evaluate clustering quality, discussed in \cref{sec:evaluation_metrics}, and on the execution time of the model. Without loss of generality, we choose \ChameleonDSThree as the representative dataset for the experiments.
+In \cite{maia2020evolvclus}, static datasets \datasetname{ST-D1} and \datasetname{ST-D2} are stated to correspond to datasets introduced in \cite{karypis1999chameleon} to evaluate the performance of the Chameleon clustering algorithm. The original article links cleaned files named \codename{chameleon-ds3-clean.csv} and \codename{chameleon-ds4-clean.csv}, but the Chameleon paper identifies the corresponding raw 10000-point and 8000-point patterns as \ChameleonDSThree and \ChameleonDSFour, respectively. We use the raw files \codename{cluto-t7-10k.arff} and \codename{cluto-t8-8k.arff} as the data sources, and \ChameleonDSThree and \ChameleonDSFour as the unambiguous dataset names. The public repository's cleaned, downsampled, scaled, and ordered files conceal preprocessing decisions that can introduce severe data leakage given the streaming nature of the proposed application. The following experiments investigate the impact of each preprocessing step on the score chosen to evaluate clustering quality, discussed in \cref{sec:evaluation_metrics}, and on the execution time of the model. Without loss of generality, we choose \ChameleonDSThree as the representative dataset for the experiments.
 
 \subsubsection{Raw Dataset}
 
@@ -671,7 +671,7 @@ In \cite{maia2020evolvclus}, execution time is only assessed for the scalability
     \item For the scalability-oriented datasets, the median and the $(Q_{1}, Q_{3})$ pair of each stage are captured and reported for each model in the following plots:
     \begin{itemize}
         \item Execution time versus the number of samples, for each of two fixed feature dimensions (2 and 64).
-        \item Execution time versus the feature dimension, for each of two fixed batch indexes (10 and last - 1).
+        \item Execution time versus the feature dimension, for each of two fixed batch indexes (4 and last - 1).
     \end{itemize}
     This report strategy's goal is to further investigate how the feature dimension impacts on the sample-scalability of the evaluated models, and how the number of samples impacts on the feature-scalability of the evaluated models. Median and quartiles are selected because preeliminary experiments show that a logarithmic scale is more suitable for this metric -- since the models differ by orders of magnitude -- and the high variability of the execution time increase the risk of negative bounds when defined as $\mu - \sigma$. Because \codename{Matplotlib}'s logarithmic scale does not support negative values, the quartile-pair is preferred to avoid artificially clipping the lower bound of the variability region to zero, since the quartiles are guaranteed to be bounded by the values actually observed in the experiments.
 \end{itemize}
@@ -685,7 +685,7 @@ The original work reports memory consumption only through a plot of memory usage
     \item For the scalability-oriented datasets, the median and the $(Q_{1}, Q{3})$ pair of the memory usage are captured and reported for each model in the following plots:
     \begin{itemize}
         \item Memory usage versus the number of samples, for each of two fixed feature dimensions (2 and 64).
-        \item Memory usage versus the feature dimension, for each of two fixed batch indexes (10 and last - 1).
+        \item Memory usage versus the feature dimension, for each of two fixed batch indexes (4 and last - 1).
     \end{itemize}
     Median and quartiles are selected for the same reasons discussed in \cref{subsec:complete_runtime}.
 \end{itemize}
@@ -857,13 +857,13 @@ Under two dimensions, most of the models tie through the entire stream, as shown
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_ari_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_ari_batch4.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_ari_batch33.png}
-    \caption{Feature-scalability of the ARI at batch 10 in the left plot and the penultimate batch at right.}
+    \caption{Feature-scalability of the ARI at batch 4 in the left plot and the penultimate batch at right.}
     \label{fig:orig_ari_scalability_b}
 \end{figure}
 
-In the tenth batch, \cref{fig:orig_ari_scalability_b} shows that \MicroTEDAClus is comparable to the best models through the entire range of feature dimensions. In the penultimate batch, however, both \MicroTEDAClus and \DenStream performances degrades as the feature dimension increases, while \StreamKM and \CluStream maintain high scores.
+In the fifth batch, \cref{fig:orig_ari_scalability_b} shows that \MicroTEDAClus is comparable to the best models through the entire range of feature dimensions. In the penultimate batch, however, both \MicroTEDAClus and \DenStream performances degrades as the feature dimension increases, while \StreamKM and \CluStream maintain high scores.
 
 \subsubsection{Execution Time}
 
@@ -891,11 +891,11 @@ To evaluate the computational overhead under expanding data streams, \cref{fig:o
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_time_predict_ms_batch10.png}
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_time_fit_ms_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_time_predict_ms_batch4.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_time_fit_ms_batch4.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_time_predict_ms_batch33.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_time_fit_ms_batch33.png}
-    \caption{Sample-scalability of the prediction execution time at left and fitting execution time at right for batch 10 in the top plots and the penultimate batch in the bottom plots.}
+    \caption{Feature-scalability of the prediction execution time at left and fitting execution time at right for batch 4 in the top plots and the penultimate batch in the bottom plots.}
     \label{fig:orig_time_scalability_b}
 \end{figure}
 
@@ -927,9 +927,9 @@ Memory consumption scalability is depicted in \cref{fig:orig_mem_scalability_a,f
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_memory_bytes_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_memory_bytes_batch4.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_memory_bytes_batch33.png}
-    \caption{Feature-scalability of memory footprint at batch 10 in the left plot and the penultimate batch at right.}
+    \caption{Feature-scalability of memory footprint at batch 4 in the left plot and the penultimate batch at right.}
     \label{fig:orig_mem_scalability_b}
 \end{figure}
 
@@ -962,9 +962,9 @@ Similarly to the memory footprint and execution time, \MicroTEDAClus's microclus
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_microcluster_count_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_microcluster_count_batch4.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/typeB_microcluster_count_batch33.png}
-    \caption{Feature-scalability of microcluster count at batch 10 at left and the penultimate batch in the right plot.}
+    \caption{Feature-scalability of microcluster count at batch 4 at left and the penultimate batch in the right plot.}
     \label{fig:orig_mc_scalability_b}
 \end{figure}
 
@@ -1000,9 +1000,9 @@ In tables \cref{tab:teda-micro-based_ari_overall,tab:teda-micro-based_ari_penult
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_ari_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_ari_batch4.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_ari_batch33.png}
-    \caption{ARI feature-scalability evaluated at batch 10 at left and the penultimate batch at right.}
+    \caption{ARI feature-scalability evaluated at batch 4 at left and the penultimate batch at right.}
     \label{fig:teda_ari_scalability_b}
 \end{figure}
 
@@ -1029,11 +1029,11 @@ In \cref{fig:teda_time_scalability_a}, \AutoCloud exibits the highest execution 
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_time_predict_ms_batch10.png}
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_time_fit_ms_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_time_predict_ms_batch4.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_time_fit_ms_batch4.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_time_predict_ms_batch33.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_time_fit_ms_batch33.png}
-    \caption{Feature-scaling trajectories for the prediction time in the left plots and fitting time at right for batch 10 in the top plots and the penultimate batch in the bottom plots.}
+    \caption{Feature-scaling trajectories for the prediction time in the left plots and fitting time at right for batch 4 in the top plots and the penultimate batch in the bottom plots.}
     \label{fig:teda_time_scalability_b}
 \end{figure}
 
@@ -1060,9 +1060,9 @@ Similarly to the execution time, \MicroTEDAClus and \AutoCloud are indistinguish
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_memory_bytes_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_memory_bytes_batch4.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_memory_bytes_batch33.png}
-    \caption{Memory footprint evaluated against feature count for batch 10 at left and the penultimate batch in the right plot.}
+    \caption{Memory footprint evaluated against feature count for batch 4 at left and the penultimate batch in the right plot.}
     \label{fig:teda_mem_scalability_b}
 \end{figure}
 
@@ -1083,9 +1083,9 @@ Similarly to the execution time, \MicroTEDAClus and \AutoCloud are indistinguish
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_microcluster_count_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_microcluster_count_batch4.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/typeB_microcluster_count_batch33.png}
-    \caption{Microcluster count mapped to feature space at batch 10 in the left plot and the penultimate batch at right.}
+    \caption{Microcluster count mapped to feature space at batch 4 in the left plot and the penultimate batch at right.}
     \label{fig:teda_mc_scalability_b}
 \end{figure}
 
@@ -1113,9 +1113,9 @@ At the fifth batch, \cref{tab:all_ari_fifth} shows a less stable ranking, with \
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_ari_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_ari_batch4.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_ari_batch33.png}
-    \caption{Impact of dimensionality on the ARI at batch 10 at left and the penultimate batch in the right plot.}
+    \caption{Impact of dimensionality on the ARI at batch 4 at left and the penultimate batch in the right plot.}
     \label{fig:all_ari_scalability_b}
 \end{figure}
 
@@ -1140,15 +1140,15 @@ The scalability plots corroborate these results. In \cref{fig:all_ari_scalabilit
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_time_predict_ms_batch10.png}
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_time_fit_ms_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_time_predict_ms_batch4.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_time_fit_ms_batch4.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_time_predict_ms_batch33.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_time_fit_ms_batch33.png}
-    \caption{Processing time mapped to feature count for prediction in the left plots and fitting at right for batch 10 in the top plots and the penultimate batch in the bottom plots.}
+    \caption{Processing time mapped to feature count for prediction in the left plots and fitting at right for batch 4 in the top plots and the penultimate batch in the bottom plots.}
     \label{fig:all_time_scalability_b}
 \end{figure}
 
-\Cref{fig:all_time_scalability_a} shows the sample-scalability of both stages. For 2 feature dimensions, \AutoCloud is roughly an order of magnitude slower than the remaining models in both stages, followed by \MicroTEDAClus; \StreamKM, \CEDAS, and \TEDACloud remain the fastest, and \DenStream shows a marked transient spike in fitting time around the 900th sample. At 64 dimensions, \CluStream becomes the slowest model for both stages, while \MicroTEDAClus's execution time decreases as the stream progresses, eventually falling below \CEDAS and \StreamKM. Regarding feature-scalability, \cref{fig:all_time_scalability_b} shows \AutoCloud pessimal for dimensions up to 16, after which its execution time collapses for both the tenth and the penultimate batches, mirroring the behavior already reported for the TEDA-based subset. \CluStream becomes the slowest model beyond 32 dimensions for both stages. \MicroTEDAClus peaks at low dimensionality and then steadily decreases, consistent with the dimensionality-driven microcluster collapse described in \cref{subsubsec:dimensionality_penalty}, while \CEDAS, \TEDACloud, \DenStream, and \StreamKM increase more gradually across the evaluated range.
+\Cref{fig:all_time_scalability_a} shows the sample-scalability of both stages. For 2 feature dimensions, \AutoCloud is roughly an order of magnitude slower than the remaining models in both stages, followed by \MicroTEDAClus; \StreamKM, \CEDAS, and \TEDACloud remain the fastest, and \DenStream shows a marked transient spike in fitting time around the 900th sample. At 64 dimensions, \CluStream becomes the slowest model for both stages, while \MicroTEDAClus's execution time decreases as the stream progresses, eventually falling below \CEDAS and \StreamKM. Regarding feature-scalability, \cref{fig:all_time_scalability_b} shows \AutoCloud pessimal for dimensions up to 16, after which its execution time collapses for both the fifth and the penultimate batches, mirroring the behavior already reported for the TEDA-based subset. \CluStream becomes the slowest model beyond 32 dimensions for both stages. \MicroTEDAClus peaks at low dimensionality and then steadily decreases, consistent with the dimensionality-driven microcluster collapse described in \cref{subsubsec:dimensionality_penalty}, while \CEDAS, \TEDACloud, \DenStream, and \StreamKM increase more gradually across the evaluated range.
 
 \subsubsection{Memory Footprint}
 
@@ -1167,9 +1167,9 @@ The scalability plots corroborate these results. In \cref{fig:all_ari_scalabilit
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_memory_bytes_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_memory_bytes_batch4.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_memory_bytes_batch33.png}
-    \caption{Spatial complexity tracked over feature dimensionality at batch 10 at left and the penultimate batch in the right plot.}
+    \caption{Spatial complexity tracked over feature dimensionality at batch 4 at left and the penultimate batch in the right plot.}
     \label{fig:all_mem_scalability_b}
 \end{figure}
 
@@ -1192,9 +1192,9 @@ The scalability plots corroborate these results. In \cref{fig:all_ari_scalabilit
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_microcluster_count_batch10.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_microcluster_count_batch4.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/typeB_microcluster_count_batch33.png}
-    \caption{Internal model boundaries relative to feature dimensionality at batch 10 in the left plot and the penultimate batch at right.}
+    \caption{Internal model boundaries relative to feature dimensionality at batch 4 in the left plot and the penultimate batch at right.}
     \label{fig:all_mc_scalability_b}
 \end{figure}
 

@@ -119,6 +119,7 @@ def process_model_parameters(df_params: pd.DataFrame, model: str) -> dict:
 
     with open(os.path.join(DIR_OUT, f"{model}_parameters.tex"), "w") as f:
         f.write("\n".join(latex_lines))
+        f.write("\n")
 
     return qcd_sums
 
@@ -173,6 +174,7 @@ def generate_qcd_sum_table(all_qcd_sums: dict, models: list):
 
     with open(os.path.join(DIR_OUT, "qcd_sum.tex"), "w") as f:
         f.write("\n".join(latex_lines))
+        f.write("\n")
 
 
 def main():

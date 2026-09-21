@@ -128,4 +128,5 @@ _texpad_tmp/
 # Custom
 modelo_PFC_latex
 testes_preeliminares/java_r_python/target/
-**/plots/**
+experimentos/**/plots/**
+**/plots/internal/**

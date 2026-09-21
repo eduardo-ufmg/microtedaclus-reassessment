@@ -198,6 +198,8 @@ def main():
     out_path = os.path.join(TABLE_DIR, "complementary_scores_on_the_hypotheticals.tex")
     with open(out_path, "w") as f:
         f.write(table)
+        f.write("\n")
+
     print(f"Table saved to {out_path}")
 
 

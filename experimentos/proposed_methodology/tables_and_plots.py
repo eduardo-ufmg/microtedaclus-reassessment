@@ -126,6 +126,7 @@ def generate_latex_tables(subset_name: str, subset_models: list, out_dir: str):
 
         with open(os.path.join(out_dir, f"{metric}.tex"), "w") as f:
             f.write("\n".join(latex_lines))
+            f.write("\n")
 
 
 def plot_scalability(subset_name: str, subset_models: list, out_dir: str):
@@ -137,18 +138,13 @@ def plot_scalability(subset_name: str, subset_models: list, out_dir: str):
         "memory_bytes",
         "microcluster_count",
     ]
-    # Map batch-level metric names to their scalar equivalents for exclusion lookup
-    _batch_to_exclusion_key = {
-        "microcluster_count": "mc_max",
-    }
 
     for dim in [2, 64]:
         df_dim = df[df["dim"] == dim].copy()
         df_dim["samples"] = df_dim["batch"] * 100
 
         for metric in metrics:
-            exclusion_key = _batch_to_exclusion_key.get(metric, metric)
-            plot_models = effective_models(subset_name, exclusion_key)
+            plot_models = effective_models(subset_name, metric)
 
             fig, ax = plt.subplots(figsize=(6, 4))
             is_log = metric != "ari"
@@ -179,44 +175,128 @@ def plot_scalability(subset_name: str, subset_models: list, out_dir: str):
                 ax.set_yscale("log")
             ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.25), ncol=4)
             plt.tight_layout()
-            fig.savefig(os.path.join(out_dir, f"typeA_{metric}_dim{dim}.png"), dpi=300)
-            plt.close(fig)
-
-    max_batch = df["batch"].max()
-    for b_idx in [10, max_batch - 1]:
-        df_b = df[df["batch"] == b_idx]
-
-        for metric in metrics:
-            exclusion_key = _batch_to_exclusion_key.get(metric, metric)
-            plot_models = effective_models(subset_name, exclusion_key)
-
-            fig, ax = plt.subplots(figsize=(6, 4))
-            is_log = metric != "ari"
-
-            for model in plot_models:
-                df_m = df_b[df_b["model"] == model].sort_values("dim")
-                if df_m.empty:
-                    continue
-
-                med = df_m[f"{metric}_median"].values
-                q1 = df_m[f"{metric}_q1"].values
-                q3 = df_m[f"{metric}_q3"].values
-
-                ax.plot(
-                    df_m["dim"], med, label=model, color=COLORS[model], linewidth=1.5
-                )
-                ax.fill_between(df_m["dim"], q1, q3, color=COLORS[model], alpha=0.15)
-
-            ax.set_xlabel("Feature Dimension")
-            ax.set_ylabel(metric.replace("_", " ").title())
-            if is_log:
-                ax.set_yscale("log")
-            ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.25), ncol=4)
-            plt.tight_layout()
             fig.savefig(
-                os.path.join(out_dir, f"typeB_{metric}_batch{b_idx}.png"), dpi=300
+                os.path.join(out_dir, f"sample_scalability_{metric}_dim{dim}.png"),
+                dpi=300,
             )
             plt.close(fig)
+
+    # ---- Feature-scalability ----
+    df_dim_agg = pd.read_parquet(
+        os.path.join(DIR_METRICS_SCL, "aggregated_by_dim.parquet")
+    )
+    max_batch = df["batch"].max()
+    penultimate = max_batch - 1
+
+    feature_scalability_specs = [
+        # (filename, metric_col, source, batch_idx, is_log, ylabel)
+        (f"feature_scalability_ari_batch4.png", "ari", "batch", 4, False, "ARI"),
+        (
+            f"feature_scalability_ari_penultimate.png",
+            "ari",
+            "batch",
+            penultimate,
+            False,
+            "ARI",
+        ),
+        (
+            "feature_scalability_time_predict_ms_cumulative.png",
+            "time_predict_cum_ms",
+            "dim",
+            None,
+            True,
+            "Cumulative Prediction Time [ms]",
+        ),
+        (
+            "feature_scalability_time_fit_ms_cumulative.png",
+            "time_fit_cum_ms",
+            "dim",
+            None,
+            True,
+            "Cumulative Fitting Time [ms]",
+        ),
+        (
+            "feature_scalability_memory_bytes_max.png",
+            "memory_max_bytes",
+            "dim",
+            None,
+            True,
+            "Maximum Memory Footprint [B]",
+        ),
+        (
+            f"feature_scalability_memory_bytes_penultimate.png",
+            "memory_bytes",
+            "batch",
+            penultimate,
+            True,
+            "Memory Footprint [B]",
+        ),
+        (
+            "feature_scalability_microcluster_count_max.png",
+            "mc_max",
+            "dim",
+            None,
+            True,
+            "Maximum Microcluster Count",
+        ),
+        (
+            f"feature_scalability_microcluster_count_penultimate.png",
+            "microcluster_count",
+            "batch",
+            penultimate,
+            True,
+            "Steady State Microcluster Count",
+        ),
+    ]
+
+    for (
+        fname,
+        metric_col,
+        src_type,
+        batch_idx,
+        is_log,
+        ylabel,
+    ) in feature_scalability_specs:
+        if src_type == "dim":
+            df_src = df_dim_agg
+        else:
+            df_src = df[df["batch"] == batch_idx]
+
+        models = effective_models(subset_name, metric_col)
+
+        fig, ax = plt.subplots(figsize=(6, 4))
+        for model in models:
+            df_m = df_src[df_src["model"] == model].sort_values("dim")
+            if df_m.empty:
+                continue
+
+            med = df_m[f"{metric_col}_median"].to_numpy()
+            q1 = df_m[f"{metric_col}_q1"].to_numpy()
+            q3 = df_m[f"{metric_col}_q3"].to_numpy()
+
+            ax.plot(
+                df_m["dim"],
+                med,
+                label=model,
+                color=COLORS[model],
+                linewidth=1.5,
+            )
+            ax.fill_between(
+                df_m["dim"],
+                q1,
+                q3,
+                color=COLORS[model],
+                alpha=0.15,
+            )
+
+        ax.set_xlabel("Feature Dimension")
+        ax.set_ylabel(ylabel)
+        if is_log:
+            ax.set_yscale("log")
+        ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.25), ncol=4)
+        plt.tight_layout()
+        fig.savefig(os.path.join(out_dir, fname), dpi=300)
+        plt.close(fig)
 
 
 def plot_internal_inspection(subset_name: str, subset_models: list, out_dir: str):
@@ -230,10 +310,6 @@ def plot_internal_inspection(subset_name: str, subset_models: list, out_dir: str
         "memory_bytes",
         "microcluster_count",
     ]
-    # Map batch-level metric names to their scalar equivalents for exclusion lookup
-    _batch_to_exclusion_key = {
-        "microcluster_count": "mc_max",
-    }
 
     for dataset in df["dataset"].unique():
         df_ds = df[df["dataset"] == dataset]
@@ -244,8 +320,7 @@ def plot_internal_inspection(subset_name: str, subset_models: list, out_dir: str
             ax = axes[i]
             is_log = metric != "ari"
 
-            exclusion_key = _batch_to_exclusion_key.get(metric, metric)
-            plot_models = effective_models(subset_name, exclusion_key)
+            plot_models = effective_models(subset_name, metric)
 
             for model in plot_models:
                 df_m = df_ds[df_ds["model"] == model].sort_values("batch")
