@@ -4,7 +4,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from editorial_config import DATASET_ORDER, MODEL_COLORS, SUBSETS, dataset_display_name
+from editorial_config import (
+    DATASET_ORDER,
+    MODEL_COLORS,
+    SUBSETS,
+    dataset_display_name,
+    effective_models,
+)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
@@ -69,6 +75,7 @@ def generate_latex_tables(subset_name: str, subset_models: list, out_dir: str):
 
     for stat_file in stat_files:
         metric = stat_file.replace("_statistical_analysis.csv", "")
+        table_models = effective_models(subset_name, metric)
         df_stat = pd.read_csv(os.path.join(dir_stats, stat_file), index_col="dataset")
         dataset_order = {dataset: index for index, dataset in enumerate(DATASET_ORDER)}
         df_stat = df_stat.sort_index(
@@ -83,10 +90,10 @@ def generate_latex_tables(subset_name: str, subset_models: list, out_dir: str):
             "\\centering",
             f"\\caption{{Statistical analysis and (Q1, Q3) for the {readable_name}.}}",
             "\\resizebox{\\textwidth}{!}{%",
-            "\\begin{tabular}{l " + "c " * len(subset_models) + "}",
+            "\\begin{tabular}{l " + "c " * len(table_models) + "}",
             "\\toprule",
             "Dataset & "
-            + " & ".join(format_model_name(model) for model in subset_models)
+            + " & ".join(format_model_name(model) for model in table_models)
             + " \\\\",
             "\\midrule",
         ]
@@ -94,7 +101,7 @@ def generate_latex_tables(subset_name: str, subset_models: list, out_dir: str):
         for dataset in df_stat.index:
             tex_dataset = format_dataset_name(dataset)
             row_str = f"{tex_dataset}"
-            for model in subset_models:
+            for model in table_models:
                 if model not in df_stat.columns:
                     row_str += " & -"
                     continue
@@ -121,7 +128,7 @@ def generate_latex_tables(subset_name: str, subset_models: list, out_dir: str):
             f.write("\n".join(latex_lines))
 
 
-def plot_scalability(subset_models: list, out_dir: str):
+def plot_scalability(subset_name: str, subset_models: list, out_dir: str):
     df = pd.read_parquet(os.path.join(DIR_METRICS_SCL, "aggregated_by_batch.parquet"))
     metrics = [
         "ari",
@@ -130,16 +137,23 @@ def plot_scalability(subset_models: list, out_dir: str):
         "memory_bytes",
         "microcluster_count",
     ]
+    # Map batch-level metric names to their scalar equivalents for exclusion lookup
+    _batch_to_exclusion_key = {
+        "microcluster_count": "mc_max",
+    }
 
     for dim in [2, 64]:
         df_dim = df[df["dim"] == dim].copy()
         df_dim["samples"] = df_dim["batch"] * 100
 
         for metric in metrics:
+            exclusion_key = _batch_to_exclusion_key.get(metric, metric)
+            plot_models = effective_models(subset_name, exclusion_key)
+
             fig, ax = plt.subplots(figsize=(6, 4))
             is_log = metric != "ari"
 
-            for model in subset_models:
+            for model in plot_models:
                 df_m = df_dim[df_dim["model"] == model].sort_values("samples")
                 if df_m.empty:
                     continue
@@ -173,10 +187,13 @@ def plot_scalability(subset_models: list, out_dir: str):
         df_b = df[df["batch"] == b_idx]
 
         for metric in metrics:
+            exclusion_key = _batch_to_exclusion_key.get(metric, metric)
+            plot_models = effective_models(subset_name, exclusion_key)
+
             fig, ax = plt.subplots(figsize=(6, 4))
             is_log = metric != "ari"
 
-            for model in subset_models:
+            for model in plot_models:
                 df_m = df_b[df_b["model"] == model].sort_values("dim")
                 if df_m.empty:
                     continue
@@ -202,7 +219,7 @@ def plot_scalability(subset_models: list, out_dir: str):
             plt.close(fig)
 
 
-def plot_internal_inspection(subset_models: list, out_dir: str):
+def plot_internal_inspection(subset_name: str, subset_models: list, out_dir: str):
     df = pd.read_parquet(
         os.path.join(DIR_METRICS_NON_SCL, "aggregated_by_batch.parquet")
     )
@@ -213,6 +230,10 @@ def plot_internal_inspection(subset_models: list, out_dir: str):
         "memory_bytes",
         "microcluster_count",
     ]
+    # Map batch-level metric names to their scalar equivalents for exclusion lookup
+    _batch_to_exclusion_key = {
+        "microcluster_count": "mc_max",
+    }
 
     for dataset in df["dataset"].unique():
         df_ds = df[df["dataset"] == dataset]
@@ -223,7 +244,10 @@ def plot_internal_inspection(subset_models: list, out_dir: str):
             ax = axes[i]
             is_log = metric != "ari"
 
-            for model in subset_models:
+            exclusion_key = _batch_to_exclusion_key.get(metric, metric)
+            plot_models = effective_models(subset_name, exclusion_key)
+
+            for model in plot_models:
                 df_m = df_ds[df_ds["model"] == model].sort_values("batch")
                 if df_m.empty:
                     continue
@@ -265,8 +289,8 @@ def main():
             os.makedirs(d, exist_ok=True)
 
         generate_latex_tables(subset_name, subset_models, dir_tables)
-        plot_scalability(subset_models, dir_plots_scl)
-        plot_internal_inspection(subset_models, dir_plots_internal)
+        plot_scalability(subset_name, subset_models, dir_plots_scl)
+        plot_internal_inspection(subset_name, subset_models, dir_plots_internal)
         print(f"Generated tables and plots for subset: {subset_name}")
 
 

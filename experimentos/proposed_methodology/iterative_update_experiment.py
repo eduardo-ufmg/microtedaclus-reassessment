@@ -30,6 +30,9 @@ from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected import (
     MicroTEDAClusCorrectedParameterSearchSpace,
 )
 
+from editorial_config import DATASET_ORDER
+from main_experiment import get_chameleon, get_r_stream, get_dataset
+
 rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR)
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
@@ -58,9 +61,7 @@ SPLIT_FRACTION = 0.2
 BASE_SEED = 0
 
 DATASETS = [
-    "benchmark_1",
-    "chameleon_ds3",
-    "SCL-8",
+    *DATASET_ORDER,
 ]
 
 MODEL_MAP = {
@@ -70,63 +71,6 @@ MODEL_MAP = {
         MicroTEDAClusCorrectedParameterSearchSpace,
     ),
 }
-
-
-# -----------------------------------------------------------------------------
-# Deterministic Data Generation
-# -----------------------------------------------------------------------------
-def get_chameleon(url: str) -> tuple[np.ndarray, np.ndarray]:
-    req = urllib.request.Request(url)
-    with urllib.request.urlopen(req) as response:
-        data, _ = arff.loadarff(StringIO(response.read().decode("utf-8")))
-
-    df = pd.DataFrame(data)
-    target_col = df.columns[-1]
-    y_raw = df[target_col].str.decode("utf-8").replace("noise", "-1")
-    X = df.drop(columns=[target_col]).to_numpy()
-    y = y_raw.astype(int).to_numpy()
-    return X, y
-
-
-def get_r_stream(name: str, seed: int) -> tuple[np.ndarray, np.ndarray]:
-    robjects.r(f"set.seed({seed})")
-
-    if name == "benchmark_1":
-        robjects.r(
-            "dsd <- DSD_Benchmark(1)\ndata <- get_points(dsd, n=4000, info=TRUE)"
-        )
-    else:
-        raise ValueError(f"Unknown R dataset: {name}")
-
-    X = np.array(robjects.r("as.matrix(data[, -ncol(data)])"))
-    y = np.nan_to_num(
-        np.array(robjects.r("as.numeric(data[, ncol(data)])")), nan=-1
-    ).astype(int)
-    return X, y
-
-
-def generate_scl(dim: int, seed: int) -> tuple[np.ndarray, np.ndarray]:
-    rng = np.random.default_rng(seed)
-    X, y = make_blobs(
-        n_samples=4000, centers=3, n_features=dim, cluster_std=0.5, random_state=seed
-    )[0:2]
-    noise = rng.uniform(low=np.min(X, axis=0), high=np.max(X, axis=0), size=(400, dim))
-
-    X_full = np.vstack([X, noise])
-    y_full = np.concatenate([y, np.full(400, -1)])
-
-    idx = rng.permutation(len(X_full))
-    return X_full[idx], y_full[idx]
-
-
-def get_dataset(dataset_name: str, seed: int) -> tuple[np.ndarray, np.ndarray]:
-    if dataset_name.startswith("SCL-"):
-        return generate_scl(int(dataset_name.split("-")[1]), seed)
-    if dataset_name == "chameleon_ds3":
-        return get_chameleon(
-            "https://raw.githubusercontent.com/deric/clustering-benchmark/master/src/main/resources/datasets/artificial/cluto-t7-10k.arff"
-        )
-    return get_r_stream(dataset_name, seed)
 
 
 # -----------------------------------------------------------------------------

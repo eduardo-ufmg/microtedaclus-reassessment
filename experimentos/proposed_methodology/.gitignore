@@ -221,7 +221,7 @@ __marimo__/
 
 #
 results*
-data_samples/
-metrics
-statistical_analysis
-artifacts
+data_samples*
+metrics*
+statistical_analysis*
+artifacts*

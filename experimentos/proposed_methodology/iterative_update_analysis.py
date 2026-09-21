@@ -18,30 +18,18 @@ DIR_RESULTS = os.path.join(SCRIPT_DIR, "results_iterative")
 DIR_PARAMS = os.path.join(SCRIPT_DIR, "results_params_iterative")
 
 DIR_METRICS_NON_SCL = os.path.join(SCRIPT_DIR, "metrics_iterative", "non_scalability")
-DIR_METRICS_SCL = os.path.join(SCRIPT_DIR, "metrics_iterative", "scalability")
-DIR_METRICS_PARAMS = os.path.join(SCRIPT_DIR, "metrics_iterative", "parameters")
 
-DIR_STATS = os.path.join(
-    SCRIPT_DIR, "statistical_analysis_iterative", "iterative_subset"
-)
+DIR_STATS = os.path.join(SCRIPT_DIR, "statistical_analysis_iterative")
 DIR_OUT_BASE = os.path.join(
-    REPOSITORY_ROOT,
-    "monografia",
-    "MethodologyReassessment",
-    "artifacts_iterative",
-    "iterative_subset",
+    REPOSITORY_ROOT, "monografia", "MethodologyReassessment", "artifacts_iterative"
 )
 DIR_TABLES = os.path.join(DIR_OUT_BASE, "tables")
-DIR_PLOTS_SCL = os.path.join(DIR_OUT_BASE, "plots", "scalability")
 DIR_PLOTS_INT = os.path.join(DIR_OUT_BASE, "plots", "internal")
 
 for d in [
     DIR_METRICS_NON_SCL,
-    DIR_METRICS_SCL,
-    DIR_METRICS_PARAMS,
     DIR_STATS,
     DIR_TABLES,
-    DIR_PLOTS_SCL,
     DIR_PLOTS_INT,
 ]:
     os.makedirs(d, exist_ok=True)
@@ -112,15 +100,8 @@ def aggregate_quantiles(
 
 
 def compute_metrics():
-    param_files = glob.glob(os.path.join(DIR_PARAMS, "*.csv"))
-    if param_files:
-        df_params = pd.concat((pd.read_csv(f) for f in param_files), ignore_index=True)
-        df_params.to_parquet(
-            os.path.join(DIR_METRICS_PARAMS, "best_params.parquet"), index=False
-        )
-
     result_files = glob.glob(os.path.join(DIR_RESULTS, "*.csv"))
-    non_scl_scalar, non_scl_batch, scl_records = [], [], []
+    non_scl_scalar, non_scl_batch = [], []
 
     for file in result_files:
         parts = os.path.basename(file).replace(".csv", "").split("_")
@@ -134,62 +115,43 @@ def compute_metrics():
         df["time_predict_ms"] = df["time_predict_wall_ns"] / 1e6
         df["time_fit_ms"] = df["time_fit_wall_ns"] / 1e6
 
-        if dataset.startswith("SCL-"):
-            df["dim"] = int(dataset.split("-")[1])
-            scl_records.append(
-                df[
-                    [
-                        "dataset",
-                        "dim",
-                        "model",
-                        "run",
-                        "batch",
-                        "ari",
-                        "time_predict_ms",
-                        "time_fit_ms",
-                        "memory_bytes",
-                        "microcluster_count",
-                    ]
+        non_scl_batch.append(
+            df[
+                [
+                    "dataset",
+                    "model",
+                    "run",
+                    "batch",
+                    "ari",
+                    "time_predict_ms",
+                    "time_fit_ms",
+                    "memory_bytes",
+                    "microcluster_count",
                 ]
-            )
-        else:
-            non_scl_batch.append(
-                df[
-                    [
-                        "dataset",
-                        "model",
-                        "run",
-                        "batch",
-                        "ari",
-                        "time_predict_ms",
-                        "time_fit_ms",
-                        "memory_bytes",
-                        "microcluster_count",
-                    ]
-                ]
-            )
-            ari, mem, mc = (
-                df["ari"].to_numpy(),
-                df["memory_bytes"].to_numpy(),
-                df["microcluster_count"].to_numpy(),
-            )
-            non_scl_scalar.append(
-                {
-                    "dataset": dataset,
-                    "model": model,
-                    "run": run,
-                    "ari_overall": np.median(ari),
-                    "ari_penultimate": ari[-2],
-                    "ari_fifth": ari[4],
-                    "ari_diff": np.max(ari) - ari[-2],
-                    "time_predict_cum_ms": df["time_predict_ms"].sum(),
-                    "time_fit_cum_ms": df["time_fit_ms"].sum(),
-                    "memory_max_bytes": np.max(mem),
-                    "memory_penultimate_bytes": mem[-2],
-                    "mc_max": np.max(mc),
-                    "mc_penultimate": mc[-2],
-                }
-            )
+            ]
+        )
+        ari, mem, mc = (
+            df["ari"].to_numpy(),
+            df["memory_bytes"].to_numpy(),
+            df["microcluster_count"].to_numpy(),
+        )
+        non_scl_scalar.append(
+            {
+                "dataset": dataset,
+                "model": model,
+                "run": run,
+                "ari_overall": np.median(ari),
+                "ari_penultimate": ari[-2],
+                "ari_fifth": ari[4],
+                "ari_diff": np.max(ari) - ari[-2],
+                "time_predict_cum_ms": df["time_predict_ms"].sum(),
+                "time_fit_cum_ms": df["time_fit_ms"].sum(),
+                "memory_max_bytes": np.max(mem),
+                "memory_penultimate_bytes": mem[-2],
+                "mc_max": np.max(mc),
+                "mc_penultimate": mc[-2],
+            }
+        )
 
     val_cols = [
         "ari",
@@ -199,35 +161,21 @@ def compute_metrics():
         "microcluster_count",
     ]
 
-    if non_scl_scalar:
-        df_non_scl = pd.DataFrame(non_scl_scalar)
-        df_non_scl.to_parquet(
-            os.path.join(DIR_METRICS_NON_SCL, "run_level.parquet"), index=False
-        )
-        aggregate_quantiles(
-            df_non_scl, ["dataset", "model"], list(STATS_METRICS.keys())
-        ).to_parquet(
-            os.path.join(DIR_METRICS_NON_SCL, "aggregated.parquet"), index=False
-        )
-        aggregate_quantiles(
-            pd.concat(non_scl_batch, ignore_index=True),
-            ["dataset", "model", "batch"],
-            val_cols,
-        ).to_parquet(
-            os.path.join(DIR_METRICS_NON_SCL, "aggregated_by_batch.parquet"),
-            index=False,
-        )
-
-    if scl_records:
-        df_scl = pd.concat(scl_records, ignore_index=True)
-        df_scl.to_parquet(
-            os.path.join(DIR_METRICS_SCL, "run_level.parquet"), index=False
-        )
-        aggregate_quantiles(
-            df_scl, ["dataset", "dim", "model", "batch"], val_cols
-        ).to_parquet(
-            os.path.join(DIR_METRICS_SCL, "aggregated_by_batch.parquet"), index=False
-        )
+    df_non_scl = pd.DataFrame(non_scl_scalar)
+    df_non_scl.to_parquet(
+        os.path.join(DIR_METRICS_NON_SCL, "run_level.parquet"), index=False
+    )
+    aggregate_quantiles(
+        df_non_scl, ["dataset", "model"], list(STATS_METRICS.keys())
+    ).to_parquet(os.path.join(DIR_METRICS_NON_SCL, "aggregated.parquet"), index=False)
+    aggregate_quantiles(
+        pd.concat(non_scl_batch, ignore_index=True),
+        ["dataset", "model", "batch"],
+        val_cols,
+    ).to_parquet(
+        os.path.join(DIR_METRICS_NON_SCL, "aggregated_by_batch.parquet"),
+        index=False,
+    )
 
 
 def run_statistical_analysis():
@@ -409,42 +357,6 @@ def generate_artifacts():
         "memory_bytes",
         "microcluster_count",
     ]
-    scl_path = os.path.join(DIR_METRICS_SCL, "aggregated_by_batch.parquet")
-
-    if os.path.exists(scl_path):
-        df_scl = pd.read_parquet(scl_path)
-        for dim in df_scl["dim"].unique():
-            df_dim = df_scl[df_scl["dim"] == dim].copy()
-            df_dim["samples"] = df_dim["batch"] * 100
-            for metric in metrics:
-                fig, ax = plt.subplots(figsize=(6, 4))
-                for model in ITERATIVE_MODELS:
-                    df_m = df_dim[df_dim["model"] == model].sort_values("samples")
-                    if not df_m.empty:
-                        ax.plot(
-                            df_m["samples"],
-                            df_m[f"{metric}_median"],
-                            label=model,
-                            color=MODEL_COLORS[model],
-                            linewidth=1.5,
-                        )
-                        ax.fill_between(
-                            df_m["samples"],
-                            df_m[f"{metric}_q1"],
-                            df_m[f"{metric}_q3"],
-                            color=MODEL_COLORS[model],
-                            alpha=0.15,
-                        )
-                ax.set_xlabel("Number of Samples")
-                ax.set_ylabel(metric.replace("_", " ").title())
-                if metric != "ari":
-                    ax.set_yscale("log")
-                ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.25), ncol=4)
-                plt.tight_layout()
-                fig.savefig(
-                    os.path.join(DIR_PLOTS_SCL, f"typeA_{metric}_dim{dim}.png"), dpi=300
-                )
-                plt.close(fig)
 
     int_path = os.path.join(DIR_METRICS_NON_SCL, "aggregated_by_batch.parquet")
     if os.path.exists(int_path):

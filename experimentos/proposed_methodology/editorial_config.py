@@ -61,13 +61,25 @@ SUBSET_MODEL_NAMES = {
     "all": set(MODEL_ORDER) - {"MicroTEDAClusCorrected"},
     "original-paper": {"MicroTEDAClus", "DenStream", "CluStream", "StreamKM"},
     "teda-micro-based": {"MicroTEDAClus", "AutoCloud", "CEDAS", "TEDACloud"},
-    "microtedaclus": {"MicroTEDAClus", "MicroTEDAClusCorrected"},
+    # "microtedaclus": {"MicroTEDAClus", "MicroTEDAClusCorrected"},
 }
 
 SUBSETS = {
     subset_name: [model for model in MODEL_ORDER if model in model_names]
     for subset_name, model_names in SUBSET_MODEL_NAMES.items()
 }
+
+METRIC_EXCLUDED_MODELS: dict[str, set[str]] = {
+    "mc_max": {"StreamKM"},
+    "mc_penultimate": {"StreamKM"},
+}
+
+
+def effective_models(subset_name: str, metric: str) -> list[str]:
+    """Return the subset's model list minus any metric-level exclusions."""
+    excluded = METRIC_EXCLUDED_MODELS.get(metric, set())
+    return [m for m in SUBSETS[subset_name] if m not in excluded]
+
 
 MODEL_COLORS = dict(
     zip(

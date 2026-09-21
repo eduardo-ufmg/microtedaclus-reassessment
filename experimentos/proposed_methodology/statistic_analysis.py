@@ -6,7 +6,7 @@ import pandas as pd
 from scipy.stats import friedmanchisquare, wilcoxon
 from statsmodels.stats.multitest import multipletests
 
-from editorial_config import SUBSETS
+from editorial_config import SUBSETS, effective_models
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DIR_METRICS_NON_SCL = os.path.join(SCRIPT_DIR, "metrics", "non_scalability")
@@ -175,6 +175,9 @@ def process_metric(
 
         results.append(row_dict)
 
+    if not results:
+        return pd.DataFrame()
+
     return pd.DataFrame(results).set_index("dataset")
 
 
@@ -194,7 +197,14 @@ def main():
             if metric not in df_runs.columns:
                 continue
 
-            df_table = process_metric(df_runs, metric, config, subset_models)
+            models = effective_models(subset_name, metric)
+            if len(models) < 2:
+                continue
+
+            df_table = process_metric(df_runs, metric, config, models)
+            if df_table.empty:
+                continue
+
             out_path = os.path.join(
                 subset_out_dir, f"{metric}_statistical_analysis.csv"
             )
