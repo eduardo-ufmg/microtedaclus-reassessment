@@ -122,7 +122,7 @@ class MicroTEDAClusCorrected:
     @jit(nopython=True)
     def update_variance(delta, s_ik, var_ik):
         variance = ((s_ik - 1) / s_ik) * var_ik + (
-            ((np.linalg.norm(delta) * 2 / len(delta)) ** 2 / (s_ik - 1))
+            (np.linalg.norm(delta) ** 2) / (s_ik - 1)
         )
         return variance
 
@@ -139,7 +139,7 @@ class MicroTEDAClusCorrected:
         else:
             a = mean - x
             result = (1 / num_samples) + (
-                (np.linalg.norm(a) * 2 / len(a)) ** 2 / (num_samples * var)
+                (np.linalg.norm(a) ** 2) / (num_samples * var)
             )
 
         return result
@@ -414,7 +414,7 @@ class MicroTEDAClusCorrectedParameterSearchSpace:
     def sample_parameters(self, trial: optuna.Trial) -> dict:
         return {
             "variance_limit": trial.suggest_float(
-                "variance_limit", 0.0001, 10.0, log=True
+                "variance_limit", 0.0001, 100.0, log=True
             ),
             "decay": trial.suggest_int("decay", 10, 10000, log=True),
         }

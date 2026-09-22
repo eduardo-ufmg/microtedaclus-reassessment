@@ -9,7 +9,7 @@ import pandas as pd
 from scipy.stats import friedmanchisquare, wilcoxon
 from statsmodels.stats.multitest import multipletests
 
-from editorial_config import DATASET_ORDER, MODEL_COLORS, dataset_display_name
+from editorial_config import ITERATIVE_DATASET_ORDER, MODEL_COLORS, dataset_display_name
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
@@ -17,8 +17,7 @@ REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
 DIR_RESULTS = os.path.join(SCRIPT_DIR, "results_iterative")
 DIR_PARAMS = os.path.join(SCRIPT_DIR, "results_params_iterative")
 
-DIR_METRICS_NON_SCL = os.path.join(SCRIPT_DIR, "metrics_iterative", "non_scalability")
-
+DIR_METRICS = os.path.join(SCRIPT_DIR, "metrics_iterative")
 DIR_STATS = os.path.join(SCRIPT_DIR, "statistical_analysis_iterative")
 DIR_OUT_BASE = os.path.join(
     REPOSITORY_ROOT, "monografia", "CorrectedModel", "artifacts"
@@ -27,7 +26,7 @@ DIR_TABLES = os.path.join(DIR_OUT_BASE, "tables")
 DIR_PLOTS_INT = os.path.join(DIR_OUT_BASE, "plots", "internal")
 
 for d in [
-    DIR_METRICS_NON_SCL,
+    DIR_METRICS,
     DIR_STATS,
     DIR_TABLES,
     DIR_PLOTS_INT,
@@ -101,16 +100,11 @@ def aggregate_quantiles(
 
 def compute_metrics():
     result_files = glob.glob(os.path.join(DIR_RESULTS, "*.csv"))
-    non_scl_scalar, non_scl_batch = [], []
+    records_scalar, records_batch = [], []
 
     for file in result_files:
         parts = os.path.basename(file).replace(".csv", "").split("_")
         run, model, dataset = int(parts[-1]), parts[-2], "_".join(parts[:-2])
-
-        # Exclude scalability subsets other than SCL-32 and SCL-64
-        if dataset.startswith("SCL-") and dataset not in ["SCL-32", "SCL-64"]:
-            continue
-
         df = pd.read_csv(file)
 
         if not df[df["status"].str.startswith("ERROR", na=False)].empty or len(df) < 5:
@@ -120,7 +114,7 @@ def compute_metrics():
         df["time_predict_ms"] = df["time_predict_wall_ns"] / 1e6
         df["time_fit_ms"] = df["time_fit_wall_ns"] / 1e6
 
-        non_scl_batch.append(
+        records_batch.append(
             df[
                 [
                     "dataset",
@@ -140,7 +134,7 @@ def compute_metrics():
             df["memory_bytes"].to_numpy(),
             df["microcluster_count"].to_numpy(),
         )
-        non_scl_scalar.append(
+        records_scalar.append(
             {
                 "dataset": dataset,
                 "model": model,
@@ -166,25 +160,23 @@ def compute_metrics():
         "microcluster_count",
     ]
 
-    df_non_scl = pd.DataFrame(non_scl_scalar)
-    df_non_scl.to_parquet(
-        os.path.join(DIR_METRICS_NON_SCL, "run_level.parquet"), index=False
-    )
+    df_scalar = pd.DataFrame(records_scalar)
+    df_scalar.to_parquet(os.path.join(DIR_METRICS, "run_level.parquet"), index=False)
     aggregate_quantiles(
-        df_non_scl, ["dataset", "model"], list(STATS_METRICS.keys())
-    ).to_parquet(os.path.join(DIR_METRICS_NON_SCL, "aggregated.parquet"), index=False)
+        df_scalar, ["dataset", "model"], list(STATS_METRICS.keys())
+    ).to_parquet(os.path.join(DIR_METRICS, "aggregated.parquet"), index=False)
     aggregate_quantiles(
-        pd.concat(non_scl_batch, ignore_index=True),
+        pd.concat(records_batch, ignore_index=True),
         ["dataset", "model", "batch"],
         val_cols,
     ).to_parquet(
-        os.path.join(DIR_METRICS_NON_SCL, "aggregated_by_batch.parquet"),
+        os.path.join(DIR_METRICS, "aggregated_by_batch.parquet"),
         index=False,
     )
 
 
 def run_statistical_analysis():
-    path_in = os.path.join(DIR_METRICS_NON_SCL, "run_level.parquet")
+    path_in = os.path.join(DIR_METRICS, "run_level.parquet")
     if not os.path.exists(path_in):
         return
     df_runs = pd.read_parquet(path_in)
@@ -228,7 +220,8 @@ def run_statistical_analysis():
                     if len(valid_models) == 2:
                         if (
                             wilcoxon(
-                                df_disc[valid_models[0]], df_disc[valid_models[1]]
+                                df_disc[valid_models[0]].to_numpy(),
+                                df_disc[valid_models[1]].to_numpy(),
                             ).pvalue
                             < ALPHA
                         ):
@@ -321,13 +314,11 @@ def generate_artifacts():
     for stat_file in stat_files:
         metric = stat_file.replace("_statistical_analysis.csv", "")
         df_stat = pd.read_csv(os.path.join(DIR_STATS, stat_file), index_col="dataset")
-
-        # Extend the imported DATASET_ORDER locally
-        local_order = list(DATASET_ORDER) + ["SCL-32", "SCL-64"]
-        ds_order = {d: i for i, d in enumerate(local_order)}
-
+        ds_order = {d: i for i, d in enumerate(ITERATIVE_DATASET_ORDER)}
         df_stat = df_stat.sort_index(
-            key=lambda idx: idx.map(lambda d: ds_order.get(d, len(DATASET_ORDER)))
+            key=lambda idx: idx.map(
+                lambda d: ds_order.get(d, len(ITERATIVE_DATASET_ORDER))
+            )
         )
 
         latex_lines = [
@@ -376,7 +367,7 @@ def generate_artifacts():
         "microcluster_count",
     ]
 
-    int_path = os.path.join(DIR_METRICS_NON_SCL, "aggregated_by_batch.parquet")
+    int_path = os.path.join(DIR_METRICS, "aggregated_by_batch.parquet")
     if os.path.exists(int_path):
         df_int = pd.read_parquet(int_path)
         for dataset in df_int["dataset"].unique():
@@ -391,14 +382,14 @@ def generate_artifacts():
                             df_m["batch"],
                             df_m[f"{metric}_median"],
                             label=model,
-                            color=MODEL_COLORS[model],
+                            color=MODEL_COLORS.get(model, "#000000"),
                             linewidth=1.5,
                         )
                         ax.fill_between(
                             df_m["batch"],
                             df_m[f"{metric}_q1"],
                             df_m[f"{metric}_q3"],
-                            color=MODEL_COLORS[model],
+                            color=MODEL_COLORS.get(model, "#000000"),
                             alpha=0.15,
                         )
                 ax.set_title(metric.replace("_", " ").title())
