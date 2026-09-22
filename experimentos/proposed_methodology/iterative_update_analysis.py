@@ -40,20 +40,20 @@ CLIFFS_DELTA_THRESHOLD = 0.147
 
 READABLE_METRICS = {
     "ari_overall": "Overall Adjusted Rand Index",
-    "ari_penultimate": "Adjusted Rand Index at the Penultimate Batch",
+    "ari_steadystate": "Adjusted Rand Index at the Penultimate Batch",
     "ari_fifth": "Adjusted Rand Index at the Fifth Batch",
     "ari_diff": "Maximum ARI Drop",
     "time_predict_cum_ms": "Cumulative Prediction Time [ms]",
     "time_fit_cum_ms": "Cumulative Fitting Time [ms]",
     "memory_max_bytes": "Maximum Memory Footprint [B]",
-    "memory_penultimate_bytes": "Steady-State Memory Footprint at the Penultimate Batch [B]",
+    "memory_steadystate_bytes": "Steady-State Memory Footprint at the Penultimate Batch [B]",
     "mc_max": "Maximum Microcluster Count",
-    "mc_penultimate": "Steady-State Microcluster Count at the Penultimate Batch",
+    "mc_steadystate": "Steady-State Microcluster Count at the Penultimate Batch",
 }
 
 STATS_METRICS = {
     "ari_overall": {"dir": "max", "round": lambda x: np.round(x, 3), "fmt": "{:.3f}"},
-    "ari_penultimate": {
+    "ari_steadystate": {
         "dir": "max",
         "round": lambda x: np.round(x, 3),
         "fmt": "{:.3f}",
@@ -75,13 +75,13 @@ STATS_METRICS = {
         "round": lambda x: np.round(x / 1024) * 1024,
         "fmt": "{:.0f}",
     },
-    "memory_penultimate_bytes": {
+    "memory_steadystate_bytes": {
         "dir": "min",
         "round": lambda x: np.round(x / 1024) * 1024,
         "fmt": "{:.0f}",
     },
     "mc_max": {"dir": "min", "round": lambda x: np.round(x), "fmt": "{:.0f}"},
-    "mc_penultimate": {"dir": "min", "round": lambda x: np.round(x), "fmt": "{:.0f}"},
+    "mc_steadystate": {"dir": "min", "round": lambda x: np.round(x), "fmt": "{:.0f}"},
 }
 
 
@@ -141,15 +141,15 @@ def compute_metrics():
                 "model": model,
                 "run": run,
                 "ari_overall": np.median(ari),
-                "ari_penultimate": ari[-2],
+                "ari_steadystate": ari[-2],
                 "ari_fifth": ari[4],
                 "ari_diff": np.max(ari) - ari[-2],
                 "time_predict_cum_ms": df["time_predict_ms"].sum(),
                 "time_fit_cum_ms": df["time_fit_ms"].sum(),
                 "memory_max_bytes": np.max(mem),
-                "memory_penultimate_bytes": mem[-2],
+                "memory_steadystate_bytes": mem[-2],
                 "mc_max": np.max(mc),
-                "mc_penultimate": mc[-2],
+                "mc_steadystate": mc[-2],
             }
         )
 

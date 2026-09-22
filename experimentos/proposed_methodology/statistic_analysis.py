@@ -21,7 +21,7 @@ METRICS = {
         "round": lambda x: np.round(x, 3),
         "fmt": "{:.3f}",
     },
-    "ari_penultimate": {
+    "ari_steadystate": {
         "dir": "max",
         "round": lambda x: np.round(x, 3),
         "fmt": "{:.3f}",
@@ -43,13 +43,13 @@ METRICS = {
         "round": lambda x: np.round(x / 1024) * 1024,
         "fmt": "{:.0f}",
     },
-    "memory_penultimate_bytes": {
+    "memory_steadystate_bytes": {
         "dir": "min",
         "round": lambda x: np.round(x / 1024) * 1024,
         "fmt": "{:.0f}",
     },
     "mc_max": {"dir": "min", "round": lambda x: np.round(x), "fmt": "{:.0f}"},
-    "mc_penultimate": {"dir": "min", "round": lambda x: np.round(x), "fmt": "{:.0f}"},
+    "mc_steadystate": {"dir": "min", "round": lambda x: np.round(x), "fmt": "{:.0f}"},
 }
 
 

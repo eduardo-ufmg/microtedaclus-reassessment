@@ -26,15 +26,15 @@ COLORS = MODEL_COLORS
 
 READABLE_METRICS = {
     "ari_overall": "Overall Adjusted Rand Index",
-    "ari_penultimate": "Adjusted Rand Index at the Penultimate Batch",
+    "ari_steadystate": "Adjusted Rand Index at the Penultimate Batch",
     "ari_fifth": "Adjusted Rand Index at the Fifth Batch",
     "ari_diff": "Maximum ARI Drop",
     "time_predict_cum_ms": "Cumulative Prediction Time [ms]",
     "time_fit_cum_ms": "Cumulative Fitting Time [ms]",
     "memory_max_bytes": "Maximum Memory Footprint [B]",
-    "memory_penultimate_bytes": "Steady-State Memory Footprint at the Penultimate Batch [B]",
+    "memory_steadystate_bytes": "Steady-State Memory Footprint at the Penultimate Batch [B]",
     "mc_max": "Maximum Microcluster Count",
-    "mc_penultimate": "Steady-State Microcluster Count at the Penultimate Batch",
+    "mc_steadystate": "Steady-State Microcluster Count at the Penultimate Batch",
 }
 
 
@@ -192,7 +192,7 @@ def plot_scalability(subset_name: str, subset_models: list, out_dir: str):
         # (filename, metric_col, source, batch_idx, is_log, ylabel)
         (f"feature_scalability_ari_batch4.png", "ari", "batch", 4, False, "ARI"),
         (
-            f"feature_scalability_ari_penultimate.png",
+            f"feature_scalability_ari_steadystate.png",
             "ari",
             "batch",
             penultimate,
@@ -224,7 +224,7 @@ def plot_scalability(subset_name: str, subset_models: list, out_dir: str):
             "Maximum Memory Footprint [B]",
         ),
         (
-            f"feature_scalability_memory_bytes_penultimate.png",
+            f"feature_scalability_memory_bytes_steadystate.png",
             "memory_bytes",
             "batch",
             penultimate,
@@ -240,7 +240,7 @@ def plot_scalability(subset_name: str, subset_models: list, out_dir: str):
             "Maximum Microcluster Count",
         ),
         (
-            f"feature_scalability_microcluster_count_penultimate.png",
+            f"feature_scalability_microcluster_count_steadystate.png",
             "microcluster_count",
             "batch",
             penultimate,

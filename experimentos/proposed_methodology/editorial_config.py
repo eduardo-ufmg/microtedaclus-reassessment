@@ -71,7 +71,7 @@ SUBSETS = {
 
 METRIC_EXCLUDED_MODELS: dict[str, set[str]] = {
     "mc_max": {"StreamKM"},
-    "mc_penultimate": {"StreamKM"},
+    "mc_steadystate": {"StreamKM"},
     "microcluster_count": {"StreamKM"},
 }
 

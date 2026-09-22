@@ -102,15 +102,15 @@ def main():
                     "model": model,
                     "run": run,
                     "ari_overall": np.median(ari_array),
-                    "ari_penultimate": ari_array[-2],
+                    "ari_steadystate": ari_array[-2],
                     "ari_fifth": ari_array[4],
                     "ari_diff": np.max(ari_array) - ari_array[-2],
                     "time_predict_cum_ms": df["time_predict_ms"].sum(),
                     "time_fit_cum_ms": df["time_fit_ms"].sum(),
                     "memory_max_bytes": np.max(mem_array),
-                    "memory_penultimate_bytes": mem_array[-2],
+                    "memory_steadystate_bytes": mem_array[-2],
                     "mc_max": np.max(mc_array),
-                    "mc_penultimate": mc_array[-2],
+                    "mc_steadystate": mc_array[-2],
                 }
             )
 
@@ -130,15 +130,15 @@ def main():
         )
         scalar_cols = [
             "ari_overall",
-            "ari_penultimate",
+            "ari_steadystate",
             "ari_fifth",
             "ari_diff",
             "time_predict_cum_ms",
             "time_fit_cum_ms",
             "memory_max_bytes",
-            "memory_penultimate_bytes",
+            "memory_steadystate_bytes",
             "mc_max",
-            "mc_penultimate",
+            "mc_steadystate",
         ]
         aggregate_quantiles(df_non_scl, ["dataset", "model"], scalar_cols).to_parquet(
             os.path.join(DIR_OUT_NON_SCL, "aggregated.parquet"), index=False
