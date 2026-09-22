@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis and (Q1, Q3) for the Steady-State Microcluster Count at the Penultimate Batch.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c }
+\toprule
+Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClusCorrected} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 44 (6, 173) & 53 (24, 74) \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{28 (8, 49)} & \textbf{12 (9, 18)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{158 (53, 288)} & \textbf{26 (17, 74)} \\
+\datasetname{Cassini} & 41 (19, 116) & 56 (22, 79) \\
+\datasetname{Chameleon DS3} & \textcolor{red}{516 (395, 2275)} & \textbf{397 (292, 1769)} \\
+\datasetname{Chameleon DS4} & 500 (399, 2224) & 488 (298, 2023) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:iterative_mc_steadystate}
+\end{table}

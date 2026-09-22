@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis and (Q1, Q3) for the Steady-State Memory Footprint at the Penultimate Batch [B].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c }
+\toprule
+Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClusCorrected} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 141312 (56576, 471040) & 265728 (96512, 520192) \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{112640 (14080, 141056)} & \textbf{25088 (17152, 40704)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{535040 (253440, 888320)} & \textbf{193536 (102912, 289792)} \\
+\datasetname{Cassini} & 130560 (34304, 301824) & 137728 (48384, 158976) \\
+\datasetname{Chameleon DS3} & 731648 (601600, 2586368) & 621568 (467712, 2156288) \\
+\datasetname{Chameleon DS4} & 689664 (583936, 2526720) & 674304 (452352, 2342144) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:iterative_memory_steadystate_bytes}
+\end{table}

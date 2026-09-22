@@ -1,219 +1,415 @@
-# iterative_validation_experiment.py
-
-import itertools
-import logging
+#!/usr/bin/env python3
+import glob
 import os
-import sys
-import time
-import urllib.request
-import zlib
-from io import StringIO
+import warnings
 
+import matplotlib.pyplot as plt
 import numpy as np
-import optuna
 import pandas as pd
-import rpy2.rinterface_lib.callbacks
-import rpy2.robjects as robjects
-from pympler import asizeof
-from rpy2.robjects.packages import importr
-from scipy.io import arff
-from sklearn.datasets import make_blobs
-from sklearn.metrics import adjusted_rand_score
-from tqdm import tqdm
+from scipy.stats import friedmanchisquare, wilcoxon
+from statsmodels.stats.multitest import multipletests
 
-from models.MicroTEDAClus.MicroTEDAClus import (
-    MicroTEDAClus,
-    MicroTEDAClusParameterSearchSpace,
+from editorial_config import ITERATIVE_DATASET_ORDER, MODEL_COLORS, dataset_display_name
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
+
+DIR_RESULTS = os.path.join(SCRIPT_DIR, "results_iterative")
+DIR_PARAMS = os.path.join(SCRIPT_DIR, "results_params_iterative")
+
+DIR_METRICS = os.path.join(SCRIPT_DIR, "metrics_iterative")
+DIR_STATS = os.path.join(SCRIPT_DIR, "statistical_analysis_iterative")
+DIR_OUT_BASE = os.path.join(
+    REPOSITORY_ROOT, "monografia", "CorrectedModel", "artifacts"
 )
-from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected import (
-    MicroTEDAClusCorrected,
-    MicroTEDAClusCorrectedParameterSearchSpace,
-)
+DIR_TABLES = os.path.join(DIR_OUT_BASE, "tables")
+DIR_PLOTS_INT = os.path.join(DIR_OUT_BASE, "plots", "internal")
 
-from editorial_config import DATASET_ORDER
-from main_experiment import get_chameleon, get_r_stream, get_dataset
+for d in [
+    DIR_METRICS,
+    DIR_STATS,
+    DIR_TABLES,
+    DIR_PLOTS_INT,
+]:
+    os.makedirs(d, exist_ok=True)
 
-rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR)
-optuna.logging.set_verbosity(optuna.logging.WARNING)
+ITERATIVE_MODELS = ["MicroTEDAClus", "MicroTEDAClusCorrected"]
+ALPHA = 0.05
+CLIFFS_DELTA_THRESHOLD = 0.147
 
-DIR_RESULTS = "./results_iterative"
-DIR_PARAMS = "./results_params_iterative"
-os.makedirs(DIR_RESULTS, exist_ok=True)
-os.makedirs(DIR_PARAMS, exist_ok=True)
+READABLE_METRICS = {
+    "ari_overall": "Overall Adjusted Rand Index",
+    "ari_steadystate": "Adjusted Rand Index at the Penultimate Batch",
+    "ari_fifth": "Adjusted Rand Index at the Fifth Batch",
+    "ari_diff": "Maximum ARI Drop",
+    "time_predict_cum_ms": "Cumulative Prediction Time [ms]",
+    "time_fit_cum_ms": "Cumulative Fitting Time [ms]",
+    "memory_max_bytes": "Maximum Memory Footprint [B]",
+    "memory_steadystate_bytes": "Steady-State Memory Footprint at the Penultimate Batch [B]",
+    "mc_max": "Maximum Microcluster Count",
+    "mc_steadystate": "Steady-State Microcluster Count at the Penultimate Batch",
+}
 
-try:
-    stream = importr("stream")
-    streamMOA = importr("streamMOA")
-    mlbench = importr("mlbench")
-except Exception as e:
-    print(f"Critical Error loading R dependencies via rpy2: {e}")
-    sys.exit(1)
-
-# -----------------------------------------------------------------------------
-# Configuration
-# -----------------------------------------------------------------------------
-RUNS = 32
-BATCH_SIZE = 100
-OPT_TRIALS = 64
-OPT_TIMEOUT = 180
-BURN_IN_FRACTION = 0.05
-SPLIT_FRACTION = 0.2
-BASE_SEED = 0
-
-DATASETS = [
-    *DATASET_ORDER,
-]
-
-MODEL_MAP = {
-    "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
-    "MicroTEDAClusCorrected": (
-        MicroTEDAClusCorrected,
-        MicroTEDAClusCorrectedParameterSearchSpace,
-    ),
+STATS_METRICS = {
+    "ari_overall": {"dir": "max", "round": lambda x: np.round(x, 3), "fmt": "{:.3f}"},
+    "ari_steadystate": {
+        "dir": "max",
+        "round": lambda x: np.round(x, 3),
+        "fmt": "{:.3f}",
+    },
+    "ari_fifth": {"dir": "max", "round": lambda x: np.round(x, 3), "fmt": "{:.3f}"},
+    "ari_diff": {"dir": "min", "round": lambda x: np.round(x, 3), "fmt": "{:.3f}"},
+    "time_predict_cum_ms": {
+        "dir": "min",
+        "round": lambda x: np.round(x, -1),
+        "fmt": "{:.1f}",
+    },
+    "time_fit_cum_ms": {
+        "dir": "min",
+        "round": lambda x: np.round(x, -1),
+        "fmt": "{:.1f}",
+    },
+    "memory_max_bytes": {
+        "dir": "min",
+        "round": lambda x: np.round(x / 1024) * 1024,
+        "fmt": "{:.0f}",
+    },
+    "memory_steadystate_bytes": {
+        "dir": "min",
+        "round": lambda x: np.round(x / 1024) * 1024,
+        "fmt": "{:.0f}",
+    },
+    "mc_max": {"dir": "min", "round": lambda x: np.round(x), "fmt": "{:.0f}"},
+    "mc_steadystate": {"dir": "min", "round": lambda x: np.round(x), "fmt": "{:.0f}"},
 }
 
 
-# -----------------------------------------------------------------------------
-# Evaluation Strategy
-# -----------------------------------------------------------------------------
-def objective(trial, model_class, search_space_class, X_opt, y_opt):
-    params = search_space_class().sample_parameters(trial)
-    try:
-        model = model_class(**params)
-    except Exception:
-        raise optuna.exceptions.TrialPruned()
-
-    burn_in_idx = int(BURN_IN_FRACTION * len(X_opt))
-    y_pred_all = []
-    num_batches = len(X_opt) // BATCH_SIZE
-
-    t0 = time.process_time_ns()
-    try:
-        for b in range(num_batches):
-            start_idx, end_idx = b * BATCH_SIZE, (b + 1) * BATCH_SIZE
-            X_batch = X_opt[start_idx:end_idx]
-
-            preds = model.predict(X_batch)
-            y_pred_all.extend(preds)
-            model.fit(X_batch)
-    except Exception:
-        raise optuna.exceptions.TrialPruned()
-
-    t_total_sec = (time.process_time_ns() - t0) / 1e9
-
-    y_pred_eval = np.array(y_pred_all)[burn_in_idx:]
-    y_opt_eval = y_opt[: len(y_pred_all)][burn_in_idx:]
-
-    ari = adjusted_rand_score(y_opt_eval, y_pred_eval)
-    return ari - (1e-3 * t_total_sec)
+def aggregate_quantiles(
+    df: pd.DataFrame, group_cols: list, val_cols: list
+) -> pd.DataFrame:
+    grouped = df.groupby(group_cols)[val_cols]
+    return pd.concat(
+        [
+            grouped.median().rename(columns=lambda c: f"{c}_median"),
+            grouped.quantile(0.25).rename(columns=lambda c: f"{c}_q1"),
+            grouped.quantile(0.75).rename(columns=lambda c: f"{c}_q3"),
+        ],
+        axis=1,
+    ).reset_index()
 
 
-# -----------------------------------------------------------------------------
-# Main Execution Process
-# -----------------------------------------------------------------------------
-def main():
-    tasks = list(itertools.product(DATASETS, MODEL_MAP.keys(), range(RUNS)))
+def compute_metrics():
+    result_files = glob.glob(os.path.join(DIR_RESULTS, "*.csv"))
+    records_scalar, records_batch = [], []
 
-    with tqdm(total=len(tasks), desc="Experiments") as pbar:
-        for dataset, model_name, run in tasks:
-            output_file = os.path.join(DIR_RESULTS, f"{dataset}_{model_name}_{run}.csv")
-            params_file = os.path.join(DIR_PARAMS, f"{dataset}_{model_name}_{run}.csv")
+    for file in result_files:
+        parts = os.path.basename(file).replace(".csv", "").split("_")
+        run, model, dataset = int(parts[-1]), parts[-2], "_".join(parts[:-2])
+        df = pd.read_csv(file)
 
-            if os.path.exists(output_file) and os.path.exists(params_file):
-                pbar.update(1)
+        if not df[df["status"].str.startswith("ERROR", na=False)].empty or len(df) < 5:
+            continue
+
+        df["dataset"], df["model"], df["run"] = dataset, model, run
+        df["time_predict_ms"] = df["time_predict_wall_ns"] / 1e6
+        df["time_fit_ms"] = df["time_fit_wall_ns"] / 1e6
+
+        records_batch.append(
+            df[
+                [
+                    "dataset",
+                    "model",
+                    "run",
+                    "batch",
+                    "ari",
+                    "time_predict_ms",
+                    "time_fit_ms",
+                    "memory_bytes",
+                    "microcluster_count",
+                ]
+            ]
+        )
+        ari, mem, mc = (
+            df["ari"].to_numpy(),
+            df["memory_bytes"].to_numpy(),
+            df["microcluster_count"].to_numpy(),
+        )
+        records_scalar.append(
+            {
+                "dataset": dataset,
+                "model": model,
+                "run": run,
+                "ari_overall": np.median(ari),
+                "ari_steadystate": ari[-2],
+                "ari_fifth": ari[4],
+                "ari_diff": np.max(ari) - ari[-2],
+                "time_predict_cum_ms": df["time_predict_ms"].sum(),
+                "time_fit_cum_ms": df["time_fit_ms"].sum(),
+                "memory_max_bytes": np.max(mem),
+                "memory_steadystate_bytes": mem[-2],
+                "mc_max": np.max(mc),
+                "mc_steadystate": mc[-2],
+            }
+        )
+
+    val_cols = [
+        "ari",
+        "time_predict_ms",
+        "time_fit_ms",
+        "memory_bytes",
+        "microcluster_count",
+    ]
+
+    df_scalar = pd.DataFrame(records_scalar)
+    df_scalar.to_parquet(os.path.join(DIR_METRICS, "run_level.parquet"), index=False)
+    aggregate_quantiles(
+        df_scalar, ["dataset", "model"], list(STATS_METRICS.keys())
+    ).to_parquet(os.path.join(DIR_METRICS, "aggregated.parquet"), index=False)
+    aggregate_quantiles(
+        pd.concat(records_batch, ignore_index=True),
+        ["dataset", "model", "batch"],
+        val_cols,
+    ).to_parquet(
+        os.path.join(DIR_METRICS, "aggregated_by_batch.parquet"),
+        index=False,
+    )
+
+
+def run_statistical_analysis():
+    path_in = os.path.join(DIR_METRICS, "run_level.parquet")
+    if not os.path.exists(path_in):
+        return
+    df_runs = pd.read_parquet(path_in)
+
+    for metric, config in STATS_METRICS.items():
+        if metric not in df_runs.columns:
+            continue
+        results = []
+        for dataset in df_runs["dataset"].unique():
+            df_ds = df_runs[df_runs["dataset"] == dataset].pivot(
+                index="run", columns="model", values=metric
+            )
+            valid_models = [m for m in ITERATIVE_MODELS if m in df_ds.columns]
+
+            if len(valid_models) < 2:
+                continue
+            df_ds = df_ds[valid_models].dropna()
+            if df_ds.empty:
                 continue
 
-            dataset_hash = zlib.crc32(dataset.encode("utf-8"))
-            run_seed = BASE_SEED + run + (dataset_hash % 10000)
-            X, y = get_dataset(dataset, run_seed)
-            split_idx = int(SPLIT_FRACTION * len(X))
-            X_opt, y_opt = X[:split_idx], y[:split_idx]
-            X_eval, y_eval = X[split_idx:], y[split_idx:]
-
-            model_class, search_space_class = MODEL_MAP[model_name]
-            sampler = optuna.samplers.TPESampler(seed=run_seed)
-            study = optuna.create_study(direction="maximize", sampler=sampler)
-            study.optimize(
-                lambda trial: objective(
-                    trial, model_class, search_space_class, X_opt, y_opt
-                ),
-                n_trials=OPT_TRIALS,
-                timeout=OPT_TIMEOUT,
+            df_disc = pd.DataFrame(
+                config["round"](df_ds.values), columns=valid_models, index=df_ds.index
+            )
+            medians, q1s, q3s = (
+                df_disc.median(),
+                df_disc.quantile(0.25),
+                df_disc.quantile(0.75),
             )
 
-            try:
-                best_params = study.best_params
-                model = model_class(**best_params)
-                params_records = [
-                    {
-                        "dataset": dataset,
-                        "model": model_name,
-                        "run": run,
-                        "param_name": k,
-                        "param_value": v,
-                    }
-                    for k, v in best_params.items()
-                ]
-            except ValueError:
-                pd.DataFrame(
-                    [{"batch": 0, "status": "ERROR: All trials pruned"}]
-                ).to_csv(output_file, index=False)
-                pd.DataFrame([]).to_csv(params_file, index=False)
-                pbar.update(1)
-                continue
+            best_model = (
+                medians.idxmax() if config["dir"] == "max" else medians.idxmin()
+            )
+            worst_model = (
+                medians.idxmin() if config["dir"] == "max" else medians.idxmax()
+            )
 
-            pd.DataFrame(params_records).to_csv(params_file, index=False)
-
-            results = []
-            num_batches = len(X_eval) // BATCH_SIZE
-
-            for b in range(num_batches):
-                start_idx, end_idx = b * BATCH_SIZE, (b + 1) * BATCH_SIZE
-                X_batch, y_batch = X_eval[start_idx:end_idx], y_eval[start_idx:end_idx]
-
+            is_sig = False
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
                 try:
-                    t0_pred_wall = time.perf_counter_ns()
-                    t0_pred_cpu = time.process_time_ns()
-                    preds = model.predict(X_batch)
-                    t_pred_cpu_ns = time.process_time_ns() - t0_pred_cpu
-                    t_pred_wall_ns = time.perf_counter_ns() - t0_pred_wall
+                    if len(valid_models) == 2:
+                        if (
+                            wilcoxon(
+                                df_disc[valid_models[0]].to_numpy(),
+                                df_disc[valid_models[1]].to_numpy(),
+                            ).pvalue
+                            < ALPHA
+                        ):
+                            is_sig = True
+                    else:
+                        if (
+                            friedmanchisquare(
+                                *[
+                                    np.asarray(df_disc[m].to_numpy(), dtype=float)
+                                    for m in valid_models
+                                ]
+                            ).pvalue
+                            < ALPHA
+                        ):
+                            is_sig = True
+                except ValueError:
+                    pass
 
-                    t0_fit_wall = time.perf_counter_ns()
-                    t0_fit_cpu = time.process_time_ns()
-                    model.fit(X_batch)
-                    t_fit_cpu_ns = time.process_time_ns() - t0_fit_cpu
-                    t_fit_wall_ns = time.perf_counter_ns() - t0_fit_wall
+            best_tier, worst_tier = set([best_model]), set([worst_model])
+            if not is_sig:
+                best_tier, worst_tier = set(valid_models), set(valid_models)
+            else:
 
-                    ari = adjusted_rand_score(np.asarray(y_batch), preds)
-                    mem_bytes = asizeof.asizeof(model)
-                    mc_count = model.microcluster_count()
-                    status = "OK"
-                except Exception as e:
-                    ari = t_pred_cpu_ns = t_fit_cpu_ns = t_pred_wall_ns = (
-                        t_fit_wall_ns
-                    ) = mem_bytes = mc_count = 0
-                    status = f"ERROR: {str(e).replace(',', ';')}"
+                def process_tier(target_model, target_tier):
+                    pvals, test_models = [], [
+                        m for m in valid_models if m != target_model
+                    ]
+                    for m in test_models:
+                        diff = df_disc[target_model].to_numpy() - df_disc[m].to_numpy()
+                        pvals.append(
+                            1.0
+                            if np.all(diff == 0)
+                            else wilcoxon(df_disc[target_model], df_disc[m]).pvalue
+                        )
+                    _, p_adj, _, _ = multipletests(pvals, alpha=ALPHA, method="holm")
 
-                results.append(
-                    {
-                        "batch": b,
-                        "ari": ari,
-                        "time_predict_cpu_ns": t_pred_cpu_ns,
-                        "time_fit_cpu_ns": t_fit_cpu_ns,
-                        "time_predict_wall_ns": t_pred_wall_ns,
-                        "time_fit_wall_ns": t_fit_wall_ns,
-                        "microcluster_count": mc_count,
-                        "memory_bytes": mem_bytes,
-                        "status": status,
-                    }
+                    for m, p in zip(test_models, p_adj):
+                        delta = float(
+                            np.mean(
+                                np.sign(
+                                    df_disc[target_model].values[:, None]
+                                    - df_disc[m].to_numpy()[None, :]
+                                )
+                            )
+                        )
+                        if p >= ALPHA or abs(delta) < CLIFFS_DELTA_THRESHOLD:
+                            target_tier.add(m)
+
+                process_tier(best_model, best_tier)
+                process_tier(worst_model, worst_tier)
+
+            row_dict = {"dataset": dataset}
+            for m in valid_models:
+                tags = [
+                    t
+                    for t, cond in [("B", m in best_tier), ("W", m in worst_tier)]
+                    if cond
+                ]
+                tag_str = f" [{','.join(tags)}]" if tags else ""
+                row_dict[m] = (
+                    f"{config['fmt'].format(medians[m])} ({config['fmt'].format(q1s[m])}, {config['fmt'].format(q3s[m])}){tag_str}"
                 )
 
-                if status.startswith("ERROR"):
-                    break
+            results.append(row_dict)
 
-            pd.DataFrame(results).to_csv(output_file, index=False)
-            pbar.update(1)
+        if results:
+            pd.DataFrame(results).set_index("dataset").to_csv(
+                os.path.join(DIR_STATS, f"{metric}_statistical_analysis.csv")
+            )
+
+
+def format_latex_cell(stat_cell: str) -> str:
+    if str(stat_cell) in ("nan", "-"):
+        return "-"
+    parts = str(stat_cell).split(" [")
+    base, tags = parts[0], parts[1].replace("]", "") if len(parts) > 1 else ""
+    return (
+        base
+        if "B" in tags and "W" in tags
+        else (
+            f"\\textbf{{{base}}}"
+            if "B" in tags
+            else f"\\textcolor{{red}}{{{base}}}" if "W" in tags else base
+        )
+    )
+
+
+def generate_artifacts():
+    stat_files = [f for f in os.listdir(DIR_STATS) if f.endswith(".csv")]
+    for stat_file in stat_files:
+        metric = stat_file.replace("_statistical_analysis.csv", "")
+        df_stat = pd.read_csv(os.path.join(DIR_STATS, stat_file), index_col="dataset")
+        ds_order = {d: i for i, d in enumerate(ITERATIVE_DATASET_ORDER)}
+        df_stat = df_stat.sort_index(
+            key=lambda idx: idx.map(
+                lambda d: ds_order.get(d, len(ITERATIVE_DATASET_ORDER))
+            )
+        )
+
+        latex_lines = [
+            "\\begin{table}[htbp]",
+            "\\centering",
+            f"\\caption{{Statistical analysis and (Q1, Q3) for the {READABLE_METRICS.get(metric, metric.replace('_', ' ').title())}.}}",
+            "\\resizebox{\\textwidth}{!}{%",
+            "\\begin{tabular}{l " + "c " * len(ITERATIVE_MODELS) + "}",
+            "\\toprule",
+            "Dataset & "
+            + " & ".join(f"\\modelname{{{m}}}" for m in ITERATIVE_MODELS)
+            + " \\\\",
+            "\\midrule",
+        ]
+
+        for dataset in df_stat.index:
+            row_str = (
+                f"\\datasetname{{{dataset_display_name(dataset).replace('_', '\\_')}}}"
+            )
+            for model in ITERATIVE_MODELS:
+                cell = df_stat.loc[dataset, model] if model in df_stat.columns else "-"
+                row_str += (
+                    f" & {format_latex_cell(str(cell))}"
+                    if not np.asarray(pd.isna(cell)).all()
+                    else " & -"
+                )
+            latex_lines.append(row_str + " \\\\")
+
+        latex_lines.extend(
+            [
+                "\\bottomrule",
+                "\\end{tabular}",
+                "}",
+                f"\\label{{tab:iterative_{metric}}}",
+                "\\end{table}",
+            ]
+        )
+        with open(os.path.join(DIR_TABLES, f"{metric}.tex"), "w") as f:
+            f.write("\n".join(latex_lines))
+
+    metrics = [
+        "ari",
+        "time_predict_ms",
+        "time_fit_ms",
+        "memory_bytes",
+        "microcluster_count",
+    ]
+
+    int_path = os.path.join(DIR_METRICS, "aggregated_by_batch.parquet")
+    if os.path.exists(int_path):
+        df_int = pd.read_parquet(int_path)
+        for dataset in df_int["dataset"].unique():
+            df_ds = df_int[df_int["dataset"] == dataset]
+            fig, axes = plt.subplots(2, 3, figsize=(15, 8))
+            for i, metric in enumerate(metrics):
+                ax = axes.flatten()[i]
+                for model in ITERATIVE_MODELS:
+                    df_m = df_ds[df_ds["model"] == model].sort_values("batch")
+                    if not df_m.empty:
+                        ax.plot(
+                            df_m["batch"],
+                            df_m[f"{metric}_median"],
+                            label=model,
+                            color=MODEL_COLORS.get(model, "#000000"),
+                            linewidth=1.5,
+                        )
+                        ax.fill_between(
+                            df_m["batch"],
+                            df_m[f"{metric}_q1"],
+                            df_m[f"{metric}_q3"],
+                            color=MODEL_COLORS.get(model, "#000000"),
+                            alpha=0.15,
+                        )
+                ax.set_title(metric.replace("_", " ").title())
+                ax.set_xlabel("Batch Index")
+                if metric != "ari":
+                    ax.set_yscale("log")
+                if i == 0:
+                    ax.legend(loc="best", fontsize=8)
+            axes.flatten()[-1].axis("off")
+            plt.suptitle(f"Internal Inspection: {dataset}", y=1.02)
+            plt.tight_layout()
+            fig.savefig(
+                os.path.join(DIR_PLOTS_INT, f"{dataset}_grid.png"),
+                dpi=150,
+                bbox_inches="tight",
+            )
+            plt.close(fig)
 
 
 if __name__ == "__main__":
-    main()
+    compute_metrics()
+    run_statistical_analysis()
+    generate_artifacts()

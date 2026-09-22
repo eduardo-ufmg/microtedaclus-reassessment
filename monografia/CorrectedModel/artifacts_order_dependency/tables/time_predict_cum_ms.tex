@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis and (Q1, Q3) for the Cumulative Prediction Time [ms].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c }
+\toprule
+Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClusCorrected} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 105.0 (40.0, 365.0) & 75.0 (47.5, 112.5) \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{60.0 (20.0, 82.5)} & \textbf{30.0 (20.0, 40.0)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{1490.0 (345.0, 3877.5)} & \textbf{140.0 (87.5, 320.0)} \\
+\datasetname{Cassini} & \textcolor{red}{70.0 (50.0, 257.5)} & \textbf{40.0 (30.0, 50.0)} \\
+\datasetname{Chameleon DS3} & \textcolor{red}{590.0 (220.0, 6500.0)} & \textbf{245.0 (117.5, 2020.0)} \\
+\datasetname{Chameleon DS4} & 745.0 (182.5, 3882.5) & 550.0 (227.5, 2270.0) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:iterative_time_predict_cum_ms}
+\end{table}

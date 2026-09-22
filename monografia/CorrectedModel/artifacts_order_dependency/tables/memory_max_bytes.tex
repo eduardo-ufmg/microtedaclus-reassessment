@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis and (Q1, Q3) for the Maximum Memory Footprint [B].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c }
+\toprule
+Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClusCorrected} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 318464 (116480, 494848) & 368640 (163584, 546048) \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{154112 (88064, 183296)} & \textbf{82432 (56320, 92160)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{1099776 (421888, 1548288)} & \textbf{302080 (205312, 617728)} \\
+\datasetname{Cassini} & 149504 (134656, 343296) & 147968 (109568, 175616) \\
+\datasetname{Chameleon DS3} & 734208 (604672, 2595584) & 625152 (472832, 2160640) \\
+\datasetname{Chameleon DS4} & 695296 (587264, 2528768) & 682496 (454400, 2352640) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:iterative_memory_max_bytes}
+\end{table}

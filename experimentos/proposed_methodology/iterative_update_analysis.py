@@ -21,7 +21,7 @@ DIR_METRICS_NON_SCL = os.path.join(SCRIPT_DIR, "metrics_iterative", "non_scalabi
 
 DIR_STATS = os.path.join(SCRIPT_DIR, "statistical_analysis_iterative")
 DIR_OUT_BASE = os.path.join(
-    REPOSITORY_ROOT, "monografia", "MethodologyReassessment", "artifacts_iterative"
+    REPOSITORY_ROOT, "monografia", "CorrectedModel", "artifacts"
 )
 DIR_TABLES = os.path.join(DIR_OUT_BASE, "tables")
 DIR_PLOTS_INT = os.path.join(DIR_OUT_BASE, "plots", "internal")
@@ -106,6 +106,11 @@ def compute_metrics():
     for file in result_files:
         parts = os.path.basename(file).replace(".csv", "").split("_")
         run, model, dataset = int(parts[-1]), parts[-2], "_".join(parts[:-2])
+
+        # Exclude scalability subsets other than SCL-32 and SCL-64
+        if dataset.startswith("SCL-") and dataset not in ["SCL-32", "SCL-64"]:
+            continue
+
         df = pd.read_csv(file)
 
         if not df[df["status"].str.startswith("ERROR", na=False)].empty or len(df) < 5:
@@ -220,16 +225,25 @@ def run_statistical_analysis():
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 try:
-                    if (
-                        friedmanchisquare(
-                            *[
-                                np.asarray(df_disc[m].to_numpy(), dtype=float)
-                                for m in valid_models
-                            ]
-                        ).pvalue
-                        < ALPHA
-                    ):
-                        is_sig = True
+                    if len(valid_models) == 2:
+                        if (
+                            wilcoxon(
+                                df_disc[valid_models[0]], df_disc[valid_models[1]]
+                            ).pvalue
+                            < ALPHA
+                        ):
+                            is_sig = True
+                    else:
+                        if (
+                            friedmanchisquare(
+                                *[
+                                    np.asarray(df_disc[m].to_numpy(), dtype=float)
+                                    for m in valid_models
+                                ]
+                            ).pvalue
+                            < ALPHA
+                        ):
+                            is_sig = True
                 except ValueError:
                     pass
 
@@ -307,7 +321,11 @@ def generate_artifacts():
     for stat_file in stat_files:
         metric = stat_file.replace("_statistical_analysis.csv", "")
         df_stat = pd.read_csv(os.path.join(DIR_STATS, stat_file), index_col="dataset")
-        ds_order = {d: i for i, d in enumerate(DATASET_ORDER)}
+
+        # Extend the imported DATASET_ORDER locally
+        local_order = list(DATASET_ORDER) + ["SCL-32", "SCL-64"]
+        ds_order = {d: i for i, d in enumerate(local_order)}
+
         df_stat = df_stat.sort_index(
             key=lambda idx: idx.map(lambda d: ds_order.get(d, len(DATASET_ORDER)))
         )

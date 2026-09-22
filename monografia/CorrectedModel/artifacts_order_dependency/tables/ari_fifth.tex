@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis and (Q1, Q3) for the Adjusted Rand Index at the Fifth Batch.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c }
+\toprule
+Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClusCorrected} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textbf{0.843 (0.806, 0.895)} & \textcolor{red}{0.393 (0.000, 0.834)} \\
+\datasetname{Stream Benchmark 2} & \textbf{0.605 (0.552, 0.637)} & \textcolor{red}{0.510 (0.207, 0.602)} \\
+\datasetname{Random RBF Generator with Events} & \textbf{0.573 (0.403, 0.776)} & \textcolor{red}{0.196 (0.028, 0.491)} \\
+\datasetname{Cassini} & \textbf{0.526 (0.000, 0.613)} & \textcolor{red}{0.000 (0.000, 0.364)} \\
+\datasetname{Chameleon DS3} & 0.000 (0.000, 0.000) & 0.000 (0.000, 0.000) \\
+\datasetname{Chameleon DS4} & 0.036 (0.000, 0.134) & 0.072 (0.000, 0.091) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:iterative_ari_fifth}
+\end{table}

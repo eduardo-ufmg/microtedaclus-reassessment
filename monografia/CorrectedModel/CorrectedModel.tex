@@ -2,3 +2,78 @@
 \label{chap:ModelCorrection}
 
 \section{Order-Dependent Characteristics}
+
+\label{sec:order_dependent_characteristics}
+
+An intuitive approach to solve the order-dependence of the microcluster density is to redefine it as an aggregation of the Typicality and Eccentricity Data Analytics variables across all aggregated samples. We show, however, that such solution is analytically flawed.
+
+If
+
+\begin{equation}
+    V_k = \sum_{j=1}^{S_k} \lVert \mu_k - x_j \rVert^2
+\end{equation}
+
+is the sum of squared Euclidean deviations for the $S_k$ samples of a microcluster $i$, for the standard spatial sample variance $\sigma^2_k = \frac{1}{S_k} V_k$,
+
+\begin{equation}
+    V_k = S_k \sigma^2_k
+\end{equation}
+
+Then, $\bar{\xi}_k$, the mean eccentricity of a microcluster $k$, is defined as \cref{eq:mean_eccentricity}.
+
+\begin{align}
+    \bar{\xi}_k &= \frac{1}{S_k} \sum_{j=1}^{S_k} \left( \frac{1}{S_k} + \frac{\lVert \mu_k - x_j \rVert^2}{S_k \sigma^2_k} \right) \nonumber \\
+                &= \frac{1}{S_k} \left( \sum_{j=1}^{S_k} \frac{1}{S_k} + \frac{1}{S_k \sigma^2_k} \sum_{j=1}^{S_k} \lVert \mu_k - x_j \rVert^2 \right) \nonumber \\
+                &= \frac{1}{S_k} \left( 1 + \frac{V_k}{S_k \sigma^2_k} \right) \nonumber \\
+                &= \frac{1}{S_k} \left( 1 + \frac{S_k \sigma^2_k}{S_k \sigma^2_k} \right) = \frac{2}{S_k}
+    \label{eq:mean_eccentricity}
+\end{align}
+
+If the exact recursive formulas from the original \MicroTEDAClus formulation are injected instead \cite{maia2020evolvclus}, the cancellation persists. The original formulation incorporates an anomalous penalty by the dimensionality $d$ squared in its variance computation, such that
+
+\begin{equation}
+    \sigma^2_k = \frac{1}{S_k} \sum_{j=1}^{S_k} \frac{4\lVert \mu_k - x_j \rVert^2}{d^2}
+\end{equation}
+
+Which corresponts to $V_k = \frac{d^2 S_k \sigma^2_k}{4}$. The original eccentricity formula is \cref{eq:original_eccentricity}.
+
+\begin{equation}
+    \xi(x_j) = \frac{1}{S_k} + \frac{2\lVert \mu_k - x_j \rVert^2}{S_k \sigma^2_k d}
+    \label{eq:original_eccentricity}
+\end{equation}
+
+Thus,
+
+\begin{align}
+    \bar{\xi}_k &= \frac{1}{S_k} \sum_{j=1}^{S_k} \left( \frac{1}{S_k} + \frac{2\lVert \mu_k - x_j \rVert^2}{S_k \sigma^2_k d} \right) \nonumber \\
+                &= \frac{1}{S_k} \left( 1 + \frac{2}{S_k \sigma^2_k d} \sum_{j=1}^{S_k} \lVert \mu_k - x_j \rVert^2 \right) \nonumber \\
+                &= \frac{1}{S_k} \left( 1 + \frac{2 V_k}{S_k \sigma^2_k d} \right) \nonumber \\
+                &= \frac{1}{S_k} \left( 1 + \frac{2}{S_k \sigma^2_k d} \left( \frac{d^2 S_k \sigma^2_k}{4} \right) \right) \nonumber \\
+                &= \frac{1}{S_k} \left( 1 + \frac{d}{2} \right)
+\end{align}
+
+In both cases, the spatial dispersion term $\sigma^2_k$ cancels out entirely. Because the geometric volume is analytically eliminated, the aggregated TEDA variables reduce strictly to a function of cardinality ($S_k$) and dimensionality ($d$). Consequently, any density metric derived from them collapses into a pure mass count, rendering the algorithm mathematically blind to actual spatial dispersion.
+
+To formulate a geometrically valid and order-invariant density, the microcluster characterization is partitioned into intrinsic state variables and transient relational metrics. The TEDA variables $\xi(x)$, $\zeta(x)$, $\tau(x)$, and $t(x)$ are strictly preserved as point-to-set transient functions evaluated for an incoming sample $x$ against the distribution \cite{angelov2014outside}. They are explicitly removed from the microcluster's intrinsic state variables.
+
+The microcluster state is thus restricted to its recursively updated sufficient statistics: $S_k$, $\mu_k$, and $\sigma^2_k$. Because the model characterizes the spatial dispersion of a $d$-dimensional microcluster using a single scalar variance $\sigma^2_k$ rather than a full covariance matrix, it mathematically enforces an isotropic geometric assumption. Under this assumption, the true spatial volume scales with $(\sigma^2_k)^{d/2}$. To avoid the numerical instability of exponential dimensionality scaling in continuous stream clustering, a linear proxy of variance is utilized as a standard algebraic relaxation \cite{cao2006density}. The microcluster density $D_k$ is redefined directly as the ratio of accumulated mass to this volumetric proxy in \cref{eq:corrected_density}.
+
+\begin{equation}
+    D_k = \frac{S_k}{\sigma^2_k + \epsilon}
+    \label{eq:corrected_density}
+\end{equation}
+
+where $\epsilon > 0$ is a stabilization constant to prevent undefined behavior in single-sample microclusters.
+
+This decoupling stabilizes the macrocluster formation. The activation condition $D^l_k \ge \text{mean}\left(D^l_k\right)$ and the macrocluster density weighting $w^l_k = D^l_k / \sum_{m\in\mathcal{M}_j} D^m_k$ \cite{maia2020evolvclus} now strictly evaluate the invariant geometric density rather than the stochastic eccentricity evaluation of the most recent sample.
+
+\input{CorrectedModel/artifacts_order_dependency/tables/ari_overall.tex}
+\input{CorrectedModel/artifacts_order_dependency/tables/ari_fifth.tex}
+\input{CorrectedModel/artifacts_order_dependency/tables/ari_steadystate.tex}
+\input{CorrectedModel/artifacts_order_dependency/tables/ari_diff.tex}
+\input{CorrectedModel/artifacts_order_dependency/tables/time_fit_cum_ms.tex}
+\input{CorrectedModel/artifacts_order_dependency/tables/time_predict_cum_ms.tex}
+\input{CorrectedModel/artifacts_order_dependency/tables/memory_max_bytes.tex}
+\input{CorrectedModel/artifacts_order_dependency/tables/memory_steadystate_bytes.tex}
+\input{CorrectedModel/artifacts_order_dependency/tables/mc_max.tex}
+\input{CorrectedModel/artifacts_order_dependency/tables/mc_steadystate.tex}
