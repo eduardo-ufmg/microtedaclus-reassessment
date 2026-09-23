@@ -144,6 +144,16 @@ class MicroTEDAClusCorrected:
 
         return result
 
+    @staticmethod
+    def get_typicality(x, num_samples, mean, var):
+        ecc = MicroTEDAClusCorrected.get_eccentricity(x, num_samples, mean, var)
+        return 1.0 - ecc
+
+    @staticmethod
+    def get_normalized_typicality(x, num_samples, mean, var):
+        tau = MicroTEDAClusCorrected.get_typicality(x, num_samples, mean, var)
+        return tau / (num_samples - 2.0)
+
     def fit(self, X, update_macro_clusters=True, prune_micro_clusters=True):
 
         lenx = len(X)
@@ -237,10 +247,13 @@ class MicroTEDAClusCorrected:
             total_density += m["density"]
 
         mb = 0
+        if total_density == 0:
+            return mb
+
         for m in active_micro_clusters:
             d = m["density"]
 
-            t = 1 - MicroTEDAClusCorrected.get_normalized_eccentricity(
+            t = MicroTEDAClusCorrected.get_normalized_typicality(
                 x, m["num_samples"], m["mean"], m["variance"]
             )
             mb += (d / total_density) * t
@@ -254,7 +267,7 @@ class MicroTEDAClusCorrected:
 
         d = micro_cluster["density"]
 
-        t = 1 - MicroTEDAClusCorrected.get_normalized_eccentricity(
+        t = MicroTEDAClusCorrected.get_normalized_typicality(
             x,
             micro_cluster["num_samples"],
             micro_cluster["mean"],

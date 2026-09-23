@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis and (Q1, Q3) for the Overall Adjusted Rand Index.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c }
+\toprule
+Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClusCorrected} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textbf{0.019 (0.000, 0.453)} & \textcolor{red}{0.000 (0.000, 0.021)} \\
+\datasetname{Stream Benchmark 2} & \textbf{0.577 (0.517, 0.626)} & \textcolor{red}{0.491 (0.056, 0.538)} \\
+\datasetname{Random RBF Generator with Events} & \textbf{0.459 (0.140, 0.588)} & \textcolor{red}{0.028 (0.000, 0.234)} \\
+\datasetname{Cassini} & 0.456 (0.066, 0.547) & 0.301 (0.055, 0.374) \\
+\datasetname{Chameleon DS3} & \textcolor{red}{0.208 (0.150, 0.240)} & \textbf{0.275 (0.215, 0.285)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{0.160 (0.125, 0.223)} & \textbf{0.273 (0.247, 0.284)} \\
+\datasetname{SCL-32} & 0.863 (0.007, 0.914) & 0.859 (0.856, 0.862) \\
+\datasetname{SCL-64} & 0.859 (0.000, 0.904) & 0.861 (0.859, 0.868) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:iterative_ari_overall}
+\end{table}

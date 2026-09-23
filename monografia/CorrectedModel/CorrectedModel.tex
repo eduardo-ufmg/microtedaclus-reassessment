@@ -2,7 +2,6 @@
 \label{chap:ModelCorrection}
 
 \section{Order-Dependent Characteristics}
-
 \label{sec:order_dependent_characteristics}
 
 An intuitive approach to solve the order-dependence of the microcluster density is to redefine it as an aggregation of the Typicality and Eccentricity Data Analytics variables across all aggregated samples. We show, however, that such solution is analytically flawed.
@@ -77,3 +76,28 @@ This decoupling stabilizes the macrocluster formation. The activation condition 
 \input{CorrectedModel/artifacts_order_dependency/tables/memory_steadystate_bytes.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/mc_max.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/mc_steadystate.tex}
+
+
+\section{Dimensionality Penalty}
+\label{sec:dimensionality_penalty}
+
+In the original formulation \cite{maia2020evolvclus}, the spatial dispersion metrics explicitly penalize the Euclidean norm by the data dimensionality $d$. Specifically, the recursive variance $\left(\sigma^i_k\right)^2$ and the point-to-set eccentricity $\xi^i(x_k)$ arbitrarily scale the squared deviations by $4/d^2$ and $2/d$, respectively. This scaling factor is analytically flawed. It distorts the true geometric boundaries of the microclusters and deviates from the standard TEDA derivations for the Euclidean space \cite{angelov2014outside}, where the spatial variance strictly reflects the unscaled trace of the covariance matrix.
+
+To restore the analytical integrity of the spatial boundaries, the dimensionality penalty is removed. The recursive variance update for a microcluster $i$ at moment $k$ is corrected to the standard formulation:
+
+$$ \left(\sigma^i_k\right)^2 = \frac{S^i_k - 1}{S^i_k} \left(\sigma^i_{k-1}\right)^2 + \frac{1}{S^i_k - 1} \lVert x_k - \mu^i_k \rVert^2 $$
+
+Correspondingly, the transient point-to-set eccentricity evaluation is restored to its exact unscaled geometric form:
+
+$$ \xi^i(x_k) = \frac{1}{S^i_k} + \frac{\lVert \mu^i_k - x_k \rVert^2}{S^i_k \left(\sigma^i_k\right)^2} $$
+
+\input{CorrectedModel/artifacts_dimension_penalty/tables/ari_overall.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/ari_fifth.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/ari_steadystate.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/ari_diff.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/time_fit_cum_ms.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/time_predict_cum_ms.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/memory_max_bytes.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/memory_steadystate_bytes.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/mc_max.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/mc_steadystate.tex}

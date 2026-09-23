@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis and (Q1, Q3) for the Maximum Microcluster Count.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c }
+\toprule
+Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClusCorrected} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 97 (26, 179) & 48 (28, 71) \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{43 (15, 60)} & \textbf{22 (14, 28)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{290 (103, 466)} & \textbf{48 (28, 78)} \\
+\datasetname{Cassini} & 48 (38, 126) & 80 (30, 99) \\
+\datasetname{Chameleon DS3} & \textcolor{red}{521 (400, 2278)} & \textbf{98 (93, 395)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{512 (408, 2226)} & \textbf{105 (100, 134)} \\
+\datasetname{SCL-32} & \textbf{36 (18, 57)} & \textcolor{red}{76 (49, 144)} \\
+\datasetname{SCL-64} & 28 (25, 65) & 77 (36, 152) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:iterative_mc_max}
+\end{table}

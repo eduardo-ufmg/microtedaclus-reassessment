@@ -229,7 +229,7 @@ def plot_scalability(subset_name: str, subset_models: list, out_dir: str):
             "batch",
             penultimate,
             True,
-            "Memory Footprint [B]",
+            "Steady-State Memory Footprint [B]",
         ),
         (
             "feature_scalability_microcluster_count_max.png",

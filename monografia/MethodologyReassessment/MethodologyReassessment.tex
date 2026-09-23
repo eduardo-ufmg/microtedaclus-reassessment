@@ -66,7 +66,7 @@ The second method in which the fading factor is used is \cref{snippet:maia_imple
 
 Such decayment logic is not present neither in the original work nor in the updated version of \MicroTEDAClus, and its introduction in the implementation found in the public repository is not justified or explained in any of those works.
 
-Another significant change from the paper's formulation to the implementation is the handling of microcluster activation. \Cref{info:microcluster_activation_criterion} and \cref{critique:use_of_unstable_density} present the criterion and use for microcluster activation stated in the original work. The implementation's procedure deviates from it and is described in \cref{alg:microcluster_activation_criterion_pseudocode}. Note that this pseudocode corresponds to the current work's interpretation of the code provided in the public repository, and it is not acknowledged or explained in neither the original work or the updated version of \MicroTEDAClus' presentation.
+Another significant change from the paper's formulation to the implementation is the handling of microcluster activation. \Cref{info:microcluster_activation_criterion} and \cref{critique:use_of_unstable_density} present the criterion and use for microcluster activation stated in the original work. The implementation's procedure deviates from it and is described in \cref{alg:microcluster_activation_criterion_pseudocode}. Note that this pseudocode corresponds to our interpretation of the code provided in the public repository, and it is not acknowledged or explained in neither the original work or the updated version of \MicroTEDAClus' presentation.
 
 \begin{algorithm}[htbp]
 \caption{Microcluster activation criterion used in the implementation found in the public repository}
@@ -86,7 +86,7 @@ Another significant change from the paper's formulation to the implementation is
 
 Hence, it can be inferred that, because $\mathbb{G}_0$ is subject to the ill condition of microcluster collapse, predicted by the original work, a second graph-building pass is performed over the microclusters considered to be active according to \cref{critique:use_of_unstable_density}. The resulting graph, $\mathbb{G}_1$, is expected to be secured from the overlap condition. The macroclusters built from it are the output of the macrocluster construction phase. Not only this change deviates from the original work's formulation, but it also introduces a significant increase in the computational complexity of the macrocluster construction phase.
 
-The process is performed by \cref{snippet:maia_implementation_update_macroclusters}, which calls \cref{snippet:maia_implementation_define_macroclusters} to build the macroclusters from the graph $\mathbb{G}_0$ followed by \cref{snippet:maia_implementation_define_activations} to determine the active microclusters, capture the active graph $\mathbb{G}_1$, and extract the final macroclusters from it.
+The process is performed by \cref{snippet:maia_implementation_update_macroclusters}, which calls \cref{snippet:maia_implementation_define_macroclusters} to build the macroclusters from the graph $\mathbb{G}_0$ followed by \cref{snippet:maia_implementation_define_activations} to determine the active microclusters, capture the active graph $\mathbb{G}_1$, and extract the final macroclusters from it. \Cref{snippet:maia_implementation_is_outlier} implements \cref{eq:outlier_condition} and substitutes \cref{critique:incorrect_condition_logic} by \cref{eq:corrected_condition_logic_for_outliers}. Finally, \cref{eq:recursive_eccentricity} and \cref{eq:normalized_typicality} are implemented as \cref{snippet:maia_implementation_get_eccentricity} and the previous to last expression of \cref{snippet:maia_implementation_calculate_membership}, respectively.
 
 \begin{lstlisting}[float, language=Python, caption={Update of macroclusters in the \MicroTEDAClus implementation found in the public repository}, label={snippet:maia_implementation_update_macroclusters}]
 def update_macro_clusters(self):
@@ -127,8 +127,6 @@ def define_activations(self):
     self.active_macro_clusters = list(nx.connected_components(self.active_graph))
 \end{lstlisting}
 
-\Cref{snippet:maia_implementation_is_outlier} implements \cref{eq:outlier_condition} and substitutes \cref{critique:incorrect_condition_logic} by \cref{eq:corrected_condition_logic_for_outliers}.
-
 \begin{lstlisting}[float, language=Python, caption={Outlier detection in the \MicroTEDAClus implementation found in the public repository}, label={snippet:maia_implementation_is_outlier}]
 def is_outlier(self, s_ik, var_ik, norm_ecc):
     if s_ik < 3:
@@ -139,8 +137,6 @@ def is_outlier(self, s_ik, var_ik, norm_ecc):
         outlier = (norm_ecc > outlier_limit)
     return outlier
 \end{lstlisting}
-
-Finally, \cref{eq:recursive_eccentricity} and \cref{eq:normalized_typicality} are implemented as \cref{snippet:maia_implementation_get_eccentricity} and the previous to last expression of \cref{snippet:maia_implementation_calculate_membership}, respectively.
 
 \begin{lstlisting}[float, language=Python, caption={Eccentricity calculation in the \MicroTEDAClus implementation found in the public repository}, label={snippet:maia_implementation_get_eccentricity}]
 def get_eccentricity(x, num_samples, mean, var):
@@ -160,6 +156,8 @@ The mathematical expansion of the main expression in \cref{snippet:maia_implemen
     \label{eq:maia_implementation_eccentricity_eq}
 \end{equation}
 
+The expression for the intermediary typicality calculation in \cref{snippet:maia_implementation_calculate_membership} cannot be mathematically rewritten to match \cref{eq:normalized_typicality}, and is not equivalent to it.
+
 \begin{lstlisting}[float, language=Python, caption={Membership calculation in the \MicroTEDAClus implementation found in the public repository}, label={snippet:maia_implementation_calculate_membership}]
 def calculate_membership(x, active_micro_clusters):
     total_density = 0
@@ -174,8 +172,6 @@ def calculate_membership(x, active_micro_clusters):
         mb += (d / total_density) * t
     return mb
 \end{lstlisting}
-
-The expression for the intermediary typicality calculation in \cref{snippet:maia_implementation_calculate_membership} cannot be mathematically rewritten to match \cref{eq:normalized_typicality}, and is not equivalent to it.
 
 The updated implementation of \MicroTEDAClus, which is presented in the PHD thesis \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} \cite{galindo2021lastmile}, was provided by the work's author, but is not publicly available. Its main improvements from the original implementation are the introduction of partial support to the use of the cossine distance as distance metric, the refactor of the decayment logic, and the extraction of the microcluster structure to a separate class.
 
@@ -667,11 +663,11 @@ Thus, for the datasets that are not scalability-oriented, we report the overall 
 In \cite{maia2020evolvclus}, execution time is only assessed for the scalability-oriented datasets, and only reported through a plot of execution time per samples versus the feature dimension. Furthermore, since only the mean accross the multiple runs is reported, it is not possible to assess the variability of this metric. We evaluate and compare fitting and prediction separately, and report the following analysis:
 
 \begin{itemize}
-    \item For the datasets that are not scalability-oriented, the median and the $(Q_{1}, Q_{3})$ pair of the cumulative execution time for each stage are captured and reported for each model in suitable tables. This allows for a better understanding of the variability of the execution time.
+    \item For the datasets that are not scalability-oriented, the median and the $(Q_{1}, Q_{3})$ pair of the cumulative execution time for each stage are captured and reported for each model in suitable tables.
     \item For the scalability-oriented datasets, the median and the $(Q_{1}, Q_{3})$ pair of each stage are captured and reported for each model in the following plots:
     \begin{itemize}
         \item Execution time versus the number of samples, for each of two fixed feature dimensions (2 and 64).
-        \item Execution time versus the feature dimension, for each of two fixed batch indexes (4 and last - 1).
+        \item Cumulative execution time for each stage versus the feature dimension.
     \end{itemize}
     This report strategy's goal is to further investigate how the feature dimension impacts on the sample-scalability of the evaluated models, and how the number of samples impacts on the feature-scalability of the evaluated models. Median and quartiles are selected because preeliminary experiments show that a logarithmic scale is more suitable for this metric -- since the models differ by orders of magnitude -- and the high variability of the execution time increase the risk of negative bounds when defined as $\mu - \sigma$. Because \codename{Matplotlib}'s logarithmic scale does not support negative values, the quartile-pair is preferred to avoid artificially clipping the lower bound of the variability region to zero, since the quartiles are guaranteed to be bounded by the values actually observed in the experiments.
 \end{itemize}
@@ -685,7 +681,7 @@ The original work reports memory consumption only through a plot of memory usage
     \item For the scalability-oriented datasets, the median and the $(Q_{1}, Q{3})$ pair of the memory usage are captured and reported for each model in the following plots:
     \begin{itemize}
         \item Memory usage versus the number of samples, for each of two fixed feature dimensions (2 and 64).
-        \item Memory usage versus the feature dimension, for each of two fixed batch indexes (4 and last - 1).
+        \item Maximum and steady-state memory usage versus the feature dimension.
     \end{itemize}
     Median and quartiles are selected for the same reasons discussed in \cref{subsec:complete_runtime}.
 \end{itemize}
@@ -883,7 +879,7 @@ To evaluate the computational overhead under expanding data streams, \cref{fig:o
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/sample_scalability_time_fit_ms_dim2.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/sample_scalability_time_predict_ms_dim64.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/sample_scalability_time_fit_ms_dim64.png}
-    \caption{Feature-scalability of the prediction execution time at left and fitting execution time at right for 2 dimensions in the top plots and 64 dimensions in the bottom plots.}
+    \caption{Sample-scalability of the prediction execution time at left and fitting execution time at right for 2 dimensions in the top plots and 64 dimensions in the bottom plots.}
     \label{fig:orig_time_sample_scalability}
 \end{figure}
 
@@ -891,11 +887,9 @@ To evaluate the computational overhead under expanding data streams, \cref{fig:o
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/feature_scalability_time_fit_ms_cumulative.png}
-
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/feature_scalability_time_predict_ms_cumulative.png}
-
-    \caption{Feature-scalability of the prediction execution time at left and fitting execution time at right for batch 4 in the top plots and the penultimate batch in the bottom plots.}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/feature_scalability_time_fit_ms_cumulative.png}
+    \caption{Feature-scalability of the cumulative prediction execution time at left and fitting execution time at right.}
     \label{fig:orig_time_feature_scalability}
 \end{figure}
 
@@ -927,13 +921,13 @@ Memory consumption scalability is depicted in \cref{fig:orig_mem_sample_scalabil
 
 \begin{figure}[htbp]
     \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/feature_scalability_memory_bytes_max.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/feature_scalability_memory_bytes_steadystate.png}
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/feature_scalability_memory_bytes_steadystate.png}
-    \caption{Feature-scalability of memory footprint at batch 4 in the left plot and the penultimate batch at right.}
+    \caption{Feature-scalability of maximum memory footprint at left and steady-state memory footprint at right.}
     \label{fig:orig_mem_feature_scalability}
 \end{figure}
 
-Memory consumption feature-scalability, in \cref{fig:orig_mem_feature_scalability}, is similar to the time feature-scalability shown in \cref{fig:orig_time_feature_scalability}, as \MicroTEDAClus is the only model for which memory consumption decreases as the feature dimension increases. Again, such behavior is explained by the flaw described in \cref{subsubsec:dimensionality_penalty}.
+Memory consumption feature-scalability, in \cref{fig:orig_mem_feature_scalability}, is similar to the time feature-scalability shown in \cref{fig:orig_time_feature_scalability}, as \MicroTEDAClus is the only model for which memory consumption decreases as the feature dimension increases. Again, such behavior is explained by the flaw described in \cref{subsubsec:dimensionality_penalty}. It is worth noting that, although the steady-state memory consumption of \MicroTEDAClus decreases as the feature dimension increases, the maximum memory consumption increases, which may indicate that the peak consumption happens earlier in the stream, when the microclusters are still being created.
 
 \subsubsection{Microcluster Dynamics}
 
@@ -964,7 +958,7 @@ Similarly to the memory footprint and execution time, \MicroTEDAClus's microclus
     \centering
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/feature_scalability_microcluster_count_max.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/original-paper/plots/scalability/feature_scalability_microcluster_count_steadystate.png}
-    \caption{Feature-scalability of microcluster count at batch 4 at left and the penultimate batch in the right plot.}
+    \caption{Feature-scalability of maximum microcluster count at left and steady-state microcluster count at right.}
     \label{fig:orig_mc_feature_scalability}
 \end{figure}
 
@@ -1029,11 +1023,9 @@ In \cref{fig:teda_time_sample_scalability}, \AutoCloud exibits the highest execu
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/feature_scalability_time_fit_ms_cumulative.png}
-
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/feature_scalability_time_predict_ms_cumulative.png}
-
-    \caption{Feature-scaling trajectories for the prediction time in the left plots and fitting time at right for batch 4 in the top plots and the penultimate batch in the bottom plots.}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/feature_scalability_time_fit_ms_cumulative.png}
+    \caption{Feature-scaling trajectories for the cumulative prediction time in the left plot and fitting time at right.}
     \label{fig:teda_time_feature_scalability}
 \end{figure}
 
@@ -1048,7 +1040,7 @@ As for memory requirements, the algorithms' maximum and steady-state allocations
 
 Similarly to the execution time, \MicroTEDAClus and \AutoCloud are indistinguishable from the worst model in most datasets. In both \cref{tab:teda-micro-based_memory_max_bytes,tab:teda-micro-based_memory_steadystate_bytes}, however, differently from the execution time, \CEDAS and \TEDACloud alternate between being the sole best and sharing such rank between them.
 
-\Cref{fig:teda_mem_sample_scalability,fig:teda_mem_feature_scalability} map the spatial scalability against increasing data volume and feature space. Under two features, \AutoCloud's memory usage increases unboundedly, reaching \MicroTEDAClus's memory usage at nearly the midle batch. In 64 features, \CEDAS and \MicroTEDAClus are stable, but the more memory-consuming models. \TEDACloud is the most memory-efficient and stable model for both feature sets. Memory consumption scales similarly to the execution time over the feature space: \CEDAS is the only model for which memory consumption increases with the feature count, \TEDACloud is stable, \MicroTEDAClus decreases, and \AutoCloud is pessimal for dimensions lower than 32.
+\Cref{fig:teda_mem_sample_scalability,fig:teda_mem_feature_scalability} map the spatial scalability against increasing data volume and feature space. Under two features, \AutoCloud's memory usage increases unboundedly, reaching \MicroTEDAClus's memory usage at nearly the midle batch. In 64 features, \CEDAS and \MicroTEDAClus are stable, but the more memory-consuming models. \TEDACloud is the most memory-efficient and stable model for both feature sets. Memory consumption scales similarly to the execution time over the feature space: \CEDAS is the only model for which steady-state memory increases with the feature count, \TEDACloud is stable, \MicroTEDAClus decreases, and \AutoCloud is pessimal for dimensions lower than 32.
 
 \begin{figure}[htbp]
     \centering
@@ -1060,9 +1052,9 @@ Similarly to the execution time, \MicroTEDAClus and \AutoCloud are indistinguish
 
 \begin{figure}[htbp]
     \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/feature_scalability_memory_bytes_max.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/feature_scalability_memory_bytes_steadystate.png}
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/feature_scalability_memory_bytes_steadystate.png}
-    \caption{Memory footprint evaluated against feature count for batch 4 at left and the penultimate batch in the right plot.}
+    \caption{Memory footprint evaluated against feature count, maximum memory footprint at left and steady-state memory footprint at right.}
     \label{fig:teda_mem_feature_scalability}
 \end{figure}
 
@@ -1085,7 +1077,7 @@ Similarly to the execution time, \MicroTEDAClus and \AutoCloud are indistinguish
     \centering
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/feature_scalability_microcluster_count_max.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/teda-micro-based/plots/scalability/feature_scalability_microcluster_count_steadystate.png}
-    \caption{Microcluster count mapped to feature space at batch 4 in the left plot and the penultimate batch at right.}
+    \caption{Microcluster count mapped to feature space, maximum microcluster count at left and steady-state microcluster count at right.}
     \label{fig:teda_mc_feature_scalability}
 \end{figure}
 
@@ -1140,15 +1132,13 @@ The scalability plots corroborate these results. In \cref{fig:all_ari_sample_sca
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/feature_scalability_time_fit_ms_cumulative.png}
-
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/feature_scalability_time_predict_ms_cumulative.png}
-
-    \caption{Processing time mapped to feature count for prediction in the left plots and fitting at right for batch 4 in the top plots and the penultimate batch in the bottom plots.}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/feature_scalability_time_fit_ms_cumulative.png}
+    \caption{Cumulative processing time mapped to feature count for prediction in the left plots and fitting at right.}
     \label{fig:all_time_feature_scalability}
 \end{figure}
 
-\Cref{fig:all_time_sample_scalability} shows the sample-scalability of both stages. For 2 feature dimensions, \AutoCloud is roughly an order of magnitude slower than the remaining models in both stages, followed by \MicroTEDAClus; \StreamKM, \CEDAS, and \TEDACloud remain the fastest, and \DenStream shows a marked transient spike in fitting time around the 900th sample. At 64 dimensions, \CluStream becomes the slowest model for both stages, while \MicroTEDAClus's execution time decreases as the stream progresses, eventually falling below \CEDAS and \StreamKM. Regarding feature-scalability, \cref{fig:all_time_feature_scalability} shows \AutoCloud pessimal for dimensions up to 16, after which its execution time collapses for both the fifth and the penultimate batches, mirroring the behavior already reported for the TEDA-based subset. \CluStream becomes the slowest model beyond 32 dimensions for both stages. \MicroTEDAClus peaks at low dimensionality and then steadily decreases, consistent with the dimensionality-driven microcluster collapse described in \cref{subsubsec:dimensionality_penalty}, while \CEDAS, \TEDACloud, \DenStream, and \StreamKM increase more gradually across the evaluated range.
+\Cref{fig:all_time_sample_scalability} shows the sample-scalability of both stages. For 2 feature dimensions, \AutoCloud is roughly an order of magnitude slower than the remaining models in both stages, followed by \MicroTEDAClus; \StreamKM, \CEDAS, and \TEDACloud remain the fastest, and \DenStream shows a marked transient spike in fitting time around the 900th sample. At 64 dimensions, \CluStream becomes the slowest model for both stages, while \MicroTEDAClus's execution time decreases as the stream progresses, eventually falling below \CEDAS and \StreamKM. Regarding feature-scalability, \cref{fig:all_time_feature_scalability} shows \AutoCloud pessimal for dimensions up to 16, after which its execution time collapses for both stages, mirroring the behavior already reported for the TEDA-based subset. \CluStream becomes the slowest model beyond 32 dimensions. \MicroTEDAClus peaks at low dimensionality and then steadily decreases, consistent with the dimensionality-driven microcluster collapse described in \cref{subsubsec:dimensionality_penalty}, while \CEDAS, \TEDACloud, \DenStream, and \StreamKM increase more gradually across the evaluated range.
 
 \subsubsection{Memory Footprint}
 
@@ -1167,13 +1157,13 @@ The scalability plots corroborate these results. In \cref{fig:all_ari_sample_sca
 
 \begin{figure}[htbp]
     \centering
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/feature_scalability_memory_bytes_max.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/feature_scalability_memory_bytes_steadystate.png}
-    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/feature_scalability_memory_bytes_steadystate.png}
-    \caption{Spatial complexity tracked over feature dimensionality at batch 4 at left and the penultimate batch in the right plot.}
+    \caption{Maximum memory footprint at left and steady-state memory footprint at right.}
     \label{fig:all_mem_feature_scalability}
 \end{figure}
 
-\Cref{fig:all_mem_sample_scalability} shows that, for 2 feature dimensions, \MicroTEDAClus peaks around the 700th sample and subsequently decreases to a level comparable with \CluStream's stable footprint, while \AutoCloud grows unboundedly throughout the stream and overtakes both by its end. For 64 dimensions, \CluStream maintains the highest and most stable footprint, whereas \MicroTEDAClus again peaks early and then decreases until it converges with \CEDAS, reproducing the dimensionality-driven memory reduction already discussed for the original work's model set. \Cref{fig:all_mem_feature_scalability} shows \CluStream becoming the most memory-consuming model beyond roughly 8 feature dimensions, while \AutoCloud is pessimal for dimensions up to 16 before its footprint collapses at 32, consistent with its execution-time pattern. \MicroTEDAClus peaks at low dimensionality and decreases thereafter, while \CEDAS, \DenStream, and \TEDACloud remain the most memory-efficient models across the whole range, and \StreamKM increases more gradually than \CluStream.
+\Cref{fig:all_mem_sample_scalability} shows that, for 2 feature dimensions, \MicroTEDAClus peaks around the 700th sample and subsequently decreases to a level comparable with \CluStream's stable footprint, while \AutoCloud grows unboundedly throughout the stream and overtakes both by its end. For 64 dimensions, \CluStream maintains the highest and most stable footprint, whereas \MicroTEDAClus again peaks early and then decreases until it converges with \CEDAS, reproducing the dimensionality-driven memory reduction already discussed for the original work's model set. \Cref{fig:all_mem_feature_scalability} shows \CluStream becoming the most memory-consuming model beyond roughly 16 feature dimensions, while \AutoCloud is pessimal for dimensions up to 16 before its footprint collapses at 32, consistent with its execution-time pattern. \MicroTEDAClus peaks at low dimensionality and decreases thereafter, while \CEDAS, \DenStream, and \TEDACloud remain the most memory-efficient models across the whole range, and \StreamKM increases more gradually than \CluStream.
 
 \subsubsection{Microcluster Dynamics}
 
@@ -1194,11 +1184,11 @@ The scalability plots corroborate these results. In \cref{fig:all_ari_sample_sca
     \centering
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/feature_scalability_microcluster_count_max.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/artifacts/all/plots/scalability/feature_scalability_microcluster_count_steadystate.png}
-    \caption{Internal model boundaries relative to feature dimensionality at batch 4 in the left plot and the penultimate batch at right.}
+    \caption{Internal model boundaries relative to feature dimensionality, maximum microcluster count at left and steady-state microcluster count at right.}
     \label{fig:all_mc_feature_scalability}
 \end{figure}
 
-\Cref{fig:all_mc_sample_scalability} shows that, for 2 feature dimensions, \AutoCloud's microcluster count grows unboundedly across the stream, while \MicroTEDAClus peaks around the early before decreasing toward \CluStream's stable count. For 64 dimensions, \CluStream remains the model with the largest count, whereas \MicroTEDAClus again peaks early and subsequently decreases below \CEDAS. \Cref{fig:all_mc_feature_scalability} shows \AutoCloud pessimal for dimensions up to 16, collapsing sharply at 32, while \CluStream increases slightly. \MicroTEDAClus peaks at low dimensionality and decreases thereafter, mirroring its memory and execution-time behavior, while \CEDAS remains comparatively stable and \TEDACloud and \DenStream sustain the smallest counts across the whole range.
+\Cref{fig:all_mc_sample_scalability} shows that, for 2 feature dimensions, \AutoCloud's microcluster count grows unboundedly across the stream, while \MicroTEDAClus peaks around the early batches before decreasing toward \CluStream's stable count. For 64 dimensions, \CluStream remains the model with the largest count, whereas \MicroTEDAClus again peaks early and subsequently decreases below \CEDAS. \Cref{fig:all_mc_feature_scalability} shows \AutoCloud pessimal for dimensions up to 16, collapsing sharply at 32, while \CluStream increases slightly. \MicroTEDAClus peaks at low dimensionality and decreases thereafter, mirroring its memory and execution-time behavior, while \CEDAS remains comparatively stable and \TEDACloud and \DenStream sustain the smallest counts across the whole range.
 
 Contrasting both model subsets, no single one is uniformly preferable across all metrics. The original work's model set is stronger under clustering quality, as \StreamKM and \CluStream are the most frequent ARI winners, but it is comparatively costly in memory and microcluster count. The TEDA-based set, excluding \MicroTEDAClus and \AutoCloud, trades clustering quality for efficiency: \TEDACloud dominates the memory footprint, \CEDAS dominates fitting time, and \DenStream dominates the microcluster count, yet \CEDAS is indistinguishable from the worst model on five of the six datasets under the overall ARI, despite being fast and compact. Within the complete model set, \StreamKM is the closest to an overall best model, being the sole or tied-fastest predictor on all six datasets, competitive to the best model on most ARI tables, and never indistinguishable from the worst model for memory or microcluster count, although it is not dominant, since \TEDACloud surpasses it in memory, \CEDAS surpasses it in fitting time, and \CluStream occasionally surpasses it in ARI. Conversely, \MicroTEDAClus and \AutoCloud are the clear laggards, each indistinguishable from the worst model on a majority of datasets across most metrics, with \MicroTEDAClus further exhibiting the dimensionality-driven collapse in quality, time, and memory discussed throughout this section. These results support a trade-off between clustering quality and computational footprint rather than a strict dominance relation among models or subsets, except at the lower end, where \MicroTEDAClus and \AutoCloud are dominated by nearly every alternative under nearly every metric.
 
