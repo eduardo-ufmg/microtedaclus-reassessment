@@ -411,7 +411,7 @@ class MicroTEDAClusCorrectedParameterSearchSpace:
     def sample_parameters(self, trial: optuna.Trial) -> dict:
         return {
             "variance_limit": trial.suggest_float(
-                "variance_limit", 0.0001, 10000.0, log=True
+                "variance_limit", 0.0001, 100.0, log=True
             ),
             "decay": trial.suggest_int("decay", 10, 10000, log=True),
         }

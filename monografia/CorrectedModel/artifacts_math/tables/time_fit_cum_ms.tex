@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis and (Q1, Q3) for the Cumulative Fitting Time [ms].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c }
+\toprule
+Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClusCorrected} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 1475.0 (370.0, 2682.5) & 815.0 (320.0, 1302.5) \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{760.0 (160.0, 1020.0)} & \textbf{245.0 (177.5, 375.0)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{13905.0 (3577.5, 22882.5)} & \textbf{1725.0 (1035.0, 2912.5)} \\
+\datasetname{Cassini} & 755.0 (532.5, 2977.5) & 1505.0 (292.5, 2107.5) \\
+\datasetname{Chameleon DS3} & \textcolor{red}{35110.0 (26717.5, 147092.5)} & \textbf{15885.0 (4317.5, 59075.0)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{27955.0 (21750.0, 114495.0)} & \textbf{5140.0 (4397.5, 8232.5)} \\
+\datasetname{SCL-32} & 375.0 (237.5, 875.0) & 665.0 (330.0, 1127.5) \\
+\datasetname{SCL-64} & \textbf{375.0 (270.0, 1135.0)} & \textcolor{red}{1340.0 (512.5, 3512.5)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:math_time_fit_cum_ms}
+\end{table}

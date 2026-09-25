@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis and (Q1, Q3) for the Cumulative Prediction Time [ms].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c }
+\toprule
+Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClusCorrected} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textcolor{red}{105.0 (40.0, 365.0)} & \textbf{60.0 (30.0, 102.5)} \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{60.0 (20.0, 82.5)} & \textbf{30.0 (20.0, 40.0)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{1490.0 (345.0, 3877.5)} & \textbf{140.0 (87.5, 202.5)} \\
+\datasetname{Cassini} & \textcolor{red}{70.0 (50.0, 257.5)} & \textbf{40.0 (30.0, 60.0)} \\
+\datasetname{Chameleon DS3} & \textcolor{red}{590.0 (220.0, 6500.0)} & \textbf{200.0 (160.0, 655.0)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{745.0 (182.5, 3882.5)} & \textbf{130.0 (97.5, 232.5)} \\
+\datasetname{SCL-32} & \textcolor{red}{60.0 (47.5, 102.5)} & \textbf{40.0 (30.0, 50.0)} \\
+\datasetname{SCL-64} & \textcolor{red}{65.0 (50.0, 107.5)} & \textbf{40.0 (30.0, 65.0)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:math_time_predict_cum_ms}
+\end{table}

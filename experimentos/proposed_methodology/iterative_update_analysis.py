@@ -358,6 +358,7 @@ def generate_artifacts():
         )
         with open(os.path.join(DIR_TABLES, f"{metric}.tex"), "w") as f:
             f.write("\n".join(latex_lines))
+            f.write("\n")
 
     metrics = [
         "ari",
