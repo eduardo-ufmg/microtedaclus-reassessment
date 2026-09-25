@@ -2,18 +2,18 @@
 \centering
 \caption{Statistical analysis and (Q1, Q3) for the Cumulative Prediction Time [ms].}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{l c c }
+\begin{tabular}{l c c c }
 \toprule
-Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClusCorrected} \\
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} \\
 \midrule
-\datasetname{Stream Benchmark 1} & \textcolor{red}{105.0 (40.0, 365.0)} & \textbf{60.0 (40.0, 102.5)} \\
-\datasetname{Stream Benchmark 2} & \textcolor{red}{60.0 (20.0, 82.5)} & \textbf{30.0 (20.0, 40.0)} \\
-\datasetname{Random RBF Generator with Events} & \textcolor{red}{1490.0 (345.0, 3877.5)} & \textbf{140.0 (87.5, 265.0)} \\
-\datasetname{Cassini} & \textcolor{red}{70.0 (50.0, 257.5)} & \textbf{40.0 (30.0, 50.0)} \\
-\datasetname{Chameleon DS3} & \textcolor{red}{590.0 (220.0, 6500.0)} & \textbf{170.0 (160.0, 640.0)} \\
-\datasetname{Chameleon DS4} & \textcolor{red}{745.0 (182.5, 3882.5)} & \textbf{110.0 (90.0, 180.0)} \\
-\datasetname{SCL-32} & 60.0 (47.5, 102.5) & 40.0 (30.0, 75.0) \\
-\datasetname{SCL-64} & \textcolor{red}{65.0 (50.0, 107.5)} & \textbf{40.0 (30.0, 67.5)} \\
+\datasetname{Stream Benchmark 1} & 105.0 (40.0, 365.0) & 75.0 (47.5, 112.5) & 60.0 (40.0, 102.5) \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{60.0 (20.0, 82.5)} & \textbf{30.0 (20.0, 40.0)} & \textbf{30.0 (20.0, 40.0)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{1490.0 (345.0, 3877.5)} & \textbf{140.0 (87.5, 320.0)} & \textbf{140.0 (87.5, 265.0)} \\
+\datasetname{Cassini} & \textcolor{red}{70.0 (50.0, 257.5)} & \textbf{40.0 (30.0, 50.0)} & \textbf{40.0 (30.0, 50.0)} \\
+\datasetname{Chameleon DS3} & \textcolor{red}{590.0 (220.0, 6500.0)} & \textbf{245.0 (117.5, 2020.0)} & \textbf{170.0 (160.0, 640.0)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{745.0 (182.5, 3882.5)} & \textcolor{red}{550.0 (227.5, 2270.0)} & \textbf{110.0 (90.0, 180.0)} \\
+\datasetname{SCL-32} & 60.0 (47.5, 102.5) & - & 40.0 (30.0, 75.0) \\
+\datasetname{SCL-64} & \textcolor{red}{65.0 (50.0, 107.5)} & - & \textbf{40.0 (30.0, 67.5)} \\
 \bottomrule
 \end{tabular}
 }

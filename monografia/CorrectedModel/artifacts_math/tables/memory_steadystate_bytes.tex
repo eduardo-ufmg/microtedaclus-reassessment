@@ -2,18 +2,18 @@
 \centering
 \caption{Statistical analysis and (Q1, Q3) for the Steady-State Memory Footprint at the Penultimate Batch [B].}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{l c c }
+\begin{tabular}{l c c c c }
 \toprule
-Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClusCorrected} \\
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} & \modelname{corr-typicality-math} \\
 \midrule
-\datasetname{Stream Benchmark 1} & 141312 (56576, 471040) & 169472 (44544, 437248) \\
-\datasetname{Stream Benchmark 2} & \textcolor{red}{112640 (14080, 141056)} & \textbf{28160 (17152, 60160)} \\
-\datasetname{Random RBF Generator with Events} & \textcolor{red}{535040 (253440, 888320)} & \textbf{180736 (86016, 255488)} \\
-\datasetname{Cassini} & 130560 (34304, 301824) & 148480 (34304, 171776) \\
-\datasetname{Chameleon DS3} & \textcolor{red}{731648 (601600, 2586368)} & \textbf{430080 (258816, 1385728)} \\
-\datasetname{Chameleon DS4} & \textcolor{red}{689664 (583936, 2526720)} & \textbf{247296 (240384, 339968)} \\
-\datasetname{SCL-32} & \textbf{17408 (13312, 205312)} & \textcolor{red}{1172480 (1149696, 1199616)} \\
-\datasetname{SCL-64} & \textbf{19968 (14336, 2276352)} & \textcolor{red}{2360832 (2290176, 2563584)} \\
+\datasetname{Stream Benchmark 1} & 141312 (56576, 471040) & 265728 (96512, 520192) & 134656 (76288, 372480) & 169472 (44544, 437248) \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{112640 (14080, 141056)} & \textbf{25088 (17152, 40704)} & \textbf{24576 (16384, 44032)} & \textbf{28160 (17152, 60160)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{535040 (253440, 888320)} & \textbf{193536 (102912, 289792)} & \textbf{187904 (92928, 318720)} & \textbf{180736 (86016, 255488)} \\
+\datasetname{Cassini} & 130560 (34304, 301824) & 137728 (48384, 158976) & 144384 (55808, 178432) & 148480 (34304, 171776) \\
+\datasetname{Chameleon DS3} & \textcolor{red}{731648 (601600, 2586368)} & \textcolor{red}{621568 (467712, 2156288)} & \textbf{264704 (251392, 625408)} & 430080 (258816, 1385728) \\
+\datasetname{Chameleon DS4} & \textcolor{red}{689664 (583936, 2526720)} & \textcolor{red}{674304 (452352, 2342144)} & \textbf{247296 (242688, 278272)} & \textbf{247296 (240384, 339968)} \\
+\datasetname{SCL-32} & \textbf{17408 (13312, 205312)} & - & \textcolor{red}{1180160 (1154304, 1297664)} & \textcolor{red}{1172480 (1149696, 1199616)} \\
+\datasetname{SCL-64} & \textbf{19968 (14336, 2276352)} & - & \textcolor{red}{2343424 (2281728, 2459392)} & \textcolor{red}{2360832 (2290176, 2563584)} \\
 \bottomrule
 \end{tabular}
 }

@@ -2,18 +2,18 @@
 \centering
 \caption{Statistical analysis and (Q1, Q3) for the Steady-State Microcluster Count at the Penultimate Batch.}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{l c c }
+\begin{tabular}{l c c c }
 \toprule
-Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClusCorrected} \\
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} \\
 \midrule
-\datasetname{Stream Benchmark 1} & 44 (6, 173) & 41 (20, 60) \\
-\datasetname{Stream Benchmark 2} & \textcolor{red}{28 (8, 49)} & \textbf{12 (9, 20)} \\
-\datasetname{Random RBF Generator with Events} & \textcolor{red}{158 (53, 288)} & \textbf{34 (18, 48)} \\
-\datasetname{Cassini} & 41 (19, 116) & 69 (19, 94) \\
-\datasetname{Chameleon DS3} & \textcolor{red}{516 (395, 2275)} & \textbf{86 (78, 383)} \\
-\datasetname{Chameleon DS4} & \textcolor{red}{500 (399, 2224)} & \textbf{100 (96, 126)} \\
-\datasetname{SCL-32} & \textbf{6 (4, 30)} & \textcolor{red}{38 (16, 117)} \\
-\datasetname{SCL-64} & \textbf{6 (4, 27)} & \textcolor{red}{53 (14, 124)} \\
+\datasetname{Stream Benchmark 1} & 44 (6, 173) & 53 (24, 74) & 41 (20, 60) \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{28 (8, 49)} & \textbf{12 (9, 18)} & \textbf{12 (9, 20)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{158 (53, 288)} & \textbf{26 (17, 74)} & \textbf{34 (18, 48)} \\
+\datasetname{Cassini} & 41 (19, 116) & 56 (22, 79) & 69 (19, 94) \\
+\datasetname{Chameleon DS3} & \textcolor{red}{516 (395, 2275)} & 397 (292, 1769) & \textbf{86 (78, 383)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{500 (399, 2224)} & \textcolor{red}{488 (298, 2023)} & \textbf{100 (96, 126)} \\
+\datasetname{SCL-32} & \textbf{6 (4, 30)} & - & \textcolor{red}{38 (16, 117)} \\
+\datasetname{SCL-64} & \textbf{6 (4, 27)} & - & \textcolor{red}{53 (14, 124)} \\
 \bottomrule
 \end{tabular}
 }

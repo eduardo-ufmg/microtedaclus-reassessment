@@ -97,13 +97,58 @@ def objective(trial, model_class, search_space_class, X_opt, y_opt):
     return ari - (1e-3 * t_total_sec)
 
 
+import argparse
+
+
 def main():
-    tasks = list(itertools.product(DATASETS, MODEL_MAP.keys(), range(RUNS)))
+    parser = argparse.ArgumentParser(
+        description="Run iterative model update experiments"
+    )
+    parser.add_argument(
+        "--tag",
+        type=str,
+        default="",
+        help="Correction tag suffix (e.g. math, dimpen, orderdepend)",
+    )
+    parser.add_argument(
+        "--models",
+        nargs="+",
+        default=None,
+        help="Models to run (default: all in MODEL_MAP)",
+    )
+    parser.add_argument(
+        "--datasets",
+        nargs="+",
+        default=None,
+        help="Datasets to run (default: DATASETS)",
+    )
+    parser.add_argument(
+        "--runs",
+        type=int,
+        default=RUNS,
+        help="Number of runs (default: 32)",
+    )
+    args = parser.parse_args()
+
+    selected_datasets = args.datasets or DATASETS
+    selected_models = args.models or list(MODEL_MAP.keys())
+    runs = args.runs
+
+    tasks = list(itertools.product(selected_datasets, selected_models, range(runs)))
 
     with tqdm(total=len(tasks), desc="Experiments") as pbar:
         for dataset, model_name, run in tasks:
-            output_file = os.path.join(DIR_RESULTS, f"{dataset}_{model_name}_{run}.csv")
-            params_file = os.path.join(DIR_PARAMS, f"{dataset}_{model_name}_{run}.csv")
+            if args.tag and model_name != "MicroTEDAClus":
+                file_model_name = f"{model_name}_{args.tag}"
+            else:
+                file_model_name = model_name
+
+            output_file = os.path.join(
+                DIR_RESULTS, f"{dataset}_{file_model_name}_{run}.csv"
+            )
+            params_file = os.path.join(
+                DIR_PARAMS, f"{dataset}_{file_model_name}_{run}.csv"
+            )
 
             if os.path.exists(output_file) and os.path.exists(params_file):
                 pbar.update(1)
@@ -133,7 +178,7 @@ def main():
                 params_records = [
                     {
                         "dataset": dataset,
-                        "model": model_name,
+                        "model": file_model_name,
                         "run": run,
                         "param_name": k,
                         "param_value": v,

@@ -2,18 +2,18 @@
 \centering
 \caption{Statistical analysis and (Q1, Q3) for the Adjusted Rand Index at the Fifth Batch.}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{l c c }
+\begin{tabular}{l c c c }
 \toprule
-Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClusCorrected} \\
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} \\
 \midrule
-\datasetname{Stream Benchmark 1} & \textbf{0.843 (0.806, 0.895)} & \textcolor{red}{0.744 (0.000, 0.841)} \\
-\datasetname{Stream Benchmark 2} & \textbf{0.605 (0.552, 0.637)} & \textcolor{red}{0.542 (0.169, 0.597)} \\
-\datasetname{Random RBF Generator with Events} & \textbf{0.573 (0.403, 0.776)} & \textcolor{red}{0.197 (0.041, 0.382)} \\
-\datasetname{Cassini} & \textbf{0.526 (0.000, 0.613)} & \textcolor{red}{0.022 (0.000, 0.373)} \\
-\datasetname{Chameleon DS3} & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.217 (0.147, 0.360)} \\
-\datasetname{Chameleon DS4} & 0.036 (0.000, 0.134) & 0.102 (0.000, 0.142) \\
-\datasetname{SCL-32} & 0.903 (0.859, 0.988) & 0.880 (0.853, 0.902) \\
-\datasetname{SCL-64} & \textbf{0.932 (0.894, 1.000)} & \textcolor{red}{0.867 (0.822, 0.897)} \\
+\datasetname{Stream Benchmark 1} & \textbf{0.843 (0.806, 0.895)} & \textcolor{red}{0.393 (0.000, 0.834)} & \textcolor{red}{0.744 (0.000, 0.841)} \\
+\datasetname{Stream Benchmark 2} & \textbf{0.605 (0.552, 0.637)} & \textcolor{red}{0.510 (0.207, 0.602)} & \textcolor{red}{0.542 (0.169, 0.597)} \\
+\datasetname{Random RBF Generator with Events} & \textbf{0.573 (0.403, 0.776)} & \textcolor{red}{0.196 (0.028, 0.491)} & \textcolor{red}{0.197 (0.041, 0.382)} \\
+\datasetname{Cassini} & \textbf{0.526 (0.000, 0.613)} & \textcolor{red}{0.000 (0.000, 0.364)} & \textcolor{red}{0.022 (0.000, 0.373)} \\
+\datasetname{Chameleon DS3} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.217 (0.147, 0.360)} \\
+\datasetname{Chameleon DS4} & 0.036 (0.000, 0.134) & 0.072 (0.000, 0.091) & 0.102 (0.000, 0.142) \\
+\datasetname{SCL-32} & 0.903 (0.859, 0.988) & - & 0.880 (0.853, 0.902) \\
+\datasetname{SCL-64} & \textbf{0.932 (0.894, 1.000)} & - & \textcolor{red}{0.867 (0.822, 0.897)} \\
 \bottomrule
 \end{tabular}
 }

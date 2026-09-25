@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import glob
 import os
 import warnings
@@ -9,7 +10,14 @@ import pandas as pd
 from scipy.stats import friedmanchisquare, wilcoxon
 from statsmodels.stats.multitest import multipletests
 
-from editorial_config import ITERATIVE_DATASET_ORDER, MODEL_COLORS, dataset_display_name
+from editorial_config import ITERATIVE_DATASET_ORDER, dataset_display_name
+from iterative_config import (
+    CORRECTION_STAGES,
+    ITERATIVE_MODEL_COLORS,
+    MODEL_SHORT_HEADERS,
+    STAGE_BY_ID,
+    CorrectionStage,
+)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
@@ -19,21 +27,11 @@ DIR_PARAMS = os.path.join(SCRIPT_DIR, "results_params_iterative")
 
 DIR_METRICS = os.path.join(SCRIPT_DIR, "metrics_iterative")
 DIR_STATS = os.path.join(SCRIPT_DIR, "statistical_analysis_iterative")
-DIR_OUT_BASE = os.path.join(
-    REPOSITORY_ROOT, "monografia", "CorrectedModel", "artifacts"
-)
-DIR_TABLES = os.path.join(DIR_OUT_BASE, "tables")
-DIR_PLOTS_INT = os.path.join(DIR_OUT_BASE, "plots", "internal")
+DIR_OUT_BASE = os.path.join(REPOSITORY_ROOT, "monografia", "CorrectedModel")
 
-for d in [
-    DIR_METRICS,
-    DIR_STATS,
-    DIR_TABLES,
-    DIR_PLOTS_INT,
-]:
+for d in [DIR_METRICS, DIR_STATS]:
     os.makedirs(d, exist_ok=True)
 
-ITERATIVE_MODELS = ["MicroTEDAClus", "MicroTEDAClusCorrected"]
 ALPHA = 0.05
 CLIFFS_DELTA_THRESHOLD = 0.147
 
@@ -84,6 +82,26 @@ STATS_METRICS = {
 }
 
 
+def parse_result_filename(filename: str):
+    """Robustly parse dataset, model tag, and run index from result CSV filename."""
+    basename = os.path.basename(filename)
+    if not basename.endswith(".csv"):
+        return None
+    name = basename[:-4]
+    sorted_datasets = sorted(ITERATIVE_DATASET_ORDER, key=len, reverse=True)
+    for ds in sorted_datasets:
+        prefix = ds + "_"
+        if name.startswith(prefix):
+            remainder = name[len(prefix) :]
+            if "_" in remainder:
+                model, run_str = remainder.rsplit("_", 1)
+                try:
+                    return ds, model, int(run_str)
+                except ValueError:
+                    pass
+    return None
+
+
 def aggregate_quantiles(
     df: pd.DataFrame, group_cols: list, val_cols: list
 ) -> pd.DataFrame:
@@ -103,9 +121,15 @@ def compute_metrics():
     records_scalar, records_batch = [], []
 
     for file in result_files:
-        parts = os.path.basename(file).replace(".csv", "").split("_")
-        run, model, dataset = int(parts[-1]), parts[-2], "_".join(parts[:-2])
-        df = pd.read_csv(file)
+        parsed = parse_result_filename(file)
+        if parsed is None:
+            continue
+        dataset, model, run = parsed
+
+        try:
+            df = pd.read_csv(file)
+        except Exception:
+            continue
 
         if not df[df["status"].str.startswith("ERROR", na=False)].empty or len(df) < 5:
             continue
@@ -175,36 +199,59 @@ def compute_metrics():
     )
 
 
-def run_statistical_analysis():
+def run_statistical_analysis(stage: CorrectionStage):
     path_in = os.path.join(DIR_METRICS, "run_level.parquet")
     if not os.path.exists(path_in):
         return
     df_runs = pd.read_parquet(path_in)
 
+    stage_stats_dir = os.path.join(DIR_STATS, stage.stage_id)
+    os.makedirs(stage_stats_dir, exist_ok=True)
+
     for metric, config in STATS_METRICS.items():
         if metric not in df_runs.columns:
             continue
         results = []
-        for dataset in df_runs["dataset"].unique():
-            df_ds = df_runs[df_runs["dataset"] == dataset].pivot(
-                index="run", columns="model", values=metric
-            )
-            valid_models = [m for m in ITERATIVE_MODELS if m in df_ds.columns]
+        for dataset in stage.datasets:
+            df_ds_all = df_runs[df_runs["dataset"] == dataset]
+            if df_ds_all.empty:
+                continue
+
+            df_pivot = df_ds_all.pivot(index="run", columns="model", values=metric)
+            valid_models = [
+                m
+                for m in stage.models
+                if m in df_pivot.columns and not df_pivot[m].isna().all()
+            ]
+
+            row_dict = {"dataset": dataset}
 
             if len(valid_models) < 2:
+                for m in stage.models:
+                    if m in valid_models and not df_pivot[m].dropna().empty:
+                        s = df_pivot[m].dropna()
+                        med, q1, q3 = s.median(), s.quantile(0.25), s.quantile(0.75)
+                        row_dict[m] = (
+                            f"{config['fmt'].format(med)} ({config['fmt'].format(q1)}, {config['fmt'].format(q3)})"
+                        )
+                    else:
+                        row_dict[m] = "-"
+                results.append(row_dict)
                 continue
-            df_ds = df_ds[valid_models].dropna()
-            if df_ds.empty:
+
+            df_ds = df_pivot[valid_models].dropna()
+            if df_ds.empty or len(df_ds) < 2:
+                for m in stage.models:
+                    row_dict[m] = "-"
+                results.append(row_dict)
                 continue
 
             df_disc = pd.DataFrame(
                 config["round"](df_ds.values), columns=valid_models, index=df_ds.index
             )
-            medians, q1s, q3s = (
-                df_disc.median(),
-                df_disc.quantile(0.25),
-                df_disc.quantile(0.75),
-            )
+            medians = df_disc.median()
+            q1s = df_disc.quantile(0.25)
+            q3s = df_disc.quantile(0.75)
 
             best_model = (
                 medians.idxmax() if config["dir"] == "max" else medians.idxmin()
@@ -218,24 +265,25 @@ def run_statistical_analysis():
                 warnings.simplefilter("ignore")
                 try:
                     if len(valid_models) == 2:
-                        if (
-                            wilcoxon(
+                        diff = (
+                            df_disc[valid_models[0]].to_numpy()
+                            - df_disc[valid_models[1]].to_numpy()
+                        )
+                        if not np.all(diff == 0):
+                            pval = wilcoxon(
                                 df_disc[valid_models[0]].to_numpy(),
                                 df_disc[valid_models[1]].to_numpy(),
                             ).pvalue
-                            < ALPHA
-                        ):
-                            is_sig = True
+                            if pval < ALPHA:
+                                is_sig = True
                     else:
-                        if (
-                            friedmanchisquare(
-                                *[
-                                    np.asarray(df_disc[m].to_numpy(), dtype=float)
-                                    for m in valid_models
-                                ]
-                            ).pvalue
-                            < ALPHA
-                        ):
+                        pval = friedmanchisquare(
+                            *[
+                                np.asarray(df_disc[m].to_numpy(), dtype=float)
+                                for m in valid_models
+                            ]
+                        ).pvalue
+                        if pval < ALPHA:
                             is_sig = True
                 except ValueError:
                     pass
@@ -273,28 +321,30 @@ def run_statistical_analysis():
                 process_tier(best_model, best_tier)
                 process_tier(worst_model, worst_tier)
 
-            row_dict = {"dataset": dataset}
-            for m in valid_models:
-                tags = [
-                    t
-                    for t, cond in [("B", m in best_tier), ("W", m in worst_tier)]
-                    if cond
-                ]
-                tag_str = f" [{','.join(tags)}]" if tags else ""
-                row_dict[m] = (
-                    f"{config['fmt'].format(medians[m])} ({config['fmt'].format(q1s[m])}, {config['fmt'].format(q3s[m])}){tag_str}"
-                )
+            for m in stage.models:
+                if m in valid_models:
+                    tags = [
+                        t
+                        for t, cond in [("B", m in best_tier), ("W", m in worst_tier)]
+                        if cond
+                    ]
+                    tag_str = f" [{','.join(tags)}]" if tags else ""
+                    row_dict[m] = (
+                        f"{config['fmt'].format(medians[m])} ({config['fmt'].format(q1s[m])}, {config['fmt'].format(q3s[m])}){tag_str}"
+                    )
+                else:
+                    row_dict[m] = "-"
 
             results.append(row_dict)
 
         if results:
             pd.DataFrame(results).set_index("dataset").to_csv(
-                os.path.join(DIR_STATS, f"{metric}_statistical_analysis.csv")
+                os.path.join(stage_stats_dir, f"{metric}_statistical_analysis.csv")
             )
 
 
 def format_latex_cell(stat_cell: str) -> str:
-    if str(stat_cell) in ("nan", "-"):
+    if str(stat_cell) in ("nan", "-", ""):
         return "-"
     parts = str(stat_cell).split(" [")
     base, tags = parts[0], parts[1].replace("]", "") if len(parts) > 1 else ""
@@ -309,56 +359,64 @@ def format_latex_cell(stat_cell: str) -> str:
     )
 
 
-def generate_artifacts():
-    stat_files = [f for f in os.listdir(DIR_STATS) if f.endswith(".csv")]
+def generate_artifacts(stage: CorrectionStage):
+    stage_dir = os.path.join(DIR_OUT_BASE, stage.artifact_dir)
+    tables_dir = os.path.join(stage_dir, "tables")
+    plots_dir = os.path.join(stage_dir, "plots", "internal")
+    os.makedirs(tables_dir, exist_ok=True)
+    os.makedirs(plots_dir, exist_ok=True)
+
+    stage_stats_dir = os.path.join(DIR_STATS, stage.stage_id)
+    if not os.path.exists(stage_stats_dir):
+        return
+
+    stat_files = [f for f in os.listdir(stage_stats_dir) if f.endswith(".csv")]
     for stat_file in stat_files:
         metric = stat_file.replace("_statistical_analysis.csv", "")
-        df_stat = pd.read_csv(os.path.join(DIR_STATS, stat_file), index_col="dataset")
-        ds_order = {d: i for i, d in enumerate(ITERATIVE_DATASET_ORDER)}
-        df_stat = df_stat.sort_index(
-            key=lambda idx: idx.map(
-                lambda d: ds_order.get(d, len(ITERATIVE_DATASET_ORDER))
-            )
+        df_stat = pd.read_csv(
+            os.path.join(stage_stats_dir, stat_file), index_col="dataset"
         )
 
         latex_lines = [
-            "\\begin{table}[htbp]",
-            "\\centering",
+            r"\begin{table}[htbp]",
+            r"\centering",
             f"\\caption{{Statistical analysis and (Q1, Q3) for the {READABLE_METRICS.get(metric, metric.replace('_', ' ').title())}.}}",
-            "\\resizebox{\\textwidth}{!}{%",
-            "\\begin{tabular}{l " + "c " * len(ITERATIVE_MODELS) + "}",
-            "\\toprule",
+            r"\resizebox{\textwidth}{!}{%",
+            r"\begin{tabular}{l " + "c " * len(stage.models) + "}",
+            r"\toprule",
             "Dataset & "
-            + " & ".join(f"\\modelname{{{m}}}" for m in ITERATIVE_MODELS)
-            + " \\\\",
-            "\\midrule",
+            + " & ".join(MODEL_SHORT_HEADERS.get(m, m) for m in stage.models)
+            + r" \\",
+            r"\midrule",
         ]
 
-        for dataset in df_stat.index:
+        for dataset in stage.datasets:
+            if dataset not in df_stat.index:
+                continue
             row_str = (
                 f"\\datasetname{{{dataset_display_name(dataset).replace('_', '\\_')}}}"
             )
-            for model in ITERATIVE_MODELS:
+            for model in stage.models:
                 cell = df_stat.loc[dataset, model] if model in df_stat.columns else "-"
                 row_str += (
                     f" & {format_latex_cell(str(cell))}"
-                    if not np.asarray(pd.isna(cell)).all()
+                    if not pd.isna(cell)
                     else " & -"
                 )
-            latex_lines.append(row_str + " \\\\")
+            latex_lines.append(row_str + r" \\")
 
         latex_lines.extend(
             [
-                "\\bottomrule",
-                "\\end{tabular}",
+                r"\bottomrule",
+                r"\end{tabular}",
                 "}",
-                f"\\label{{tab:iterative_{metric}}}",
-                "\\end{table}",
+                f"\\label{{tab:{stage.label_prefix}{metric}}}",
+                r"\end{table}",
+                "",
             ]
         )
-        with open(os.path.join(DIR_TABLES, f"{metric}.tex"), "w") as f:
+        with open(os.path.join(tables_dir, f"{metric}.tex"), "w") as f:
             f.write("\n".join(latex_lines))
-            f.write("\n")
 
     metrics = [
         "ari",
@@ -371,26 +429,32 @@ def generate_artifacts():
     int_path = os.path.join(DIR_METRICS, "aggregated_by_batch.parquet")
     if os.path.exists(int_path):
         df_int = pd.read_parquet(int_path)
-        for dataset in df_int["dataset"].unique():
+        for dataset in stage.datasets:
             df_ds = df_int[df_int["dataset"] == dataset]
             fig, axes = plt.subplots(2, 3, figsize=(15, 8))
             for i, metric in enumerate(metrics):
                 ax = axes.flatten()[i]
-                for model in ITERATIVE_MODELS:
+                for model in stage.models:
                     df_m = df_ds[df_ds["model"] == model].sort_values("batch")
                     if not df_m.empty:
+                        header_label = MODEL_SHORT_HEADERS.get(model, model)
+                        clean_label = (
+                            header_label.replace(r"\modelname{", "")
+                            .replace("}", "")
+                            .strip()
+                        )
                         ax.plot(
                             df_m["batch"],
                             df_m[f"{metric}_median"],
-                            label=model,
-                            color=MODEL_COLORS.get(model, "#000000"),
+                            label=clean_label,
+                            color=ITERATIVE_MODEL_COLORS.get(model, "#000000"),
                             linewidth=1.5,
                         )
                         ax.fill_between(
                             df_m["batch"],
                             df_m[f"{metric}_q1"],
                             df_m[f"{metric}_q3"],
-                            color=MODEL_COLORS.get(model, "#000000"),
+                            color=ITERATIVE_MODEL_COLORS.get(model, "#000000"),
                             alpha=0.15,
                         )
                 ax.set_title(metric.replace("_", " ").title())
@@ -400,17 +464,67 @@ def generate_artifacts():
                 if i == 0:
                     ax.legend(loc="best", fontsize=8)
             axes.flatten()[-1].axis("off")
-            plt.suptitle(f"Internal Inspection: {dataset}", y=1.02)
+            plt.suptitle(
+                f"Internal Inspection: {dataset_display_name(dataset)}", y=1.02
+            )
             plt.tight_layout()
             fig.savefig(
-                os.path.join(DIR_PLOTS_INT, f"{dataset}_grid.png"),
+                os.path.join(plots_dir, f"{dataset}_grid.png"),
                 dpi=150,
                 bbox_inches="tight",
             )
             plt.close(fig)
 
 
+def main():
+    parser = argparse.ArgumentParser(
+        description="Iterative model correction analysis pipeline"
+    )
+    parser.add_argument(
+        "--stage",
+        type=str,
+        default=None,
+        help="Specific stage ID to process (order_dependency, dimension_penalty, typicality_math)",
+    )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Process all defined correction stages",
+    )
+    parser.add_argument(
+        "--recompute-metrics",
+        action="store_true",
+        help="Force recomputation of parquet metrics from raw results CSVs",
+    )
+    args = parser.parse_args()
+
+    # Recompute metrics if requested or if parquet files do not exist
+    parquet_exists = os.path.exists(os.path.join(DIR_METRICS, "run_level.parquet"))
+    if args.recompute_metrics or not parquet_exists:
+        print("Ingesting raw experiment CSVs and generating Parquet metrics...")
+        compute_metrics()
+        print("Parquet metrics generated.")
+
+    if args.stage:
+        if args.stage not in STAGE_BY_ID:
+            raise ValueError(
+                f"Unknown stage: {args.stage}. Valid stages: {list(STAGE_BY_ID.keys())}"
+            )
+        stages_to_run = [STAGE_BY_ID[args.stage]]
+    else:
+        # Default to all stages if none specified
+        stages_to_run = CORRECTION_STAGES
+
+    for stage in stages_to_run:
+        print(f"\nProcessing Stage: {stage.stage_id} ({stage.artifact_dir})")
+        print(f"  Models: {stage.models}")
+        print(f"  Datasets: {len(stage.datasets)}")
+        run_statistical_analysis(stage)
+        generate_artifacts(stage)
+        print(f"  Artifacts generated in {stage.artifact_dir}")
+
+    print("\nAll requested stages processed successfully.")
+
+
 if __name__ == "__main__":
-    compute_metrics()
-    run_statistical_analysis()
-    generate_artifacts()
+    main()

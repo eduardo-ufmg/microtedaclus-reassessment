@@ -2,18 +2,18 @@
 \centering
 \caption{Statistical analysis and (Q1, Q3) for the Maximum Memory Footprint [B].}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{l c c }
+\begin{tabular}{l c c c }
 \toprule
-Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClusCorrected} \\
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} \\
 \midrule
-\datasetname{Stream Benchmark 1} & 318464 (116480, 494848) & 231936 (120576, 390912) \\
-\datasetname{Stream Benchmark 2} & \textcolor{red}{154112 (88064, 183296)} & \textbf{82944 (54272, 95744)} \\
-\datasetname{Random RBF Generator with Events} & \textcolor{red}{1099776 (421888, 1548288)} & \textbf{319488 (216832, 501504)} \\
-\datasetname{Cassini} & 149504 (134656, 343296) & 156672 (117504, 183296) \\
-\datasetname{Chameleon DS3} & \textcolor{red}{734208 (604672, 2595584)} & \textbf{278528 (274432, 636160)} \\
-\datasetname{Chameleon DS4} & \textcolor{red}{695296 (587264, 2528768)} & \textbf{251904 (246784, 288256)} \\
-\datasetname{SCL-32} & \textbf{1164288 (34304, 1228288)} & \textcolor{red}{1272832 (1213952, 1360128)} \\
-\datasetname{SCL-64} & \textbf{2300928 (60160, 2376448)} & \textcolor{red}{2385408 (2325504, 2529024)} \\
+\datasetname{Stream Benchmark 1} & 318464 (116480, 494848) & 368640 (163584, 546048) & 231936 (120576, 390912) \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{154112 (88064, 183296)} & \textbf{82432 (56320, 92160)} & \textbf{82944 (54272, 95744)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{1099776 (421888, 1548288)} & \textbf{302080 (205312, 617728)} & \textbf{319488 (216832, 501504)} \\
+\datasetname{Cassini} & 149504 (134656, 343296) & 147968 (109568, 175616) & 156672 (117504, 183296) \\
+\datasetname{Chameleon DS3} & \textcolor{red}{734208 (604672, 2595584)} & \textcolor{red}{625152 (472832, 2160640)} & \textbf{278528 (274432, 636160)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{695296 (587264, 2528768)} & \textcolor{red}{682496 (454400, 2352640)} & \textbf{251904 (246784, 288256)} \\
+\datasetname{SCL-32} & \textbf{1164288 (34304, 1228288)} & - & \textcolor{red}{1272832 (1213952, 1360128)} \\
+\datasetname{SCL-64} & \textbf{2300928 (60160, 2376448)} & - & \textcolor{red}{2385408 (2325504, 2529024)} \\
 \bottomrule
 \end{tabular}
 }
