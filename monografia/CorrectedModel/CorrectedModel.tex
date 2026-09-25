@@ -64,19 +64,21 @@ The microcluster state is thus restricted to its recursively updated sufficient 
 
 where $\epsilon > 0$ is a stabilization constant to prevent undefined behavior in single-sample microclusters.
 
-This decoupling stabilizes the macrocluster formation. The activation condition $D^l_k \ge \text{mean}\left(D^l_k\right)$ and the macrocluster density weighting $w^l_k = D^l_k / \sum_{m\in\mathcal{M}_j} D^m_k$ \cite{maia2020evolvclus} now strictly evaluate the invariant geometric density rather than the stochastic eccentricity evaluation of the most recent sample.
+\Cref{tab:orderdep_ari_overall,tab:orderdep_ari_fifth,tab:orderdep_ari_steadystate,tab:orderdep_ari_diff} present the clustering quality impact of the correction. Although it harmed the overall and initial ARI for four of the six datasets, it did not significantly affect the steady-state ARI measures, even improving them for the Chameleon sets. Our hypothesis is that the original order-dependent density formulation better match the remaining flaws in the model, thus compensating for them. This is investigated through the following sections, in which the model is further corrected.
 
 \input{CorrectedModel/artifacts_order_dependency/tables/ari_overall.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/ari_fifth.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/ari_steadystate.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/ari_diff.tex}
+
+Regarding time efficiency and resource consumption, \cref{tab:orderdep_time_fit_cum_ms,tab:orderdep_time_predict_cum_ms,tab:orderdep_memory_max_bytes,tab:orderdep_memory_steadystate_bytes,tab:orderdep_mc_max,tab:orderdep_mc_steadystate} show that the correction provided an overall improvement, specially for the datasets that feature concept drift. Under all those metrics, the corrected model is either better or equivalent to the original formulation.
+
 \input{CorrectedModel/artifacts_order_dependency/tables/time_fit_cum_ms.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/time_predict_cum_ms.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/memory_max_bytes.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/memory_steadystate_bytes.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/mc_max.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/mc_steadystate.tex}
-
 
 \section{Dimensionality Penalty}
 \label{sec:dimensionality_penalty}
@@ -91,13 +93,29 @@ Correspondingly, the transient point-to-set eccentricity evaluation is restored 
 
 $$ \xi^i(x_k) = \frac{1}{S^i_k} + \frac{\lVert \mu^i_k - x_k \rVert^2}{S^i_k \left(\sigma^i_k\right)^2} $$
 
+After this correction, the original model is shown by \cref{tab:dimpen_ari_overall,tab:dimpen_ari_fifth} to continue the best implementation under the overall and initial ARI measures. Nevertheless, \cref{tab:dimpen_ari_steadystate,tab:dimpen_ari_diff} show a pronounced improvement in the steady-state and ARI drop, mostly for the higher dimensional datasets.
+
 \input{CorrectedModel/artifacts_dimension_penalty/tables/ari_overall.tex}
 \input{CorrectedModel/artifacts_dimension_penalty/tables/ari_fifth.tex}
 \input{CorrectedModel/artifacts_dimension_penalty/tables/ari_steadystate.tex}
 \input{CorrectedModel/artifacts_dimension_penalty/tables/ari_diff.tex}
+
+\Cref{tab:dimpen_time_fit_cum_ms,tab:dimpen_time_predict_cum_ms,tab:dimpen_memory_max_bytes,tab:dimpen_memory_steadystate_bytes,tab:dimpen_mc_max,tab:dimpen_mc_steadystate} show that the improvement achieved by the previous correction is preserved for the first set of datasets. For the newly included \datasetname{SCL-32} and \datasetname{SCL-64}, the scores are consistently worst. This is expected, as thoroughly discussed in \cref{sec:reassessment_results}, since the dimensionality penalty colapses the spatial structure into fewer, lower quality microclusters, which are more efficient to maintain and evaluate, but less representative of the underlying distribution. The corrected model, which preserves the true geometric boundaries, is more computationally expensive, but it is also more accurate for those datasets.
+
 \input{CorrectedModel/artifacts_dimension_penalty/tables/time_fit_cum_ms.tex}
 \input{CorrectedModel/artifacts_dimension_penalty/tables/time_predict_cum_ms.tex}
 \input{CorrectedModel/artifacts_dimension_penalty/tables/memory_max_bytes.tex}
 \input{CorrectedModel/artifacts_dimension_penalty/tables/memory_steadystate_bytes.tex}
 \input{CorrectedModel/artifacts_dimension_penalty/tables/mc_max.tex}
 \input{CorrectedModel/artifacts_dimension_penalty/tables/mc_steadystate.tex}
+
+\section{Correction of the Typicality Formulation}
+\label{sec:correction_typicality}
+
+The evaluation of the original implementation reveals a critical mathematical discrepancy in the computation of a sample's membership to a macrocluster. The algorithm assigns a sample $x_k$ to a macrocluster by weighting the typicality of the sample against the active microclusters. However, the implemented typicality formulation evaluates an unnormalized intermediate expression, equivalent to $1 - \zeta^i(x_k)$. This expression contradicts the foundational definitions of the TEDA framework \cite{angelov2014outside}. In the formal mathematical model, absolute typicality is strictly defined as $\tau^i(x_k) = 1 - \xi^i(x_k)$. Furthermore, to construct valid density-based membership probabilities, the aggregation must utilize normalized typicality, defined as:
+
+\begin{equation}
+    t^i(x_k) = \frac{\tau^i(x_k)}{S^i_k - 2}
+\end{equation}
+
+By omitting the cardinality normalization factor $S^i_k - 2$, the original algorithm fails to appropriately scale the typicality across microclusters of varying sizes, inherently invalidating the resulting membership distributions. To restore theoretical consistency, the membership calculation is corrected to explicitly compute the exact normalized typicality $t^i(x_k)$. It is important to note that this normalized formulation is mathematically defined exclusively for microclusters containing more than two samples ($S^i_k > 2$). This domain constraint is naturally satisfied in the execution pipeline; because the macrocluster activation condition strictly filters out microclusters with $S^i_k \le 2$ prior to the membership evaluation, the denominator is mathematically guaranteed to be strictly positive.

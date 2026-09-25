@@ -58,7 +58,7 @@ class MicroTEDAClusCorrected:
         mean = x
         variance = 0
         density = num_samples / (variance + self.epsilon)
-        life = 1
+        life = 1.0
         new_mc = MicroTEDAClusCorrected.get_micro_cluster(
             id, num_samples, mean, variance, density, life
         )
@@ -78,30 +78,15 @@ class MicroTEDAClusCorrected:
         return outlier
 
     def update_micro_cluster(self, xk, micro_cluster, num_samples, mean, variance):
-
-        self.update_life(xk, micro_cluster)
-
         micro_cluster["num_samples"] = num_samples
         micro_cluster["mean"] = mean
         micro_cluster["variance"] = variance
         micro_cluster["density"] = num_samples / (variance + self.epsilon)
+        micro_cluster["life"] = 1.0
         micro_cluster["changed"] = True
 
         if micro_cluster not in self.changed_micro_clusters:
             self.changed_micro_clusters.append(micro_cluster)
-
-    def update_life(self, xk, micro_cluster):
-        previous_mean = micro_cluster["mean"]
-        previous_var = micro_cluster["variance"]
-        if previous_var > 0:
-            d = MicroTEDAClusCorrected.get_euclidean_distance(xk, previous_mean)
-            dist = np.sqrt(np.sum(d))
-            rt = np.sqrt(previous_var)
-            micro_cluster["life"] = micro_cluster["life"] + (
-                ((rt - dist) / rt) * self.fading_factor
-            )
-        else:
-            micro_cluster["life"] = 1
 
     @staticmethod
     def get_updated_micro_cluster_values(x, s_ik, mu_ik, var_ik):
@@ -202,6 +187,8 @@ class MicroTEDAClusCorrected:
                 if not self.is_outlier(num_samples, variance, norm_ecc):
                     self.update_micro_cluster(xk, mi, num_samples, mean, variance)
                     new_micro_cluster = False
+                else:
+                    mi["life"] -= self.fading_factor / mi["num_samples"]
 
             if new_micro_cluster:
                 self.create_new_micro_cluster(xk)
@@ -406,17 +393,14 @@ class MicroTEDAClusCorrected:
         plt.draw()
 
     def prune_micro_clusters(self):
-        for mc in self.micro_clusters:
+        for mc in self.micro_clusters[:]:
+            if mc["life"] <= 0:
+                self.micro_clusters.remove(mc)
 
-            if not mc["active"]:
-                mc["life"] = mc["life"] - self.fading_factor
+                if mc in self.changed_micro_clusters:
+                    self.changed_micro_clusters.remove(mc)
 
-                if mc["life"] < 0:
-                    self.micro_clusters.remove(mc)
-
-                    if mc in self.changed_micro_clusters:
-                        self.changed_micro_clusters.remove(mc)
-
+                if self.graph.has_node(mc["id"]):
                     self.graph.remove_node(mc["id"])
 
     def microcluster_count(self):
@@ -427,7 +411,7 @@ class MicroTEDAClusCorrectedParameterSearchSpace:
     def sample_parameters(self, trial: optuna.Trial) -> dict:
         return {
             "variance_limit": trial.suggest_float(
-                "variance_limit", 0.0001, 100.0, log=True
+                "variance_limit", 0.0001, 10000.0, log=True
             ),
             "decay": trial.suggest_int("decay", 10, 10000, log=True),
         }
