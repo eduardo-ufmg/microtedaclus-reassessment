@@ -128,3 +128,30 @@ ITERATIVE_MODEL_COLORS = {
     "MicroTEDAClusCorrected_macro": "#9467bd",
     "MicroTEDAClusCorrected_refined": "#e377c2",
 }
+
+DEFAULT_RUNS = 32
+
+
+def get_stage_model_datasets() -> dict[str, list[str]]:
+    """Return the mapping of each model tag to the datasets it must be evaluated on.
+
+    The baseline 'MicroTEDAClus' is evaluated across all iterative datasets.
+    Each correction stage's newly introduced model is evaluated on that stage's datasets.
+    """
+    mapping = {
+        "MicroTEDAClus": ITERATIVE_DATASET_ORDER,
+    }
+    for stage in CORRECTION_STAGES:
+        mapping[stage.model_tag] = stage.datasets
+    return mapping
+
+
+def get_all_stage_tasks(runs: int = DEFAULT_RUNS) -> list[tuple[str, str, int]]:
+    """Generate all canonical (dataset, model_tag, run) tasks across stages."""
+    model_datasets = get_stage_model_datasets()
+    tasks = []
+    for model_tag, datasets in model_datasets.items():
+        for dataset in datasets:
+            for run in range(runs):
+                tasks.append((dataset, model_tag, run))
+    return tasks

@@ -26,8 +26,34 @@ from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected import (
     MicroTEDAClusCorrected,
     MicroTEDAClusCorrectedParameterSearchSpace,
 )
+from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected_orderdepend import (
+    MicroTEDAClusCorrectedOrderdepend,
+    MicroTEDAClusCorrectedOrderdependParameterSearchSpace,
+)
+from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected_dimpen import (
+    MicroTEDAClusCorrectedDimpen,
+    MicroTEDAClusCorrectedDimpenParameterSearchSpace,
+)
+from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected_math import (
+    MicroTEDAClusCorrectedMath,
+    MicroTEDAClusCorrectedMathParameterSearchSpace,
+)
+from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected_decay import (
+    MicroTEDAClusCorrectedDecay,
+    MicroTEDAClusCorrectedDecayParameterSearchSpace,
+)
+from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected_macro import (
+    MicroTEDAClusCorrectedMacro,
+    MicroTEDAClusCorrectedMacroParameterSearchSpace,
+)
 
 from editorial_config import ITERATIVE_DATASET_ORDER
+from iterative_config import (
+    CORRECTION_STAGES,
+    DEFAULT_RUNS,
+    STAGE_BY_ID,
+    get_stage_model_datasets,
+)
 from main_experiment import get_dataset
 
 rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR)
@@ -46,7 +72,7 @@ except Exception as e:
     print(f"Critical Error loading R dependencies via rpy2: {e}")
     sys.exit(1)
 
-RUNS = 32
+RUNS = DEFAULT_RUNS
 BATCH_SIZE = 100
 OPT_TRIALS = 64
 OPT_TIMEOUT = 180
@@ -54,7 +80,32 @@ BURN_IN_FRACTION = 0.05
 SPLIT_FRACTION = 0.2
 BASE_SEED = 0
 
-DATASETS = ITERATIVE_DATASET_ORDER
+TAG_MODEL_MAP = {
+    "orderdepend": (
+        MicroTEDAClusCorrectedOrderdepend,
+        MicroTEDAClusCorrectedOrderdependParameterSearchSpace,
+    ),
+    "dimpen": (
+        MicroTEDAClusCorrectedDimpen,
+        MicroTEDAClusCorrectedDimpenParameterSearchSpace,
+    ),
+    "math": (
+        MicroTEDAClusCorrectedMath,
+        MicroTEDAClusCorrectedMathParameterSearchSpace,
+    ),
+    "decay": (
+        MicroTEDAClusCorrectedDecay,
+        MicroTEDAClusCorrectedDecayParameterSearchSpace,
+    ),
+    "macro": (
+        MicroTEDAClusCorrectedMacro,
+        MicroTEDAClusCorrectedMacroParameterSearchSpace,
+    ),
+    "refined": (
+        MicroTEDAClusCorrected,
+        MicroTEDAClusCorrectedParameterSearchSpace,
+    ),
+}
 
 MODEL_MAP = {
     "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
@@ -62,6 +113,12 @@ MODEL_MAP = {
         MicroTEDAClusCorrected,
         MicroTEDAClusCorrectedParameterSearchSpace,
     ),
+    "MicroTEDAClusCorrected_orderdepend": TAG_MODEL_MAP["orderdepend"],
+    "MicroTEDAClusCorrected_dimpen": TAG_MODEL_MAP["dimpen"],
+    "MicroTEDAClusCorrected_math": TAG_MODEL_MAP["math"],
+    "MicroTEDAClusCorrected_decay": TAG_MODEL_MAP["decay"],
+    "MicroTEDAClusCorrected_macro": TAG_MODEL_MAP["macro"],
+    "MicroTEDAClusCorrected_refined": TAG_MODEL_MAP["refined"],
 }
 
 
@@ -105,50 +162,84 @@ def main():
         description="Run iterative model update experiments"
     )
     parser.add_argument(
+        "--stage",
+        type=str,
+        default=None,
+        help="Specific stage ID to run (e.g. order_dependency, dimension_penalty, refined)",
+    )
+    parser.add_argument(
         "--tag",
         type=str,
         default="",
-        help="Correction tag suffix (e.g. math, dimpen, orderdepend)",
+        help="Correction tag suffix (e.g. math, dimpen, orderdepend, refined)",
     )
     parser.add_argument(
         "--models",
         nargs="+",
         default=None,
-        help="Models to run (default: all in MODEL_MAP)",
+        help="Models to run (default: all implemented models across stages)",
     )
     parser.add_argument(
         "--datasets",
         nargs="+",
         default=None,
-        help="Datasets to run (default: DATASETS)",
+        help="Datasets to run (overrides stage datasets)",
     )
     parser.add_argument(
         "--runs",
         type=int,
         default=RUNS,
-        help="Number of runs (default: 32)",
+        help=f"Number of runs (default: {RUNS})",
     )
     args = parser.parse_args()
 
-    selected_datasets = args.datasets or DATASETS
-    selected_models = args.models or list(MODEL_MAP.keys())
-    runs = args.runs
+    canonical_model_datasets = get_stage_model_datasets()
 
-    tasks = list(itertools.product(selected_datasets, selected_models, range(runs)))
+    if args.stage:
+        if args.stage not in STAGE_BY_ID:
+            raise ValueError(
+                f"Unknown stage: {args.stage}. Valid stages: {list(STAGE_BY_ID.keys())}"
+            )
+        stage = STAGE_BY_ID[args.stage]
+        model_datasets = {stage.model_tag: stage.datasets}
+    elif args.tag:
+        tag_key = (
+            f"MicroTEDAClusCorrected_{args.tag}"
+            if not args.tag.startswith("MicroTEDAClus")
+            else args.tag
+        )
+        target_ds = canonical_model_datasets.get(tag_key, ITERATIVE_DATASET_ORDER)
+        model_datasets = {tag_key: target_ds}
+    elif args.models:
+        model_datasets = {
+            m: canonical_model_datasets.get(m, ITERATIVE_DATASET_ORDER)
+            for m in args.models
+        }
+    else:
+        # Default: all models required across all defined correction stages
+        model_datasets = canonical_model_datasets
 
-    with tqdm(total=len(tasks), desc="Experiments") as pbar:
+    if args.datasets:
+        model_datasets = {m: args.datasets for m in model_datasets}
+
+    # Filter to only models that have an existing implementation
+    implemented_model_datasets = {}
+    for m, dsets in model_datasets.items():
+        if m in MODEL_MAP:
+            implemented_model_datasets[m] = dsets
+        else:
+            print(f"Notice: Model '{m}' has no registered implementation. Skipping.")
+
+    tasks = []
+    for model_name, dsets in implemented_model_datasets.items():
+        for dataset in dsets:
+            for run in range(args.runs):
+                tasks.append((dataset, model_name, run))
+
+    with tqdm(total=len(tasks), desc="Iterative Experiments") as pbar:
         for dataset, model_name, run in tasks:
-            if args.tag and model_name != "MicroTEDAClus":
-                file_model_name = f"{model_name}_{args.tag}"
-            else:
-                file_model_name = model_name
-
-            output_file = os.path.join(
-                DIR_RESULTS, f"{dataset}_{file_model_name}_{run}.csv"
-            )
-            params_file = os.path.join(
-                DIR_PARAMS, f"{dataset}_{file_model_name}_{run}.csv"
-            )
+            output_file = os.path.join(DIR_RESULTS, f"{dataset}_{model_name}_{run}.csv")
+            params_file = os.path.join(DIR_PARAMS, f"{dataset}_{model_name}_{run}.csv")
 
             if os.path.exists(output_file) and os.path.exists(params_file):
                 pbar.update(1)
@@ -178,7 +269,7 @@ def main():
                 params_records = [
                     {
                         "dataset": dataset,
-                        "model": file_model_name,
+                        "model": model_name,
                         "run": run,
                         "param_name": k,
                         "param_value": v,
