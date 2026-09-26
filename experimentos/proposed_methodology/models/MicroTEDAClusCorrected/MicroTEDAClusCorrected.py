@@ -29,22 +29,33 @@ class MicroTEDAClusCorrected:
         self.debug = debug
         self.plot_graph = plot_graph
         self.changed_micro_clusters = []
-        self.fading_factor = 1 / decay
+        self.decay = decay
         self.epsilon = epsilon
+        self.ndim = None
 
     @staticmethod
-    def get_micro_cluster(id, num_samples, mean, variance, density, life):
+    def get_micro_cluster(
+        id, num_samples, mean, variance, log_density, last_updated_at
+    ):
         return {
             "id": id,
             "num_samples": num_samples,
             "mean": mean,
             "variance": variance,
-            "density": density,
+            "log_density": log_density,
             "changed": True,
-            "life": life,
+            "last_updated_at": last_updated_at,
         }
 
+    def _compute_log_density(self, num_samples, variance):
+        return math.log(num_samples) - (self.ndim / 2) * math.log(
+            variance + self.epsilon
+        )
+
     def create_new_micro_cluster(self, x):
+
+        if self.ndim is None:
+            self.ndim = len(x)
 
         if len(self.micro_clusters) == 0:
             id = 1
@@ -54,10 +65,10 @@ class MicroTEDAClusCorrected:
         num_samples = 1
         mean = x
         variance = 0
-        density = num_samples / (variance + self.epsilon)
-        life = 1.0
+        log_density = self._compute_log_density(num_samples, variance)
+        last_updated_at = self.total_num_samples
         new_mc = MicroTEDAClusCorrected.get_micro_cluster(
-            id, num_samples, mean, variance, density, life
+            id, num_samples, mean, variance, log_density, last_updated_at
         )
         self.micro_clusters.append(new_mc)
         self.changed_micro_clusters.append(new_mc)
@@ -74,12 +85,12 @@ class MicroTEDAClusCorrected:
 
         return outlier
 
-    def update_micro_cluster(self, xk, micro_cluster, num_samples, mean, variance):
+    def update_micro_cluster(self, micro_cluster, num_samples, mean, variance):
         micro_cluster["num_samples"] = num_samples
         micro_cluster["mean"] = mean
         micro_cluster["variance"] = variance
-        micro_cluster["density"] = num_samples / (variance + self.epsilon)
-        micro_cluster["life"] = 1.0
+        micro_cluster["log_density"] = self._compute_log_density(num_samples, variance)
+        micro_cluster["last_updated_at"] = self.total_num_samples
         micro_cluster["changed"] = True
 
         if micro_cluster not in self.changed_micro_clusters:
@@ -131,11 +142,6 @@ class MicroTEDAClusCorrected:
         ecc = MicroTEDAClusCorrected.get_eccentricity(x, num_samples, mean, var)
         return 1.0 - ecc
 
-    @staticmethod
-    def get_normalized_typicality(x, num_samples, mean, var):
-        tau = MicroTEDAClusCorrected.get_typicality(x, num_samples, mean, var)
-        return tau / (num_samples - 2.0)
-
     def fit(self, X, update_macro_clusters=True, prune_micro_clusters=True):
 
         lenx = len(X)
@@ -182,10 +188,8 @@ class MicroTEDAClusCorrected:
                 )
 
                 if not self.is_outlier(num_samples, variance, norm_ecc):
-                    self.update_micro_cluster(xk, mi, num_samples, mean, variance)
+                    self.update_micro_cluster(mi, num_samples, mean, variance)
                     new_micro_cluster = False
-                else:
-                    mi["life"] -= self.fading_factor / mi["num_samples"]
 
             if new_micro_cluster:
                 self.create_new_micro_cluster(xk)
@@ -218,13 +222,13 @@ class MicroTEDAClusCorrected:
                 if not mcs:
                     continue
 
-                total_density = sum(m["density"] for m in mcs)
-                mean_density = total_density / len(mcs)
+                log_densities = [m["log_density"] for m in mcs]
+                mean_log_density = sum(log_densities) / len(log_densities)
 
                 active_micro_clusters = [
                     m
                     for m in mcs
-                    if m["num_samples"] > 2 and m["density"] >= mean_density
+                    if m["num_samples"] > 2 and m["log_density"] >= mean_log_density
                 ]
 
                 memberships.append(
@@ -246,41 +250,21 @@ class MicroTEDAClusCorrected:
 
     @staticmethod
     def calculate_membership(x, active_micro_clusters):
-        total_density = 0
-        for m in active_micro_clusters:
-            total_density += m["density"]
+        if not active_micro_clusters:
+            return 0.0
 
-        mb = 0
-        if total_density == 0:
-            return mb
+        log_densities = [m["log_density"] for m in active_micro_clusters]
+        max_log_d = max(log_densities)
+        weights = [math.exp(ld - max_log_d) for ld in log_densities]
+        total_weight = sum(weights)
 
-        for m in active_micro_clusters:
-            d = m["density"]
-
-            t = MicroTEDAClusCorrected.get_normalized_typicality(
+        mb = 0.0
+        for m, w in zip(active_micro_clusters, weights):
+            t = MicroTEDAClusCorrected.get_typicality(
                 x, m["num_samples"], m["mean"], m["variance"]
             )
-            mb += (d / total_density) * t
+            mb += (w / total_weight) * t
         return mb
-
-    @staticmethod
-    def calculate_micro_membership(x, params):
-
-        micro_cluster = params[0]
-        total_density = params[1]
-
-        d = micro_cluster["density"]
-
-        t = MicroTEDAClusCorrected.get_normalized_typicality(
-            x,
-            micro_cluster["num_samples"],
-            micro_cluster["mean"],
-            micro_cluster["variance"],
-        )
-        return (d / total_density) * t
-
-    def get_total_density(self):
-        return sum(m["density"] for m in self.micro_clusters)
 
     def get_changed_micro_clusters(self):
         changed_micro_clusters = []
@@ -296,7 +280,7 @@ class MicroTEDAClusCorrected:
             for mj in self.micro_clusters:
                 if mi["id"] != mj["id"]:
                     edge = (mi["id"], mj["id"])
-                    if MicroTEDAClusCorrected.has_intersection(mi, mj):
+                    if MicroTEDAClusCorrected.has_intersection(mi, mj, self.ndim):
                         self.graph.add_edge(*edge)
                     elif MicroTEDAClusCorrected.nodes_connected(
                         mi["id"], mj["id"], self.graph
@@ -311,7 +295,7 @@ class MicroTEDAClusCorrected:
         return u in G.neighbors(v)
 
     @staticmethod
-    def has_intersection(mi, mj):
+    def has_intersection(mi, mj, ndim):
         mu_i = mi["mean"]
         mu_j = mj["mean"]
         var_i = mi["variance"]
@@ -320,14 +304,14 @@ class MicroTEDAClusCorrected:
         d = MicroTEDAClusCorrected.get_euclidean_distance(mu_i, mu_j)
         dist = np.sqrt(np.sum(d))
 
-        deviation = MicroTEDAClusCorrected.get_deviation(var_i, var_j)
+        deviation = MicroTEDAClusCorrected.get_deviation(var_i, var_j, ndim)
 
         return dist <= deviation
 
     @staticmethod
     @jit(nopython=True)
-    def get_deviation(var_i, var_j):
-        deviation = 2 * (np.sqrt(var_i) + np.sqrt(var_j))
+    def get_deviation(var_i, var_j, ndim):
+        deviation = 2 * np.sqrt(ndim) * (np.sqrt(var_i) + np.sqrt(var_j))
         return deviation
 
     @staticmethod
@@ -353,7 +337,8 @@ class MicroTEDAClusCorrected:
 
     def prune_micro_clusters(self):
         for mc in self.micro_clusters[:]:
-            if mc["life"] <= 0:
+            idle_samples = self.total_num_samples - mc["last_updated_at"]
+            if idle_samples > mc["num_samples"] * self.decay:
                 self.micro_clusters.remove(mc)
 
                 if mc in self.changed_micro_clusters:
