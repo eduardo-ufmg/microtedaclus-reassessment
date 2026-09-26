@@ -498,13 +498,6 @@ def main():
     )
     args = parser.parse_args()
 
-    # Recompute metrics if requested or if parquet files do not exist
-    parquet_exists = os.path.exists(os.path.join(DIR_METRICS, "run_level.parquet"))
-    if args.recompute_metrics or not parquet_exists:
-        print("Ingesting raw experiment CSVs and generating Parquet metrics...")
-        compute_metrics()
-        print("Parquet metrics generated.")
-
     if args.stage:
         if args.stage not in STAGE_BY_ID:
             raise ValueError(
@@ -514,6 +507,40 @@ def main():
     else:
         # Default to all stages if none specified
         stages_to_run = CORRECTION_STAGES
+
+    # Automatically detect if Parquet cache is missing or stale
+    parquet_path = os.path.join(DIR_METRICS, "run_level.parquet")
+    needs_recompute = False
+
+    if args.recompute_metrics or not os.path.exists(parquet_path):
+        needs_recompute = True
+    else:
+        parquet_mtime = os.path.getmtime(parquet_path)
+        csv_files = glob.glob(os.path.join(DIR_RESULTS, "*.csv"))
+        if any(os.path.getmtime(f) > parquet_mtime for f in csv_files):
+            needs_recompute = True
+        else:
+            try:
+                df_cached = pd.read_parquet(parquet_path, columns=["model"])
+                if len(df_cached) != len(csv_files):
+                    needs_recompute = True
+                else:
+                    cached_models = set(df_cached["model"].unique())
+                    for stage in stages_to_run:
+                        for m in stage.models:
+                            if m not in cached_models:
+                                if glob.glob(os.path.join(DIR_RESULTS, f"*_{m}_*.csv")):
+                                    needs_recompute = True
+                                    break
+            except Exception:
+                needs_recompute = True
+
+    if needs_recompute:
+        print(
+            "Raw experiment CSVs changed or metrics out-of-date. Ingesting and recomputing Parquet metrics..."
+        )
+        compute_metrics()
+        print("Parquet metrics generated.")
 
     for stage in stages_to_run:
         print(f"\nProcessing Stage: {stage.stage_id} ({stage.artifact_dir})")

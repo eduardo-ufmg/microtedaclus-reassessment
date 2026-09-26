@@ -60,10 +60,13 @@ def dataset_display_name(dataset_id: str) -> str:
 
 
 SUBSET_MODEL_NAMES = {
-    "all": set(MODEL_ORDER) - {"MicroTEDAClusCorrected"},
+    "all": set(MODEL_ORDER)
+    - {"MicroTEDAClusCorrected"},  # - {"MicroTEDAClusImproved"},
     "original-paper": {"MicroTEDAClus", "DenStream", "CluStream", "StreamKM"},
     "teda-micro-based": {"MicroTEDAClus", "AutoCloud", "CEDAS", "TEDACloud"},
-    # "microtedaclus": {"MicroTEDAClus", "MicroTEDAClusCorrected"},
+    "all-corrected": set(MODEL_ORDER)
+    - {"MicroTEDAClus"},  # - {"MicroTEDAClusImproved"},
+    # "all-improved": set(MODEL_ORDER) - {"MicroTEDAClus"} - {"MicroTEDAClusCorrected"},
 }
 
 SUBSETS = {

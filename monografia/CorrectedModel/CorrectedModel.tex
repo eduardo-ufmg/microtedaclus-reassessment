@@ -120,7 +120,7 @@ The evaluation of the original implementation reveals a critical mathematical di
 
 By omitting the cardinality normalization factor $S^i_k - 2$, the original algorithm fails to appropriately scale the typicality across microclusters of varying sizes, inherently invalidating the resulting membership distributions. To restore theoretical consistency, the membership calculation is corrected to explicitly compute the exact normalized typicality $t^i(x_k)$. It is important to note that this normalized formulation is mathematically defined exclusively for microclusters containing more than two samples ($S^i_k > 2$). This domain constraint is naturally satisfied in the execution pipeline; because the macrocluster activation condition strictly filters out microclusters with $S^i_k \le 2$ prior to the membership evaluation, the denominator is mathematically guaranteed to be strictly positive.
 
-Overall, \cref{tab:math_ari_overall,tab:math_ari_fifth,tab:math_ari_steadystate,tab:math_ari_diff,tab:math_time_fit_cum_ms,tab:math_time_predict_cum_ms,tab:math_memory_max_bytes,tab:math_memory_steadystate_bytes,tab:math_mc_max,tab:math_mc_steadystate} show that this correction did not significantly affect the clustering quality, time efficiency, or resource consumption of the model.
+Overall, \cref{tab:math_ari_overall,tab:math_ari_fifth,tab:math_ari_steadystate,tab:math_ari_diff,tab:math_time_fit_cum_ms,tab:math_time_predict_cum_ms,tab:math_memory_max_bytes,tab:math_memory_steadystate_bytes,tab:math_mc_max,tab:math_mc_steadystate} show that this correction did not significantly affect the clustering quality, time efficiency, or resource consumption of the model. It promoted \BenchmarkOne to neutral fitting time and \datasetname{SCL-32} to best prediction time, but demoted \ChameleonDSThree initial ARI, memory footprint, and macrocluster count.
 
 \input{CorrectedModel/artifacts_math/tables/ari_overall.tex}
 \input{CorrectedModel/artifacts_math/tables/ari_fifth.tex}
@@ -132,3 +132,76 @@ Overall, \cref{tab:math_ari_overall,tab:math_ari_fifth,tab:math_ari_steadystate,
 \input{CorrectedModel/artifacts_math/tables/memory_steadystate_bytes.tex}
 \input{CorrectedModel/artifacts_math/tables/mc_max.tex}
 \input{CorrectedModel/artifacts_math/tables/mc_steadystate.tex}
+
+\section{Inconsistent Decayment Logic}
+\label{sec:inconsistent_decayment_logic}
+
+The original \MicroTEDAClus formulation introduces no explicit mechanism for data decay or memory pruning \cite{maia2020evolvclus}. However, analysis of the underlying model execution reveals the presence of an undocumented decay heuristic based on the Euclidean distance of a sample relative to a microcluster's standard deviation. Furthermore, pruning is strictly coupled to a microcluster's transient activation status during the macrocluster graph formation.
+
+These heuristics diverge significantly from the formal decay logic introduced in the updated thesis formulation \cite{galindo2021lastmile}, which specifies a strict linear penalty $v^i_k = v^i_{k-1} - \rho$ applied exclusively when an incoming sample $x_k$ does not update the microcluster $i$. While mathematically formalized, this static penalty remains analytically flawed for continuous data streams. Because it applies a constant subtraction $\rho$ independent of the accumulated mass, mature microclusters representing major concepts are deleted at the exact same rate as transient noise buffers.
+
+To establish a memory management mechanism that does not invalidates the strict unweighted arithmetic expansion required by the Typicality and Eccentricity Data Analytics sufficient statistics \cite{angelov2014outside}, the decay parameter must be isolated and made proportional to the microcluster's inertia. The distance-based heuristics and the dependence on macrocluster activation are entirely removed. The decay parameter $v^i_k$ is refreshed to $1.0$ upon a successful sample match. If the sample is an outlier to the microcluster, an inertia-weighted penalty is applied:
+
+\begin{equation}
+    v^i_k = v^i_{k-1} - \frac{\rho}{S^i_k}
+\end{equation}
+
+where $\rho > 0$ is a static fading factor. A microcluster is independently pruned from memory when $v^i_k \le 0$. Under this formulation, transient noise microclusters (low $S^i_k$) decay rapidly, while mature microclusters (high $S^i_k$) retain significant inertia, enabling them to survive temporary periods of inactivity and correctly identify recurring concepts.
+
+The decay correction is shown by \cref{tab:decay_ari_overall,tab:decay_ari_fifth,tab:decay_ari_steadystate,tab:decay_ari_diff} to actively harm the clustering quality, improving only the initial score for \ChameleonDSFour and \BenchmarkTwo. The overall ARI is worse for six of the eight datasets, and the steady-state ARI is worse for two of them.
+
+\input{CorrectedModel/artifacts_decay/tables/ari_overall.tex}
+\input{CorrectedModel/artifacts_decay/tables/ari_fifth.tex}
+\input{CorrectedModel/artifacts_decay/tables/ari_steadystate.tex}
+\input{CorrectedModel/artifacts_decay/tables/ari_diff.tex}
+
+Furthermore, efficiency and resource usage are also negatively affected by the correction, as shown by \cref{tab:decay_time_fit_cum_ms,tab:decay_time_predict_cum_ms,tab:decay_memory_max_bytes,tab:decay_memory_steadystate_bytes,tab:decay_mc_max,tab:decay_mc_steadystate}. The corrected model is consistently worse for most metric and datasets.
+
+\input{CorrectedModel/artifacts_decay/tables/time_fit_cum_ms.tex}
+\input{CorrectedModel/artifacts_decay/tables/time_predict_cum_ms.tex}
+\input{CorrectedModel/artifacts_decay/tables/memory_max_bytes.tex}
+\input{CorrectedModel/artifacts_decay/tables/memory_steadystate_bytes.tex}
+\input{CorrectedModel/artifacts_decay/tables/mc_max.tex}
+\input{CorrectedModel/artifacts_decay/tables/mc_steadystate.tex}
+
+\section{Macrocluster Topology and Graph Processing}
+\label{sec:macrocluster_topology}
+
+The original \MicroTEDAClus algorithm defines macroclusters as disjoint sets of connected microclusters, where connectivity is determined by the spatial intersection condition
+
+\begin{equation}
+    \text{dist}(\mu^i_k, \mu^j_k) < 2 \left( \sigma^i_k + \sigma^j_k \right)
+\end{equation}
+
+To prevent microcluster collapse during evaluations, the original formulation specifies that a microcluster participates in macrocluster calculations only if its density exceeds the macrocluster's mean density, $D^l_k \ge \text{mean}(D^l_k)$.
+
+The baseline implementation misinterprets this calculation filter as a strict topological constraint. It executes a computationally expensive two-pass graph reconstruction: first building the base intersection graph $\mathbb{G}_0$, and subsequently severing nodes that fall below the mean density to extract an active graph $\mathbb{G}_1$. This approach artificially fractures cohesive macroscopic data concepts into disconnected sub-clusters. Furthermore, continuously duplicating network graphs and repeatedly solving for connected components across the microcluster space introduces an unnecessary computational bottleneck during continuous stream processing.
+
+To restore topological integrity and resolve the computational overhead, we decouple the macrocluster topology from the transient activation logic. The structural graph is maintained strictly as the single intersection graph $\mathbb{G}_0$, preserving the continuous geometric boundaries of the underlying data concepts. The activation threshold is subsequently relocated to the prediction phase.
+
+When calculating a sample's membership to a macrocluster $\mathcal{M}_j$, the algorithm dynamically computes the mean density of $\mathcal{M}_j$. Only the microclusters satisfying both the maturity constraint $S^i_k > 2$ and the density threshold
+
+\begin{equation}
+    D^i_k \ge \text{mean}(D^m_k),\quad m \in \mathcal{M}_j
+\end{equation}
+
+are dynamically passed to the typicality weighting function. This structural alignment fulfills the original mathematical intent of filtering sparse boundary elements without destructively fragmenting the underlying macrocluster graph.
+
+Again, the correction further harmed the clustering quality. \Cref{tab:macro_ari_overall,tab:macro_ari_fifth,tab:macro_ari_steadystate,tab:macro_ari_diff} show that, except for the high-dimensional datasets and the stability score, the corrected model is consistently worse than the previous formulations.
+
+\input{CorrectedModel/artifacts_macrocluster_activation/tables/ari_overall.tex}
+\input{CorrectedModel/artifacts_macrocluster_activation/tables/ari_fifth.tex}
+\input{CorrectedModel/artifacts_macrocluster_activation/tables/ari_steadystate.tex}
+\input{CorrectedModel/artifacts_macrocluster_activation/tables/ari_diff.tex}
+
+\Cref{tab:macro_time_fit_cum_ms,tab:macro_time_predict_cum_ms,tab:macro_memory_max_bytes,tab:macro_memory_steadystate_bytes,tab:macro_mc_max,tab:macro_mc_steadystate} show that performance was improved, but such metrics are not meaningful when the quality is significantly worse.
+
+\input{CorrectedModel/artifacts_macrocluster_activation/tables/time_fit_cum_ms.tex}
+\input{CorrectedModel/artifacts_macrocluster_activation/tables/time_predict_cum_ms.tex}
+\input{CorrectedModel/artifacts_macrocluster_activation/tables/memory_max_bytes.tex}
+\input{CorrectedModel/artifacts_macrocluster_activation/tables/memory_steadystate_bytes.tex}
+\input{CorrectedModel/artifacts_macrocluster_activation/tables/mc_max.tex}
+\input{CorrectedModel/artifacts_macrocluster_activation/tables/mc_steadystate.tex}
+
+\section{Final Correction Tweaks}
+\label{sec:final_correction_tweaks}

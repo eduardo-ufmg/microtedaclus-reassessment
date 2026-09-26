@@ -23,9 +23,7 @@ class MicroTEDAClusCorrected:
         self.total_num_samples = 0
         self.micro_clusters = []
         self.macro_clusters = []
-        self.active_macro_clusters = []
         self.graph = nx.Graph()
-        self.active_graph = nx.Graph()
         self.variance_limit = variance_limit
         self.macro_cluster_update = macro_cluster_update
         self.debug = debug
@@ -42,7 +40,6 @@ class MicroTEDAClusCorrected:
             "mean": mean,
             "variance": variance,
             "density": density,
-            "active": True,
             "changed": True,
             "life": life,
         }
@@ -195,7 +192,16 @@ class MicroTEDAClusCorrected:
 
     def update_macro_clusters(self):
         self.define_macro_clusters()
-        self.define_activations()
+
+    def get_micro_clusters_by_ids(self, mg):
+        mcs = []
+        for mi_ind in mg:
+            mi = next(
+                (item for item in self.micro_clusters if item["id"] == mi_ind), None
+            )
+            if mi:
+                mcs.append(mi)
+        return mcs
 
     def predict(self, X):
         self.labels_ = np.zeros(len(X), dtype=int)
@@ -207,8 +213,19 @@ class MicroTEDAClusCorrected:
 
         for xk in X:
             memberships = []
-            for mg in self.active_macro_clusters:
-                active_micro_clusters = self.get_active_micro_clusters(mg)
+            for mg in self.macro_clusters:
+                mcs = self.get_micro_clusters_by_ids(mg)
+                if not mcs:
+                    continue
+
+                total_density = sum(m["density"] for m in mcs)
+                mean_density = total_density / len(mcs)
+
+                active_micro_clusters = [
+                    m
+                    for m in mcs
+                    if m["num_samples"] > 2 and m["density"] >= mean_density
+                ]
 
                 memberships.append(
                     MicroTEDAClusCorrected.calculate_membership(
@@ -263,43 +280,13 @@ class MicroTEDAClusCorrected:
         return (d / total_density) * t
 
     def get_total_density(self):
-        active_mcs = self.get_all_active_micro_clusters()
-        total_density = 0
-
-        for m in active_mcs:
-            total_density += m["density"]
-
-        return total_density
-
-    def get_active_micro_clusters(self, mg):
-        active_micro_clusters = []
-        for mi_ind in mg:
-            mi = next(item for item in self.micro_clusters if item["id"] == mi_ind)
-            if mi["active"]:
-                active_micro_clusters.append(mi)
-        return active_micro_clusters
-
-    def get_all_active_micro_clusters(self):
-        active_micro_clusters = []
-
-        for m in self.micro_clusters:
-            if m["active"]:
-                active_micro_clusters.append(m)
-        return active_micro_clusters
+        return sum(m["density"] for m in self.micro_clusters)
 
     def get_changed_micro_clusters(self):
         changed_micro_clusters = []
 
         for m in self.micro_clusters:
             if m["changed"]:
-                changed_micro_clusters.append(m)
-        return changed_micro_clusters
-
-    def get_changed_active_micro_clusters(self):
-        changed_micro_clusters = []
-
-        for m in self.changed_micro_clusters:
-            if m["active"]:
                 changed_micro_clusters.append(m)
         return changed_micro_clusters
 
@@ -322,33 +309,6 @@ class MicroTEDAClusCorrected:
     @staticmethod
     def nodes_connected(u, v, G):
         return u in G.neighbors(v)
-
-    def define_activations(self):
-
-        self.active_graph = self.graph.copy()
-
-        for mg in self.macro_clusters:
-            num_micro = len(mg)
-            total_density = 0
-
-            for i in mg:
-                dens = next(
-                    item["density"] for item in self.micro_clusters if item["id"] == i
-                )
-                total_density += dens
-
-            mean_density = total_density / num_micro
-
-            for i in mg:
-                mi = next(item for item in self.micro_clusters if item["id"] == i)
-                mi["active"] = (mi["num_samples"] > 2) and (
-                    mi["density"] >= mean_density
-                )
-
-                if not mi["active"]:
-                    self.active_graph.remove_node(mi["id"])
-
-        self.active_macro_clusters = list(nx.connected_components(self.active_graph))
 
     @staticmethod
     def has_intersection(mi, mj):
@@ -378,12 +338,11 @@ class MicroTEDAClusCorrected:
 
     def plot_micro_clusters(self, X):
 
-        micro_clusters = self.get_all_active_micro_clusters()
         ax = plt.gca()
 
         ax.scatter(X[:, 0], X[:, 1], s=1, color="b")
 
-        for m in micro_clusters:
+        for m in self.micro_clusters:
             mean = m["mean"]
             std = math.sqrt(m["variance"])
 

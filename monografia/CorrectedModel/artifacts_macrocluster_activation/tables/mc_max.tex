@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis and (Q1, Q3) for the Maximum Microcluster Count.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} & \modelname{corr-typicality-math} & \modelname{decay} & \modelname{macrocluster-activation} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 97 (26, 179) & 60 (38, 79) & 48 (28, 71) & 48 (26, 99) & 64 (45, 86) & 69 (57, 77) \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{43 (15, 60)} & \textbf{21 (15, 29)} & \textbf{22 (14, 28)} & \textbf{20 (17, 29)} & \textbf{20 (13, 28)} & \textcolor{red}{48 (17, 110)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{290 (103, 466)} & \textbf{44 (29, 92)} & \textbf{48 (28, 78)} & \textbf{47 (32, 64)} & 96 (74, 124) & 96 (80, 115) \\
+\datasetname{Cassini} & \textbf{48 (38, 126)} & \textbf{66 (26, 93)} & \textbf{80 (30, 99)} & \textbf{86 (24, 94)} & \textcolor{red}{390 (70, 1244)} & \textbf{90 (33, 337)} \\
+\datasetname{Chameleon DS3} & \textcolor{red}{521 (400, 2278)} & \textcolor{red}{402 (298, 1773)} & 98 (93, 395) & 252 (95, 979) & \textcolor{red}{1007 (424, 1717)} & \textbf{25 (11, 48)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{512 (408, 2226)} & \textcolor{red}{498 (304, 2034)} & 105 (100, 134) & 104 (98, 184) & \textcolor{red}{306 (181, 1278)} & \textbf{11 (11, 27)} \\
+\datasetname{SCL-32} & \textbf{36 (18, 57)} & - & \textcolor{red}{76 (49, 144)} & 68 (40, 92) & \textbf{42 (39, 54)} & 60 (45, 91) \\
+\datasetname{SCL-64} & \textbf{28 (25, 65)} & - & 77 (36, 152) & \textcolor{red}{90 (58, 210)} & \textbf{33 (27, 42)} & \textbf{40 (36, 58)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:macro_mc_max}
+\end{table}

@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis and (Q1, Q3) for the Maximum Memory Footprint [B].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} & \modelname{corr-typicality-math} & \modelname{decay} & \modelname{macrocluster-activation} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 318464 (116480, 494848) & 368640 (163584, 546048) & 231936 (120576, 390912) & 224768 (108288, 472576) & 353280 (237568, 481024) & 365568 (273152, 429312) \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{154112 (88064, 183296)} & \textbf{82432 (56320, 92160)} & \textbf{82944 (54272, 95744)} & \textbf{84480 (65792, 109056)} & \textbf{55808 (39424, 99328)} & 139776 (37120, 495104) \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{1099776 (421888, 1548288)} & \textbf{302080 (205312, 617728)} & \textbf{319488 (216832, 501504)} & \textbf{307200 (219136, 440832)} & \textcolor{red}{831488 (583168, 1293824)} & \textbf{555520 (442112, 691712)} \\
+\datasetname{Cassini} & \textbf{149504 (134656, 343296)} & \textbf{147968 (109568, 175616)} & \textbf{156672 (117504, 183296)} & \textbf{168960 (110336, 182272)} & \textcolor{red}{574976 (194560, 1595904)} & \textbf{185344 (104960, 927232)} \\
+\datasetname{Chameleon DS3} & \textcolor{red}{734208 (604672, 2595584)} & \textcolor{red}{625152 (472832, 2160640)} & 278528 (274432, 636160) & 435200 (275456, 1514496) & \textcolor{red}{1678848 (640512, 3237888)} & \textbf{187904 (175104, 212736)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{695296 (587264, 2528768)} & \textcolor{red}{682496 (454400, 2352640)} & 251904 (246784, 288256) & 252416 (244736, 357632) & \textcolor{red}{453632 (352256, 2323712)} & \textbf{142336 (142336, 158976)} \\
+\datasetname{SCL-32} & \textbf{1164288 (34304, 1228288)} & - & \textcolor{red}{1272832 (1213952, 1360128)} & \textcolor{red}{1269248 (1200384, 1309952)} & \textcolor{red}{1232896 (1220608, 1272064)} & \textcolor{red}{1248256 (1218304, 1296640)} \\
+\datasetname{SCL-64} & \textbf{2300928 (60160, 2376448)} & - & \textcolor{red}{2385408 (2325504, 2529024)} & \textcolor{red}{2420736 (2364672, 2605312)} & \textbf{2334720 (2317056, 2356224)} & \textbf{2332160 (2321152, 2380544)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:macro_memory_max_bytes}
+\end{table}

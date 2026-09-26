@@ -19,6 +19,8 @@ MODEL_SHORT_HEADERS = {
     "MicroTEDAClusCorrected_orderdepend": r"\modelname{order-independent}",
     "MicroTEDAClusCorrected_dimpen": r"\modelname{no-dim-penalty}",
     "MicroTEDAClusCorrected_math": r"\modelname{corr-typicality-math}",
+    "MicroTEDAClusCorrected_decay": r"\modelname{decay}",
+    "MicroTEDAClusCorrected_macro": r"\modelname{macrocluster-activation}",
 }
 
 STAGE_ORDER_DEPENDENCY = CorrectionStage(
@@ -57,10 +59,43 @@ STAGE_TYPICALITY_MATH = CorrectionStage(
     datasets=ITERATIVE_DATASET_ORDER,
 )
 
+STAGE_DECAY = CorrectionStage(
+    stage_id="decay",
+    model_tag="MicroTEDAClusCorrected_decay",
+    artifact_dir="artifacts_decay",
+    label_prefix="decay_",
+    models=[
+        "MicroTEDAClus",
+        "MicroTEDAClusCorrected_orderdepend",
+        "MicroTEDAClusCorrected_dimpen",
+        "MicroTEDAClusCorrected_math",
+        "MicroTEDAClusCorrected_decay",
+    ],
+    datasets=ITERATIVE_DATASET_ORDER,
+)
+
+STAGE_MACROCLUSTER_ACTIVATION = CorrectionStage(
+    stage_id="macrocluster_activation",
+    model_tag="MicroTEDAClusCorrected_macro",
+    artifact_dir="artifacts_macrocluster_activation",
+    label_prefix="macro_",
+    models=[
+        "MicroTEDAClus",
+        "MicroTEDAClusCorrected_orderdepend",
+        "MicroTEDAClusCorrected_dimpen",
+        "MicroTEDAClusCorrected_math",
+        "MicroTEDAClusCorrected_decay",
+        "MicroTEDAClusCorrected_macro",
+    ],
+    datasets=ITERATIVE_DATASET_ORDER,
+)
+
 CORRECTION_STAGES = [
     STAGE_ORDER_DEPENDENCY,
     STAGE_DIMENSION_PENALTY,
     STAGE_TYPICALITY_MATH,
+    STAGE_DECAY,
+    STAGE_MACROCLUSTER_ACTIVATION,
 ]
 
 STAGE_BY_ID = {stage.stage_id: stage for stage in CORRECTION_STAGES}
@@ -70,4 +105,6 @@ ITERATIVE_MODEL_COLORS = {
     "MicroTEDAClusCorrected_orderdepend": "#ff7f0e",
     "MicroTEDAClusCorrected_dimpen": "#2ca02c",
     "MicroTEDAClusCorrected_math": "#d62728",
+    "MicroTEDAClusCorrected_decay": "#8c564b",
+    "MicroTEDAClusCorrected_macro": "#9467bd",
 }
