@@ -64,14 +64,14 @@ The microcluster state is thus restricted to its recursively updated sufficient 
 
 where $\epsilon > 0$ is a stabilization constant to prevent undefined behavior in single-sample microclusters.
 
-\Cref{tab:orderdep_ari_overall,tab:orderdep_ari_fifth,tab:orderdep_ari_steadystate,tab:orderdep_ari_diff} present the clustering quality impact of the correction. Although it harmed the overall and initial ARI for four of the six datasets, it did not significantly affect the steady-state ARI measures, even improving them for the Chameleon sets. Our hypothesis is that the original order-dependent density formulation better match the remaining flaws in the model, thus compensating for them. This is investigated through the following sections, in which the model is further corrected.
+\Cref{tab:orderdep_ari_overall,tab:orderdep_ari_fifth,tab:orderdep_ari_steadystate,tab:orderdep_ari_diff} present the clustering quality impact of the correction. While the redefinition results in lower initial and overall ARI scores on several streams, it preserves or improves steady-state clustering quality once the microclusters sufficiently mature. In the baseline implementation, the recursive, order-dependent density formula accumulated historical artifacts that acted as an artificial memory mechanism, providing path-dependent inertia during early and transitioning stream phases. By replacing this with a memoryless volumetric snapshot ratio, the model becomes strictly responsive to current spatial dispersion.
 
 \input{CorrectedModel/artifacts_order_dependency/tables/ari_overall.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/ari_fifth.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/ari_steadystate.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/ari_diff.tex}
 
-Regarding time efficiency and resource consumption, \cref{tab:orderdep_time_fit_cum_ms,tab:orderdep_time_predict_cum_ms,tab:orderdep_memory_max_bytes,tab:orderdep_memory_steadystate_bytes,tab:orderdep_mc_max,tab:orderdep_mc_steadystate} show that the correction provided an overall improvement, specially for the datasets that feature concept drift. Under all those metrics, the corrected model is either better or equivalent to the original formulation.
+Regarding computational efficiency and resource consumption, \cref{tab:orderdep_time_fit_cum_ms,tab:orderdep_time_predict_cum_ms,tab:orderdep_memory_max_bytes,tab:orderdep_memory_steadystate_bytes,tab:orderdep_mc_max,tab:orderdep_mc_steadystate} demonstrate consistent improvements across the board. Decoupling point-to-set transient evaluations from the microcluster's intrinsic state variables eliminates redundant state maintenance and simplifies online updates. Consequently, the corrected model achieves lower or equivalent cumulative fitting and prediction times while maintaining a more compact memory footprint and smaller microcluster counts throughout continuous execution.
 
 \input{CorrectedModel/artifacts_order_dependency/tables/time_fit_cum_ms.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/time_predict_cum_ms.tex}
@@ -93,14 +93,14 @@ Correspondingly, the transient point-to-set eccentricity evaluation is restored 
 
 $$ \xi^i(x_k) = \frac{1}{S^i_k} + \frac{\lVert \mu^i_k - x_k \rVert^2}{S^i_k \left(\sigma^i_k\right)^2} $$
 
-After this correction, the original model is shown by \cref{tab:dimpen_ari_overall,tab:dimpen_ari_fifth} to continue the best implementation under the overall and initial ARI measures. Nevertheless, \cref{tab:dimpen_ari_steadystate,tab:dimpen_ari_diff} show a pronounced improvement in the steady-state and ARI drop, mostly for the higher dimensional datasets.
+As shown in \cref{tab:dimpen_ari_overall,tab:dimpen_ari_fifth}, the baseline continues to achieve higher overall and initial ARI on low-dimensional streams. This behavior is mathematically expected for two-dimensional datasets, where the dimensionality penalty factor $2/d = 1$ is an identity operation, yielding virtually identical clustering dynamics between the order-independent and penalty-free formulations. Crucially, in higher-dimensional feature spaces, \cref{tab:dimpen_ari_steadystate,tab:dimpen_ari_diff} demonstrate a profound qualitative improvement: while the baseline suffers catastrophic late-stream instability and severe steady-state degradation, removing the dimensionality penalty preserves geometric boundary fidelity and yields a stable, non-degrading steady-state partition.
 
 \input{CorrectedModel/artifacts_dimension_penalty/tables/ari_overall.tex}
 \input{CorrectedModel/artifacts_dimension_penalty/tables/ari_fifth.tex}
 \input{CorrectedModel/artifacts_dimension_penalty/tables/ari_steadystate.tex}
 \input{CorrectedModel/artifacts_dimension_penalty/tables/ari_diff.tex}
 
-\Cref{tab:dimpen_time_fit_cum_ms,tab:dimpen_time_predict_cum_ms,tab:dimpen_memory_max_bytes,tab:dimpen_memory_steadystate_bytes,tab:dimpen_mc_max,tab:dimpen_mc_steadystate} show that the improvement achieved by the previous correction is preserved for the first set of datasets. For the newly included \datasetname{SCL-32} and \datasetname{SCL-64}, the scores are consistently worst. This is expected, as thoroughly discussed in \cref{sec:reassessment_results}, since the dimensionality penalty colapses the spatial structure into fewer, lower quality microclusters, which are more efficient to maintain and evaluate, but less representative of the underlying distribution. The corrected model, which preserves the true geometric boundaries, is more computationally expensive, but it is also more accurate for those datasets.
+The computational trade-offs of this correction are presented in \cref{tab:dimpen_time_fit_cum_ms,tab:dimpen_time_predict_cum_ms,tab:dimpen_memory_max_bytes,tab:dimpen_memory_steadystate_bytes,tab:dimpen_mc_max,tab:dimpen_mc_steadystate}. On low-dimensional benchmarks, the efficiency profile remains unchanged from the previous stage. For higher-dimensional streams, the corrected model incurs higher cumulative fitting times, memory footprints, and microcluster counts. As discussed in \cref{sec:reassessment_results}, the baseline's apparent computational frugality in high dimensions was an artifact of geometric collapse: arbitrarily dividing deviations by $d$ compressed spatial variance, forcing microclusters into a smaller number of coarse, overly broad representations that were cheap to evaluate but prone to collapse. By restoring unscaled spatial boundaries, the corrected model maintains representative microclusters across the feature space, trading computational overhead for dimensional stability.
 
 \input{CorrectedModel/artifacts_dimension_penalty/tables/time_fit_cum_ms.tex}
 \input{CorrectedModel/artifacts_dimension_penalty/tables/time_predict_cum_ms.tex}
@@ -120,7 +120,7 @@ The evaluation of the original implementation reveals a critical mathematical di
 
 By omitting the cardinality normalization factor $S^i_k - 2$, the original algorithm fails to appropriately scale the typicality across microclusters of varying sizes, inherently invalidating the resulting membership distributions. To restore theoretical consistency, the membership calculation is corrected to explicitly compute the exact normalized typicality $t^i(x_k)$. It is important to note that this normalized formulation is mathematically defined exclusively for microclusters containing more than two samples ($S^i_k > 2$). This domain constraint is naturally satisfied in the execution pipeline; because the macrocluster activation condition strictly filters out microclusters with $S^i_k \le 2$ prior to the membership evaluation, the denominator is mathematically guaranteed to be strictly positive.
 
-Overall, \cref{tab:math_ari_overall,tab:math_ari_fifth,tab:math_ari_steadystate,tab:math_ari_diff,tab:math_time_fit_cum_ms,tab:math_time_predict_cum_ms,tab:math_memory_max_bytes,tab:math_memory_steadystate_bytes,tab:math_mc_max,tab:math_mc_steadystate} show that this correction did not significantly affect the clustering quality, time efficiency, or resource consumption of the model.
+As reported in \cref{tab:math_ari_overall,tab:math_ari_fifth,tab:math_ari_steadystate,tab:math_ari_diff,tab:math_time_fit_cum_ms,tab:math_time_predict_cum_ms,tab:math_memory_max_bytes,tab:math_memory_steadystate_bytes,tab:math_mc_max,tab:math_mc_steadystate}, restoring the mathematically exact normalized typicality produced no statistically significant shifts across clustering quality, runtime, or memory consumption. Analytically, while the normalization factor $1/(S^i_k - 2)$ is strictly necessary to construct valid probability densities under the TEDA framework, it primarily rescales the relative weighting among active microclusters within the same macrocluster. Because macrocluster assignments are fundamentally dictated by the spatial connectivity of the underlying graph and the nearest mature microclusters, rescaling intra-cluster typicalities preserves the relative ranking between competing macroclusters.
 
 \input{CorrectedModel/artifacts_math/tables/ari_overall.tex}
 \input{CorrectedModel/artifacts_math/tables/ari_fifth.tex}
@@ -146,16 +146,16 @@ To establish a memory management mechanism that does not invalidates the strict 
     v^i_k = v^i_{k-1} - \frac{\rho}{S^i_k}
 \end{equation}
 
-where $\rho > 0$ is a static fading factor. A microcluster is independently pruned from memory when $v^i_k \le 0$. Under this formulation, transient noise microclusters (low $S^i_k$) decay rapidly, while mature microclusters (high $S^i_k$) retain significant inertia, enabling them to survive temporary periods of inactivity and correctly identify recurring concepts.
+where $\rho > 0$ is a static fading factor. A microcluster is independently pruned from memory when $v^i_k \le 0$. Under this formulation, transient noise microclusters decay rapidly, while mature microclusters retain significant inertia, enabling them to survive temporary periods of inactivity and correctly identify recurring concepts.
 
-The decay correction is shown by \cref{tab:decay_ari_overall,tab:decay_ari_fifth,tab:decay_ari_steadystate,tab:decay_ari_diff} to actively harm the clustering quality.
+As reported in \cref{tab:decay_ari_overall,tab:decay_ari_fifth,tab:decay_ari_steadystate,tab:decay_ari_diff}, the inertia-weighted decay correction severely degraded clustering quality across virtually all evaluation metrics. While theoretically designed to safeguard mature microclusters from premature deletion, applying a penalty proportional to $1/S^i_k$ introduces a pathological retention bias in non-stationary continuous streams: mature microclusters with large sample counts receive negligible penalties per outlier sample. In practice, this grants obsolete spatial concepts near-infinite lifespans, preventing the model from adapting when underlying cluster boundaries drift.
 
 \input{CorrectedModel/artifacts_decay/tables/ari_overall.tex}
 \input{CorrectedModel/artifacts_decay/tables/ari_fifth.tex}
 \input{CorrectedModel/artifacts_decay/tables/ari_steadystate.tex}
 \input{CorrectedModel/artifacts_decay/tables/ari_diff.tex}
 
-Furthermore, efficiency and resource usage are also negatively affected by the correction, as shown by \cref{tab:decay_time_fit_cum_ms,tab:decay_time_predict_cum_ms,tab:decay_memory_max_bytes,tab:decay_memory_steadystate_bytes,tab:decay_mc_max,tab:decay_mc_steadystate}. The corrected model is consistently worse for most metric and datasets.
+The computational consequences of this unconstrained retention are evident in \cref{tab:decay_time_fit_cum_ms,tab:decay_time_predict_cum_ms,tab:decay_memory_max_bytes,tab:decay_memory_steadystate_bytes,tab:decay_mc_max,tab:decay_mc_steadystate}. Because mature units are rarely pruned, microcluster counts surge dramatically throughout the stream lifecycle. Since macrocluster graph maintenance requires pairwise intersection tests scaling quadratically with the number of active microclusters ($O(M^2)$), this runaway accumulation causes multi-fold spikes in cumulative fitting time and memory footprint. Obsolete microclusters linger in memory, cluttering the spatial representation and creating spurious bridges in the intersection graph that degrade cluster discrimination.
 
 \input{CorrectedModel/artifacts_decay/tables/time_fit_cum_ms.tex}
 \input{CorrectedModel/artifacts_decay/tables/time_predict_cum_ms.tex}
@@ -187,14 +187,14 @@ When calculating a sample's membership to a macrocluster $\mathcal{M}_j$, the al
 
 are dynamically passed to the typicality weighting function. This structural alignment fulfills the original mathematical intent of filtering sparse boundary elements without destructively fragmenting the underlying macrocluster graph.
 
-Again, the correction further harmed the clustering quality. \Cref{tab:macro_ari_overall,tab:macro_ari_fifth,tab:macro_ari_steadystate,tab:macro_ari_diff} show that, except for the high-dimensional datasets and the stability score, the corrected model is consistently worse than the previous formulations.
+The clustering quality evaluations in \cref{tab:macro_ari_overall,tab:macro_ari_fifth,tab:macro_ari_steadystate,tab:macro_ari_diff} reveal a pronounced dichotomy across stream dimensionalities. In higher-dimensional streams, preserving graph continuity in the base intersection graph $\mathbb{G}_0$ prevents cohesive macroscopic structures from being artificially severed into fragmented sub-clusters; on these streams, the model achieves the highest overall ARI scores observed across the entire iterative progression, accompanied by near-zero ARI degradation. Conversely, on lower-dimensional streams, relocating the activation threshold $D^i_k \ge \text{mean}(D^m_k)$ to prediction time exposes an unforeseen structural vulnerability: within smaller, sparse, or transitioning macroclusters, enforcing a local arithmetic mean density threshold frequently leaves zero active microclusters. Samples arriving in these regions cannot be assigned valid membership, resulting in unassigned classifications and causing the overall ARI to collapse on low-dimensional streams.
 
 \input{CorrectedModel/artifacts_macrocluster_activation/tables/ari_overall.tex}
 \input{CorrectedModel/artifacts_macrocluster_activation/tables/ari_fifth.tex}
 \input{CorrectedModel/artifacts_macrocluster_activation/tables/ari_steadystate.tex}
 \input{CorrectedModel/artifacts_macrocluster_activation/tables/ari_diff.tex}
 
-\Cref{tab:macro_time_fit_cum_ms,tab:macro_time_predict_cum_ms,tab:macro_memory_max_bytes,tab:macro_memory_steadystate_bytes,tab:macro_mc_max,tab:macro_mc_steadystate} show that performance was improved, but such metrics are not meaningful when the quality is significantly worse.
+From a computational standpoint, \cref{tab:macro_time_fit_cum_ms,tab:macro_time_predict_cum_ms,tab:macro_memory_max_bytes,tab:macro_memory_steadystate_bytes,tab:macro_mc_max,tab:macro_mc_steadystate} confirm a complete recovery from the resource explosion observed in the decay stage. By eliminating the repetitive instantiation of secondary graphs and connected component extractions on every stream sample, cumulative fitting times decreased, peak memory footprints collapsed to fractionally lower baselines, and microcluster populations remained strictly bounded. While this architectural decoupling successfully restored online scalability and unlocked peak performance in high dimensions, the empirical findings demonstrate that a local arithmetic mean threshold is ill-suited as an isolated sample-level activation filter in sparse spatial domains.
 
 \input{CorrectedModel/artifacts_macrocluster_activation/tables/time_fit_cum_ms.tex}
 \input{CorrectedModel/artifacts_macrocluster_activation/tables/time_predict_cum_ms.tex}
@@ -203,18 +203,5 @@ Again, the correction further harmed the clustering quality. \Cref{tab:macro_ari
 \input{CorrectedModel/artifacts_macrocluster_activation/tables/mc_max.tex}
 \input{CorrectedModel/artifacts_macrocluster_activation/tables/mc_steadystate.tex}
 
-\section{Final Correction Refinement}
-\label{sec:final_correction_refinement}
-
-
-
-\input{CorrectedModel/artifacts_refined/tables/ari_overall.tex}
-\input{CorrectedModel/artifacts_refined/tables/ari_fifth.tex}
-\input{CorrectedModel/artifacts_refined/tables/ari_steadystate.tex}
-\input{CorrectedModel/artifacts_refined/tables/ari_diff.tex}
-\input{CorrectedModel/artifacts_refined/tables/time_fit_cum_ms.tex}
-\input{CorrectedModel/artifacts_refined/tables/time_predict_cum_ms.tex}
-\input{CorrectedModel/artifacts_refined/tables/memory_max_bytes.tex}
-\input{CorrectedModel/artifacts_refined/tables/memory_steadystate_bytes.tex}
-\input{CorrectedModel/artifacts_refined/tables/mc_max.tex}
-\input{CorrectedModel/artifacts_refined/tables/mc_steadystate.tex}
+\section{Summary and Discussion}
+\label{sec:correction_summary}
