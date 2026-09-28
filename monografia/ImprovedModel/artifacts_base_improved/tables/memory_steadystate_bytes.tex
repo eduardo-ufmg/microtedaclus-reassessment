@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Steady-State Memory Footprint at the Penultimate Batch [B].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{macrocluster-activation} & \modelname{base-improved} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textbf{76800 (9984, 232192)} & \textcolor{red}{330240 (276224, 403712)} & \textcolor{red}{307712 (238336, 384768)} \\
+\datasetname{Stream Benchmark 2} & 113664 (13056, 139264) & 164352 (34048, 504832) & 145920 (35584, 457728) \\
+\datasetname{Random RBF Generator with Events} & 288256 (218880, 894720) & 306176 (205312, 483072) & 300032 (164096, 474880) \\
+\datasetname{Cassini} & 123904 (84736, 136192) & 110592 (91136, 509184) & 576000 (48896, 979456) \\
+\datasetname{Chameleon DS3} & \textcolor{red}{319488 (313088, 459776)} & 192512 (175104, 217600) & \textbf{65536 (26368, 153088)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{279552 (270080, 321792)} & 142336 (142336, 158976) & \textbf{13312 (13312, 28672)} \\
+\datasetname{SCL-32} & \textbf{22016 (15616, 1155072)} & \textcolor{red}{1242112 (1217024, 1280768)} & \textbf{125440 (86528, 219392)} \\
+\datasetname{SCL-64} & \textbf{18944 (14336, 2300672)} & \textcolor{red}{2333184 (2308096, 2392320)} & \textbf{86528 (63488, 197888)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:base_imp_memory_steadystate_bytes}
+\end{table}

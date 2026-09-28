@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Maximum Memory Footprint [B].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{macrocluster-activation} & \modelname{base-improved} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textbf{151040 (88576, 329984)} & \textcolor{red}{352256 (295168, 432384)} & \textbf{312320 (244224, 393984)} \\
+\datasetname{Stream Benchmark 2} & 146944 (78592, 159488) & 201216 (38656, 517376) & 153600 (35584, 476672) \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{834560 (268800, 1473280)} & 558592 (442112, 713728) & \textbf{433664 (317440, 592896)} \\
+\datasetname{Cassini} & 144896 (140288, 152320) & 116736 (94976, 526592) & 579584 (55296, 1002240) \\
+\datasetname{Chameleon DS3} & \textcolor{red}{325120 (318976, 470784)} & 194560 (175104, 218368) & \textbf{69120 (28672, 176640)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{279552 (270848, 334848)} & 142336 (142336, 160256) & \textbf{13312 (13312, 30464)} \\
+\datasetname{SCL-32} & 1178624 (69376, 1278976) & \textcolor{red}{1249280 (1225472, 1293568)} & \textbf{133632 (88832, 226048)} \\
+\datasetname{SCL-64} & 2301952 (64256, 2408704) & \textcolor{red}{2335744 (2318848, 2401280)} & \textbf{96768 (71424, 213504)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:base_imp_memory_max_bytes}
+\end{table}

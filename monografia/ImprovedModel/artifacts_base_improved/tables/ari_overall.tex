@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Overall Adjusted Rand Index.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{macrocluster-activation} & \modelname{base-improved} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 0.000 (0.000, 0.088) & 0.000 (0.000, 0.000) & 0.000 (0.000, 0.000) \\
+\datasetname{Stream Benchmark 2} & \textbf{0.571 (0.514, 0.597)} & \textcolor{red}{0.000 (0.000, 0.214)} & \textcolor{red}{0.000 (0.000, 0.408)} \\
+\datasetname{Random RBF Generator with Events} & \textbf{0.403 (0.000, 0.524)} & \textcolor{red}{0.000 (0.000, 0.231)} & \textcolor{red}{0.000 (0.000, 0.158)} \\
+\datasetname{Cassini} & \textbf{0.495 (0.404, 0.535)} & \textcolor{red}{0.000 (0.000, 0.006)} & \textcolor{red}{0.000 (0.000, 0.000)} \\
+\datasetname{Chameleon DS3} & \textbf{0.221 (0.193, 0.231)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} \\
+\datasetname{Chameleon DS4} & \textbf{0.246 (0.222, 0.271)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} \\
+\datasetname{SCL-32} & 0.861 (0.012, 0.902) & 0.871 (0.862, 0.875) & 0.869 (0.861, 0.874) \\
+\datasetname{SCL-64} & 0.863 (0.846, 0.906) & 0.873 (0.867, 0.875) & 0.873 (0.867, 0.875) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:base_imp_ari_overall}
+\end{table}

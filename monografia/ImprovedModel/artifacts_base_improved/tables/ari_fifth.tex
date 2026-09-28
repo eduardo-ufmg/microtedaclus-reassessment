@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Adjusted Rand Index at the Fifth Batch.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{macrocluster-activation} & \modelname{base-improved} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textbf{0.852 (0.802, 0.883)} & \textcolor{red}{0.000 (0.000, 0.735)} & \textcolor{red}{0.000 (0.000, 0.722)} \\
+\datasetname{Stream Benchmark 2} & \textbf{0.591 (0.552, 0.616)} & \textcolor{red}{0.510 (0.000, 0.567)} & \textcolor{red}{0.518 (0.056, 0.582)} \\
+\datasetname{Random RBF Generator with Events} & \textbf{0.560 (0.403, 0.802)} & \textcolor{red}{0.326 (0.221, 0.514)} & \textcolor{red}{0.331 (0.221, 0.542)} \\
+\datasetname{Cassini} & \textbf{0.502 (0.360, 0.561)} & \textcolor{red}{0.000 (-0.002, 0.000)} & \textcolor{red}{0.000 (-0.001, 0.000)} \\
+\datasetname{Chameleon DS3} & \textbf{0.253 (0.144, 0.255)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} \\
+\datasetname{Chameleon DS4} & \textbf{0.102 (0.000, 0.188)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} \\
+\datasetname{SCL-32} & \textcolor{red}{0.903 (0.841, 0.997)} & \textbf{1.000 (1.000, 1.000)} & \textbf{1.000 (1.000, 1.000)} \\
+\datasetname{SCL-64} & \textcolor{red}{0.903 (0.859, 0.972)} & \textbf{1.000 (1.000, 1.000)} & \textbf{1.000 (1.000, 1.000)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:base_imp_ari_fifth}
+\end{table}

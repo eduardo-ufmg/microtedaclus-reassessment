@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Maximum ARI Drop.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{macrocluster-activation} & \modelname{base-improved} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textcolor{red}{0.916 (0.873, 0.949)} & \textbf{0.811 (0.143, 0.916)} & \textbf{0.839 (0.151, 0.913)} \\
+\datasetname{Stream Benchmark 2} & \textbf{0.378 (0.077, 0.573)} & \textcolor{red}{0.646 (0.620, 0.694)} & \textcolor{red}{0.657 (0.623, 0.694)} \\
+\datasetname{Random RBF Generator with Events} & 0.497 (0.328, 0.841) & 0.644 (0.420, 0.920) & 0.636 (0.422, 0.920) \\
+\datasetname{Cassini} & \textcolor{red}{0.263 (0.172, 0.401)} & \textbf{0.022 (0.000, 0.065)} & \textbf{0.013 (0.001, 0.032)} \\
+\datasetname{Chameleon DS3} & \textcolor{red}{0.251 (0.231, 0.264)} & \textbf{0.000 (0.000, 0.001)} & \textbf{0.001 (0.000, 0.005)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{0.252 (0.212, 0.277)} & \textbf{0.000 (0.000, 0.000)} & \textbf{0.000 (0.000, 0.000)} \\
+\datasetname{SCL-32} & 0.131 (0.002, 0.852) & 0.124 (0.095, 0.151) & 0.125 (0.095, 0.162) \\
+\datasetname{SCL-64} & 0.905 (0.097, 1.000) & 0.132 (0.111, 0.183) & 0.132 (0.111, 0.183) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:base_imp_ari_diff}
+\end{table}

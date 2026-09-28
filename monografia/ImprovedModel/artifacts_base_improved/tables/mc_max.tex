@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Maximum Microcluster Count.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{macrocluster-activation} & \modelname{base-improved} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 38 (15, 119) & 70 (61, 79) & 68 (60, 79) \\
+\datasetname{Stream Benchmark 2} & 41 (16, 57) & 66 (17, 121) & 58 (18, 110) \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{228 (60, 430)} & \textbf{96 (80, 117)} & \textbf{98 (80, 118)} \\
+\datasetname{Cassini} & \textbf{46 (42, 52)} & \textbf{41 (27, 200)} & \textcolor{red}{248 (37, 498)} \\
+\datasetname{Chameleon DS3} & \textcolor{red}{129 (123, 238)} & \textbf{32 (11, 54)} & 78 (29, 180) \\
+\datasetname{Chameleon DS4} & \textcolor{red}{120 (110, 155)} & \textbf{11 (11, 30)} & \textbf{11 (11, 31)} \\
+\datasetname{SCL-32} & \textbf{39 (18, 84)} & 57 (50, 85) & \textcolor{red}{76 (49, 167)} \\
+\datasetname{SCL-64} & \textbf{28 (24, 88)} & \textbf{44 (34, 67)} & 52 (37, 140) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:base_imp_mc_max}
+\end{table}
