@@ -45,7 +45,7 @@ READABLE_METRICS = {
     "memory_max_bytes": "Maximum Memory Footprint [B]",
     "memory_steadystate_bytes": "Steady-State Memory Footprint at the Penultimate Batch [B]",
     "mc_max": "Maximum Microcluster Count",
-    "mc_steadystate": "Steady-State Microcluster Count at the Penultimate Batch",
+    "mc_steadystate": "Steady-State Microcluster Count",
 }
 
 STATS_METRICS = {
@@ -380,7 +380,7 @@ def generate_artifacts(stage: CorrectionStage):
         latex_lines = [
             r"\begin{table}[htbp]",
             r"\centering",
-            f"\\caption{{Statistical analysis and (Q1, Q3) for the {READABLE_METRICS.get(metric, metric.replace('_', ' ').title())}.}}",
+            f"\\caption{{Statistical analysis for the {READABLE_METRICS.get(metric, metric.replace('_', ' ').title())}.}}",
             r"\resizebox{\textwidth}{!}{%",
             r"\begin{tabular}{l " + "c " * len(stage.models) + "}",
             r"\toprule",

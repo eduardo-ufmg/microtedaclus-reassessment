@@ -120,7 +120,7 @@ The evaluation of the original implementation reveals a critical mathematical di
 
 By omitting the cardinality normalization factor $S^i_k - 2$, the original algorithm fails to appropriately scale the typicality across microclusters of varying sizes, inherently invalidating the resulting membership distributions. To restore theoretical consistency, the membership calculation is corrected to explicitly compute the exact normalized typicality $t^i(x_k)$. It is important to note that this normalized formulation is mathematically defined exclusively for microclusters containing more than two samples ($S^i_k > 2$). This domain constraint is naturally satisfied in the execution pipeline; because the macrocluster activation condition strictly filters out microclusters with $S^i_k \le 2$ prior to the membership evaluation, the denominator is mathematically guaranteed to be strictly positive.
 
-Overall, \cref{tab:math_ari_overall,tab:math_ari_fifth,tab:math_ari_steadystate,tab:math_ari_diff,tab:math_time_fit_cum_ms,tab:math_time_predict_cum_ms,tab:math_memory_max_bytes,tab:math_memory_steadystate_bytes,tab:math_mc_max,tab:math_mc_steadystate} show that this correction did not significantly affect the clustering quality, time efficiency, or resource consumption of the model. It promoted \BenchmarkOne to neutral fitting time and \datasetname{SCL-32} to best prediction time, but demoted \ChameleonDSThree initial ARI, memory footprint, and macrocluster count.
+Overall, \cref{tab:math_ari_overall,tab:math_ari_fifth,tab:math_ari_steadystate,tab:math_ari_diff,tab:math_time_fit_cum_ms,tab:math_time_predict_cum_ms,tab:math_memory_max_bytes,tab:math_memory_steadystate_bytes,tab:math_mc_max,tab:math_mc_steadystate} show that this correction did not significantly affect the clustering quality, time efficiency, or resource consumption of the model.
 
 \input{CorrectedModel/artifacts_math/tables/ari_overall.tex}
 \input{CorrectedModel/artifacts_math/tables/ari_fifth.tex}
@@ -148,7 +148,7 @@ To establish a memory management mechanism that does not invalidates the strict 
 
 where $\rho > 0$ is a static fading factor. A microcluster is independently pruned from memory when $v^i_k \le 0$. Under this formulation, transient noise microclusters (low $S^i_k$) decay rapidly, while mature microclusters (high $S^i_k$) retain significant inertia, enabling them to survive temporary periods of inactivity and correctly identify recurring concepts.
 
-The decay correction is shown by \cref{tab:decay_ari_overall,tab:decay_ari_fifth,tab:decay_ari_steadystate,tab:decay_ari_diff} to actively harm the clustering quality, improving only the initial score for \ChameleonDSFour and \BenchmarkTwo. The overall ARI is worse for six of the eight datasets, and the steady-state ARI is worse for two of them.
+The decay correction is shown by \cref{tab:decay_ari_overall,tab:decay_ari_fifth,tab:decay_ari_steadystate,tab:decay_ari_diff} to actively harm the clustering quality.
 
 \input{CorrectedModel/artifacts_decay/tables/ari_overall.tex}
 \input{CorrectedModel/artifacts_decay/tables/ari_fifth.tex}
@@ -203,5 +203,18 @@ Again, the correction further harmed the clustering quality. \Cref{tab:macro_ari
 \input{CorrectedModel/artifacts_macrocluster_activation/tables/mc_max.tex}
 \input{CorrectedModel/artifacts_macrocluster_activation/tables/mc_steadystate.tex}
 
-\section{Final Correction Tweaks}
-\label{sec:final_correction_tweaks}
+\section{Final Correction Refinement}
+\label{sec:final_correction_refinement}
+
+
+
+\input{CorrectedModel/artifacts_refined/tables/ari_overall.tex}
+\input{CorrectedModel/artifacts_refined/tables/ari_fifth.tex}
+\input{CorrectedModel/artifacts_refined/tables/ari_steadystate.tex}
+\input{CorrectedModel/artifacts_refined/tables/ari_diff.tex}
+\input{CorrectedModel/artifacts_refined/tables/time_fit_cum_ms.tex}
+\input{CorrectedModel/artifacts_refined/tables/time_predict_cum_ms.tex}
+\input{CorrectedModel/artifacts_refined/tables/memory_max_bytes.tex}
+\input{CorrectedModel/artifacts_refined/tables/memory_steadystate_bytes.tex}
+\input{CorrectedModel/artifacts_refined/tables/mc_max.tex}
+\input{CorrectedModel/artifacts_refined/tables/mc_steadystate.tex}

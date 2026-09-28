@@ -1,19 +1,19 @@
 \begin{table}[htbp]
 \centering
-\caption{Statistical analysis and (Q1, Q3) for the Maximum Memory Footprint [B].}
+\caption{Statistical analysis for the Maximum Memory Footprint [B].}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c c }
 \toprule
 Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} & \modelname{corr-typicality-math} & \modelname{decay} \\
 \midrule
-\datasetname{Stream Benchmark 1} & 318464 (116480, 494848) & 368640 (163584, 546048) & 231936 (120576, 390912) & 224768 (108288, 472576) & 353280 (237568, 481024) \\
-\datasetname{Stream Benchmark 2} & \textcolor{red}{154112 (88064, 183296)} & \textbf{82432 (56320, 92160)} & \textbf{82944 (54272, 95744)} & \textbf{84480 (65792, 109056)} & \textbf{55808 (39424, 99328)} \\
-\datasetname{Random RBF Generator with Events} & \textcolor{red}{1099776 (421888, 1548288)} & \textbf{302080 (205312, 617728)} & \textbf{319488 (216832, 501504)} & \textbf{307200 (219136, 440832)} & \textcolor{red}{831488 (583168, 1293824)} \\
-\datasetname{Cassini} & \textbf{149504 (134656, 343296)} & \textbf{147968 (109568, 175616)} & \textbf{156672 (117504, 183296)} & \textbf{168960 (110336, 182272)} & \textcolor{red}{574976 (194560, 1595904)} \\
-\datasetname{Chameleon DS3} & \textcolor{red}{734208 (604672, 2595584)} & 625152 (472832, 2160640) & \textbf{278528 (274432, 636160)} & \textbf{435200 (275456, 1514496)} & \textcolor{red}{1678848 (640512, 3237888)} \\
-\datasetname{Chameleon DS4} & \textcolor{red}{695296 (587264, 2528768)} & \textcolor{red}{682496 (454400, 2352640)} & \textbf{251904 (246784, 288256)} & \textbf{252416 (244736, 357632)} & \textcolor{red}{453632 (352256, 2323712)} \\
-\datasetname{SCL-32} & \textbf{1164288 (34304, 1228288)} & - & \textcolor{red}{1272832 (1213952, 1360128)} & \textcolor{red}{1269248 (1200384, 1309952)} & \textcolor{red}{1232896 (1220608, 1272064)} \\
-\datasetname{SCL-64} & \textbf{2300928 (60160, 2376448)} & - & \textcolor{red}{2385408 (2325504, 2529024)} & \textcolor{red}{2420736 (2364672, 2605312)} & \textbf{2334720 (2317056, 2356224)} \\
+\datasetname{Stream Benchmark 1} & \textbf{151040 (88576, 329984)} & 310784 (162816, 489472) & 259584 (155392, 393216) & 247808 (127488, 339200) & \textcolor{red}{366080 (208384, 447744)} \\
+\datasetname{Stream Benchmark 2} & 146944 (78592, 159488) & \textbf{80384 (43264, 90112)} & \textbf{80896 (36096, 100096)} & \textbf{82944 (52480, 102656)} & \textbf{53248 (38912, 83712)} \\
+\datasetname{Random RBF Generator with Events} & 834560 (268800, 1473280) & \textbf{299520 (214784, 425984)} & 267776 (214016, 451840) & \textbf{274944 (206848, 377600)} & \textcolor{red}{831488 (563712, 1332736)} \\
+\datasetname{Cassini} & \textbf{144896 (140288, 152320)} & \textbf{158720 (129536, 183040)} & \textbf{162304 (129536, 179200)} & \textbf{168448 (111872, 180736)} & \textcolor{red}{619008 (194816, 1507328)} \\
+\datasetname{Chameleon DS3} & \textbf{325120 (318976, 470784)} & \textbf{282624 (274432, 873728)} & \textbf{281088 (274176, 873728)} & \textbf{436224 (275456, 1136384)} & \textcolor{red}{1357824 (640512, 3212800)} \\
+\datasetname{Chameleon DS4} & \textbf{279552 (270848, 334848)} & \textbf{252928 (245760, 367616)} & \textbf{252928 (246528, 367616)} & \textbf{249344 (244736, 274432)} & \textcolor{red}{452096 (375552, 2353920)} \\
+\datasetname{SCL-32} & \textbf{1178624 (69376, 1278976)} & - & \textcolor{red}{1272320 (1226752, 1354752)} & \textcolor{red}{1305600 (1215744, 1509632)} & 1241600 (1221376, 1271040) \\
+\datasetname{SCL-64} & \textbf{2301952 (64256, 2408704)} & - & \textcolor{red}{2411520 (2346240, 2600960)} & \textcolor{red}{2431488 (2350080, 2585856)} & \textbf{2334208 (2316288, 2364672)} \\
 \bottomrule
 \end{tabular}
 }

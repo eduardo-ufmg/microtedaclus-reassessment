@@ -1,19 +1,19 @@
 \begin{table}[htbp]
 \centering
-\caption{Statistical analysis and (Q1, Q3) for the Maximum ARI Drop.}
+\caption{Statistical analysis for the Maximum ARI Drop.}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c c c }
 \toprule
 Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} & \modelname{corr-typicality-math} & \modelname{decay} & \modelname{macrocluster-activation} \\
 \midrule
-\datasetname{Stream Benchmark 1} & 0.919 (0.655, 0.960) & 0.865 (0.809, 0.911) & 0.855 (0.810, 0.899) & 0.829 (0.404, 0.906) & 0.863 (0.542, 0.899) & 0.839 (0.325, 0.905) \\
-\datasetname{Stream Benchmark 2} & \textbf{0.459 (0.127, 0.618)} & \textbf{0.284 (0.195, 0.537)} & \textbf{0.261 (0.151, 0.516)} & \textbf{0.442 (0.114, 0.617)} & \textbf{0.234 (0.148, 0.506)} & \textcolor{red}{0.646 (0.615, 0.681)} \\
-\datasetname{Random RBF Generator with Events} & 0.560 (0.310, 0.931) & 0.427 (0.227, 0.885) & 0.554 (0.252, 0.837) & 0.499 (0.275, 0.829) & 0.518 (0.286, 0.841) & 0.644 (0.420, 0.920) \\
-\datasetname{Cassini} & \textcolor{red}{0.336 (0.130, 0.511)} & \textcolor{red}{0.258 (0.166, 0.455)} & \textcolor{red}{0.319 (0.221, 0.476)} & \textcolor{red}{0.321 (0.202, 0.503)} & \textcolor{red}{0.445 (0.228, 0.575)} & \textbf{0.011 (0.000, 0.042)} \\
-\datasetname{Chameleon DS3} & \textcolor{red}{0.284 (0.196, 0.372)} & \textcolor{red}{0.262 (0.117, 0.340)} & \textcolor{red}{0.269 (0.193, 0.325)} & \textcolor{red}{0.291 (0.229, 0.319)} & \textcolor{red}{0.260 (0.138, 0.341)} & \textbf{0.000 (0.000, 0.000)} \\
-\datasetname{Chameleon DS4} & \textcolor{red}{0.259 (0.179, 0.303)} & \textcolor{red}{0.248 (0.214, 0.285)} & \textcolor{red}{0.178 (0.149, 0.229)} & \textcolor{red}{0.200 (0.163, 0.235)} & \textcolor{red}{0.204 (0.111, 0.333)} & \textbf{0.000 (0.000, 0.000)} \\
-\datasetname{SCL-32} & \textcolor{red}{0.338 (0.038, 1.000)} & - & \textbf{0.072 (0.031, 0.100)} & \textbf{0.080 (0.037, 0.105)} & \textbf{0.077 (0.035, 0.092)} & \textcolor{red}{0.125 (0.095, 0.159)} \\
-\datasetname{SCL-64} & \textcolor{red}{1.000 (0.127, 1.000)} & - & \textbf{0.079 (0.042, 0.113)} & \textbf{0.075 (0.050, 0.121)} & \textbf{0.079 (0.050, 0.121)} & 0.132 (0.109, 0.183) \\
+\datasetname{Stream Benchmark 1} & \textcolor{red}{0.916 (0.873, 0.949)} & 0.888 (0.185, 0.915) & 0.877 (0.574, 0.912) & \textbf{0.829 (0.406, 0.906)} & 0.875 (0.639, 0.891) & \textbf{0.811 (0.143, 0.916)} \\
+\datasetname{Stream Benchmark 2} & \textbf{0.378 (0.077, 0.573)} & \textbf{0.340 (0.181, 0.603)} & \textbf{0.243 (0.155, 0.430)} & \textbf{0.346 (0.141, 0.612)} & \textbf{0.284 (0.134, 0.506)} & \textcolor{red}{0.646 (0.620, 0.694)} \\
+\datasetname{Random RBF Generator with Events} & 0.497 (0.328, 0.841) & 0.510 (0.287, 0.827) & 0.570 (0.269, 0.835) & 0.426 (0.166, 0.764) & 0.526 (0.285, 0.754) & 0.644 (0.420, 0.920) \\
+\datasetname{Cassini} & \textcolor{red}{0.263 (0.172, 0.401)} & \textcolor{red}{0.334 (0.196, 0.487)} & \textcolor{red}{0.293 (0.139, 0.451)} & \textcolor{red}{0.321 (0.176, 0.486)} & \textcolor{red}{0.408 (0.202, 0.555)} & \textbf{0.022 (0.000, 0.065)} \\
+\datasetname{Chameleon DS3} & \textcolor{red}{0.251 (0.231, 0.264)} & \textcolor{red}{0.260 (0.193, 0.325)} & \textcolor{red}{0.260 (0.193, 0.319)} & \textcolor{red}{0.263 (0.225, 0.318)} & \textcolor{red}{0.242 (0.133, 0.348)} & \textbf{0.000 (0.000, 0.001)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{0.252 (0.212, 0.277)} & 0.185 (0.145, 0.222) & 0.181 (0.148, 0.213) & 0.185 (0.149, 0.217) & \textcolor{red}{0.198 (0.140, 0.337)} & \textbf{0.000 (0.000, 0.000)} \\
+\datasetname{SCL-32} & \textcolor{red}{0.131 (0.002, 0.852)} & - & \textbf{0.072 (0.031, 0.099)} & \textbf{0.080 (0.034, 0.105)} & \textbf{0.077 (0.035, 0.095)} & \textcolor{red}{0.124 (0.095, 0.151)} \\
+\datasetname{SCL-64} & \textcolor{red}{0.905 (0.097, 1.000)} & - & \textbf{0.082 (0.042, 0.113)} & \textbf{0.076 (0.049, 0.122)} & \textbf{0.079 (0.050, 0.121)} & 0.132 (0.111, 0.183) \\
 \bottomrule
 \end{tabular}
 }

@@ -1,19 +1,19 @@
 \begin{table}[htbp]
 \centering
-\caption{Statistical analysis and (Q1, Q3) for the Adjusted Rand Index at the Fifth Batch.}
+\caption{Statistical analysis for the Adjusted Rand Index at the Fifth Batch.}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c c c }
 \toprule
 Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} & \modelname{corr-typicality-math} & \modelname{decay} & \modelname{macrocluster-activation} \\
 \midrule
-\datasetname{Stream Benchmark 1} & \textbf{0.843 (0.806, 0.895)} & \textcolor{red}{0.393 (0.000, 0.834)} & \textcolor{red}{0.744 (0.000, 0.841)} & \textcolor{red}{0.713 (0.000, 0.829)} & 0.793 (0.000, 0.862) & \textcolor{red}{0.000 (0.000, 0.734)} \\
-\datasetname{Stream Benchmark 2} & \textbf{0.605 (0.552, 0.637)} & \textcolor{red}{0.510 (0.207, 0.602)} & \textcolor{red}{0.542 (0.169, 0.597)} & \textcolor{red}{0.476 (0.011, 0.600)} & \textbf{0.565 (0.485, 0.643)} & \textcolor{red}{0.510 (0.004, 0.567)} \\
-\datasetname{Random RBF Generator with Events} & \textbf{0.573 (0.403, 0.776)} & \textcolor{red}{0.196 (0.028, 0.491)} & \textcolor{red}{0.197 (0.041, 0.382)} & \textcolor{red}{0.247 (0.011, 0.434)} & \textcolor{red}{0.294 (0.095, 0.523)} & \textcolor{red}{0.331 (0.221, 0.514)} \\
-\datasetname{Cassini} & \textbf{0.526 (0.000, 0.613)} & \textcolor{red}{0.000 (0.000, 0.364)} & \textcolor{red}{0.022 (0.000, 0.373)} & \textcolor{red}{0.137 (0.000, 0.440)} & \textcolor{red}{0.324 (0.000, 0.431)} & \textcolor{red}{0.000 (-0.002, 0.009)} \\
-\datasetname{Chameleon DS3} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textbf{0.217 (0.147, 0.360)} & 0.139 (0.050, 0.252) & 0.200 (0.000, 0.259) & \textcolor{red}{0.000 (0.000, 0.000)} \\
-\datasetname{Chameleon DS4} & 0.036 (0.000, 0.134) & 0.072 (0.000, 0.091) & 0.102 (0.000, 0.142) & 0.129 (0.000, 0.285) & \textbf{0.354 (0.134, 0.373)} & \textcolor{red}{0.000 (0.000, 0.000)} \\
-\datasetname{SCL-32} & \textcolor{red}{0.903 (0.859, 0.988)} & - & \textcolor{red}{0.880 (0.853, 0.902)} & \textcolor{red}{0.878 (0.839, 0.903)} & \textcolor{red}{0.887 (0.855, 0.905)} & \textbf{1.000 (1.000, 1.000)} \\
-\datasetname{SCL-64} & 0.932 (0.894, 1.000) & - & \textcolor{red}{0.867 (0.822, 0.897)} & \textcolor{red}{0.867 (0.827, 0.897)} & \textcolor{red}{0.868 (0.822, 0.895)} & \textbf{1.000 (1.000, 1.000)} \\
+\datasetname{Stream Benchmark 1} & \textbf{0.852 (0.802, 0.883)} & \textcolor{red}{0.782 (0.000, 0.851)} & \textcolor{red}{0.734 (0.000, 0.841)} & \textcolor{red}{0.328 (0.000, 0.835)} & \textcolor{red}{0.798 (0.000, 0.839)} & \textcolor{red}{0.000 (0.000, 0.735)} \\
+\datasetname{Stream Benchmark 2} & \textbf{0.591 (0.552, 0.616)} & 0.542 (0.217, 0.598) & 0.564 (0.372, 0.605) & \textcolor{red}{0.333 (0.000, 0.565)} & 0.542 (0.265, 0.599) & \textcolor{red}{0.510 (0.000, 0.567)} \\
+\datasetname{Random RBF Generator with Events} & \textbf{0.560 (0.403, 0.802)} & \textcolor{red}{0.213 (0.055, 0.397)} & \textcolor{red}{0.154 (0.041, 0.348)} & \textcolor{red}{0.241 (0.017, 0.434)} & 0.271 (0.105, 0.521) & 0.326 (0.221, 0.514) \\
+\datasetname{Cassini} & \textbf{0.502 (0.360, 0.561)} & 0.207 (0.000, 0.420) & 0.045 (0.000, 0.402) & 0.137 (0.000, 0.440) & 0.278 (0.000, 0.419) & \textcolor{red}{0.000 (-0.002, 0.000)} \\
+\datasetname{Chameleon DS3} & \textbf{0.253 (0.144, 0.255)} & \textbf{0.218 (0.137, 0.279)} & \textbf{0.218 (0.147, 0.279)} & \textbf{0.139 (0.031, 0.252)} & \textbf{0.147 (0.000, 0.278)} & \textcolor{red}{0.000 (0.000, 0.000)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{0.102 (0.000, 0.188)} & \textcolor{red}{0.102 (0.000, 0.174)} & \textcolor{red}{0.102 (0.000, 0.174)} & \textcolor{red}{0.000 (0.000, 0.283)} & \textbf{0.354 (0.141, 0.373)} & 0.000 (0.000, 0.000) \\
+\datasetname{SCL-32} & \textcolor{red}{0.903 (0.841, 0.997)} & - & \textcolor{red}{0.879 (0.856, 0.905)} & \textcolor{red}{0.879 (0.845, 0.905)} & \textcolor{red}{0.881 (0.843, 0.903)} & \textbf{1.000 (1.000, 1.000)} \\
+\datasetname{SCL-64} & \textcolor{red}{0.903 (0.859, 0.972)} & - & \textcolor{red}{0.867 (0.828, 0.893)} & \textcolor{red}{0.865 (0.834, 0.897)} & \textcolor{red}{0.869 (0.828, 0.894)} & \textbf{1.000 (1.000, 1.000)} \\
 \bottomrule
 \end{tabular}
 }

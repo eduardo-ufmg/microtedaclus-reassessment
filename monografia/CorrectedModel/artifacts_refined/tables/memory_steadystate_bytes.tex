@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Steady-State Memory Footprint at the Penultimate Batch [B].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} & \modelname{corr-typicality-math} & \modelname{decay} & \modelname{macrocluster-activation} & \modelname{refined} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textbf{76800 (9984, 232192)} & 180224 (104704, 423936) & 180224 (98304, 354304) & 166912 (97792, 278016) & \textcolor{red}{334336 (137472, 426240)} & \textcolor{red}{330240 (276224, 403712)} & \textcolor{red}{231936 (152320, 359424)} \\
+\datasetname{Stream Benchmark 2} & 113664 (13056, 139264) & \textbf{25088 (16384, 44544)} & \textbf{26112 (16128, 46336)} & \textbf{29184 (15104, 48896)} & 51712 (32512, 71168) & 164352 (34048, 504832) & \textcolor{red}{856576 (660992, 1075456)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{288256 (218880, 894720)} & \textbf{193536 (122624, 235776)} & \textbf{187904 (65280, 322816)} & \textbf{179200 (43776, 254208)} & \textcolor{red}{780800 (443904, 1187072)} & 306176 (205312, 483072) & 311296 (160000, 464640) \\
+\datasetname{Cassini} & \textbf{123904 (84736, 136192)} & \textbf{146944 (93440, 177408)} & \textbf{146944 (60160, 176640)} & \textbf{148992 (34816, 171776)} & \textcolor{red}{609792 (179968, 1473024)} & \textbf{110592 (91136, 509184)} & \textcolor{red}{356864 (216832, 1447680)} \\
+\datasetname{Chameleon DS3} & 319488 (313088, 459776) & 263680 (249856, 851968) & 263680 (250880, 851968) & 428544 (258816, 1053952) & \textcolor{red}{1347584 (626944, 3182848)} & \textbf{192512 (175104, 217600)} & \textbf{194560 (175104, 227328)} \\
+\datasetname{Chameleon DS4} & 279552 (270080, 321792) & 247808 (241664, 352256) & 247296 (241664, 352256) & 244736 (240384, 259072) & \textcolor{red}{440320 (360448, 2343936)} & \textbf{142336 (142336, 158976)} & \textbf{143360 (143360, 158720)} \\
+\datasetname{SCL-32} & \textbf{22016 (15616, 1155072)} & - & \textcolor{red}{1181696 (1154048, 1220864)} & \textcolor{red}{1195008 (1151488, 1465344)} & \textcolor{red}{1227264 (119808, 1266688)} & \textcolor{red}{1242112 (1217024, 1280768)} & \textcolor{red}{1216000 (1143808, 1342976)} \\
+\datasetname{SCL-64} & \textbf{18944 (14336, 2300672)} & - & \textcolor{red}{2347008 (2292736, 2581504)} & \textcolor{red}{2359296 (2289408, 2493184)} & 2328576 (2300416, 2360576) & \textcolor{red}{2333184 (2308096, 2392320)} & 2273280 (2273280, 2273280) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:refined_memory_steadystate_bytes}
+\end{table}

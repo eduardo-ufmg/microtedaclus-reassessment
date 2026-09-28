@@ -1,19 +1,19 @@
 \begin{table}[htbp]
 \centering
-\caption{Statistical analysis and (Q1, Q3) for the Steady-State Memory Footprint at the Penultimate Batch [B].}
+\caption{Statistical analysis for the Steady-State Memory Footprint at the Penultimate Batch [B].}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c }
 \toprule
 Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} \\
 \midrule
-\datasetname{Stream Benchmark 1} & 141312 (56576, 471040) & 265728 (96512, 520192) & 134656 (76288, 372480) \\
-\datasetname{Stream Benchmark 2} & \textcolor{red}{112640 (14080, 141056)} & \textbf{25088 (17152, 40704)} & \textbf{24576 (16384, 44032)} \\
-\datasetname{Random RBF Generator with Events} & \textcolor{red}{535040 (253440, 888320)} & \textbf{193536 (102912, 289792)} & \textbf{187904 (92928, 318720)} \\
-\datasetname{Cassini} & 130560 (34304, 301824) & 137728 (48384, 158976) & 144384 (55808, 178432) \\
-\datasetname{Chameleon DS3} & \textcolor{red}{731648 (601600, 2586368)} & \textcolor{red}{621568 (467712, 2156288)} & \textbf{264704 (251392, 625408)} \\
-\datasetname{Chameleon DS4} & \textcolor{red}{689664 (583936, 2526720)} & \textcolor{red}{674304 (452352, 2342144)} & \textbf{247296 (242688, 278272)} \\
-\datasetname{SCL-32} & \textbf{17408 (13312, 205312)} & - & \textcolor{red}{1180160 (1154304, 1297664)} \\
-\datasetname{SCL-64} & \textbf{19968 (14336, 2276352)} & - & \textcolor{red}{2343424 (2281728, 2459392)} \\
+\datasetname{Stream Benchmark 1} & 76800 (9984, 232192) & 180224 (104704, 423936) & 180224 (98304, 354304) \\
+\datasetname{Stream Benchmark 2} & 113664 (13056, 139264) & 25088 (16384, 44544) & 26112 (16128, 46336) \\
+\datasetname{Random RBF Generator with Events} & 288256 (218880, 894720) & 193536 (122624, 235776) & 187904 (65280, 322816) \\
+\datasetname{Cassini} & 123904 (84736, 136192) & 146944 (93440, 177408) & 146944 (60160, 176640) \\
+\datasetname{Chameleon DS3} & 319488 (313088, 459776) & 263680 (249856, 851968) & 263680 (250880, 851968) \\
+\datasetname{Chameleon DS4} & 279552 (270080, 321792) & 247808 (241664, 352256) & 247296 (241664, 352256) \\
+\datasetname{SCL-32} & \textbf{22016 (15616, 1155072)} & - & \textcolor{red}{1181696 (1154048, 1220864)} \\
+\datasetname{SCL-64} & \textbf{18944 (14336, 2300672)} & - & \textcolor{red}{2347008 (2292736, 2581504)} \\
 \bottomrule
 \end{tabular}
 }

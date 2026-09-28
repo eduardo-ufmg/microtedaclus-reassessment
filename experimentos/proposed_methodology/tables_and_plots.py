@@ -34,7 +34,7 @@ READABLE_METRICS = {
     "memory_max_bytes": "Maximum Memory Footprint [B]",
     "memory_steadystate_bytes": "Steady-State Memory Footprint at the Penultimate Batch [B]",
     "mc_max": "Maximum Microcluster Count",
-    "mc_steadystate": "Steady-State Microcluster Count at the Penultimate Batch",
+    "mc_steadystate": "Steady-State Microcluster Count",
 }
 
 
@@ -88,7 +88,7 @@ def generate_latex_tables(subset_name: str, subset_models: list, out_dir: str):
         latex_lines = [
             "\\begin{table}[htbp]",
             "\\centering",
-            f"\\caption{{Statistical analysis and (Q1, Q3) for the {readable_name}.}}",
+            f"\\caption{{Statistical analysis for the {readable_name}.}}",
             "\\resizebox{\\textwidth}{!}{%",
             "\\begin{tabular}{l " + "c " * len(table_models) + "}",
             "\\toprule",
