@@ -41,6 +41,26 @@ from models.MicroTEDAClusImproved.MicroTEDAClusImproved_base import (
     MicroTEDAClusImproved_base,
     MicroTEDAClusImproved_baseParameterSearchSpace,
 )
+from models.MicroTEDAClusImproved.m_func_investigation.MicroTEDAClusImproved_param_orig import (
+    MicroTEDAClusImproved_param_orig,
+    MicroTEDAClusImproved_param_origParameterSearchSpace,
+)
+from models.MicroTEDAClusImproved.m_func_investigation.MicroTEDAClusImproved_reparam import (
+    MicroTEDAClusImproved_reparam,
+    MicroTEDAClusImproved_reparamParameterSearchSpace,
+)
+from models.MicroTEDAClusImproved.m_func_investigation.MicroTEDAClusImproved_const_up import (
+    MicroTEDAClusImproved_const_up,
+    MicroTEDAClusImproved_const_upParameterSearchSpace,
+)
+from models.MicroTEDAClusImproved.m_func_investigation.MicroTEDAClusImproved_scalar_m import (
+    MicroTEDAClusImproved_scalar_m,
+    MicroTEDAClusImproved_scalar_mParameterSearchSpace,
+)
+from models.MicroTEDAClusImproved.m_func_investigation.MicroTEDAClusImproved_const_m import (
+    MicroTEDAClusImproved_const_m,
+    MicroTEDAClusImproved_const_mParameterSearchSpace,
+)
 
 rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR)
 optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -78,6 +98,26 @@ MODEL_MAP = {
     "MicroTEDAClusImproved_base": (
         MicroTEDAClusImproved_base,
         MicroTEDAClusImproved_baseParameterSearchSpace,
+    ),
+    "MicroTEDAClusImproved_param_orig": (
+        MicroTEDAClusImproved_param_orig,
+        MicroTEDAClusImproved_param_origParameterSearchSpace,
+    ),
+    "MicroTEDAClusImproved_reparam": (
+        MicroTEDAClusImproved_reparam,
+        MicroTEDAClusImproved_reparamParameterSearchSpace,
+    ),
+    "MicroTEDAClusImproved_const_up": (
+        MicroTEDAClusImproved_const_up,
+        MicroTEDAClusImproved_const_upParameterSearchSpace,
+    ),
+    "MicroTEDAClusImproved_scalar_m": (
+        MicroTEDAClusImproved_scalar_m,
+        MicroTEDAClusImproved_scalar_mParameterSearchSpace,
+    ),
+    "MicroTEDAClusImproved_const_m": (
+        MicroTEDAClusImproved_const_m,
+        MicroTEDAClusImproved_const_mParameterSearchSpace,
     ),
 }
 
