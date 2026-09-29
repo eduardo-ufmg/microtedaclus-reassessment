@@ -40,13 +40,13 @@ CLIFFS_DELTA_THRESHOLD = 0.147
 
 READABLE_METRICS = {
     "ari_overall": "Overall Adjusted Rand Index",
-    "ari_steadystate": "Adjusted Rand Index at the Penultimate Batch",
+    "ari_steadystate": "Steady-State Adjusted Rand Index",
     "ari_fifth": "Adjusted Rand Index at the Fifth Batch",
     "ari_diff": "Maximum ARI Drop",
     "time_predict_cum_ms": "Cumulative Prediction Time [ms]",
     "time_fit_cum_ms": "Cumulative Fitting Time [ms]",
     "memory_max_bytes": "Maximum Memory Footprint [B]",
-    "memory_steadystate_bytes": "Steady-State Memory Footprint at the Penultimate Batch [B]",
+    "memory_steadystate_bytes": "Steady-State Memory Footprint [B]",
     "mc_max": "Maximum Microcluster Count",
     "mc_steadystate": "Steady-State Microcluster Count",
 }

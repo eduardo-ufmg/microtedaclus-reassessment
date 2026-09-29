@@ -238,21 +238,21 @@ def benchmark_predict_call_profile(
             "reduction_or_speedup": f"{(1.0 - ps_imp.total_calls / ps_corr.total_calls) * 100:.1f}% reduction",
         },
         {
-            "metric": "Microcluster ID Lookups (next / generator)",
+            "metric": "Microcluster ID Lookups",
             "corrected": calls_corr_by_func.get("get_micro_clusters_by_ids", 0),
             "improved": 0,
             "unit": "calls",
-            "reduction_or_speedup": "Eliminated (O(1) dict)",
+            "reduction_or_speedup": "Eliminated",
         },
         {
             "metric": "Membership Function Invocations",
             "corrected": calls_corr_by_func.get("calculate_membership", 0),
             "improved": 0,
             "unit": "calls",
-            "reduction_or_speedup": "Vectorized (NumPy batch)",
+            "reduction_or_speedup": "Vectorized",
         },
         {
-            "metric": "Batch Prediction Latency (N=100)",
+            "metric": "Batch Prediction Latency",
             "corrected": lat_corr_ms,
             "improved": lat_imp_ms,
             "unit": "ms",
@@ -298,9 +298,9 @@ def generate_latex_table(
     lines.append("\\centering")
     lines.append(
         "\\caption{Micro-architectural profiling benchmarks validating the base model improvements. "
-        "Panel A reports exact heap memory scaling across feature dimensions ($D$). "
+        "Panel A reports exact heap memory scaling across feature dimensions. "
         "Panel B evaluates pairwise distance dispatch latency per pair. "
-        "Panel C compares execution profile metrics for a 100-sample query batch ($K=101$ microclusters).}"
+        "Panel C compares execution profile metrics for a 100-sample query batch.}"
     )
     lines.append("\\label{tab:profiling_micro_benchmarks}")
     lines.append("\\resizebox{\\textwidth}{!}{%")
@@ -313,7 +313,7 @@ def generate_latex_table(
     )
     lines.append("\\midrule")
     lines.append(
-        "Dimension ($D$) & Legacy \\texttt{dict} [B] & Slotted \\codename{MicroCluster} [B] & Memory Saved [B] & Heap Reduction [\\%] \\\\"
+        "Dimension & Legacy \\texttt{dict} [B] & Slotted \\codename{MicroCluster} [B] & Memory Saved [B] & Heap Reduction [\\%] \\\\"
     )
     lines.append("\\midrule")
     for _, r in df_mem.iterrows():
@@ -352,9 +352,7 @@ def generate_latex_table(
         "\\multicolumn{5}{c}{\\textbf{Panel C: Batch Prediction Profile ($N = 100$ samples, $K = 101$ microclusters)}} \\\\"
     )
     lines.append("\\midrule")
-    lines.append(
-        "Metric & Corrected (Legacy) & Base Improved & Unit & Improvement Factor \\\\"
-    )
+    lines.append("Metric & Corrected & Base Improved & Unit & Improvement Factor \\\\")
     lines.append("\\midrule")
     for _, r in df_pred.iterrows():
         m = r["metric"]
@@ -381,9 +379,7 @@ def generate_latex_table(
             i_str = f"{i:.1f}"
             u_tex = "$\\mu$s/sample"
 
-        m_tex = m.replace("(next / generator)", "(\\texttt{next} / generator)").replace(
-            "(N=100)", "($N=100$)"
-        )
+        m_tex = m
         lines.append(
             f"  {m_tex} & {c_str} & {i_str} & {u_tex} & \\textbf{{{fact_tex}}} \\\\"
         )

@@ -2,14 +2,14 @@
 % Micro-architectural empirical benchmarks supporting Chapter 4
 \begin{table}[htbp]
 \centering
-\caption{Micro-architectural profiling benchmarks validating the base model improvements. Panel A reports exact heap memory scaling across feature dimensions ($D$). Panel B evaluates pairwise distance dispatch latency per pair. Panel C compares execution profile metrics for a 100-sample query batch ($K=101$ microclusters).}
+\caption{Micro-architectural profiling benchmarks validating the base model improvements. Panel A reports exact heap memory scaling across feature dimensions. Panel B evaluates pairwise distance dispatch latency per pair. Panel C compares execution profile metrics for a 100-sample query batch.}
 \label{tab:profiling_micro_benchmarks}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c}
 \toprule
 \multicolumn{5}{c}{\textbf{Panel A: Per-Microcluster Heap Memory Scaling ($D$-dimensional state)}} \\
 \midrule
-Dimension ($D$) & Legacy \texttt{dict} [B] & Slotted \codename{MicroCluster} [B] & Memory Saved [B] & Heap Reduction [\%] \\
+Dimension & Legacy \texttt{dict} [B] & Slotted \codename{MicroCluster} [B] & Memory Saved [B] & Heap Reduction [\%] \\
 \midrule
   $D = 2 $ & 936  & 400  & 536  & \textbf{57.3\%} \\
   $D = 4 $ & 952  & 416  & 536  & \textbf{56.3\%} \\
@@ -22,20 +22,20 @@ Dimension ($D$) & Legacy \texttt{dict} [B] & Slotted \codename{MicroCluster} [B]
 \midrule
 Dimension ($D$) & Numba \codename{@jit} [ns] & Inlined NumPy [ns] & Vectorized \codename{cdist} [ns] & Amortized Speedup \\
 \midrule
-  $D = 2 $ & 1901.0 & 1590.1 &   4.70 & \textbf{404.9$\times$} \\
-  $D = 8 $ & 2143.7 & 1579.9 &   3.46 & \textbf{619.4$\times$} \\
-  $D = 32$ & 2930.0 & 1619.5 &   8.69 & \textbf{337.3$\times$} \\
-  $D = 64$ & 3800.8 & 1654.4 &  17.82 & \textbf{213.3$\times$} \\
+  $D = 2 $ & 1824.1 & 1498.9 &   4.98 & \textbf{366.6$\times$} \\
+  $D = 8 $ & 2067.5 & 1480.8 &   3.15 & \textbf{655.4$\times$} \\
+  $D = 32$ & 2741.2 & 1506.1 &   8.21 & \textbf{333.9$\times$} \\
+  $D = 64$ & 4839.5 & 1528.9 &  17.08 & \textbf{283.3$\times$} \\
 \midrule
 \multicolumn{5}{c}{\textbf{Panel C: Batch Prediction Profile ($N = 100$ samples, $K = 101$ microclusters)}} \\
 \midrule
-Metric & Corrected (Legacy) & Base Improved & Unit & Improvement Factor \\
+Metric & Corrected & Base Improved & Unit & Improvement Factor \\
 \midrule
   Total Function Calls & 102,005 & 516 & calls & \textbf{99.5\% reduction} \\
-  Microcluster ID Lookups (\texttt{next} / generator) & 10,100 & 0 & calls & \textbf{Eliminated ($\mathcal{O}(1)$ dict)} \\
-  Membership Function Invocations & 10,100 & 0 & calls & \textbf{Vectorized (NumPy batch)} \\
-  Batch Prediction Latency ($N=100$) & 23.51 & 0.11 & ms & \textbf{210.6$\times$ speedup} \\
-  Amortized Latency per Sample & 235.1 & 1.1 & $\mu$s/sample & \textbf{210.6$\times$ speedup} \\
+  Microcluster ID Lookups & 10,100 & 0 & calls & \textbf{Eliminated} \\
+  Membership Function Invocations & 10,100 & 0 & calls & \textbf{Vectorized} \\
+  Batch Prediction Latency & 12.73 & 0.04 & ms & \textbf{314.1$\times$ speedup} \\
+  Amortized Latency per Sample & 127.3 & 0.4 & $\mu$s/sample & \textbf{314.1$\times$ speedup} \\
 \bottomrule
 \end{tabular}
 }
