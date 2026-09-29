@@ -36,9 +36,9 @@ To resolve these bottlenecks, \modelname{base-improved} introduces a modernized 
 
 \input{ImprovedModel/artifacts_base_improved/tables/profiling_micro_benchmarks.tex}
 
-\subsection{Empirical Validation of Invariance and System Performance}
+\subsection{Validation of Invariance and System Performance}
 
-To verify that \modelname{base-improved} introduces zero divergence in algorithmic behavior, we evaluated it against the corrected reference model across all eight benchmark streaming datasets over $32$ independent randomized repetitions.
+To verify that \modelname{base-improved} introduces zero divergence in algorithmic behavior, we evaluated it against the corrected reference model across all eight benchmark streaming datasets over independent randomized repetitions.
 
 \input{ImprovedModel/artifacts_base_improved/tables/ari_overall.tex}
 \input{ImprovedModel/artifacts_base_improved/tables/ari_fifth.tex}
@@ -51,13 +51,13 @@ To verify that \modelname{base-improved} introduces zero divergence in algorithm
 \input{ImprovedModel/artifacts_base_improved/tables/mc_max.tex}
 \input{ImprovedModel/artifacts_base_improved/tables/mc_steadystate.tex}
 
-The statistical evaluations reported in \cref{tab:base_imp_ari_overall,tab:base_imp_ari_fifth,tab:base_imp_ari_steadystate,tab:base_imp_ari_diff} empirically confirm the strict mathematical invariance of the refactoring. Across all eight streams, the Adjusted Rand Index distributions of \modelname{base-improved} and \modelname{macrocluster-activation} are statistically indistinguishable, exhibiting identical median and interquartile ranges and generating null $\Delta\text{ARI}$ differences. Microcluster cardinality trajectories (\cref{tab:base_imp_mc_max,tab:base_imp_mc_steadystate}) likewise match exactly.
+The statistical evaluations reported in \cref{tab:base_imp_ari_overall,tab:base_imp_ari_fifth,tab:base_imp_ari_steadystate,tab:base_imp_ari_diff} confirm the strict mathematical invariance of the refactoring. Across all eight streams, the Adjusted Rand Index distributions of \modelname{base-improved} and \modelname{macrocluster-activation} are statistically indistinguishable, exhibiting identical median and interquartile ranges and generating null $\Delta\text{ARI}$ differences. Microcluster cardinality trajectories (\cref{tab:base_imp_mc_max,tab:base_imp_mc_steadystate}) likewise match exactly.
 
 While clustering behavior remains identical, the macroscopic computational gains are profound:
 \begin{itemize}
     \item \textbf{Inference Throughput}: As shown in \cref{tab:base_imp_time_predict_cum_ms}, cumulative prediction times collapsed across all benchmarks, placing \modelname{base-improved} in the top statistical tier across $100\%$ of datasets and reducing total inference runtime by multiple orders of magnitude.
-    \item \textbf{Training Efficiency}: Fitting times (\cref{tab:base_imp_time_fit_cum_ms}) decreased significantly, particularly on dense synthetic streams where frequent topological graph updates previously suffered from Numba wrapper dispatch overhead.
-    \item \textbf{Memory Footprint}: As documented in \cref{tab:base_imp_memory_max_bytes,tab:base_imp_memory_steadystate_bytes}, memory consumption dropped substantially, especially in higher-dimensional configurations such as \datasetname{SCL-32} and \datasetname{SCL-64}, where maximum memory dropped by over $88\%$ (from $1.25$\,MB to $133$\,KB and $2.34$\,MB to $96$\,KB, respectively).
+    \item \textbf{Training Efficiency}: Fitting times, in \cref{tab:base_imp_time_fit_cum_ms}, decreased significantly, particularly on dense synthetic streams where frequent topological graph updates previously suffered from Numba wrapper dispatch overhead.
+    \item \textbf{Memory Footprint}: As documented in \cref{tab:base_imp_memory_max_bytes,tab:base_imp_memory_steadystate_bytes}, memory consumption dropped substantially, especially in higher-dimensional configurations such as \datasetname{SCL-32} and \datasetname{SCL-64}, where maximum memory dropped by over $80\%$.
 \end{itemize}
 
 By eliminating software bottlenecks, achieving orders-of-magnitude faster inference, and slashing memory consumption without altering clustering outputs, \modelname{base-improved} establishes a clean, high-performance foundation. All subsequent algorithmic proposals in this chapter are evaluated directly against this modernized base, ensuring that observed variations stem strictly from methodological modifications rather than implementation artifacts.
