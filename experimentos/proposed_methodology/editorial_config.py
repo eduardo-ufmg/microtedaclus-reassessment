@@ -86,13 +86,13 @@ MODEL_COLORS = dict(
     zip(
         MODEL_ORDER,
         [
-            "#000000",
-            "#0000ff",
-            "#00ff00",
-            "#00ffff",
-            "#ff0000",
-            "#ff00ff",
-            "#ffff00",
+            "xkcd:purple",
+            "xkcd:green",
+            "xkcd:blue",
+            "xkcd:pink",
+            "xkcd:brown",
+            "xkcd:red",
+            "xkcd:lightblue",
         ],
     )
 )
