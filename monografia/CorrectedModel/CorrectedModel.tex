@@ -62,7 +62,14 @@ The microcluster state is thus restricted to its recursively updated sufficient 
     \label{eq:corrected_density}
 \end{equation}
 
-where $\epsilon > 0$ is a stabilization constant to prevent undefined behavior in single-sample microclusters.
+where $\epsilon > 0$ is a stabilization constant to prevent undefined behavior in single-sample microclusters. Furthermore, because a single-sample microcluster has zero empirical variance ($\sigma^2_k = 0$), calculating its density naively yields an artificial numerical singularity $D_k = 1/\epsilon$. In the baseline algorithm, macroclusters filter out low-density boundary elements by comparing each microcluster's density against the macrocluster mean density, $D^i_k \ge \text{mean}(D^m_k)$. If immature microclusters ($S_k \le 2$) are naively included in this arithmetic mean, the $1/\epsilon$ singularity inflates $\text{mean}(D^m_k)$ to millions, artificially deactivating all mature units in the concept. To preserve analytical consistency, the macrocluster activation threshold is evaluated exclusively over mature microclusters:
+
+\begin{equation}
+    \bar{D}_k^m = \frac{1}{|M_k^{m, \text{mature}}|} \sum_{i \in M_k^{m, \text{mature}}} D_k^i,\quad M_k^{m, \text{mature}} = \{i \in M_k^m \mid S_k^i > 2\}
+    \label{eq:mature_mean_density}
+\end{equation}
+
+insulating the activation threshold from newborn initialization artifacts.
 
 \Cref{tab:orderdep_ari_overall,tab:orderdep_ari_fifth,tab:orderdep_ari_steadystate,tab:orderdep_ari_diff} present the clustering quality impact of the correction. While the redefinition results in lower initial and overall ARI scores on several streams, it preserves or improves steady-state clustering quality once the microclusters sufficiently mature. In the baseline implementation, the recursive, order-dependent density formula accumulated historical artifacts that acted as an artificial memory mechanism, providing path-dependent inertia during early and transitioning stream phases. By replacing this with a memoryless volumetric snapshot ratio, the model becomes strictly responsive to current spatial dispersion.
 
@@ -185,7 +192,7 @@ When calculating a sample's membership to a macrocluster $\mathcal{M}_j$, the al
     D^i_k \ge \text{mean}(D^m_k),\quad m \in \mathcal{M}_j
 \end{equation}
 
-are dynamically passed to the typicality weighting function. This structural alignment fulfills the original mathematical intent of filtering sparse boundary elements without destructively fragmenting the underlying macrocluster graph.
+are dynamically passed to the typicality weighting function. If a macrocluster possesses no active microclusters, its membership is formally undefined and set to $-\infty$, ensuring it cannot erroneously win assignment over active clusters when external points exhibit negative normalized typicalities. If all macroclusters are inactive for an incoming point, the sample is labeled as unassigned, $-1$. This structural alignment fulfills the original mathematical intent of filtering sparse boundary elements without destructively fragmenting the underlying macrocluster graph.
 
 The clustering quality evaluations in \cref{tab:macro_ari_overall,tab:macro_ari_fifth,tab:macro_ari_steadystate,tab:macro_ari_diff} reveal a pronounced dichotomy across stream dimensionalities. In higher-dimensional streams, preserving graph continuity in the base intersection graph $\mathbb{G}_0$ prevents cohesive macroscopic structures from being artificially severed into fragmented sub-clusters; on these streams, the model achieves the highest overall ARI scores observed across the entire iterative progression, accompanied by near-zero ARI degradation. Conversely, on lower-dimensional streams, relocating the activation threshold $D^i_k \ge \text{mean}(D^m_k)$ to prediction time exposes an unforeseen structural vulnerability: within smaller, sparse, or transitioning macroclusters, enforcing a local arithmetic mean density threshold frequently leaves zero active microclusters. Samples arriving in these regions cannot be assigned valid membership, resulting in unassigned classifications and causing the overall ARI to collapse on low-dimensional streams.
 

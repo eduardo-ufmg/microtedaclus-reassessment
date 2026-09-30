@@ -328,16 +328,20 @@ class MicroTEDAClusCorrectedDecay:
         self.active_graph = self.graph.copy()
 
         for mg in self.macro_clusters:
-            num_micro = len(mg)
-            total_density = 0
+            mature_mcs = [
+                item
+                for item in self.micro_clusters
+                if item["id"] in mg and item["num_samples"] > 2
+            ]
 
-            for i in mg:
-                dens = next(
-                    item["density"] for item in self.micro_clusters if item["id"] == i
-                )
-                total_density += dens
+            if not mature_mcs:
+                for i in mg:
+                    if self.active_graph.has_node(i):
+                        self.active_graph.remove_node(i)
+                continue
 
-            mean_density = total_density / num_micro
+            total_density = sum(item["density"] for item in mature_mcs)
+            mean_density = total_density / len(mature_mcs)
 
             for i in mg:
                 mi = next(item for item in self.micro_clusters if item["id"] == i)
@@ -346,7 +350,8 @@ class MicroTEDAClusCorrectedDecay:
                 )
 
                 if not mi["active"]:
-                    self.active_graph.remove_node(mi["id"])
+                    if self.active_graph.has_node(mi["id"]):
+                        self.active_graph.remove_node(mi["id"])
 
         self.active_macro_clusters = list(nx.connected_components(self.active_graph))
 

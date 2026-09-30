@@ -216,16 +216,24 @@ class MicroTEDAClusCorrectedMacro:
             for mg in self.macro_clusters:
                 mcs = self.get_micro_clusters_by_ids(mg)
                 if not mcs:
+                    memberships.append(-np.inf)
                     continue
 
-                total_density = sum(m["density"] for m in mcs)
-                mean_density = total_density / len(mcs)
+                mature_mcs = [m for m in mcs if m["num_samples"] > 2]
+                if not mature_mcs:
+                    memberships.append(-np.inf)
+                    continue
+
+                total_density = sum(m["density"] for m in mature_mcs)
+                mean_density = total_density / len(mature_mcs)
 
                 active_micro_clusters = [
-                    m
-                    for m in mcs
-                    if m["num_samples"] > 2 and m["density"] >= mean_density
+                    m for m in mature_mcs if m["density"] >= mean_density
                 ]
+
+                if not active_micro_clusters:
+                    memberships.append(-np.inf)
+                    continue
 
                 memberships.append(
                     MicroTEDAClusCorrectedMacro.calculate_membership(
@@ -233,7 +241,7 @@ class MicroTEDAClusCorrectedMacro:
                     )
                 )
 
-            if memberships is not None and len(memberships) > 0:
+            if memberships and max(memberships) > -np.inf:
                 self.labels_[index] = np.argmax(memberships)
             else:
                 self.labels_[index] = -1

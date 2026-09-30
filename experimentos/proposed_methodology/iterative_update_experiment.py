@@ -42,10 +42,6 @@ from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected_decay import (
     MicroTEDAClusCorrectedDecay,
     MicroTEDAClusCorrectedDecayParameterSearchSpace,
 )
-from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected_macro import (
-    MicroTEDAClusCorrectedMacro,
-    MicroTEDAClusCorrectedMacroParameterSearchSpace,
-)
 
 from editorial_config import ITERATIVE_DATASET_ORDER
 from iterative_config import (
@@ -101,24 +97,16 @@ TAG_MODEL_MAP = {
         MicroTEDAClusCorrectedMacro,
         MicroTEDAClusCorrectedMacroParameterSearchSpace,
     ),
-    "refined": (
-        MicroTEDAClusCorrectedRefined,
-        MicroTEDAClusCorrectedRefinedParameterSearchSpace,
-    ),
 }
 
 MODEL_MAP = {
     "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
-    "MicroTEDAClusCorrected": (
-        MicroTEDAClusCorrectedRefined,
-        MicroTEDAClusCorrectedRefinedParameterSearchSpace,
-    ),
+    "MicroTEDAClusCorrected": TAG_MODEL_MAP["macro"],
     "MicroTEDAClusCorrected_orderdepend": TAG_MODEL_MAP["orderdepend"],
     "MicroTEDAClusCorrected_dimpen": TAG_MODEL_MAP["dimpen"],
     "MicroTEDAClusCorrected_math": TAG_MODEL_MAP["math"],
     "MicroTEDAClusCorrected_decay": TAG_MODEL_MAP["decay"],
     "MicroTEDAClusCorrected_macro": TAG_MODEL_MAP["macro"],
-    "MicroTEDAClusCorrected_refined": TAG_MODEL_MAP["refined"],
 }
 
 
@@ -165,13 +153,13 @@ def main():
         "--stage",
         type=str,
         default=None,
-        help="Specific stage ID to run (e.g. order_dependency, dimension_penalty, refined)",
+        help="Specific stage ID to run (e.g. order_dependency, dimension_penalty, macrocluster_activation)",
     )
     parser.add_argument(
         "--tag",
         type=str,
         default="",
-        help="Correction tag suffix (e.g. math, dimpen, orderdepend, refined)",
+        help="Correction tag suffix (e.g. math, dimpen, orderdepend, macro)",
     )
     parser.add_argument(
         "--models",

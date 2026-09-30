@@ -209,11 +209,14 @@ class MicroTEDAClusImproved_scalar_m:
                 macro_info.append(None)
                 continue
 
-            total_density = sum(m.density for m in mcs)
-            mean_density = total_density / len(mcs)
-            active_mcs = [
-                m for m in mcs if m.num_samples > 2 and m.density >= mean_density
-            ]
+            mature_mcs = [m for m in mcs if m.num_samples > 2]
+            if not mature_mcs:
+                macro_info.append(None)
+                continue
+
+            total_density = sum(m.density for m in mature_mcs)
+            mean_density = total_density / len(mature_mcs)
+            active_mcs = [m for m in mature_mcs if m.density >= mean_density]
 
             if not active_mcs:
                 macro_info.append(None)
@@ -239,10 +242,12 @@ class MicroTEDAClusImproved_scalar_m:
                 }
             )
 
-        all_memberships = np.zeros((N, K), dtype=float)
+        all_memberships = np.full((N, K), -np.inf, dtype=float)
+        any_valid = False
         for k_idx, info in enumerate(macro_info):
             if info is None:
                 continue
+            any_valid = True
             means = info["means"]
             vars_ = info["vars"]
             nums_ = info["nums"]
@@ -259,7 +264,13 @@ class MicroTEDAClusImproved_scalar_m:
 
             all_memberships[:, k_idx] = np.dot(norm_typ, weights)
 
-        self.labels_ = np.argmax(all_memberships, axis=1)
+        if not any_valid:
+            self.labels_ = np.full(N, -1, dtype=int)
+            return self.labels_
+
+        max_vals = np.max(all_memberships, axis=1)
+        preds = np.argmax(all_memberships, axis=1)
+        self.labels_ = np.where(max_vals == -np.inf, -1, preds)
         return self.labels_
 
     def microcluster_count(self) -> int:
