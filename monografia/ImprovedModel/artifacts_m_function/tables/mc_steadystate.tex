@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Steady-State Microcluster Count.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{base-improved} & \modelname{param-orig-m} & \modelname{reparam-m} & \modelname{const-up} & \modelname{scalar-m} & \modelname{const-m} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 12 (3, 67) & \textcolor{red}{68 (60, 79)} & 13 (9, 60) & 32 (15, 63) & 21 (8, 44) & 44 (1, 70) & \textbf{9 (7, 11)} \\
+\datasetname{Stream Benchmark 2} & 24 (6, 48) & 53 (18, 103) & 30 (20, 72) & 22 (16, 42) & 11 (8, 26) & \textcolor{red}{168 (34, 230)} & \textbf{1 (1, 1)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{68 (20, 289)} & \textcolor{red}{61 (37, 78)} & \textcolor{red}{44 (20, 125)} & \textcolor{red}{58 (35, 113)} & 22 (18, 44) & \textcolor{red}{66 (1, 311)} & \textbf{3 (2, 7)} \\
+\datasetname{Cassini} & 36 (33, 44) & \textcolor{red}{246 (35, 488)} & \textbf{3 (2, 34)} & 26 (2, 280) & 47 (4, 234) & \textbf{1 (1, 2)} & 1 (1, 1) \\
+\datasetname{Chameleon DS3} & \textcolor{red}{119 (114, 224)} & 74 (25, 174) & 24 (10, 68) & 61 (12, 184) & 22 (11, 163) & 2 (1, 26) & \textbf{1 (1, 1)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{120 (110, 154)} & 11 (11, 28) & \textbf{1 (1, 2)} & 11 (11, 27) & 11 (11, 28) & \textbf{1 (1, 2)} & 1 (1, 1) \\
+\datasetname{SCL-32} & 8 (4, 39) & \textcolor{red}{64 (45, 162)} & \textcolor{red}{88 (16, 255)} & \textcolor{red}{94 (54, 252)} & \textcolor{red}{194 (74, 325)} & \textcolor{red}{208 (13, 441)} & \textbf{2 (1, 2)} \\
+\datasetname{SCL-64} & 6 (5, 24) & 43 (33, 122) & 22 (8, 107) & \textcolor{red}{120 (53, 328)} & \textcolor{red}{212 (78, 325)} & \textcolor{red}{24 (2, 256)} & \textbf{2 (1, 2)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mfunc_mc_steadystate}
+\end{table}

@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Adjusted Rand Index at the Fifth Batch.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{base-improved} & \modelname{param-orig-m} & \modelname{reparam-m} & \modelname{const-up} & \modelname{scalar-m} & \modelname{const-m} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textbf{0.852 (0.802, 0.883)} & \textcolor{red}{0.000 (0.000, 0.722)} & \textbf{0.837 (0.497, 0.895)} & \textbf{0.873 (0.774, 0.915)} & \textbf{0.869 (0.804, 0.901)} & \textcolor{red}{0.000 (0.000, 0.013)} & 0.000 (0.000, 0.000) \\
+\datasetname{Stream Benchmark 2} & \textbf{0.591 (0.552, 0.616)} & 0.518 (0.056, 0.582) & 0.394 (0.000, 0.582) & 0.401 (0.000, 0.563) & 0.404 (0.000, 0.563) & 0.002 (0.000, 0.540) & \textcolor{red}{0.000 (0.000, 0.000)} \\
+\datasetname{Random RBF Generator with Events} & \textbf{0.560 (0.403, 0.802)} & 0.331 (0.221, 0.542) & 0.250 (0.071, 0.560) & 0.369 (0.188, 0.510) & 0.234 (0.000, 0.509) & \textcolor{red}{0.000 (0.000, 0.219)} & 0.000 (0.000, 0.000) \\
+\datasetname{Cassini} & \textbf{0.502 (0.360, 0.561)} & \textcolor{red}{0.000 (-0.001, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (-0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} \\
+\datasetname{Chameleon DS3} & \textbf{0.253 (0.144, 0.255)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (-0.002, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} \\
+\datasetname{Chameleon DS4} & \textbf{0.102 (0.000, 0.188)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} & \textcolor{red}{0.000 (0.000, 0.000)} \\
+\datasetname{SCL-32} & 0.903 (0.841, 0.997) & \textbf{1.000 (1.000, 1.000)} & 0.990 (0.949, 1.000) & \textbf{1.000 (1.000, 1.000)} & \textbf{1.000 (1.000, 1.000)} & 0.931 (0.602, 1.000) & \textcolor{red}{0.000 (0.000, 0.000)} \\
+\datasetname{SCL-64} & 0.903 (0.859, 0.972) & \textbf{1.000 (1.000, 1.000)} & 0.982 (0.936, 1.000) & 1.000 (0.883, 1.000) & \textbf{1.000 (1.000, 1.000)} & 0.680 (0.000, 0.986) & \textcolor{red}{0.000 (0.000, 0.000)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mfunc_ari_fifth}
+\end{table}

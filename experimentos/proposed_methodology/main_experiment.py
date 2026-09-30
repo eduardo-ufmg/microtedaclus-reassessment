@@ -27,9 +27,9 @@ from models.MicroTEDAClus.MicroTEDAClus import (
     MicroTEDAClus,
     MicroTEDAClusParameterSearchSpace,
 )
-from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected import (
-    MicroTEDAClusCorrected,
-    MicroTEDAClusCorrectedParameterSearchSpace,
+from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected_macro import (
+    MicroTEDAClusCorrectedMacro,
+    MicroTEDAClusCorrectedMacroParameterSearchSpace,
 )
 from models.StreamKM.StreamKM import StreamKM, StreamKMParameterSearchSpace
 from models.TEDACloud.TEDACloud import TEDACloud, TEDACloudParameterSearchSpace
@@ -80,8 +80,8 @@ MODEL_MAP = {
     "DenStream": (DenStream, DenStreamParameterSearchSpace),
     "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
     "MicroTEDAClusCorrected": (
-        MicroTEDAClusCorrected,
-        MicroTEDAClusCorrectedParameterSearchSpace,
+        MicroTEDAClusCorrectedMacro,
+        MicroTEDAClusCorrectedMacroParameterSearchSpace,
     ),
     "CEDAS": (CEDAS, CEDASParameterSearchSpace),
     "TEDACloud": (TEDACloud, TEDACloudParameterSearchSpace),

@@ -22,9 +22,9 @@ from models.MicroTEDAClus.MicroTEDAClus import (
     MicroTEDAClus,
     MicroTEDAClusParameterSearchSpace,
 )
-from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected import (
-    MicroTEDAClusCorrected,
-    MicroTEDAClusCorrectedParameterSearchSpace,
+from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected_macro import (
+    MicroTEDAClusCorrectedMacro,
+    MicroTEDAClusCorrectedMacroParameterSearchSpace,
 )
 from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected_orderdepend import (
     MicroTEDAClusCorrectedOrderdepend,
@@ -102,16 +102,16 @@ TAG_MODEL_MAP = {
         MicroTEDAClusCorrectedMacroParameterSearchSpace,
     ),
     "refined": (
-        MicroTEDAClusCorrected,
-        MicroTEDAClusCorrectedParameterSearchSpace,
+        MicroTEDAClusCorrectedRefined,
+        MicroTEDAClusCorrectedRefinedParameterSearchSpace,
     ),
 }
 
 MODEL_MAP = {
     "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
     "MicroTEDAClusCorrected": (
-        MicroTEDAClusCorrected,
-        MicroTEDAClusCorrectedParameterSearchSpace,
+        MicroTEDAClusCorrectedRefined,
+        MicroTEDAClusCorrectedRefinedParameterSearchSpace,
     ),
     "MicroTEDAClusCorrected_orderdepend": TAG_MODEL_MAP["orderdepend"],
     "MicroTEDAClusCorrected_dimpen": TAG_MODEL_MAP["dimpen"],

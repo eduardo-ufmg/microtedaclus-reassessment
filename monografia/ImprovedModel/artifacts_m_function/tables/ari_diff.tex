@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Maximum ARI Drop.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{base-improved} & \modelname{param-orig-m} & \modelname{reparam-m} & \modelname{const-up} & \modelname{scalar-m} & \modelname{const-m} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textcolor{red}{0.916 (0.873, 0.949)} & 0.839 (0.151, 0.913) & \textcolor{red}{0.935 (0.884, 0.976)} & \textcolor{red}{0.907 (0.784, 1.000)} & \textcolor{red}{0.958 (0.891, 1.000)} & \textbf{0.000 (0.000, 0.788)} & 0.000 (0.000, 0.000) \\
+\datasetname{Stream Benchmark 2} & 0.378 (0.077, 0.573) & \textcolor{red}{0.657 (0.623, 0.694)} & \textcolor{red}{0.641 (0.088, 0.703)} & 0.625 (0.492, 0.647) & 0.617 (0.339, 0.651) & \textcolor{red}{0.619 (0.000, 0.663)} & \textbf{0.000 (0.000, 0.000)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{0.497 (0.328, 0.841)} & \textcolor{red}{0.636 (0.422, 0.920)} & \textcolor{red}{0.565 (0.350, 0.775)} & \textcolor{red}{0.582 (0.351, 0.893)} & \textcolor{red}{0.557 (0.370, 0.757)} & \textbf{0.000 (0.000, 0.570)} & 0.000 (0.000, 0.000) \\
+\datasetname{Cassini} & \textcolor{red}{0.263 (0.172, 0.401)} & \textbf{0.013 (0.001, 0.032)} & \textbf{0.000 (0.000, 0.013)} & \textbf{0.004 (0.000, 0.025)} & \textbf{0.003 (0.000, 0.018)} & \textbf{0.000 (0.000, 0.000)} & 0.000 (0.000, 0.000) \\
+\datasetname{Chameleon DS3} & \textcolor{red}{0.251 (0.231, 0.264)} & \textbf{0.001 (0.000, 0.005)} & 0.007 (0.000, 0.187) & \textbf{0.000 (0.000, 0.007)} & \textbf{0.000 (0.000, 0.008)} & \textbf{0.000 (0.000, 0.000)} & 0.000 (0.000, 0.000) \\
+\datasetname{Chameleon DS4} & \textcolor{red}{0.252 (0.212, 0.277)} & \textbf{0.000 (0.000, 0.000)} & \textbf{0.000 (0.000, 0.000)} & \textbf{0.000 (0.000, 0.000)} & \textbf{0.000 (0.000, 0.000)} & \textbf{0.000 (0.000, 0.000)} & \textbf{0.000 (0.000, 0.000)} \\
+\datasetname{SCL-32} & \textcolor{red}{0.131 (0.002, 0.852)} & \textcolor{red}{0.125 (0.095, 0.162)} & \textcolor{red}{0.122 (0.089, 0.157)} & \textcolor{red}{0.133 (0.104, 0.168)} & \textcolor{red}{0.121 (0.091, 0.154)} & 0.099 (0.000, 0.141) & \textbf{0.000 (0.000, 0.000)} \\
+\datasetname{SCL-64} & \textcolor{red}{0.905 (0.097, 1.000)} & 0.132 (0.111, 0.183) & 0.136 (0.110, 0.185) & 0.133 (0.109, 0.181) & 0.133 (0.111, 0.179) & 0.077 (0.000, 0.145) & \textbf{0.000 (0.000, 0.000)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mfunc_ari_diff}
+\end{table}
