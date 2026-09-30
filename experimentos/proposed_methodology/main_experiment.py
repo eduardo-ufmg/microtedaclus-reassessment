@@ -27,10 +27,6 @@ from models.MicroTEDAClus.MicroTEDAClus import (
     MicroTEDAClus,
     MicroTEDAClusParameterSearchSpace,
 )
-from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected_macro import (
-    MicroTEDAClusCorrectedMacro,
-    MicroTEDAClusCorrectedMacroParameterSearchSpace,
-)
 from models.StreamKM.StreamKM import StreamKM, StreamKMParameterSearchSpace
 from models.TEDACloud.TEDACloud import TEDACloud, TEDACloudParameterSearchSpace
 from editorial_config import DATASET_ORDER
@@ -79,10 +75,6 @@ MODEL_MAP = {
     "CluStream": (CluStream, CluStreamParameterSearchSpace),
     "DenStream": (DenStream, DenStreamParameterSearchSpace),
     "MicroTEDAClus": (MicroTEDAClus, MicroTEDAClusParameterSearchSpace),
-    "MicroTEDAClusCorrected": (
-        MicroTEDAClusCorrectedMacro,
-        MicroTEDAClusCorrectedMacroParameterSearchSpace,
-    ),
     "CEDAS": (CEDAS, CEDASParameterSearchSpace),
     "TEDACloud": (TEDACloud, TEDACloudParameterSearchSpace),
     "AutoCloud": (AutoCloud, AutoCloudParameterSearchSpace),
