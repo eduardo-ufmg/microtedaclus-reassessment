@@ -90,14 +90,14 @@ where $M_k^{m, \text{mature}} = \{i \in M_k^m \mid S_k^i \ge 3\}$. A microcluste
 
 Microclusters failing this criterion are excluded from the active graph $\mathbb{G}_1$. This formulation resolves the order-dependent bias of the original model while insulating the active concept boundaries from newborn initialization artifacts.
 
-This correction results in a slight decrease in clustering quality, as shown by \cref{tab:ari_overall,tab:ari_fifth,tab:ari_steadystate,tab:ari_diff}. We argue that such sacrifice is justified by the analytical correctness improvement, which is expected to support the following corrections and improvements of the model.
+This correction results in a slight decrease in clustering quality, as shown by \cref{tab:orderdep_ari_overall,tab:orderdep_ari_fifth,tab:orderdep_ari_steadystate,tab:orderdep_ari_diff}. We argue that such sacrifice is justified by the analytical correctness improvement, which is expected to support the following corrections and improvements of the model.
 
 \input{CorrectedModel/artifacts_order_dependency/tables/ari_overall.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/ari_fifth.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/ari_steadystate.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/ari_diff.tex}
 
-Performance improvements are also very slight, as shown by \cref{tab:time_fit_cum_ms,tab:time_predict_cum_ms,tab:memory_max_bytes,tab:memory_steadystate_bytes,tab:mc_max,tab:mc_steadystate}.
+Performance improvements are also very slight, as shown by \cref{tab:orderdep_time_fit_cum_ms,tab:orderdep_time_predict_cum_ms,tab:orderdep_memory_max_bytes,tab:orderdep_memory_steadystate_bytes,tab:orderdep_mc_max,tab:orderdep_mc_steadystate}.
 
 \input{CorrectedModel/artifacts_order_dependency/tables/time_fit_cum_ms.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/time_predict_cum_ms.tex}
@@ -105,3 +105,32 @@ Performance improvements are also very slight, as shown by \cref{tab:time_fit_cu
 \input{CorrectedModel/artifacts_order_dependency/tables/memory_steadystate_bytes.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/mc_max.tex}
 \input{CorrectedModel/artifacts_order_dependency/tables/mc_steadystate.tex}
+
+\section{Dimensionality Penalty}
+\label{sec:dimensionality_penalty}
+
+In the original formulation \cite{maia2020evolvclus}, the spatial dispersion metrics explicitly penalize the Euclidean norm by the data dimensionality $d$, as discussed in \cref{subsubsec:dimensionality_penalty}. Specifically, the recursive variance $\left(\sigma^i_k\right)^2$ and the point-to-set eccentricity $\xi^i(x_k)$ arbitrarily scale the squared deviations by $4/d^2$ and $2/d$, respectively. This scaling factor is analytically flawed. It distorts the true geometric boundaries of the microclusters and deviates from the standard TEDA derivations for the Euclidean space \cite{angelov2014outside}, where the spatial variance strictly reflects the unscaled trace of the covariance matrix.
+
+To restore the analytical integrity of the spatial boundaries, the dimensionality penalty is removed. The recursive variance update for a microcluster $i$ at moment $k$ is corrected to the standard formulation:
+
+$$ \left(\sigma^i_k\right)^2 = \frac{S^i_k - 1}{S^i_k} \left(\sigma^i_{k-1}\right)^2 + \frac{1}{S^i_k - 1} \lVert x_k - \mu^i_k \rVert^2 $$
+
+Correspondingly, the transient point-to-set eccentricity evaluation is restored to its exact unscaled geometric form:
+
+$$ \xi^i(x_k) = \frac{1}{S^i_k} + \frac{\lVert \mu^i_k - x_k \rVert^2}{S^i_k \left(\sigma^i_k\right)^2} $$
+
+\Cref{tab:dimpen_ari_overall,tab:dimpen_ari_fifth,tab:dimpen_ari_steadystate,tab:dimpen_ari_diff} show that the removal of the dimensionality penalty had significant positive impact on clustering quality for the higher dimensional datasets \datasetname{SCL-32} and \datasetname{SCL-64}, while having negligible effect on the lower dimensional datasets. It indicates that the original dimensionality penalty was a significant source of distortion for the higher dimensional datasets, and its removal restores the true geometric boundaries of the microclusters.
+
+\input{CorrectedModel/artifacts_dimension_penalty/tables/ari_overall.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/ari_fifth.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/ari_steadystate.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/ari_diff.tex}
+
+\Cref{tab:dimpen_time_fit_cum_ms,tab:dimpen_time_predict_cum_ms,tab:dimpen_memory_max_bytes,tab:dimpen_memory_steadystate_bytes,tab:dimpen_mc_max,tab:dimpen_mc_steadystate} show that the performance metrics were all worsened for the higher dimensional datasets by the removal of the dimensionality penalty. This is expected, as discussed throughout \cref{sec:reassessment_results}, since the the original flaw reduces the microcluster count at the expense of clustering quality.
+
+\input{CorrectedModel/artifacts_dimension_penalty/tables/time_fit_cum_ms.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/time_predict_cum_ms.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/memory_max_bytes.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/memory_steadystate_bytes.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/mc_max.tex}
+\input{CorrectedModel/artifacts_dimension_penalty/tables/mc_steadystate.tex}

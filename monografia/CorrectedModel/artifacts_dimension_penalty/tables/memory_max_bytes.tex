@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Maximum Memory Footprint [B].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 140888 (86582, 388014) & 263436 (172716, 543076) & 252208 (174558, 520418) \\
+\datasetname{Stream Benchmark 2} & 147876 (65508, 176730) & 132328 (109568, 264948) & 134888 (96434, 299746) \\
+\datasetname{Random RBF Generator with Events} & 883004 (254522, 1665312) & 641168 (308030, 1685554) & 672076 (312968, 1685554) \\
+\datasetname{Cassini} & \textcolor{red}{143828 (139632, 157712)} & \textbf{127732 (118258, 138672)} & 129280 (117826, 138850) \\
+\datasetname{Chameleon DS3} & 323716 (319728, 500228) & 314816 (311674, 441784) & 315424 (309972, 441784) \\
+\datasetname{Chameleon DS4} & 286940 (272082, 406480) & 269544 (263012, 401262) & 269100 (263012, 401262) \\
+\datasetname{SCL-32} & \textbf{1157688 (32500, 1278882)} & \textbf{1164552 (38012, 1222378)} & \textcolor{red}{1320584 (1267074, 1595916)} \\
+\datasetname{SCL-64} & \textbf{2302660 (89174, 2414416)} & \textbf{2295656 (53184, 2340594)} & \textcolor{red}{2535536 (2398078, 2848636)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:dimpen_memory_max_bytes}
+\end{table}
