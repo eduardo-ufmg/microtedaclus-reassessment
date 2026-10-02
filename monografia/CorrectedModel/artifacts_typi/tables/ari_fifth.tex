@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Adjusted Rand Index at the Fifth Batch.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} & \modelname{corr-typicality} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textbf{0.845 (0.795, 0.881)} & \textcolor{red}{0.806 (0.000, 0.849)} & \textcolor{red}{0.806 (0.000, 0.869)} & \textcolor{red}{0.744 (0.260, 0.828)} \\
+\datasetname{Stream Benchmark 2} & 0.595 (0.527, 0.629) & \textbf{0.574 (0.514, 0.660)} & \textbf{0.568 (0.506, 0.663)} & 0.491 (0.106, 0.597) \\
+\datasetname{Random RBF Generator with Events} & \textbf{0.546 (0.403, 0.811)} & 0.454 (0.352, 0.676) & 0.454 (0.352, 0.676) & \textcolor{red}{0.353 (0.071, 0.503)} \\
+\datasetname{Cassini} & \textbf{0.514 (0.338, 0.584)} & \textcolor{red}{0.296 (0.008, 0.434)} & \textcolor{red}{0.112 (0.000, 0.432)} & \textcolor{red}{0.285 (0.010, 0.398)} \\
+\datasetname{Chameleon DS3} & \textbf{0.222 (0.135, 0.253)} & \textbf{0.218 (0.136, 0.229)} & \textbf{0.220 (0.136, 0.245)} & 0.127 (0.097, 0.130) \\
+\datasetname{Chameleon DS4} & 0.102 (0.000, 0.159) & 0.109 (0.000, 0.296) & 0.109 (0.000, 0.296) & 0.102 (0.000, 0.207) \\
+\datasetname{SCL-32} & 0.897 (0.835, 0.995) & 0.953 (0.882, 1.000) & 0.888 (0.859, 0.907) & 0.887 (0.861, 0.909) \\
+\datasetname{SCL-64} & 0.911 (0.861, 0.986) & \textbf{0.915 (0.864, 1.000)} & \textcolor{red}{0.875 (0.833, 0.902)} & \textcolor{red}{0.874 (0.834, 0.900)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:typicality_ari_fifth}
+\end{table}

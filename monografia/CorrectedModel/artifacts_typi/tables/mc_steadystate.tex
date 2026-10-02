@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Steady-State Microcluster Count.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} & \modelname{corr-typicality} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 13 (4, 106) & 47 (30, 78) & 44 (29, 64) & 61 (31, 126) \\
+\datasetname{Stream Benchmark 2} & 24 (6, 46) & 35 (16, 67) & 35 (11, 51) & 16 (9, 42) \\
+\datasetname{Random RBF Generator with Events} & 71 (15, 342) & 115 (42, 296) & 123 (51, 296) & 43 (33, 101) \\
+\datasetname{Cassini} & 39 (32, 45) & 34 (18, 42) & 33 (18, 42) & 37 (18, 49) \\
+\datasetname{Chameleon DS3} & 120 (118, 271) & 115 (113, 217) & 115 (112, 217) & 116 (113, 218) \\
+\datasetname{Chameleon DS4} & \textcolor{red}{119 (110, 218)} & 108 (101, 214) & 107 (101, 214) & \textbf{106 (100, 120)} \\
+\datasetname{SCL-32} & \textbf{7 (4, 35)} & \textbf{8 (5, 23)} & \textcolor{red}{47 (22, 151)} & \textcolor{red}{67 (24, 333)} \\
+\datasetname{SCL-64} & \textbf{6 (5, 22)} & \textbf{5 (4, 25)} & \textcolor{red}{49 (32, 324)} & \textcolor{red}{42 (22, 173)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:typicality_mc_steadystate}
+\end{table}

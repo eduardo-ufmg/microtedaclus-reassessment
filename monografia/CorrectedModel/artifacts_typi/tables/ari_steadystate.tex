@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Steady-State Adjusted Rand Index.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} & \modelname{corr-typicality} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textcolor{red}{0.000 (0.000, 0.025)} & 0.007 (0.000, 0.279) & 0.006 (0.000, 0.366) & \textbf{0.075 (0.000, 0.395)} \\
+\datasetname{Stream Benchmark 2} & 0.538 (0.076, 0.645) & \textbf{0.569 (0.505, 0.650)} & \textbf{0.561 (0.501, 0.661)} & \textcolor{red}{0.500 (0.125, 0.568)} \\
+\datasetname{Random RBF Generator with Events} & 0.054 (0.000, 0.453) & 0.403 (0.187, 0.554) & 0.403 (0.187, 0.554) & 0.258 (0.138, 0.426) \\
+\datasetname{Cassini} & \textbf{0.458 (0.174, 0.557)} & \textcolor{red}{0.288 (0.186, 0.356)} & \textcolor{red}{0.296 (0.173, 0.351)} & \textcolor{red}{0.259 (0.183, 0.331)} \\
+\datasetname{Chameleon DS3} & 0.187 (0.162, 0.194) & \textcolor{red}{0.188 (0.171, 0.200)} & 0.197 (0.172, 0.209) & 0.184 (0.165, 0.216) \\
+\datasetname{Chameleon DS4} & \textcolor{red}{0.217 (0.178, 0.247)} & 0.237 (0.169, 0.263) & 0.237 (0.169, 0.263) & \textbf{0.240 (0.225, 0.265)} \\
+\datasetname{SCL-32} & 0.843 (0.000, 0.955) & \textcolor{red}{0.029 (0.000, 0.873)} & \textbf{0.860 (0.847, 0.874)} & \textbf{0.860 (0.847, 0.874)} \\
+\datasetname{SCL-64} & \textcolor{red}{0.312 (0.000, 0.864)} & \textcolor{red}{0.000 (0.000, 0.845)} & \textbf{0.866 (0.855, 0.873)} & \textbf{0.867 (0.858, 0.877)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:typicality_ari_steadystate}
+\end{table}

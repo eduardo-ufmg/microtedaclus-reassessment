@@ -134,3 +134,30 @@ $$ \xi^i(x_k) = \frac{1}{S^i_k} + \frac{\lVert \mu^i_k - x_k \rVert^2}{S^i_k \le
 \input{CorrectedModel/artifacts_dimension_penalty/tables/memory_steadystate_bytes.tex}
 \input{CorrectedModel/artifacts_dimension_penalty/tables/mc_max.tex}
 \input{CorrectedModel/artifacts_dimension_penalty/tables/mc_steadystate.tex}
+
+\section{Correction of the Typicality Formulation}
+\label{sec:correction_typicality}
+
+The evaluation of the original implementation reveals a critical mathematical discrepancy in the computation of a sample's membership to a macrocluster. The algorithm assigns a sample $x_k$ to a macrocluster by weighting the typicality of the sample against the active microclusters. However, the implemented typicality formulation evaluates an unnormalized intermediate expression, equivalent to $1 - \zeta^i(x_k)$. This expression contradicts the foundational definitions of the TEDA framework \cite{angelov2014outside}. In the formal mathematical model, absolute typicality is strictly defined as $\tau^i(x_k) = 1 - \xi^i(x_k)$. Furthermore, to construct valid density-based membership probabilities, the aggregation must utilize normalized typicality, defined as:
+
+\begin{equation}
+    t^i(x_k) = \frac{\tau^i(x_k)}{S^i_k - 2}
+\end{equation}
+
+By omitting the cardinality normalization factor $S^i_k - 2$, the original algorithm fails to appropriately scale the typicality across microclusters of varying sizes, inherently invalidating the resulting membership distributions. To restore theoretical consistency, the membership calculation is corrected to explicitly compute the exact normalized typicality $t^i(x_k)$. It is important to note that this normalized formulation is mathematically defined exclusively for microclusters containing more than two samples. This domain constraint is naturally satisfied in the execution pipeline; because the macrocluster activation condition strictly filters out microclusters with $S^i_k \le 2$ prior to the membership evaluation, the denominator is mathematically guaranteed to be strictly positive.
+
+Overall and initial quality are shown in \cref{tab:typicality_ari_overall,tab:typicality_ari_fifth} to be slightly worsened by the correction of the typicality formulation. However, \cref{tab:typicality_ari_steadystate,tab:typicality_ari_diff} show an also slight improvement in steadystate quality, indicating that the correction of the typicality formulation has a positive effect on the long-term stability of the clustering process.
+
+\input{CorrectedModel/artifacts_typi/tables/ari_overall.tex}
+\input{CorrectedModel/artifacts_typi/tables/ari_fifth.tex}
+\input{CorrectedModel/artifacts_typi/tables/ari_steadystate.tex}
+\input{CorrectedModel/artifacts_typi/tables/ari_diff.tex}
+
+The impacts of the correction over the performance metrics are also negligible, as shown in \cref{tab:typicality_time_fit_cum_ms,tab:typicality_time_predict_cum_ms,tab:typicality_memory_max_bytes,tab:typicality_memory_steadystate_bytes,tab:typicality_mc_max,tab:typicality_mc_steadystate}.
+
+\input{CorrectedModel/artifacts_typi/tables/time_fit_cum_ms.tex}
+\input{CorrectedModel/artifacts_typi/tables/time_predict_cum_ms.tex}
+\input{CorrectedModel/artifacts_typi/tables/memory_max_bytes.tex}
+\input{CorrectedModel/artifacts_typi/tables/memory_steadystate_bytes.tex}
+\input{CorrectedModel/artifacts_typi/tables/mc_max.tex}
+\input{CorrectedModel/artifacts_typi/tables/mc_steadystate.tex}

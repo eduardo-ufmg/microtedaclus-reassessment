@@ -57,18 +57,18 @@ STAGE_DIMENSION_PENALTY = Stage(
 )
 
 STAGE_TYPICALITY_MATH = Stage(
-    stage_id="typicality_math",
+    stage_id="typicality",
     chapter="CorrectedModel",
-    model_tag="MicroTEDAClusCorrected_math",
+    model_tag="MicroTEDAClusCorrected_typi",
     models=[
         "MicroTEDAClus",
         "MicroTEDAClusCorrected_orderdepend",
         "MicroTEDAClusCorrected_dimpen",
-        "MicroTEDAClusCorrected_math",
+        "MicroTEDAClusCorrected_typi",
     ],
     control_model="MicroTEDAClusCorrected_dimpen",
-    artifact_dir="artifacts_math",
-    label_prefix="math_",
+    artifact_dir="artifacts_typi",
+    label_prefix="typicality_",
 )
 
 STAGE_DECAY = Stage(
@@ -79,10 +79,10 @@ STAGE_DECAY = Stage(
         "MicroTEDAClus",
         "MicroTEDAClusCorrected_orderdepend",
         "MicroTEDAClusCorrected_dimpen",
-        "MicroTEDAClusCorrected_math",
+        "MicroTEDAClusCorrected_typi",
         "MicroTEDAClusCorrected_decay",
     ],
-    control_model="MicroTEDAClusCorrected_math",
+    control_model="MicroTEDAClusCorrected_typi",
     artifact_dir="artifacts_decay",
     label_prefix="decay_",
 )
@@ -95,7 +95,7 @@ STAGE_MACROCLUSTER_ACTIVATION = Stage(
         "MicroTEDAClus",
         "MicroTEDAClusCorrected_orderdepend",
         "MicroTEDAClusCorrected_dimpen",
-        "MicroTEDAClusCorrected_math",
+        "MicroTEDAClusCorrected_typi",
         "MicroTEDAClusCorrected_decay",
         "MicroTEDAClusCorrected_macro",
     ],
@@ -112,7 +112,7 @@ STAGE_CORRECTED_FINAL = Stage(
         "MicroTEDAClus",
         "MicroTEDAClusCorrected_orderdepend",
         "MicroTEDAClusCorrected_dimpen",
-        "MicroTEDAClusCorrected_math",
+        "MicroTEDAClusCorrected_typi",
         "MicroTEDAClusCorrected_decay",
         "MicroTEDAClusCorrected_macro",
         "MicroTEDAClusCorrected_final",
@@ -179,7 +179,7 @@ MODEL_SHORT_HEADERS = {
     # Chapter 3 Corrected Models
     "MicroTEDAClusCorrected_orderdepend": r"\modelname{order-independent}",
     "MicroTEDAClusCorrected_dimpen": r"\modelname{no-dim-penalty}",
-    "MicroTEDAClusCorrected_math": r"\modelname{corr-typicality-math}",
+    "MicroTEDAClusCorrected_typi": r"\modelname{corr-typicality}",
     "MicroTEDAClusCorrected_decay": r"\modelname{decay}",
     "MicroTEDAClusCorrected_macro": r"\modelname{macrocluster-activation}",
     "MicroTEDAClusCorrected_final": r"\modelname{corrected-final}",
@@ -196,7 +196,7 @@ MODEL_COLORS = {
     "MicroTEDAClus": "xkcd:teal",
     "MicroTEDAClusCorrected_orderdepend": "xkcd:orange",
     "MicroTEDAClusCorrected_dimpen": "xkcd:light green",
-    "MicroTEDAClusCorrected_math": "xkcd:magenta",
+    "MicroTEDAClusCorrected_typi": "xkcd:magenta",
     "MicroTEDAClusCorrected_decay": "xkcd:yellow",
     "MicroTEDAClusCorrected_macro": "xkcd:sky blue",
     "MicroTEDAClusCorrected_final": "xkcd:grey",
@@ -308,14 +308,14 @@ def get_model_registry() -> dict[str, tuple[type, type]]:
         pass
 
     try:
-        from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected_math import (
-            MicroTEDAClusCorrectedMath,
-            MicroTEDAClusCorrectedMathParameterSearchSpace,
+        from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected_typi import (
+            MicroTEDAClusCorrectedTypi,
+            MicroTEDAClusCorrectedTypiParameterSearchSpace,
         )
 
-        registry["MicroTEDAClusCorrected_math"] = (
-            MicroTEDAClusCorrectedMath,
-            MicroTEDAClusCorrectedMathParameterSearchSpace,
+        registry["MicroTEDAClusCorrected_typi"] = (
+            MicroTEDAClusCorrectedTypi,
+            MicroTEDAClusCorrectedTypiParameterSearchSpace,
         )
     except ImportError:
         pass
