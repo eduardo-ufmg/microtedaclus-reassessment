@@ -161,3 +161,87 @@ The impacts of the correction over the performance metrics are also negligible, 
 \input{CorrectedModel/artifacts_typi/tables/memory_steadystate_bytes.tex}
 \input{CorrectedModel/artifacts_typi/tables/mc_max.tex}
 \input{CorrectedModel/artifacts_typi/tables/mc_steadystate.tex}
+
+\section{Inconsistent Decayment Logic}
+\label{sec:inconsistent_decayment_logic}
+
+While the original formulation in \cite{maia2020evolvclus} defined no temporal decay mechanism, the accompanying implementation incorporates an explicit fading factor $\rho = \frac{1}{\text{decay}}$ operating across two distinct routines (\cref{snippet:maia_implementation_prune_microclusters,snippet:maia_implementation_update_life}). This implemented mechanism diverges from standard literature formulations in two fundamental respects:
+
+\begin{enumerate}
+    \item \textbf{Heuristic Spatial Distance Ratio}: In \codename{update\_life}, whenever an incoming sample $x_k$ is evaluated against a microcluster $i$ with variance $\sigma_k^2 > 0$, its vitality $v_k^i$ is updated via an ad-hoc distance ratio:
+    \begin{equation}
+        v_k^i = v_{k-1}^i + \left(\frac{r_k^i - \lVert x_k - \mu_k^i \rVert}{r_k^i}\right) \rho
+        \label{eq:heuristic_distance_decay}
+    \end{equation}
+    where If the incoming point falls within the spatial radius, vitality is rewarded; otherwise, it is penalized proportionally to the distance deficit. This spatial ratio lacks theoretical derivation in both \MicroTEDAClus \cite{maia2020evolvclus} and the foundational TEDA \cite{angelov2014outside}.
+    \item \textbf{Coupling Pruning to Macrocluster Activation}: In \codename{prune\_micro\_clusters}, vitality is decremented by $\rho$ strictly if the microcluster is marked as inactive:
+    \begin{equation}
+        v_k^i = v_{k-1}^i - \rho \quad \text{if } \neg \text{active}_k^i
+        \label{eq:activation_coupled_pruning}
+    \end{equation}
+    and any microcluster satisfying $v_k^i < 0$ is pruned from memory.
+\end{enumerate}
+
+This logic directly contradicts the theoretical description provided in the doctoral thesis presenting the updated \MicroTEDAClus \cite{galindo2021lastmile}. While the text of \cite{galindo2021lastmile} specifies that temporal decay should be applied to microclusters that are \textit{not updated} by the current sample, the implemented pruning routine couples decay exclusively to macrocluster activation status. As formalized in \cref{sec:order_dependent_characteristics}, activation is governed by sample maturity and relative density. Consequently, in the reference implementation, active microclusters never experience temporal decay in \codename{prune\_micro\_clusters}, while inactive microclusters decay unconditionally regardless of whether an incoming sample is proximate.
+
+To restore methodological consistency with the conceptual description in \cite{galindo2021lastmile}, we first formulated a principled decay model. This formulation establishes three formal properties:
+
+\begin{enumerate}
+    \item \textbf{Outlier Inertia Decay}: Whenever an incoming sample $x_k$ is classified as an outlier by a microcluster $i$ according to the dynamic TEDA boundary, the microcluster vitality is decremented inversely proportional to its accumulated sample inertia $S_k^i$:
+    \begin{equation}
+        v_k^i = v_{k-1}^i - \frac{\rho}{S_k^i}, \quad \rho = \frac{1}{\text{decay}}
+        \label{eq:outlier_inertia_decay}
+    \end{equation}
+    The scaling factor $\frac{1}{S_k^i}$ reflects the statistical mass of the cluster, granting established units greater resilience against transient noise.
+    \item \textbf{Inlier Vitality Refresh}: Whenever an incoming sample is absorbed as an inlier, the microcluster vitality is refreshed to full capacity:
+    \begin{equation}
+        v_k^i = 1.0
+        \label{eq:inlier_vitality_refresh}
+    \end{equation}
+    \item \textbf{Decoupled Structural Pruning}: Pruning is entirely decoupled from the macrocluster graph and density activation. At each step, any microcluster whose vitality drops to zero is pruned immediately:
+    \begin{equation}
+        \text{Prune } i \iff v_k^i \le 0
+        \label{eq:decoupled_prune_rule}
+    \end{equation}
+\end{enumerate}
+
+Although the literature-derived \modelname{decay} formulation is theoretically elegant, preliminary experimental evaluation revealed two severe structural pathologies that rendered the model unviable in streaming environments:
+
+\begin{enumerate}
+    \item \textbf{The Immortality Problem}: Under \cref{eq:outlier_inertia_decay}, as a microcluster matures and accumulates samples, the per-outlier decay step $\Delta v_k^i = \frac{\rho}{S_k^i}$ asymptotically vanishes. For instance, for a mature unit with $S_k^i = 500$ and a typical hyperparameter $\text{decay} = 100$, each outlier presentation reduces vitality by only $\Delta v = \frac{0.01}{500} = 2 \times 10^{-5}$. To be pruned from memory, the unit would need to observe $50000$ consecutive outliers without absorbing a single inlier. In practice, mature microclusters become immortal, remaining in memory indefinitely even after the underlying data distribution has drifted completely away.
+    \item \textbf{Microcluster Explosion and Quadratic Slowdown}: Because obsolete and drifting microclusters were never reclaimed, the total microcluster count $|\mathbb{M}|$ accumulated monotonically. On complex benchmark datasets such as \ChameleonDSThree, microcluster counts in preliminary executions escalated from approximately $120$ units to over $4000$ units. Because macrocluster construction and boundary evaluation scale quadratically due to pairwise intersection checks, this structural accumulation induced a staggering $16\times$ computational slowdown, violating the real-time processing requirements of data streams.
+\end{enumerate}
+
+To resolve the immortality problem while preserving inertia-based resilience for nascent candidate units, we introduce a bounded decay formulation. In it, the inertia scaling factor is saturated at a strict upper threshold $S_{\max} = 10$:
+\begin{equation}
+    v_k^i = v_{k-1}^i - \frac{\rho}{\min(S_k^i, S_{\max})}, \quad \text{with } S_{\max} = 10
+    \label{eq:bounded_inertia_decay}
+\end{equation}
+
+For candidate microclusters undergoing initial parameter estimation, the penalty scales with $S_k^i$, providing an incubation window to aggregate local points. For mature units, the per-outlier penalty is strictly lower-bounded by $\frac{\rho}{10} = \frac{1}{10 \cdot \text{decay}}$. This mathematical guarantee ensures that any mature microcluster devoid of incoming inliers is definitively evicted after at most $10 \times \text{decay}$ consecutive outlier presentations, precluding the immortality pathology.
+
+Furthermore, we refined the hyperparameter search space. In the unconstrained search space, Optuna could select extreme values that caused either aggressive premature cluster destruction or effectively disabled pruning.
+
+\Cref{tab:decay_ari_overall,tab:decay_ari_fifth,tab:decay_ari_steadystate,tab:decay_ari_diff} present the clustering quality metrics, while \cref{tab:decay_time_fit_cum_ms,tab:decay_time_predict_cum_ms,tab:decay_memory_max_bytes,tab:decay_memory_steadystate_bytes,tab:decay_mc_max,tab:decay_mc_steadystate} report the computational performance and structural footprint.
+
+\input{CorrectedModel/artifacts_decay/tables/ari_overall.tex}
+\input{CorrectedModel/artifacts_decay/tables/ari_fifth.tex}
+\input{CorrectedModel/artifacts_decay/tables/ari_steadystate.tex}
+\input{CorrectedModel/artifacts_decay/tables/ari_diff.tex}
+
+The empirical evaluation reveals three decisive findings:
+
+\begin{enumerate}
+    \item \textbf{Zero Quality Gain Across Seven Datasets}: Across seven of the eight benchmark datasets, neither \modelname{decay} nor \modelname{bounded-decay} achieves any statistically significant improvement in Overall ARI compared to \modelname{corr-typicality}.
+    \item \textbf{Catastrophic Quality Collapse on Cassini}: On \Cassini, the decay models exhibit severe performance degradation. In Overall ARI (\cref{tab:decay_ari_overall}), \modelname{bounded-decay} drops significantly from the control's median. An inspection of degenerate batches reveals that $\mathbf{100\%}$ of steady-state batches for \modelname{bounded-decay} on \Cassini yield an ARI of exactly $0.000$, whereas the control model produces $0\%$.
+    \item \textbf{Persistent Structural and Computational Overhead}: Despite capping inertia at $S_{\max} = 10$, \modelname{bounded-decay} fails to eliminate structural bloat. In \ChameleonDSThree, steady-state microcluster counts increase drasticaly.
+\end{enumerate}
+
+\input{CorrectedModel/artifacts_decay/tables/time_fit_cum_ms.tex}
+\input{CorrectedModel/artifacts_decay/tables/time_predict_cum_ms.tex}
+\input{CorrectedModel/artifacts_decay/tables/memory_max_bytes.tex}
+\input{CorrectedModel/artifacts_decay/tables/memory_steadystate_bytes.tex}
+\input{CorrectedModel/artifacts_decay/tables/mc_max.tex}
+\input{CorrectedModel/artifacts_decay/tables/mc_steadystate.tex}
+
+We therefore conclude that the activation-coupled pruning mechanism found in the reference implementation is not an accidental heuristic defect, but an architectural solution to the identified failures. Replacing it with textbook outlier decay fundamentally breaks multi-cluster streaming clustering. Consequently, the density-activation pruning mechanism is \textbf{retained} as the definitive model architecture, properly formalized and preserved across all subsequent evolutions of \MicroTEDAClus.

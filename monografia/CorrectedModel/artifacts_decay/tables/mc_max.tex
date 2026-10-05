@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Maximum Microcluster Count.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} & \modelname{corr-typicality} & \modelname{decay} & \modelname{bounded-decay} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 36 (15, 130) & 60 (41, 84) & 58 (36, 75) & 68 (38, 184) & 72 (58, 220) & 78 (61, 229) \\
+\datasetname{Stream Benchmark 2} & 44 (14, 62) & 42 (28, 82) & \textbf{42 (24, 72)} & \textbf{29 (17, 48)} & 36 (20, 143) & \textcolor{red}{142 (21, 197)} \\
+\datasetname{Random RBF Generator with Events} & 228 (57, 432) & 131 (60, 396) & 134 (64, 396) & 63 (47, 149) & \textcolor{red}{137 (109, 229)} & \textcolor{red}{198 (107, 370)} \\
+\datasetname{Cassini} & \textbf{46 (40, 56)} & \textbf{40 (27, 46)} & \textbf{39 (26, 46)} & \textbf{42 (26, 56)} & \textcolor{red}{148 (124, 194)} & \textcolor{red}{176 (137, 252)} \\
+\datasetname{Chameleon DS3} & \textbf{128 (124, 284)} & \textbf{124 (119, 226)} & \textbf{122 (118, 226)} & \textbf{124 (118, 228)} & \textcolor{red}{509 (366, 778)} & \textcolor{red}{422 (265, 558)} \\
+\datasetname{Chameleon DS4} & 124 (116, 224) & \textbf{113 (106, 221)} & \textbf{113 (106, 221)} & \textbf{110 (105, 125)} & \textcolor{red}{246 (178, 333)} & \textcolor{red}{241 (204, 293)} \\
+\datasetname{SCL-32} & \textbf{35 (17, 79)} & \textbf{28 (20, 60)} & 94 (71, 213) & \textcolor{red}{162 (78, 362)} & 50 (40, 88) & 100 (75, 144) \\
+\datasetname{SCL-64} & \textbf{32 (26, 89)} & \textbf{26 (25, 48)} & \textcolor{red}{125 (74, 351)} & \textcolor{red}{110 (78, 231)} & \textbf{42 (36, 74)} & \textbf{65 (44, 93)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:decay_mc_max}
+\end{table}

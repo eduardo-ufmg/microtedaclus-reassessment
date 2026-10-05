@@ -81,6 +81,7 @@ STAGE_DECAY = Stage(
         "MicroTEDAClusCorrected_dimpen",
         "MicroTEDAClusCorrected_typi",
         "MicroTEDAClusCorrected_decay",
+        "MicroTEDAClusCorrected_decay_bounded",
     ],
     control_model="MicroTEDAClusCorrected_typi",
     artifact_dir="artifacts_decay",
@@ -180,6 +181,7 @@ MODEL_SHORT_HEADERS = {
     "MicroTEDAClusCorrected_orderdepend": r"\modelname{order-independent}",
     "MicroTEDAClusCorrected_dimpen": r"\modelname{no-dim-penalty}",
     "MicroTEDAClusCorrected_typi": r"\modelname{corr-typicality}",
+    "MicroTEDAClusCorrected_decay_bounded": r"\modelname{bounded-decay}",
     "MicroTEDAClusCorrected_decay": r"\modelname{decay}",
     "MicroTEDAClusCorrected_macro": r"\modelname{macrocluster-activation}",
     "MicroTEDAClusCorrected_final": r"\modelname{corrected-final}",
@@ -197,6 +199,7 @@ MODEL_COLORS = {
     "MicroTEDAClusCorrected_orderdepend": "xkcd:orange",
     "MicroTEDAClusCorrected_dimpen": "xkcd:light green",
     "MicroTEDAClusCorrected_typi": "xkcd:magenta",
+    "MicroTEDAClusCorrected_decay_bounded": "xkcd:brick red",
     "MicroTEDAClusCorrected_decay": "xkcd:yellow",
     "MicroTEDAClusCorrected_macro": "xkcd:sky blue",
     "MicroTEDAClusCorrected_final": "xkcd:grey",
@@ -316,6 +319,19 @@ def get_model_registry() -> dict[str, tuple[type, type]]:
         registry["MicroTEDAClusCorrected_typi"] = (
             MicroTEDAClusCorrectedTypi,
             MicroTEDAClusCorrectedTypiParameterSearchSpace,
+        )
+    except ImportError:
+        pass
+
+    try:
+        from models.MicroTEDAClusCorrected.MicroTEDAClusCorrected_decay_bounded import (
+            MicroTEDAClusCorrectedDecayBounded,
+            MicroTEDAClusCorrectedDecayBoundedParameterSearchSpace,
+        )
+
+        registry["MicroTEDAClusCorrected_decay_bounded"] = (
+            MicroTEDAClusCorrectedDecayBounded,
+            MicroTEDAClusCorrectedDecayBoundedParameterSearchSpace,
         )
     except ImportError:
         pass

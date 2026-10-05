@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Cumulative Prediction Time [ms].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} & \modelname{corr-typicality} & \modelname{decay} & \modelname{bounded-decay} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 41.9 (19.7, 149.6) & \textbf{73.3 (41.9, 106.3)} & \textbf{71.5 (39.9, 93.6)} & 96.0 (48.6, 280.0) & 126.0 (83.9, 533.1) & 119.6 (85.3, 364.9) \\
+\datasetname{Stream Benchmark 2} & \textbf{48.6 (16.4, 60.9)} & \textbf{46.4 (29.4, 98.0)} & \textbf{44.8 (22.2, 79.2)} & \textbf{34.0 (21.8, 75.7)} & 81.2 (44.1, 247.2) & \textcolor{red}{207.5 (41.5, 326.4)} \\
+\datasetname{Random RBF Generator with Events} & 732.8 (163.3, 2928.0) & 614.9 (182.8, 2309.3) & 650.2 (181.5, 2315.5) & \textbf{340.1 (150.6, 613.2)} & \textcolor{red}{856.3 (424.9, 1458.8)} & \textcolor{red}{954.0 (562.2, 2577.3)} \\
+\datasetname{Cassini} & 61.8 (53.3, 68.8) & \textbf{44.8 (34.3, 55.8)} & \textbf{44.5 (33.1, 53.9)} & \textbf{54.1 (41.6, 66.1)} & \textcolor{red}{293.7 (191.0, 375.8)} & \textcolor{red}{288.5 (215.4, 376.5)} \\
+\datasetname{Chameleon DS3} & \textcolor{red}{425.6 (384.9, 572.0)} & \textbf{365.4 (343.8, 552.5)} & \textbf{383.8 (318.2, 557.0)} & \textcolor{red}{429.7 (403.5, 802.4)} & 253.0 (147.3, 1855.5) & \textbf{158.1 (104.5, 339.1)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{279.8 (190.7, 376.5)} & \textcolor{red}{258.8 (163.2, 356.6)} & \textcolor{red}{267.9 (159.3, 358.3)} & 216.9 (115.4, 299.3) & 257.6 (115.1, 601.7) & \textbf{152.6 (70.9, 305.1)} \\
+\datasetname{SCL-32} & \textbf{46.8 (36.3, 88.7)} & \textbf{56.8 (38.6, 131.2)} & \textbf{38.7 (28.9, 105.9)} & 89.1 (38.7, 196.2) & 109.5 (92.3, 188.9) & \textcolor{red}{227.8 (131.3, 351.7)} \\
+\datasetname{SCL-64} & \textbf{58.2 (47.4, 83.9)} & \textbf{51.9 (46.4, 74.4)} & \textbf{41.7 (26.5, 117.9)} & \textbf{51.2 (36.0, 94.5)} & \textbf{94.7 (80.5, 148.0)} & 139.8 (97.1, 205.1) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:decay_time_predict_cum_ms}
+\end{table}

@@ -1,0 +1,3 @@
+dataset,model,run,param_name,param_value
+cassini,MicroTEDAClusCorrected_decay_bounded,2,variance_limit,0.010914221169428731
+cassini,MicroTEDAClusCorrected_decay_bounded,2,decay,114.0

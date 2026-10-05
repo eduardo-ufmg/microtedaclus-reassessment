@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Steady-State Memory Footprint [B].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} & \modelname{corr-typicality} & \modelname{decay} & \modelname{bounded-decay} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textbf{67135 (17499, 322840)} & \textbf{188480 (115516, 515336)} & 187582 (110631, 497270) & 259913 (110457, 484012) & \textcolor{red}{406548 (226277, 711927)} & \textcolor{red}{399916 (223425, 601423)} \\
+\datasetname{Stream Benchmark 2} & \textbf{90504 (11791, 136409)} & \textbf{120805 (35672, 210991)} & \textbf{119442 (30617, 166601)} & \textbf{35457 (20479, 129128)} & \textcolor{red}{115470 (49830, 734820)} & \textcolor{red}{633783 (56417, 969982)} \\
+\datasetname{Random RBF Generator with Events} & 307390 (188323, 1218522) & \textcolor{red}{557951 (242417, 1366732)} & \textcolor{red}{568623 (258952, 1366732)} & \textbf{245424 (191611, 498484)} & \textcolor{red}{762017 (376589, 1537119)} & \textcolor{red}{1169430 (541276, 1644105)} \\
+\datasetname{Cassini} & \textbf{123210 (113289, 131625)} & \textbf{102881 (49032, 118929)} & \textbf{101585 (49032, 115658)} & \textbf{105916 (50651, 136331)} & \textcolor{red}{611803 (439319, 727538)} & \textcolor{red}{614843 (477990, 787092)} \\
+\datasetname{Chameleon DS3} & \textbf{317525 (314250, 489585)} & \textbf{307577 (305326, 431567)} & \textbf{309860 (303852, 431567)} & \textbf{311769 (306896, 433518)} & \textcolor{red}{689002 (557817, 1083996)} & \textcolor{red}{615594 (431589, 733147)} \\
+\datasetname{Chameleon DS4} & 280885 (266411, 400677) & 264512 (256289, 395176) & 263681 (256289, 395176) & \textbf{264691 (250981, 283617)} & 386190 (316152, 485527) & 388916 (347373, 424444) \\
+\datasetname{SCL-32} & \textbf{19476 (14216, 704242)} & \textbf{19596 (14637, 107708)} & 1200718 (1161079, 1366192) & 1225292 (1164980, 1614484) & 1180260 (899009, 1428537) & \textcolor{red}{1464019 (1296105, 1820957)} \\
+\datasetname{SCL-64} & \textbf{19579 (15685, 2292394)} & \textbf{18014 (15832, 100725)} & \textcolor{red}{2337305 (2308103, 2776593)} & \textcolor{red}{2332466 (2293946, 2553131)} & 2335592 (2017723, 2501526) & \textcolor{red}{2432882 (2352241, 2541449)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:decay_memory_steadystate_bytes}
+\end{table}

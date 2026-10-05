@@ -1,0 +1,3 @@
+dataset,model,run,param_name,param_value
+chameleon_ds3,MicroTEDAClusCorrected_decay_bounded,2,variance_limit,58.9942114171691
+chameleon_ds3,MicroTEDAClusCorrected_decay_bounded,2,decay,7731.0
