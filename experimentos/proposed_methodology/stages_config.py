@@ -97,10 +97,9 @@ STAGE_MACROCLUSTER_ACTIVATION = Stage(
         "MicroTEDAClusCorrected_orderdepend",
         "MicroTEDAClusCorrected_dimpen",
         "MicroTEDAClusCorrected_typi",
-        "MicroTEDAClusCorrected_decay",
         "MicroTEDAClusCorrected_macro",
     ],
-    control_model="MicroTEDAClusCorrected_decay",
+    control_model="MicroTEDAClusCorrected_typi",
     artifact_dir="artifacts_macrocluster_activation",
     label_prefix="macro_",
 )
@@ -183,7 +182,7 @@ MODEL_SHORT_HEADERS = {
     "MicroTEDAClusCorrected_typi": r"\modelname{corr-typicality}",
     "MicroTEDAClusCorrected_decay_bounded": r"\modelname{bounded-decay}",
     "MicroTEDAClusCorrected_decay": r"\modelname{decay}",
-    "MicroTEDAClusCorrected_macro": r"\modelname{macrocluster-activation}",
+    "MicroTEDAClusCorrected_macro": r"\modelname{single-graph}",
     "MicroTEDAClusCorrected_final": r"\modelname{corrected-final}",
     # Chapter 4 Improved Models
     "MicroTEDAClusImproved_base": r"\modelname{base-improved}",

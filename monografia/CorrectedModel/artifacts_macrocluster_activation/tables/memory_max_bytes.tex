@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Maximum Memory Footprint [B].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c }
+\toprule
+Dataset & \modelname{baseline} & \modelname{order-independent} & \modelname{no-dim-penalty} & \modelname{corr-typicality} & \modelname{single-graph} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 348056 (134288, 354712) & 206112 (165120, 415096) & 206112 (165120, 263080) & 427008 (293688, 558576) & 354400 (278224, 425776) \\
+\datasetname{Stream Benchmark 2} & 33472 (24280, 127336) & 132048 (131760, 135584) & 128832 (84528, 135584) & 80384 (29120, 128536) & 107272 (87512, 109208) \\
+\datasetname{Random RBF Generator with Events} & 255416 (236816, 1290152) & 829872 (738192, 1336728) & 1291720 (829872, 1336728) & 277840 (214184, 563928) & 1139288 (1126032, 1187472) \\
+\datasetname{Cassini} & 155104 (147872, 165536) & 122536 (121304, 124264) & 122536 (121304, 124264) & 186024 (142136, 192320) & 554928 (311696, 1123224) \\
+\datasetname{Chameleon DS3} & 323120 (321840, 325736) & 315376 (314432, 443040) & 318600 (317376, 443040) & 318600 (317760, 443040) & 330480 (293832, 820728) \\
+\datasetname{Chameleon DS4} & 274864 (272448, 407896) & 268488 (257792, 268744) & 268488 (257792, 268744) & 297880 (253608, 301704) & 357136 (308392, 370912) \\
+\datasetname{SCL-32} & 1278960 (1278856, 1281856) & 1179352 (1174288, 1299048) & 1511600 (1267264, 1612440) & 1529328 (1511600, 1728760) & 1601504 (1440552, 1757408) \\
+\datasetname{SCL-64} & 2298384 (2290432, 2301760) & 2303976 (2296488, 2332936) & 2533496 (2423784, 2598728) & 2493072 (2337040, 2593984) & 2772688 (2713880, 2967016) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:macro_memory_max_bytes}
+\end{table}
