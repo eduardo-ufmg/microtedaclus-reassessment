@@ -15,6 +15,10 @@ from models.MicroTEDAClus.MicroTEDAClus import (
     MicroTEDAClus,
     MicroTEDAClusParameterSearchSpace,
 )
+from models.MicroTEDAClusPlus.MicroTEDAClusPlus import (
+    MicroTEDAClusPlus,
+    MicroTEDAClusPlusParameterSearchSpace,
+)
 from models.StreamKM.StreamKM import StreamKM, StreamKMParameterSearchSpace
 from models.TEDACloud.TEDACloud import TEDACloud, TEDACloudParameterSearchSpace
 from streams import get_dataset, r_session
@@ -50,6 +54,7 @@ MODEL_MAP = {
     "TEDACloud": (TEDACloud, TEDACloudParameterSearchSpace),
     "AutoCloud": (AutoCloud, AutoCloudParameterSearchSpace),
     "StreamKM": (StreamKM, StreamKMParameterSearchSpace),
+    "MicroTEDAClusPlus": (MicroTEDAClusPlus, MicroTEDAClusPlusParameterSearchSpace),
 }
 
 

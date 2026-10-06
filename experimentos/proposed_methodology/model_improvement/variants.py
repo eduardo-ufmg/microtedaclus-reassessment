@@ -253,10 +253,10 @@ _add(
 # Combined improvements: every combination of the four changes that helped
 # ----------------------------------------------------------------------------
 COMPONENTS = {
-    "single": ("single-assign", {"single_assign": True}, {}),
-    "cap": ("variance-cap", {"cap_variance": True}, {}),
-    "noise": ("noise-label", {}, NOISE_SPACE),
-    "relative": ("relative-limit", {"relative_limit": True}, RELATIVE_SPACE),
+    "single": ("single", {"single_assign": True}, {}),
+    "cap": ("cap", {"cap_variance": True}, {}),
+    "noise": ("noise", {}, NOISE_SPACE),
+    "relative": ("relative", {"relative_limit": True}, RELATIVE_SPACE),
 }
 
 
@@ -329,6 +329,23 @@ _add(
     {**IMPROVED, "link_mode": "bhattacharyya"},
     IMPROVED_SPACE,
     implementation="covariance",
+)
+
+
+# ----------------------------------------------------------------------------
+# The final model (improved + no-penalty) and the densities revisited on it
+# ----------------------------------------------------------------------------
+FINAL = {**IMPROVED, "dim_penalty": False}
+
+_add(
+    "fd_peak", "final + peak-density", "", {**FINAL, "density": "peak"}, IMPROVED_SPACE
+)
+_add(
+    "fd_volume",
+    "final + volume-density",
+    "",
+    {**FINAL, "density": "volume"},
+    IMPROVED_SPACE,
 )
 
 

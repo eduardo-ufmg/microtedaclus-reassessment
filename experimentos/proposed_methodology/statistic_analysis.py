@@ -103,17 +103,20 @@ def process_metric(
             best_model = medians.idxmin()
             worst_model = medians.idxmax()
 
-        is_omnibus_sig = False
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            try:
-                stat, p_friedman = friedmanchisquare(
-                    *[df_disc[m].values for m in valid_models]
-                )
-                if p_friedman < ALPHA:
-                    is_omnibus_sig = True
-            except ValueError:
-                pass
+        # The Friedman test needs at least three models. With two, the pairwise
+        # test below is the whole comparison, so no omnibus test precedes it.
+        is_omnibus_sig = len(valid_models) == 2
+        if not is_omnibus_sig:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                try:
+                    stat, p_friedman = friedmanchisquare(
+                        *[df_disc[m].values for m in valid_models]
+                    )
+                    if p_friedman < ALPHA:
+                        is_omnibus_sig = True
+                except ValueError:
+                    pass
 
         best_tier = set([best_model])
         worst_tier = set([worst_model])

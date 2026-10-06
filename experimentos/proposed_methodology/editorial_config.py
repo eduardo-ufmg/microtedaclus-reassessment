@@ -10,7 +10,18 @@ MODEL_ORDER = [
     "TEDACloud",
     "AutoCloud",
     "StreamKM",
+    "MicroTEDAClusPlus",
 ]
+
+# Models of the original evaluation; MicroTEDAClusPlus is the model proposed by the thesis.
+BENCHMARK_MODELS = MODEL_ORDER[:-1]
+
+MODEL_DISPLAY_NAMES = {"MicroTEDAClusPlus": "MicroTEDAClus+"}
+
+
+def model_display_name(model_id: str) -> str:
+    """Return the name of a model as it is written in tables and plots."""
+    return MODEL_DISPLAY_NAMES.get(model_id, model_id)
 
 
 @dataclass(frozen=True)
@@ -57,9 +68,20 @@ def dataset_display_name(dataset_id: str) -> str:
 
 
 SUBSET_MODEL_NAMES = {
-    "all": set(MODEL_ORDER),
+    "all": set(BENCHMARK_MODELS),
     "original-paper": {"MicroTEDAClus", "DenStream", "CluStream", "StreamKM"},
     "teda-micro-based": {"MicroTEDAClus", "AutoCloud", "CEDAS", "TEDACloud"},
+    "plus-vs-baseline": {"MicroTEDAClus", "MicroTEDAClusPlus"},
+    "complete": set(MODEL_ORDER),
+}
+
+# Thesis chapter whose artifacts directory receives the tables and plots of each subset.
+SUBSET_CHAPTERS = {
+    "all": "MethodologyReassessment",
+    "original-paper": "MethodologyReassessment",
+    "teda-micro-based": "MethodologyReassessment",
+    "plus-vs-baseline": "ModelImprovement",
+    "complete": "Results",
 }
 
 SUBSETS = {
@@ -91,6 +113,7 @@ MODEL_COLORS = dict(
             "xkcd:brown",
             "xkcd:red",
             "xkcd:lightblue",
+            "xkcd:orange",
         ],
     )
 )

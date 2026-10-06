@@ -23,6 +23,14 @@ VALIDATION_RUNS = range(126, 220)
 # Models accepted at the end of each stage
 CORRECTED = "c_nearest"
 IMPROVED = "ic_single_noise_relative"
+FINAL = "ir_nopen"
+
+STAGE_NAMES = {
+    "vectorized": "vectorized",
+    CORRECTED: "corrected",
+    IMPROVED: "improved",
+    FINAL: "final",
+}
 
 
 @dataclass(frozen=True)
@@ -141,6 +149,19 @@ EXPERIMENTS = [
         stage_names={CORRECTED: "corrected"},
     ),
     Experiment(
+        "improvements_selection",
+        "Direct comparisons between combinations",
+        "Is the combination with the most gains improved upon by another one?",
+        (
+            ("ic_single_noise_relative", "ic_single_relative"),
+            ("ic_single_noise_relative", "ic_noise_relative"),
+            ("ic_single_noise_relative", "ic_cap_noise_relative"),
+            ("ic_cap_noise_relative", "ic_noise_relative"),
+            ("ic_single_cap_noise_relative", "ic_single_noise_relative"),
+            ("ic_single_cap_noise_relative", "ic_cap_noise_relative"),
+        ),
+    ),
+    Experiment(
         "refinements",
         "Refinements of the improved model",
         "Which further change improves the improved model?",
@@ -151,8 +172,28 @@ EXPERIMENTS = [
         "geometry",
         "Covariance of the microclusters",
         "Does a full covariance improve the isotropic model?",
-        _against("ir_nopen", "cov_directional", "cov_bhattacharyya"),
-        stage_names={IMPROVED: "improved"},
+        _against(FINAL, "cov_directional", "cov_bhattacharyya"),
+        stage_names={FINAL: "final"},
+    ),
+    Experiment(
+        "density_revisited",
+        "Order-independent densities in the final model",
+        "Do the order-independent densities, rejected as corrections, cost quality in the final model?",
+        _against(FINAL, "fd_peak", "fd_volume"),
+        stage_names={FINAL: "final"},
+    ),
+    Experiment(
+        "validation",
+        "Validation on held-out runs",
+        "Do the accepted models hold on runs that did not guide any choice?",
+        (
+            (CORRECTED, "vectorized"),
+            (IMPROVED, CORRECTED),
+            (FINAL, IMPROVED),
+            (FINAL, "vectorized"),
+        ),
+        runs=VALIDATION_RUNS,
+        stage_names=STAGE_NAMES,
     ),
 ]
 

@@ -10,13 +10,13 @@ from editorial_config import (
     DATASET_SPECS,
     MODEL_COLORS,
     MODEL_ORDER,
+    SUBSET_CHAPTERS,
     SUBSETS,
 )
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
 THESIS_DIR = os.path.join(REPOSITORY_ROOT, "monografia")
-ARTIFACT_DIR = os.path.join(THESIS_DIR, "MethodologyReassessment", "artifacts")
 
 EXPECTED_SUBSETS = set(SUBSETS)
 EXPECTED_TABLES = {
@@ -55,7 +55,9 @@ def validate_configuration() -> None:
 
 def validate_generated_tables() -> None:
     for subset_name in EXPECTED_SUBSETS:
-        table_dir = os.path.join(ARTIFACT_DIR, subset_name, "tables")
+        table_dir = os.path.join(
+            THESIS_DIR, SUBSET_CHAPTERS[subset_name], "artifacts", subset_name, "tables"
+        )
         if not os.path.isdir(table_dir):
             fail(f"missing generated table directory: {table_dir}")
 

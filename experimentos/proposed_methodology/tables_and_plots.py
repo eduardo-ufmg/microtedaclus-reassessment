@@ -7,9 +7,11 @@ import matplotlib.pyplot as plt
 from editorial_config import (
     DATASET_ORDER,
     MODEL_COLORS,
+    SUBSET_CHAPTERS,
     SUBSETS,
     dataset_display_name,
     effective_models,
+    model_display_name,
 )
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -18,9 +20,15 @@ REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
 DIR_METRICS_NON_SCL = os.path.join(SCRIPT_DIR, "metrics", "non_scalability")
 DIR_METRICS_SCL = os.path.join(SCRIPT_DIR, "metrics", "scalability")
 DIR_STATS_BASE = os.path.join(SCRIPT_DIR, "statistical_analysis")
-DIR_OUT_BASE = os.path.join(
-    REPOSITORY_ROOT, "monografia", "MethodologyReassessment", "artifacts"
-)
+
+
+def subset_output_dir(subset_name: str) -> str:
+    """Artifacts directory of the thesis chapter that presents a subset."""
+    chapter = SUBSET_CHAPTERS[subset_name]
+    return os.path.join(
+        REPOSITORY_ROOT, "monografia", chapter, "artifacts", subset_name
+    )
+
 
 COLORS = MODEL_COLORS
 
@@ -57,7 +65,7 @@ def format_latex_cell(stat_cell: str) -> str:
 
 
 def format_model_name(model: str) -> str:
-    return f"\\modelname{{{model}}}"
+    return f"\\modelname{{{model_display_name(model)}}}"
 
 
 def format_dataset_name(dataset: str) -> str:
@@ -161,7 +169,7 @@ def plot_scalability(subset_name: str, subset_models: list, out_dir: str):
                 ax.plot(
                     df_m["samples"],
                     med,
-                    label=model,
+                    label=model_display_name(model),
                     color=COLORS[model],
                     linewidth=1.5,
                 )
@@ -277,7 +285,7 @@ def plot_scalability(subset_name: str, subset_models: list, out_dir: str):
             ax.plot(
                 df_m["dim"],
                 med,
-                label=model,
+                label=model_display_name(model),
                 color=COLORS[model],
                 linewidth=1.5,
             )
@@ -332,7 +340,11 @@ def plot_internal_inspection(subset_name: str, subset_models: list, out_dir: str
                 q3 = df_m[f"{metric}_q3"].values
 
                 ax.plot(
-                    df_m["batch"], med, label=model, color=COLORS[model], linewidth=1.5
+                    df_m["batch"],
+                    med,
+                    label=model_display_name(model),
+                    color=COLORS[model],
+                    linewidth=1.5,
                 )
                 ax.fill_between(df_m["batch"], q1, q3, color=COLORS[model], alpha=0.15)
 
@@ -354,11 +366,10 @@ def plot_internal_inspection(subset_name: str, subset_models: list, out_dir: str
 
 def main():
     for subset_name, subset_models in SUBSETS.items():
-        dir_tables = os.path.join(DIR_OUT_BASE, subset_name, "tables")
-        dir_plots_scl = os.path.join(DIR_OUT_BASE, subset_name, "plots", "scalability")
-        dir_plots_internal = os.path.join(
-            DIR_OUT_BASE, subset_name, "plots", "internal"
-        )
+        dir_out = subset_output_dir(subset_name)
+        dir_tables = os.path.join(dir_out, "tables")
+        dir_plots_scl = os.path.join(dir_out, "plots", "scalability")
+        dir_plots_internal = os.path.join(dir_out, "plots", "internal")
 
         for d in [dir_tables, dir_plots_scl, dir_plots_internal]:
             os.makedirs(d, exist_ok=True)
