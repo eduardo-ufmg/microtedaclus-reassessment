@@ -72,15 +72,17 @@ EXPERIMENTS = [
     Experiment(
         "corrections_combined",
         "Combined corrections",
-        "Which combination of corrections can replace the vectorized model?",
-        _against(
-            "vectorized",
-            "corrected",
-            "cc_corrected_mature",
-            "cc_nearest_nopen",
-            "cc_corrected_nopen",
-            "cc_corrected_mature_nopen",
-            "cc_nearest_nopen_wide",
+        "Does adding another correction improve the model with the nearest membership?",
+        (
+            *_against(
+                "c_nearest",
+                "cc_nearest_peak",
+                "cc_nearest_peak_mature",
+                "cc_nearest_nopen",
+                "cc_nearest_peak_nopen",
+                "cc_nearest_peak_mature_nopen",
+            ),
+            ("cc_nearest_nopen_wide", "cc_nearest_nopen"),
         ),
     ),
     Experiment(
@@ -88,7 +90,7 @@ EXPERIMENTS = [
         "Improvements, one at a time",
         "Which single change improves the corrected model?",
         _against(
-            "corrected",
+            "c_nearest",
             "i_cap",
             "i_soft",
             "i_noact",
@@ -107,63 +109,7 @@ EXPERIMENTS = [
         "m_function",
         "Reparameterizations of the m function",
         "Does a tunable m function improve the corrected model?",
-        _against("corrected", "m_reparam", "m_constant", "m_asymptote"),
-    ),
-    Experiment(
-        "improvements_combined",
-        "Combined improvements",
-        "Which combination of the helpful changes improves the corrected model without regression?",
-        _against(
-            "corrected",
-            "improved",
-            "ic_improved_single",
-            "ic_improved_recency",
-            "ic_improved_recency_single",
-            "ic_improved_cap",
-            "ic_noise_single",
-            "ic_noise_recency",
-        ),
-    ),
-    Experiment(
-        "geometry",
-        "Geometry of the microclusters",
-        "Can the dimensionality penalty be removed, and does a full covariance help?",
-        (
-            ("ic_improved_nopen", "improved"),
-            ("cov_directional", "ic_improved_nopen"),
-            ("cov_bhattacharyya", "ic_improved_nopen"),
-        ),
-    ),
-    Experiment(
-        "improvements_refined",
-        "Refinements of the improved model",
-        "Which further change improves the improved model?",
-        _against(
-            "improved",
-            "ic_improved_labels",
-            "ic_improved_cap",
-            "ic_improved_cap_recency",
-            "ic_improved_cap_forget",
-            "ic_improved_cap_labels",
-        ),
-    ),
-    Experiment(
-        "final_candidates",
-        "Final candidates",
-        "Which combination of the refinements becomes the final model?",
-        _against("improved", "final_nocap", "final", "final_forget"),
-    ),
-    Experiment(
-        "validation",
-        "Validation on held-out runs",
-        "Do the accepted steps hold on runs that did not guide any choice?",
-        (
-            ("corrected", "vectorized"),
-            ("improved", "corrected"),
-            ("final", "improved"),
-            ("final", "vectorized"),
-        ),
-        runs=VALIDATION_RUNS,
+        _against("c_nearest", "m_reparam", "m_constant", "m_asymptote"),
     ),
 ]
 

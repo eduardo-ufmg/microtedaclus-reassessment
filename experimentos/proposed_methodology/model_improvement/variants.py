@@ -105,30 +105,30 @@ _add(
 )
 
 # ----------------------------------------------------------------------------
-# Combined corrections
+# Combined corrections, on top of the single correction that improved the model
 # ----------------------------------------------------------------------------
 NEAREST = {"membership": "nearest"}
-CORRECTED = {**NEAREST, "density": "peak"}
+NEAREST_PEAK = {**NEAREST, "density": "peak"}
 
-_add("corrected", "corrected", "nearest + peak-density", CORRECTED)
+_add("cc_nearest_peak", "nearest + peak-density", "", NEAREST_PEAK)
 _add(
-    "cc_corrected_mature",
-    "corrected + mature-mean",
+    "cc_nearest_peak_mature",
+    "nearest + peak-density + mature-mean",
     "",
-    {**CORRECTED, "activation_scope": "mature"},
+    {**NEAREST_PEAK, "activation_scope": "mature"},
 )
 _add("cc_nearest_nopen", "nearest + no-penalty", "", {**NEAREST, "dim_penalty": False})
 _add(
-    "cc_corrected_nopen",
-    "corrected + no-penalty",
+    "cc_nearest_peak_nopen",
+    "nearest + peak-density + no-penalty",
     "",
-    {**CORRECTED, "dim_penalty": False},
+    {**NEAREST_PEAK, "dim_penalty": False},
 )
 _add(
-    "cc_corrected_mature_nopen",
-    "corrected + mature-mean + no-penalty",
+    "cc_nearest_peak_mature_nopen",
+    "nearest + peak-density + mature-mean + no-penalty",
     "",
-    {**CORRECTED, "activation_scope": "mature", "dim_penalty": False},
+    {**NEAREST_PEAK, "activation_scope": "mature", "dim_penalty": False},
 )
 _add(
     "cc_nearest_nopen_wide",
@@ -137,6 +137,9 @@ _add(
     {**NEAREST, "dim_penalty": False},
     {"variance_limit": ("float", 0.0001, 10000.0, True)},
 )
+
+# The corrected model is the vectorized model with the nearest membership (c_nearest).
+CORRECTED = NEAREST
 
 # ----------------------------------------------------------------------------
 # Improvements on the corrected model, one at a time
@@ -242,142 +245,6 @@ _add(
     r"original sigmoid with its asymptote tuned in $[1.05, 10]$",
     CORRECTED,
     {"m_up": ("float", 1.05, 10.0, False)},
-)
-
-# ----------------------------------------------------------------------------
-# Combined improvements
-# ----------------------------------------------------------------------------
-IMPROVED = {**CORRECTED, "relative_limit": True}
-IMPROVED_SPACE = {**RELATIVE_SPACE, **NOISE_SPACE}
-
-_add(
-    "improved",
-    "improved",
-    "corrected + noise-label + relative-limit",
-    IMPROVED,
-    IMPROVED_SPACE,
-)
-_add(
-    "ic_improved_single",
-    "improved + single-assign",
-    "",
-    {**IMPROVED, "single_assign": True},
-    IMPROVED_SPACE,
-)
-_add(
-    "ic_improved_recency",
-    "improved + recency",
-    "",
-    {**IMPROVED, "life_mode": "recency"},
-    IMPROVED_SPACE,
-)
-_add(
-    "ic_improved_recency_single",
-    "improved + recency + single-assign",
-    "",
-    {**IMPROVED, "life_mode": "recency", "single_assign": True},
-    IMPROVED_SPACE,
-)
-_add(
-    "ic_improved_cap",
-    "improved + variance-cap",
-    "",
-    {**IMPROVED, "cap_variance": True},
-    IMPROVED_SPACE,
-)
-_add(
-    "ic_noise_single",
-    "noise-label + single-assign",
-    "",
-    {**CORRECTED, "single_assign": True},
-    NOISE_SPACE,
-)
-_add(
-    "ic_noise_recency",
-    "noise-label + recency",
-    "",
-    {**CORRECTED, "life_mode": "recency"},
-    NOISE_SPACE,
-)
-
-# ----------------------------------------------------------------------------
-# Geometry
-# ----------------------------------------------------------------------------
-_add(
-    "ic_improved_nopen",
-    "improved + no-penalty",
-    "",
-    {**IMPROVED, "dim_penalty": False},
-    IMPROVED_SPACE,
-)
-_COV = {"membership": "nearest", "density": "peak", "relative_limit": True}
-_add(
-    "cov_directional",
-    "covariance, directional link",
-    "full covariance and Mahalanobis distance; intersection along the line that joins the means",
-    {**_COV, "link_mode": "directional"},
-    IMPROVED_SPACE,
-    implementation="covariance",
-)
-_add(
-    "cov_bhattacharyya",
-    "covariance, Bhattacharyya link",
-    "full covariance and Mahalanobis distance; intersection by the Bhattacharyya distance",
-    {**_COV, "link_mode": "bhattacharyya"},
-    IMPROVED_SPACE,
-    implementation="covariance",
-)
-
-# ----------------------------------------------------------------------------
-# Refinements of the improved model and final candidates
-# ----------------------------------------------------------------------------
-_add(
-    "ic_improved_labels",
-    "improved + persistent-labels",
-    "",
-    {**IMPROVED, "stable_labels": True},
-    IMPROVED_SPACE,
-)
-_add(
-    "ic_improved_cap_recency",
-    "improved + variance-cap + recency",
-    "",
-    {**IMPROVED, "cap_variance": True, "life_mode": "recency"},
-    IMPROVED_SPACE,
-)
-_add(
-    "ic_improved_cap_forget",
-    "improved + variance-cap + forgetting",
-    "",
-    {**IMPROVED, "cap_variance": True},
-    {**IMPROVED_SPACE, **FORGET_SPACE},
-)
-_add(
-    "ic_improved_cap_labels",
-    "improved + variance-cap + persistent-labels",
-    "",
-    {**IMPROVED, "cap_variance": True, "stable_labels": True},
-    IMPROVED_SPACE,
-)
-
-FINAL = {**IMPROVED, "dim_penalty": False, "stable_labels": True, "cap_variance": True}
-
-_add(
-    "final_nocap",
-    "improved + no-penalty + persistent-labels",
-    "",
-    {**IMPROVED, "dim_penalty": False, "stable_labels": True},
-    IMPROVED_SPACE,
-)
-_add(
-    "final",
-    "final",
-    "improved + no-penalty + persistent-labels + variance-cap",
-    FINAL,
-    IMPROVED_SPACE,
-)
-_add(
-    "final_forget", "final + forgetting", "", FINAL, {**IMPROVED_SPACE, **FORGET_SPACE}
 )
 
 
