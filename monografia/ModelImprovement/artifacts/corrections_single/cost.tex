@@ -1,0 +1,64 @@
+\begin{table}[htbp]
+\centering
+\caption{Corrections, one at a time: steady-state microcluster count and memory footprint, and cumulative fitting and prediction times measured under parallel load. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c c}
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{Steady-State Microcluster Count}} \\
+\modelname{vectorized} & 14 & 28 & 104 & 36 & 115 & 124 & 6 & 9 \\
+\modelname{born-inactive} & 36 & 19 & 100 & \textbf{13} & 104 & 140 & 6 & 4 \\
+\modelname{peak-density} & 18 & 50 & 74 & 42 & 114 & 126 & 6 & 9 \\
+\modelname{volume-density} & 48 & 32 & 96 & 34 & 114 & 124 & 6 & 6 \\
+\modelname{mature-mean} & 26 & 32 & 66 & 32 & 109 & 120 & 6 & 12 \\
+\modelname{no-penalty} & 24 & 29 & 74 & 36 & 114 & 124 & \textcolor{red}{38} & \textcolor{red}{114} \\
+\modelname{norm-typicality} & 10 & 36 & 115 & 34 & 118 & 115 & 51 & 26 \\
+\modelname{local-weights} & 20 & \textcolor{red}{50} & 140 & 41 & 117 & 116 & 19 & \textcolor{red}{68} \\
+\modelname{density-sum} & 10 & \textbf{9} & 274 & 52 & 114 & 121 & 6 & 6 \\
+\modelname{density-max} & 12 & 14 & 186 & 48 & 114 & 128 & 6 & 12 \\
+\modelname{nearest} & 8 & 19 & 197 & 45 & 115 & 120 & 6 & \textcolor{red}{28} \\
+\midrule
+\multicolumn{9}{l}{\textit{Steady-State Memory Footprint [kB]}} \\
+\modelname{vectorized} & 23 & 23 & 41 & 24 & 57 & 53 & 72 & 122 \\
+\modelname{born-inactive} & 25 & 23 & 44 & 23 & 59 & 64 & 72 & 122 \\
+\modelname{peak-density} & 24 & 25 & 42 & 24 & 56 & 52 & 72 & 122 \\
+\modelname{volume-density} & 25 & 24 & 46 & 24 & 57 & 54 & 72 & 122 \\
+\modelname{mature-mean} & 24 & 23 & 42 & 23 & \textbf{52} & 50 & 72 & 122 \\
+\modelname{no-penalty} & 24 & 23 & 40 & 24 & 56 & 53 & \textcolor{red}{136} & \textcolor{red}{245} \\
+\modelname{norm-typicality} & 23 & 24 & 45 & 24 & \textcolor{red}{60} & 45 & 83 & 130 \\
+\modelname{local-weights} & 24 & 24 & 49 & 24 & 61 & 45 & 72 & \textcolor{red}{237} \\
+\modelname{density-sum} & 23 & 23 & 64 & 24 & 56 & 52 & 72 & 122 \\
+\modelname{density-max} & 23 & 23 & 44 & 24 & 57 & 55 & 71 & 122 \\
+\modelname{nearest} & 23 & 23 & 62 & 24 & 56 & 52 & 72 & 138 \\
+\midrule
+\multicolumn{9}{l}{\textit{Cumulative Fitting Time [ms]}} \\
+\modelname{vectorized} & 40 & 40 & 215 & 50 & 180 & 175 & 60 & 55 \\
+\modelname{born-inactive} & 50 & 35 & 275 & 40 & 185 & 200 & 50 & 40 \\
+\modelname{peak-density} & 45 & 50 & 220 & 60 & 180 & 210 & 50 & 50 \\
+\modelname{volume-density} & 50 & 50 & 210 & 60 & 170 & 200 & \textbf{40} & 45 \\
+\modelname{mature-mean} & 60 & 50 & 200 & 50 & 180 & 160 & \textbf{40} & 50 \\
+\modelname{no-penalty} & 45 & 40 & 225 & 50 & 175 & 185 & 100 & \textcolor{red}{195} \\
+\modelname{norm-typicality} & 40 & 40 & 280 & 40 & 180 & 170 & 75 & 80 \\
+\modelname{local-weights} & 50 & 40 & 255 & 50 & 170 & 155 & 60 & \textcolor{red}{110} \\
+\modelname{density-sum} & 40 & 40 & 460 & \textcolor{red}{60} & 170 & 180 & 40 & 50 \\
+\modelname{density-max} & 50 & 40 & 340 & 50 & 170 & 170 & \textbf{40} & 45 \\
+\modelname{nearest} & 40 & 40 & 435 & 40 & 170 & 160 & 45 & \textcolor{red}{90} \\
+\midrule
+\multicolumn{9}{l}{\textit{Cumulative Prediction Time [ms]}} \\
+\modelname{vectorized} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
+\modelname{born-inactive} & 10 & 10 & 25 & 10 & 30 & 20 & 10 & 10 \\
+\modelname{peak-density} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
+\modelname{volume-density} & 10 & 10 & 25 & 10 & 20 & 20 & \textbf{10} & 10 \\
+\modelname{mature-mean} & 10 & 10 & 20 & 10 & 30 & 20 & 10 & 10 \\
+\modelname{no-penalty} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
+\modelname{norm-typicality} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
+\modelname{local-weights} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
+\modelname{density-sum} & 10 & 10 & 30 & 10 & 20 & 20 & 10 & 10 \\
+\modelname{density-max} & 10 & 10 & 30 & 10 & 25 & 20 & \textbf{10} & 10 \\
+\modelname{nearest} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_corrections_single_cost}
+\end{table}

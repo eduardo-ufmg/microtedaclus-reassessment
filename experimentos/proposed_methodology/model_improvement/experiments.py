@@ -88,17 +88,20 @@ EXPERIMENTS = [
         "corrections_combined",
         "Combined corrections",
         "Does adding another correction improve the model with the nearest membership?",
-        (
-            *_against(
-                "c_nearest",
-                "cc_nearest_peak",
-                "cc_nearest_peak_mature",
-                "cc_nearest_nopen",
-                "cc_nearest_peak_nopen",
-                "cc_nearest_peak_mature_nopen",
-            ),
-            ("cc_nearest_nopen_wide", "cc_nearest_nopen"),
+        _against(
+            "c_nearest",
+            "cc_nearest_peak",
+            "cc_nearest_peak_mature",
+            "cc_nearest_nopen",
+            "cc_nearest_peak_nopen",
+            "cc_nearest_peak_mature_nopen",
         ),
+    ),
+    Experiment(
+        "search_range",
+        "Search range of the variance limit",
+        "Does the fixed search range of the variance limit constrain the model?",
+        _against("cc_nearest_nopen", "cc_nearest_nopen_wide"),
     ),
     Experiment(
         "improvements_single",

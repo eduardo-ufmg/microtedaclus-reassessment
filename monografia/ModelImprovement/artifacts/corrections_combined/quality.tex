@@ -1,0 +1,28 @@
+\begin{table}[htbp]
+\centering
+\caption{Combined corrections: Overall and Steady-State ARI. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively. The last column gives the outcome of the decision rule: improvement ($+$), regression ($-$), both ($\pm$) or neither ($=$).}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c c c}
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 & Rule \\
+\midrule
+\multicolumn{10}{l}{\textit{Overall ARI}} \\
+\modelname{nearest} & 0.037 & 0.578 & 0.498 & 0.599 & 0.239 & 0.242 & 0.964 & 0.856 &  \\
+\modelname{nearest + peak-density} & 0.061 & 0.603 & 0.468 & 0.605 & \textcolor{red}{0.220} & 0.270 & 0.897 & 0.857 & $-$ \\
+\modelname{nearest + peak-density + mature-mean} & 0.093 & 0.609 & 0.399 & \textcolor{red}{0.512} & 0.222 & 0.254 & 0.875 & 0.857 & $-$ \\
+\modelname{nearest + no-penalty} & 0.041 & 0.611 & 0.504 & 0.589 & 0.238 & 0.241 & \textcolor{red}{0.859} & 0.859 & $-$ \\
+\modelname{nearest + peak-density + no-penalty} & 0.055 & 0.597 & 0.430 & 0.605 & \textcolor{red}{0.225} & 0.267 & \textcolor{red}{0.860} & 0.859 & $-$ \\
+\modelname{nearest + peak-density + mature-mean + no-penalty} & 0.111 & 0.611 & 0.413 & \textcolor{red}{0.512} & \textcolor{red}{0.219} & 0.255 & \textcolor{red}{0.860} & 0.859 & $-$ \\
+\midrule
+\multicolumn{10}{l}{\textit{Steady-State ARI}} \\
+\modelname{nearest} & 0.000 & 0.680 & 0.180 & 0.593 & 0.185 & 0.201 & 0.897 & 0.848 &  \\
+\modelname{nearest + peak-density} & 0.010 & 0.827 & 0.188 & 0.623 & \textcolor{red}{0.166} & 0.195 & 0.881 & 0.833 & $-$ \\
+\modelname{nearest + peak-density + mature-mean} & 0.000 & 0.756 & 0.017 & 0.499 & \textcolor{red}{0.165} & 0.191 & \textcolor{red}{0.865} & 0.841 & $-$ \\
+\modelname{nearest + no-penalty} & 0.000 & 0.736 & 0.162 & 0.588 & 0.185 & 0.200 & 0.867 & 0.849 & $-$ \\
+\modelname{nearest + peak-density + no-penalty} & 0.010 & 0.750 & 0.188 & 0.623 & \textcolor{red}{0.165} & 0.191 & 0.867 & 0.849 & $-$ \\
+\modelname{nearest + peak-density + mature-mean + no-penalty} & 0.000 & 0.789 & 0.019 & 0.488 & \textcolor{red}{0.153} & 0.188 & 0.867 & 0.849 & $-$ \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_corrections_combined_quality}
+\end{table}

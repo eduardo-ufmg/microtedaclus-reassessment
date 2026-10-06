@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Maximum Microcluster Count of the accepted models. Median and quartiles over the 94 validation runs. Each model is compared with the model to its left: bold is significantly better, red is significantly worse.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & \modelname{vectorized} & \modelname{corrected} & \modelname{improved} & \modelname{final} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 56 (18, 161) & 57 (19, 158) & \textcolor{red}{212 (60, 424)} & 241 (67, 528) \\
+\datasetname{Stream Benchmark 2} & 44 (15, 55) & 44 (23, 59) & 31 (21, 48) & 30 (21, 44) \\
+\datasetname{Random RBF Generator with Events} & 226 (106, 620) & 178 (86, 493) & 206 (74, 368) & 210 (74, 378) \\
+\datasetname{Cassini} & 44 (38, 56) & \textcolor{red}{56 (41, 100)} & 40 (31, 103) & 41 (30, 103) \\
+\datasetname{Chameleon DS3} & 125 (120, 128) & 126 (120, 130) & \textbf{40 (38, 41)} & 40 (38, 41) \\
+\datasetname{Chameleon DS4} & 120 (112, 133) & 123 (115, 131) & \textbf{40 (38, 42)} & 40 (38, 42) \\
+\datasetname{SCL-32} & 34 (20, 70) & 30 (19, 120) & \textbf{13 (10, 17)} & \textcolor{red}{26 (13, 56)} \\
+\datasetname{SCL-64} & 27 (23, 40) & \textcolor{red}{56 (29, 112)} & \textbf{11 (9, 14)} & \textcolor{red}{18 (10, 26)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_validation_mc_max}
+\end{table}

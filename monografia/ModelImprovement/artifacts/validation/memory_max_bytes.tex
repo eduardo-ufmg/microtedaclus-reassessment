@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Maximum Memory Footprint [kB] of the accepted models. Median and quartiles over the 94 validation runs. Each model is compared with the model to its left: bold is significantly better, red is significantly worse.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & \modelname{vectorized} & \modelname{corrected} & \modelname{improved} & \modelname{final} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 25 (23, 45) & 25 (23, 46) & \textcolor{red}{56 (24, 93)} & 54 (24, 94) \\
+\datasetname{Stream Benchmark 2} & 24 (23, 25) & 24 (23, 25) & 24 (23, 25) & 24 (23, 24) \\
+\datasetname{Random RBF Generator with Events} & 55 (42, 122) & 52 (29, 102) & 54 (27, 94) & 58 (27, 95) \\
+\datasetname{Cassini} & 24 (24, 25) & \textcolor{red}{25 (24, 30)} & 25 (24, 38) & 25 (24, 39) \\
+\datasetname{Chameleon DS3} & 56 (55, 59) & 56 (55, 58) & \textbf{25 (24, 25)} & 25 (24, 25) \\
+\datasetname{Chameleon DS4} & 53 (49, 58) & 54 (50, 57) & \textbf{25 (24, 25)} & 24 (24, 25) \\
+\datasetname{SCL-32} & 77 (75, 89) & 76 (74, 137) & \textbf{75 (73, 76)} & \textbf{72 (71, 73)} \\
+\datasetname{SCL-64} & 134 (131, 137) & \textcolor{red}{146 (133, 244)} & \textbf{126 (124, 128)} & \textbf{123 (122, 123)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_validation_memory_max_bytes}
+\end{table}

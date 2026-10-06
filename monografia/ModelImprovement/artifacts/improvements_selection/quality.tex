@@ -1,0 +1,32 @@
+\begin{table}[htbp]
+\centering
+\caption{Direct comparisons between combinations: Overall and Steady-State ARI. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively. The last column gives the outcome of the decision rule: improvement ($+$), regression ($-$), both ($\pm$) or neither ($=$).}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l l c c c c c c c c c}
+\toprule
+Model & Control & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 & Rule \\
+\midrule
+\multicolumn{11}{l}{\textit{Overall ARI}} \\
+\modelname{single + relative} &  & 0.786 & 0.625 & 0.552 & 0.554 & 0.295 & 0.246 & 0.988 & 0.992 &  \\
+\modelname{noise + relative} &  & 0.808 & 0.646 & 0.492 & 0.581 & 0.309 & 0.334 & 0.995 & 1.000 &  \\
+\modelname{single + noise + relative} & \modelname{single + relative} & \textbf{0.915} & 0.643 & 0.510 & 0.455 & 0.304 & 0.255 & 0.987 & 0.990 & $+$ \\
+\modelname{single + noise + relative} & \modelname{noise + relative} & 0.915 & 0.643 & 0.510 & 0.455 & 0.304 & 0.255 & 0.987 & 0.990 & $\pm$ \\
+\modelname{single + noise + relative} & \modelname{cap + noise + relative} & \textbf{0.915} & 0.643 & 0.510 & 0.455 & 0.304 & \textcolor{red}{0.255} & 0.987 & 0.990 & $\pm$ \\
+\modelname{cap + noise + relative} & \modelname{noise + relative} & 0.775 & 0.623 & 0.532 & 0.590 & 0.267 & \textbf{0.386} & 0.982 & 1.000 & $+$ \\
+\modelname{single + cap + noise + relative} & \modelname{single + noise + relative} & 0.879 & 0.649 & 0.567 & 0.515 & \textcolor{red}{0.236} & 0.271 & 0.985 & 0.990 & $-$ \\
+\modelname{single + cap + noise + relative} & \modelname{cap + noise + relative} & 0.879 & 0.649 & 0.567 & 0.515 & 0.236 & \textcolor{red}{0.271} & 0.985 & 0.990 & $-$ \\
+\midrule
+\multicolumn{11}{l}{\textit{Steady-State ARI}} \\
+\modelname{single + relative} &  & 0.710 & 0.867 & 0.473 & 0.512 & 0.341 & 0.328 & 0.982 & 0.986 &  \\
+\modelname{noise + relative} &  & 0.383 & 0.869 & 0.292 & 0.551 & 0.319 & 0.023 & 1.000 & 1.000 &  \\
+\modelname{single + noise + relative} & \modelname{single + relative} & \textbf{0.865} & 0.859 & 0.395 & 0.451 & 0.338 & 0.320 & 0.983 & 0.982 & $+$ \\
+\modelname{single + noise + relative} & \modelname{noise + relative} & \textbf{0.865} & 0.859 & 0.395 & 0.451 & 0.338 & \textbf{0.320} & 0.983 & \textcolor{red}{0.982} & $\pm$ \\
+\modelname{single + noise + relative} & \modelname{cap + noise + relative} & 0.865 & 0.859 & 0.395 & 0.451 & 0.338 & \textcolor{red}{0.320} & 0.983 & 0.982 & $\pm$ \\
+\modelname{cap + noise + relative} & \modelname{noise + relative} & 0.488 & 0.744 & 0.502 & 0.556 & 0.249 & \textbf{0.408} & 0.992 & 1.000 & $+$ \\
+\modelname{single + cap + noise + relative} & \modelname{single + noise + relative} & 0.752 & 0.843 & 0.397 & 0.443 & \textcolor{red}{0.161} & 0.307 & 0.984 & 0.986 & $-$ \\
+\modelname{single + cap + noise + relative} & \modelname{cap + noise + relative} & 0.752 & 0.843 & 0.397 & 0.443 & 0.161 & 0.307 & 0.984 & 0.986 & $-$ \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_improvements_selection_quality}
+\end{table}

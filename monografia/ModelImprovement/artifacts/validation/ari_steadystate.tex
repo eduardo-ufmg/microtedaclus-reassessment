@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Steady-State ARI of the accepted models. Median and quartiles over the 94 validation runs. Each model is compared with the model to its left: bold is significantly better, red is significantly worse.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & \modelname{vectorized} & \modelname{corrected} & \modelname{improved} & \modelname{final} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 0.000 (0.000, 0.000) & 0.000 (0.000, 0.056) & \textbf{0.712 (0.184, 0.919)} & 0.782 (0.195, 0.963) \\
+\datasetname{Stream Benchmark 2} & 0.541 (0.000, 0.833) & \textbf{0.802 (0.464, 0.921)} & 0.842 (0.657, 0.966) & 0.853 (0.692, 0.938) \\
+\datasetname{Random RBF Generator with Events} & 0.003 (0.000, 0.530) & 0.054 (0.000, 0.459) & \textbf{0.474 (0.182, 0.663)} & 0.481 (0.211, 0.663) \\
+\datasetname{Cassini} & 0.374 (0.113, 0.527) & 0.433 (0.249, 0.645) & 0.483 (0.378, 0.660) & 0.483 (0.349, 0.656) \\
+\datasetname{Chameleon DS3} & 0.176 (0.173, 0.184) & \textbf{0.184 (0.179, 0.187)} & \textbf{0.295 (0.232, 0.364)} & 0.296 (0.234, 0.365) \\
+\datasetname{Chameleon DS4} & 0.210 (0.176, 0.224) & 0.199 (0.175, 0.212) & \textbf{0.323 (0.210, 0.358)} & 0.322 (0.217, 0.349) \\
+\datasetname{SCL-32} & 0.140 (0.000, 0.908) & \textbf{0.873 (0.812, 0.969)} & \textbf{0.975 (0.933, 0.994)} & \textbf{1.000 (1.000, 1.000)} \\
+\datasetname{SCL-64} & 0.000 (0.000, 0.000) & \textbf{0.869 (0.818, 0.908)} & \textbf{0.990 (0.925, 0.998)} & 1.000 (1.000, 1.000) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_validation_ari_steadystate}
+\end{table}

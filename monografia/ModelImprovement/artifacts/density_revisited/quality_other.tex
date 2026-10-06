@@ -1,0 +1,22 @@
+\begin{table}[htbp]
+\centering
+\caption{Order-independent densities in the final model: ARI at the fifth batch and maximum ARI drop. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c c}
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{ARI at the Fifth Batch}} \\
+\modelname{final} & 0.976 & 0.585 & 0.629 & 0.436 & 0.296 & 0.231 & 1.000 & 1.000 \\
+\modelname{final + peak-density} & 0.980 & 0.603 & 0.625 & 0.514 & \textcolor{red}{0.115} & \textcolor{red}{0.181} & 1.000 & 1.000 \\
+\modelname{final + volume-density} & \textcolor{red}{0.855} & 0.579 & 0.574 & 0.398 & \textcolor{red}{0.136} & 0.255 & 1.000 & 1.000 \\
+\midrule
+\multicolumn{9}{l}{\textit{Maximum ARI Drop}} \\
+\modelname{final} & 0.217 & 0.072 & 0.484 & 0.164 & 0.116 & 0.186 & 0.000 & 0.000 \\
+\modelname{final + peak-density} & 0.258 & 0.128 & 0.488 & 0.229 & \textcolor{red}{0.365} & 0.173 & 0.000 & 0.000 \\
+\modelname{final + volume-density} & 0.382 & 0.178 & 0.536 & 0.236 & \textcolor{red}{0.206} & 0.184 & 0.000 & 0.000 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_density_revisited_quality_other}
+\end{table}

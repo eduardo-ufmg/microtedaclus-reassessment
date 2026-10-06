@@ -1,0 +1,22 @@
+\begin{table}[htbp]
+\centering
+\caption{Covariance of the microclusters: ARI at the fifth batch and maximum ARI drop. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c c}
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{ARI at the Fifth Batch}} \\
+\modelname{final} & 0.976 & 0.585 & 0.629 & 0.436 & 0.296 & 0.231 & 1.000 & 1.000 \\
+\modelname{covariance, directional link} & - & - & 0.653 & - & 0.228 & - & - & - \\
+\modelname{covariance, Bhattacharyya link} & - & - & 0.653 & - & 0.276 & - & - & - \\
+\midrule
+\multicolumn{9}{l}{\textit{Maximum ARI Drop}} \\
+\modelname{final} & 0.217 & 0.072 & 0.484 & 0.164 & 0.116 & 0.186 & 0.000 & 0.000 \\
+\modelname{covariance, directional link} & - & - & 0.435 & - & 0.118 & - & - & - \\
+\modelname{covariance, Bhattacharyya link} & - & - & 0.404 & - & 0.162 & - & - & - \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_geometry_quality_other}
+\end{table}

@@ -1,0 +1,24 @@
+\begin{table}[htbp]
+\centering
+\caption{Improvements, one at a time: models evaluated.}
+\begin{tabular}{l p{0.62\textwidth}}
+\toprule
+Model & Change relative to its base \\
+\midrule
+\modelname{corrected} & membership by the smallest $d^2/\sigma^2$ \\
+\modelname{variance-cap} & variance limit applied to microclusters of every size \\
+\modelname{soft-activation} & activation threshold $f \cdot \mathrm{mean}(D)$, $f$ tuned in $[0, 1.5]$ \\
+\modelname{no-activation} & every mature microcluster is active \\
+\modelname{single-graph} & macroclusters taken from $\mathbb{G}_0$ \\
+\modelname{link-factor} & intersection $\mathrm{dist} \le \ell (\sigma_i + \sigma_j)$, $\ell$ tuned in $[0.5, 4]$ \\
+\modelname{recency} & every microcluster not updated by a sample decays \\
+\modelname{recency-inactive} & inactive microclusters not updated by a sample decay \\
+\modelname{forgetting} & effective count capped at $S_{\max}$, tuned \\
+\modelname{noise-label} & samples beyond $n_\sigma$ of every active microcluster are noise \\
+\modelname{single-assign} & a sample updates only the nearest accepting microcluster \\
+\modelname{chi-threshold} & dimension-aware outlier threshold (without the penalty) \\
+\modelname{relative-limit} & variance limit relative to the stream's variance \\
+\bottomrule
+\end{tabular}
+\label{tab:mi_improvements_single_variants}
+\end{table}

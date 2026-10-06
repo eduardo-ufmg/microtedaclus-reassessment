@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Predicted partitions of the \modelname{corrected} model: medians over the development runs of the per-run means over the batches. The noise label counts as one cluster in the batches that contain it. The first batch is predicted before any sample is learned and is labelled as noise in full, which accounts for the predicted noise of a model that never labels noise.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c}
+\toprule
+Dataset & True clusters & Predicted clusters & Homogeneity & Completeness & Predicted noise [\%] \\
+\midrule
+\datasetname{Stream Benchmark 1} & 3.0 & 1.6 & 0.31 & 0.90 & 3.1 \\
+\datasetname{Stream Benchmark 2} & 3.0 & 2.4 & 0.64 & 0.95 & 3.1 \\
+\datasetname{Random RBF Generator with Events} & 4.1 & 5.2 & 0.51 & 0.70 & 1.2 \\
+\datasetname{Cassini} & 3.0 & 3.6 & 0.74 & 0.74 & 3.1 \\
+\datasetname{Chameleon DS3} & 9.9 & 23.7 & 0.77 & 0.56 & 1.2 \\
+\datasetname{Chameleon DS4} & 8.8 & 19.8 & 0.68 & 0.55 & 4.7 \\
+\datasetname{SCL-32} & 4.0 & 4.5 & 0.92 & 0.90 & 2.9 \\
+\datasetname{SCL-64} & 4.0 & 3.9 & 0.76 & 0.90 & 2.9 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_diagnosis_c_nearest}
+\end{table}

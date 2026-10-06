@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Cumulative Prediction Time [ms] of the accepted models. Median and quartiles over the 94 validation runs. Each model is compared with the model to its left: bold is significantly better, red is significantly worse.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c }
+\toprule
+Dataset & \modelname{vectorized} & \modelname{corrected} & \modelname{improved} & \modelname{final} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 10 (10, 10) & 10 (10, 10) & \textcolor{red}{10 (10, 20)} & 10 (10, 20) \\
+\datasetname{Stream Benchmark 2} & 10 (10, 10) & 10 (10, 10) & 10 (10, 10) & 10 (10, 10) \\
+\datasetname{Random RBF Generator with Events} & 30 (20, 50) & 30 (20, 40) & 30 (20, 40) & 30 (20, 48) \\
+\datasetname{Cassini} & 10 (10, 10) & 10 (10, 10) & 10 (10, 10) & 10 (10, 10) \\
+\datasetname{Chameleon DS3} & 30 (20, 30) & 30 (20, 30) & \textbf{20 (20, 30)} & 20 (20, 30) \\
+\datasetname{Chameleon DS4} & 20 (10, 20) & 20 (10, 20) & 20 (20, 20) & 20 (20, 20) \\
+\datasetname{SCL-32} & 10 (10, 10) & 10 (10, 10) & 10 (10, 10) & \textbf{10 (10, 10)} \\
+\datasetname{SCL-64} & 10 (10, 10) & 10 (10, 10) & 10 (10, 10) & \textbf{10 (10, 10)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_validation_time_predict_cum_ms}
+\end{table}

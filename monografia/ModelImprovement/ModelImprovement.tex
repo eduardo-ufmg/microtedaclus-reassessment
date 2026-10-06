@@ -1,2 +1,406 @@
 \chapter{Model Improvement}
 \label{chap:ModelImprovement}
+
+The previous chapters identify issues in the formulation of \MicroTEDAClus (\cref{subsubsec:order_dependent_characteristics,subsubsec:incorrect_condition_logic,subsubsec:dimensionality_penalty}) and undocumented behaviours of its reference implementation (\cref{sec:model_implementation}). This chapter acts on them in three stages. The first replaces the reference implementation by an optimized one, which makes the remaining stages computationally affordable. The second evaluates corrections of the identified flaws. The third evaluates modifications that go beyond the original formulation and defines the model that results from them, \MicroTEDAClusPlus.
+
+Each stage is conducted as a sequence of experiments, and every experiment is reported, including those whose outcome was negative. \Cref{sec:mi_design} describes how the experiments are run and how their outcomes are judged.
+
+\section{Experimental Design}
+\label{sec:mi_design}
+
+\subsection{Variants and Controls}
+
+An experiment compares a \emph{variant} of the model with its \emph{control}. The variant differs from the control by one change or by a stated combination of changes, so any difference between their results is attributable to that change. To make this exact, every variant is a configuration of a single implementation, described in \cref{sec:mi_optimization}, in which each design choice under study is a switch. With every switch in its default position, that implementation executes the original algorithm.
+
+\subsection{Protocol and Datasets}
+
+Every variant is tuned and evaluated by the protocol of the main experiment, executed by the same code. The hyperparameters are searched on the first 20\% of the stream by the procedure of \cref{subsec:hyperparameter_tuning}, with a budget of 100 trials or 300 seconds, and the tuned model is evaluated on the remaining 80\% in batches of 100 samples, predicting each batch before learning from it. The metrics are those of \cref{sec:evaluation_metrics}, computed by the code that computes them for the main experiment.
+
+The experiments use eight streams: the six datasets that are not scalability-oriented, and the two scalability streams of highest dimensionality, \datasetname{SCL-32} and \datasetname{SCL-64}. The latter are included because the former are all two-dimensional, and several properties of the model only manifest in higher dimensions. In particular, the factor $2/d$ of \cref{critique:dimensionality_penalty} equals one for $d = 2$. \Cref{tab:mi_dataset_abbreviations} lists the abbreviations used in the tables of this chapter.
+
+\begin{table}[htbp]
+\centering
+\caption{Datasets of the model improvement experiments and their abbreviations.}
+\begin{tabular}{l l c l}
+\toprule
+Abbreviation & Dataset & Dimensions & Nature \\
+\midrule
+B1 & \BenchmarkOne & 2 & two clusters that move, cross and separate, with noise \\
+B2 & \BenchmarkTwo & 2 & two static clusters and one that moves between them \\
+RBF & \RandomRBFGeneratorEvents & 2 & clusters that merge, split, appear and disappear \\
+CSN & \Cassini & 2 & three static shapes \\
+DS3 & \ChameleonDSThree & 2 & nine static shapes with noise \\
+DS4 & \ChameleonDSFour & 2 & eight static shapes with noise \\
+S32 & \datasetname{SCL-32} & 32 & three Gaussian clusters with uniform noise \\
+S64 & \datasetname{SCL-64} & 64 & three Gaussian clusters with uniform noise \\
+\bottomrule
+\end{tabular}
+\label{tab:mi_dataset_abbreviations}
+\end{table}
+
+\subsection{Development and Validation Runs}
+\label{subsec:mi_runs}
+
+A run is identified by an index, which determines the seed of the stream generator and of the hyperparameter search. The main experiment uses the runs 0 to 93. The experiments of this chapter use the runs that follow them, so the streams of the main experiment take no part in the development of the model:
+
+\begin{itemize}
+    \item \textbf{Development runs} (94 to 125, 32 runs): every experiment that compares variants is executed on these runs, and every design choice of this chapter was made from their results.
+    \item \textbf{Validation runs} (126 to 219, 94 runs): the models accepted during development, and only those, are evaluated again on these runs.
+\end{itemize}
+
+The separation exists because a model that is chosen for scoring best on a set of runs is expected to score somewhat worse on other runs. The validation runs measure the accepted models on streams that did not select them, with the number of runs that \cref{subsec:multi_run_statistics} establishes for the main experiment. The two Chameleon streams are fixed files, so their runs differ only in the seed of the hyperparameter search.
+
+\subsection{Comparisons and Decision Rule}
+\label{subsec:mi_decision_rule}
+
+A variant and its control are compared per dataset and per metric, over the runs they share, with the ingredients of \cref{sec:statistical_significance}: the observations are discretized, the paired Wilcoxon signed-rank test is applied, its $p$-values are adjusted by the Holm-Bonferroni procedure over the eight datasets of the comparison, and Cliff's delta measures the effect size. A difference is significant if $p_{\text{adj}} < 0.05$ and $\lvert d \rvert \ge 0.147$. The Friedman test is not applied, since each comparison involves two models.
+
+The outcome of a comparison is decided on two metrics, the Overall ARI and the Steady-State ARI (the ARI of the penultimate batch). A variant
+
+\begin{itemize}
+    \item \textbf{improves} its control ($+$) if it is significantly better in at least one dataset and significantly worse in none;
+    \item \textbf{regresses} ($-$) if it is significantly worse in at least one dataset and significantly better in none;
+    \item is \textbf{mixed} ($\pm$) if both happen, and \textbf{indistinguishable} ($=$) if neither does.
+\end{itemize}
+
+Only a variant that improves its control can replace it. The ARI at the fifth batch and the maximum ARI drop are reported, but do not take part in the decision. The former describes a single early batch. The latter grows when a change raises the highest ARI of a run and leaves its final ARI unchanged, so it would count such a change as a degradation. The cost metrics are also reported and never decide an outcome. Their execution times are measured while ten tasks run in parallel, so they are comparable within a table but not with the main experiment; \cref{sec:mi_validation} times the accepted models one task at a time.
+
+In the tables of this chapter, a value in bold is significantly better than the value of its control, and a value in red is significantly worse.
+
+\section{Implementation Optimization}
+\label{sec:mi_optimization}
+
+The reference implementation stores each microcluster as a dictionary in a Python list. For every sample, it iterates over that list and updates one microcluster at a time; it maintains the intersection graph edge by edge in a graph library, and it computes the membership of each sample to each macrocluster in nested loops. Its execution time is dominated by the interpreter, not by the arithmetic of the algorithm.
+
+The optimized implementation, hereafter the \modelname{vectorized} model, stores the population of microclusters as a structure of arrays, with one array per attribute. The algorithm has a part that depends on the order of arrival of the samples: the recursive update of the microclusters, the outlier test, the vitality update and the pruning. This part cannot be vectorized across samples, so it runs in a single compiled kernel that iterates over the samples of a batch and, for each of them, over the arrays. Everything else is expressed as array operations. At each macrocluster update, the intersection graph is rebuilt from the matrix of pairwise distances between the microcluster means, its connected components are extracted by a sparse graph routine, and the membership of a whole batch is obtained from one distance matrix.
+
+The \modelname{vectorized} model executes the algorithm of the reference implementation, but it is not required to reproduce its output exactly, and it does not. Besides the order of the floating-point operations, one behaviour differs. The pruning routine of the reference implementation (\cref{snippet:maia_implementation_prune_microclusters}) removes elements from the list it is iterating over, so the microcluster that follows a removed one is not visited in that pass. The \modelname{vectorized} model visits every microcluster.
+
+The same implementation serves as the engine of the experiments of this chapter: each design choice studied in \cref{sec:mi_corrections,sec:mi_improvements} is an option of it, and its default options are the \modelname{vectorized} model.
+
+%%OPTIMIZATION-RESULTS%%
+
+\section{Corrections}
+\label{sec:mi_corrections}
+
+The candidate corrections come from the issues raised in the previous chapters and from two behaviours of the reference implementation noticed while it was reimplemented. The incorrect condition for microclusters with two samples (\cref{subsubsec:incorrect_condition_logic}) is not among them, because the reference implementation already applies \cref{eq:corrected_condition_logic_for_outliers}.
+
+\subsection{Candidate Corrections}
+\label{subsec:mi_correction_candidates}
+
+\paragraph{Membership.} The reference implementation assigns a sample $x$ to the macrocluster that maximizes $\sum_{l} w^l \left(1 - \zeta^l(x)\right)$ over its active microclusters (\cref{snippet:maia_implementation_calculate_membership}), where $w^l$ is the share of the microcluster in the density of the macrocluster. For a microcluster with $S$ samples, mean $\mu$ and variance $\sigma^2$,
+
+\begin{equation}
+    1 - \zeta(x) = 1 - \frac{1}{2S} \left( 1 + \frac{\lVert x - \mu \rVert^2}{\sigma^2} \right)
+    \label{eq:mi_implemented_typicality}
+\end{equation}
+
+The standardized squared distance is divided by the number of samples, so the more samples a microcluster has, the less the distance to it matters. A sample five standard deviations away from a microcluster with 500 samples scores $0.974$ in \cref{eq:mi_implemented_typicality}, more than the $0.950$ scored by a sample one standard deviation away from a microcluster with 20 samples. Replacing $1 - \zeta$ by the normalized typicality of the formulation, $t = (1 - \xi)/(S - 2)$, reverses the bias instead of removing it: the values scale with $1/S$, and the microclusters with few samples dominate. The quantity that does not depend on the number of samples is the standardized squared distance itself,
+
+\begin{equation}
+    q(x) = S\,\xi(x) - 1 = \frac{\lVert x - \mu \rVert^2}{\sigma^2}
+    \label{eq:mi_standardized_distance}
+\end{equation}
+
+which is also the quantity that the outlier condition thresholds, since \cref{eq:outlier_condition} is equivalent to $q(x) > m^2$. Five alternatives to the implemented membership are evaluated:
+
+\begin{itemize}
+    \item \modelname{norm-typicality}: the implemented weights with the normalized typicality $t^l(x)$, as in \cref{eq:macrocluster_typicality}.
+    \item \modelname{local-weights}: \cref{eq:macrocluster_typicality} with the density of each microcluster evaluated at the sample being classified, $D^l(x) = 1/\zeta^l(x)$, which is how the formulation defines the density (\cref{subsubsec:order_dependent_characteristics}).
+    \item \modelname{density-sum}: the sum of the densities at the sample, $\sum_l D^l(x)$, with $D^l(x) = 2S^l / (1 + q^l(x))$.
+    \item \modelname{density-max}: the largest density at the sample, $\max_l D^l(x)$.
+    \item \modelname{nearest}: the smallest standardized distance, $\min_l q^l(x)$. The sample is assigned to the macrocluster of the active microcluster it is closest to in standard deviations.
+\end{itemize}
+
+\paragraph{Density.} \Cref{subsubsec:order_dependent_characteristics} shows that the density kept by each microcluster is the density of the last sample it absorbed. Two densities that are properties of the microcluster are evaluated. The first, \modelname{peak-density}, is the density of the formulation evaluated at the mean of the microcluster: since $\xi(\mu) = 1/S$,
+
+\begin{equation}
+    D = \frac{1}{\zeta(\mu)} = 2S
+    \label{eq:mi_peak_density}
+\end{equation}
+
+It is the largest value the density of the formulation can take, and it depends on the number of samples alone. This is a property of the TEDA variables and not of this particular choice: with the variance $\sigma^2 = \frac{1}{S} \sum_{j} \lVert x_j - \mu \rVert^2$, the mean eccentricity of the samples of a microcluster is
+
+\begin{equation}
+    \frac{1}{S} \sum_{j=1}^{S} \xi(x_j) = \frac{1}{S} \sum_{j=1}^{S} \left( \frac{1}{S} + \frac{\lVert x_j - \mu \rVert^2}{S \sigma^2} \right) = \frac{2}{S}
+    \label{eq:mi_mean_eccentricity}
+\end{equation}
+
+whatever its dispersion. The second, \modelname{volume-density}, divides the number of samples by the variance, $D = S/(\sigma^2 + \epsilon)$, so that dispersion counts. In both, a microcluster with fewer than three samples has no density.
+
+\paragraph{Activation mean.} The reference implementation activates a microcluster whose density is not below the mean density of its component of the intersection graph, and computes that mean over all the microclusters of the component, including those with fewer than three samples, which can never be active. \modelname{mature-mean} computes it over the microclusters with at least three samples.
+
+\paragraph{Initial state.} The reference implementation creates a microcluster flagged as active. Since only inactive microclusters lose vitality, a new microcluster is exempt from the decay until the next macrocluster update. \modelname{born-inactive} creates it inactive.
+
+\paragraph{Dimensionality penalty.} \modelname{no-penalty} removes the factor $2/d$ of \cref{critique:dimensionality_penalty}. The factor cancels in the eccentricity, where it multiplies both the distance and the variance. It acts on the variance that is compared with $r_0$, on the standard deviations of the intersection condition (\cref{eq:microcluster_intersection_condition}) and on the radius of the vitality update of the reference implementation.
+
+\subsection{Corrections One at a Time}
+
+\input{ModelImprovement/artifacts/corrections_single/quality.tex}
+
+\Cref{tab:mi_corrections_single_quality} compares each candidate with the \modelname{vectorized} model. Two candidates improve it: \modelname{nearest}, in the Overall ARI of RBF and S32 and in the Steady-State ARI of RBF, CSN, S32 and S64, and \modelname{no-penalty}, in the Steady-State ARI of S32 and S64.
+
+Among the memberships, only the count-free distance helps. \modelname{density-max} is indistinguishable from the implemented membership and \modelname{density-sum} is worse. The two memberships built on the normalized typicality of the formulation, \modelname{norm-typicality} and \modelname{local-weights}, gain in the Steady-State ARI of DS4 and S64 and lose in the Overall ARI of DS3, so the formulation is not preferable to its implementation in this respect.
+
+Neither order-independent density improves the model. \modelname{peak-density} is worse in DS3 on both metrics, and \modelname{volume-density} trades a gain in the Steady-State ARI of RBF for a loss in the Overall ARI of CSN. The order dependence is real, but in this algorithm the density only decides which microclusters are active and how they are weighted, and for those purposes the alternatives are not better. \modelname{mature-mean} and \modelname{born-inactive} also regress, in DS3 and DS4 respectively.
+
+The zeros of \cref{tab:mi_corrections_single_quality} have two origins. In B1, the \modelname{vectorized} model predicts a single cluster in more than half of the batches of a typical run, after the two clusters of the stream cross, and the Overall ARI is the median over the batches. In S32 and S64, it ends 17 and 18 of the 32 runs, respectively, with a single predicted cluster, which gives a Steady-State ARI of zero. \modelname{no-penalty} and \modelname{nearest} end none of their runs in that state.
+
+\subsection{Combined Corrections}
+
+\input{ModelImprovement/artifacts/corrections_combined/quality.tex}
+
+With \modelname{nearest} as the new control, \cref{tab:mi_corrections_combined_quality} evaluates whether a second correction improves it. None does. Adding \modelname{peak-density} repeats the loss in DS3. Adding \modelname{no-penalty}, which improved the \modelname{vectorized} model on its own, lowers the Overall ARI of S32 from $0.964$ to $0.859$: with the penalty, part of the noise of that stream forms macroclusters of its own, an accidental benefit that \cref{subsec:mi_geometry} revisits. The combinations of three and four corrections inherit these losses.
+
+The corrected model is therefore the \modelname{vectorized} model with the \modelname{nearest} membership, and it is the control of the experiments of \cref{sec:mi_improvements}. The order-dependent density and the dimensionality penalty remain in it: the experiments do not support replacing the former, and the latter is reconsidered once the noise is handled explicitly.
+
+One of these combinations exposes a limitation of the search space and not of the model. \Cref{tab:mi_search_range_quality} compares \modelname{nearest + no-penalty} with itself when the upper bound of the search range of the variance limit is extended from $10^2$ to $10^4$, which improves DS3 and DS4.
+
+\input{ModelImprovement/artifacts/search_range/quality.tex}
+
+With the extended range, the tuned variance limit has a median of $2388$ in DS3 and $1771$ in DS4, both far above the original bound: the coordinates of these datasets span several hundred units, while those of the other two-dimensional datasets are of the order of one. The variance limit depends on the scale of the data, and a fixed search range cannot suit every stream. \Cref{sec:mi_improvements} addresses this in the model.
+
+\section{Improvements}
+\label{sec:mi_improvements}
+
+The candidates of this section modify the algorithm beyond what its formulation states. Most of them answer to what the corrected model still does wrong, which \cref{tab:mi_diagnosis_c_nearest} summarizes through the partitions it predicts.
+
+\input{ModelImprovement/artifacts/diagnosis/c_nearest.tex}
+
+Three patterns stand out. In the static shapes of DS3 and DS4, the model predicts more than twice the true number of clusters, with high homogeneity and low completeness: the clusters it finds are pure, but each true cluster is split into several. In B1, it predicts fewer clusters than there are, with low homogeneity: the two moving clusters are merged. Finally, the model never recognizes noise. About $9\%$ of the samples of B1, S32 and S64, $8\%$ of DS3 and $4\%$ of DS4 are noise, and every one of them is assigned to a cluster; the noise the table reports comes from the first batch alone, which is predicted before any sample is learned.
+
+\subsection{Candidate Improvements}
+\label{subsec:mi_improvement_candidates}
+
+\paragraph{Formation of the microclusters.}
+\begin{itemize}
+    \item \modelname{variance-cap}: the variance limit $r_0$ only constrains a microcluster with two samples; from the third sample on, a microcluster grows for as long as the samples pass the eccentricity test. This variant also treats as an outlier any sample that would raise the variance of a microcluster above $r_0$, whatever its size, which bounds every microcluster.
+    \item \modelname{relative-limit}: $r_0$ becomes a fraction of the variance of the stream, estimated recursively from the samples seen so far, and is searched in $[10^{-6}, 1]$. The hyperparameter no longer depends on the scale of the data, the limitation exposed in \cref{sec:mi_corrections}.
+    \item \modelname{single-assign}: a sample updates every microcluster that accepts it, so overlapping microclusters absorb the same samples. This variant updates only the accepting microcluster whose mean is nearest.
+    \item \modelname{forgetting}: the sample count used by the recursive mean and variance is capped at $S_{\max}$, searched in $[10, 10^4]$, which makes them exponentially weighted estimates able to follow a moving cluster.
+    \item \modelname{chi-threshold}: for a Gaussian cluster in $d$ dimensions, the standardized distance $q$ of \cref{eq:mi_standardized_distance} has mean $1$ and standard deviation $\sqrt{2/d}$. This variant replaces the outlier condition $q > m^2$ by $q > 1 + m\sqrt{2/d}$ and removes the dimensionality penalty, as a principled treatment of the dimension.
+\end{itemize}
+
+\paragraph{Pruning.}
+\begin{itemize}
+    \item \modelname{recency}: the rule of \cite{galindo2021lastmile} (\cref{eq:decay_logic}): every microcluster that the current sample does not update loses vitality, and a microcluster that absorbs a sample recovers it in full.
+    \item \modelname{recency-inactive}: the same rule restricted to the inactive microclusters.
+\end{itemize}
+
+\paragraph{Formation of the macroclusters.}
+\begin{itemize}
+    \item \modelname{soft-activation}: a microcluster is active if its density is at least $f$ times the mean density of its component, with $f$ searched in $[0, 1.5]$. The original criterion is $f = 1$.
+    \item \modelname{no-activation}: every microcluster with at least three samples is active.
+    \item \modelname{single-graph}: the macroclusters are the components of the intersection graph $\mathbb{G}_0$ that contain active microclusters, instead of the components of the active graph $\mathbb{G}_1$ of \cref{alg:microcluster_activation_criterion_pseudocode}.
+    \item \modelname{link-factor}: the factor $2$ of the intersection condition (\cref{eq:microcluster_intersection_condition}) becomes a hyperparameter $\ell$, searched in $[0.5, 4]$.
+\end{itemize}
+
+\paragraph{Prediction.}
+\begin{itemize}
+    \item \modelname{noise-label}: a sample whose standardized distance to every active microcluster exceeds $n_\sigma^2$ is labelled as noise, with $n_\sigma$ searched in $[1, 10]$.
+\end{itemize}
+
+\paragraph{Sensitivity function.} Three reparameterizations of the function $m$ of \cref{eq:m_function}, each replacing its fixed constants by hyperparameters:
+\begin{itemize}
+    \item \modelname{m-reparam}: $m(S) = m_{\max} \left( 1 + (m_{\max} - 1) \left( 19 (m_{\max} - 1) \right)^{-(S - 3)/(S_{95} - 3)} \right)^{-1}$, which starts at $m(3) = 1$ and reaches $0.95\,m_{\max}$ at $S = S_{95}$, with $m_{\max} \in [1.05, 10]$ and $S_{95} \in [5, 5000]$.
+    \item \modelname{m-constant}: a constant $m$, searched in $[1, 5]$.
+    \item \modelname{m-asymptote}: the original sigmoid with its asymptote, $3$, searched in $[1.05, 10]$.
+\end{itemize}
+
+\subsection{Improvements One at a Time}
+
+\input{ModelImprovement/artifacts/improvements_single/quality.tex}
+
+\Cref{tab:mi_improvements_single_quality} compares each candidate with the corrected model. Two candidates improve it. \modelname{single-assign} gains in the Overall ARI of B2, S32 and S64 and in the Steady-State ARI of B1, B2, S32 and S64, and \modelname{variance-cap} gains in the Steady-State ARI of RBF.
+
+Two other candidates produce the largest gains of the table together with a loss, so the rule classifies them as mixed. \modelname{noise-label} raises the Overall ARI of B1 from $0.037$ to $0.920$ and that of S64 from $0.856$ to $1.000$, and loses in DS3. \modelname{relative-limit} gains in B1, B2 and DS3, and loses in the Steady-State ARI of DS4. Both losses have identifiable causes. In DS3, the tuned \modelname{noise-label} model sits at the upper end of both of its search ranges, with medians of $95$ for the variance limit and $9.1$ for $n_\sigma$, and still labels $20\%$ of the samples as noise, against $8\%$ of true noise: its microclusters are too small for the scale of the dataset, the limitation that \modelname{relative-limit} removes. In DS4, the tuned \modelname{relative-limit} model ends 10 of the 32 runs with a single predicted cluster and a median of two microclusters: without a bound, a variance limit that is large enough for the first samples lets the microclusters grow until they merge the dataset, the growth that \modelname{variance-cap} prevents. The four changes are therefore evaluated in combination in \cref{subsec:mi_improvements_combined}.
+
+The remaining candidates do not help. \modelname{forgetting} and \modelname{single-graph} are indistinguishable from the control. \modelname{recency} gains in DS4 and loses in B2 and CSN, and \modelname{link-factor} gains in DS4 and loses in CSN. \modelname{soft-activation}, \modelname{no-activation} and \modelname{recency-inactive} regress. Every relaxation of the activation criterion is thus neutral or harmful: the two-pass construction of the macroclusters, which \cref{sec:model_implementation} describes as a deviation of the reference implementation, is not a defect to be removed. \modelname{chi-threshold} collapses in every two-dimensional dataset, where it predicts a single cluster in all batches. For $d = 2$ its limit is $q \le 1 + m$, which for the values of $m$ close to one that \cref{eq:m_function} gives to young microclusters is twice as permissive as $q \le m^2$, and the microclusters grow until they form a single macrocluster.
+
+\subsection{Sensitivity Function}
+
+\input{ModelImprovement/artifacts/m_function/quality.tex}
+
+None of the reparameterizations of $m$ improves the corrected model (\cref{tab:mi_m_function_quality}). \modelname{m-reparam} and \modelname{m-asymptote} regress, and \modelname{m-constant} gains in B1 and B2 at the cost of five of the remaining six datasets. Each of these variants adds one or two hyperparameters to a search with a fixed budget of trials, and the tuned values vary widely between datasets, with medians of $m_{\max}$ from $2.5$ to $5.8$ and of $S_{95}$ from $43$ to $1244$ for \modelname{m-reparam}. The original function is retained.
+
+\subsection{Combined Improvements}
+\label{subsec:mi_improvements_combined}
+
+The four changes that helped in isolation are evaluated in every combination of two, three and four of them. In the names of the combinations, \modelname{single}, \modelname{cap}, \modelname{noise} and \modelname{relative} stand for \modelname{single-assign}, \modelname{variance-cap}, \modelname{noise-label} and \modelname{relative-limit}.
+
+\input{ModelImprovement/artifacts/improvements_combined/quality.tex}
+
+Nine of the eleven combinations improve the corrected model (\cref{tab:mi_improvements_combined_quality}), and the two that do not, \modelname{single + cap} and \modelname{cap + noise}, each lose in one dataset, CSN and DS3 respectively. The two losses explained in the previous subsection disappear as predicted: \modelname{noise + relative} gains in DS3, where \modelname{noise-label} alone lost, and \modelname{cap + relative} gains in DS4, where \modelname{relative-limit} alone lost.
+
+Since several combinations improve the control, the decision rule does not single one out. The combination that becomes the improved model is chosen in two steps: it must not be improved upon by any other combination in a direct comparison, and, among those that satisfy this, it must have the largest number of significant gains over the corrected model. \modelname{single + relative} and \modelname{single + noise + relative} have the most gains, twelve each over the two metrics and eight datasets. \Cref{tab:mi_improvements_selection_quality} gives the direct comparisons that decide between the leading combinations.
+
+\input{ModelImprovement/artifacts/improvements_selection/quality.tex}
+
+\modelname{single + noise + relative} improves \modelname{single + relative}, in B1, and no combination improves it. Its comparison with \modelname{noise + relative} is mixed, with gains in the Steady-State ARI of B1 and DS4 and a loss in that of S64, from $1.000$ to $0.982$. Adding \modelname{variance-cap} to it regresses in DS3. The only other combination that no other improves is \modelname{cap + noise + relative}, which has seven gains over the corrected model. The two differ by a trade-off that the rule does not resolve: \modelname{single + noise + relative} is better in B1 and \modelname{cap + noise + relative} is better in DS4.
+
+The improved model is therefore the corrected model with \modelname{single-assign}, \modelname{noise-label} and \modelname{relative-limit}. Compared with the corrected model, it gains in the Overall ARI of B1, B2, DS3, S32 and S64 and in the Steady-State ARI of every dataset except CSN, where its medians are lower without the difference being significant.
+
+\subsection{Refinements of the Improved Model}
+\label{subsec:mi_geometry}
+
+Four further changes are evaluated on the improved model. Two of them, \modelname{forgetting} and \modelname{recency}, did not help the corrected model, but they target the tracking of moving clusters, which the improved model now does better, so they are given a second chance. The third is the removal of the dimensionality penalty, which improved the \modelname{vectorized} model, was rejected in \cref{sec:mi_corrections} because the penalty accidentally separated part of the noise, and can be reconsidered now that the noise is labelled explicitly. The fourth, \modelname{persistent-labels}, makes each macrocluster keep the label of the macrocluster with which it shares most of its mass across updates, instead of being renumbered at every update. It does not change the partition predicted for a batch, but the objective of the hyperparameter search computes the ARI over the predictions of all batches together (\cref{subsec:hyperparameter_tuning}), where a renumbering counts as a disagreement.
+
+\input{ModelImprovement/artifacts/refinements/quality.tex}
+
+Only the removal of the penalty improves the improved model (\cref{tab:mi_refinements_quality}): it takes the Overall and Steady-State ARI of S32 and S64 to $1.000$. \modelname{persistent-labels} and \modelname{forgetting} are indistinguishable from the control, and \modelname{recency} regresses in DS3 and DS4.
+
+The first two rows of each panel also give a measure of the noise of the protocol. In the six two-dimensional datasets the factor $2/d$ is one, so \modelname{improved} and \modelname{improved + no-penalty} are the same algorithm, tuned twice with the same seeds. Their medians still differ, by up to $0.05$ in the Overall ARI (B1 and B2) and $0.08$ in the Steady-State ARI (B1), because the objective of the hyperparameter search includes the measured execution time and two executions of the search can therefore select different hyperparameters. None of these differences is significant, and differences of this size between distinct models should not be read as effects.
+
+The final model, \MicroTEDAClusPlus, is therefore the improved model without the dimensionality penalty. \Cref{sec:mi_final_model} defines it.
+
+\subsection{Covariance of the Microclusters}
+\label{subsec:mi_covariance}
+
+Every model evaluated so far describes a microcluster by a scalar variance, which assumes the same dispersion in all directions. This experiment replaces the variance by a covariance matrix and the Euclidean distance by the Mahalanobis distance, which \cref{info:mahalanobis_as_teda_metric} lists among the proximity functions suited to the TEDA metrics.
+
+The covariance follows the recursion of the variance,
+
+\begin{equation}
+    \Sigma_S = \frac{S - 1}{S} \Sigma_{S-1} + \frac{1}{S - 1} (x - \mu_S)(x - \mu_S)^T
+    \label{eq:mi_covariance_recursion}
+\end{equation}
+
+whose trace is the scalar variance, and the standardized distance of \cref{eq:mi_standardized_distance} becomes the Mahalanobis distance divided by the dimension,
+
+\begin{equation}
+    q(x) = \frac{1}{d} (x - \mu)^T \Sigma^{-1} (x - \mu)
+    \label{eq:mi_mahalanobis_distance}
+\end{equation}
+
+which coincides with it when the covariance is isotropic. Two properties of the covariance require care.
+
+First, the covariance of a microcluster with few samples is singular. The matrix that is inverted is therefore shrunk towards the isotropic matrix with the same trace, $\tilde{\Sigma} = (1 - \alpha)\,\Sigma + \alpha\,\frac{\operatorname{tr}\Sigma}{d}\,I$, with $\alpha = d/(d + S - 1)$. A young microcluster behaves as an isotropic one and becomes anisotropic as it accumulates samples.
+
+Second, the TEDA statistics include the sample under test, and with a full covariance this hides the sample from the test. For a covariance computed with the sample, $(x - \mu)^T \Sigma^{-1} (x - \mu) \le S - 1$, so $q(x) \le (S - 1)/d$, and the outlier condition $q(x) > m^2$ cannot hold before the microcluster has $S > 1 + m^2 d$ samples: more than 65 samples in S64, even with $m = 1$. With the scalar variance the same bound is $q(x) \le S - 1$, which does not involve the dimension. The distance is therefore measured against the covariance before the sample is absorbed, $q_0$, and converted by the identity that relates the two distances in the scalar recursion, $q = c\,q_0 / (1 + c\,q_0/(S - 1))$ with $c = (S - 1)/S$, which keeps the test identical to the isotropic one whenever the covariance is isotropic.
+
+The intersection condition is generalized in two ways. In \modelname{covariance, directional link}, the standard deviation of each microcluster in \cref{eq:microcluster_intersection_condition} is taken along the line that joins the two means, $s_i^2 = e^T \tilde{\Sigma}_i\, e$ with $e$ the unit vector of that line, and the condition becomes $\lVert \mu_i - \mu_j \rVert \le 2 \sqrt{d}\,(s_i + s_j)$. In \modelname{covariance, Bhattacharyya link}, two microclusters intersect when the Bhattacharyya distance between the Gaussian distributions with their means and covariances is at most $2d$. Both reduce to \cref{eq:microcluster_intersection_condition} for two microclusters with the same isotropic covariance. The Bhattacharyya distance requires a determinant and a linear solve per pair of microclusters, so it is applied for $d \le 16$, and the directional condition is used above that. The prediction uses the nearest microcluster by \cref{eq:mi_mahalanobis_distance}.
+
+%%GEOMETRY-RESULTS%%
+
+\subsection{Order-Independent Densities in the Final Model}
+\label{subsec:mi_density_revisited}
+
+The corrections of \cref{sec:mi_corrections} rejected the two order-independent densities when the density still weighted the membership. In the final model the density only decides which microclusters are active, so the two densities are evaluated once more, on the final model.
+
+\input{ModelImprovement/artifacts/density_revisited/quality.tex}
+
+Both regress (\cref{tab:mi_density_revisited_quality}). \modelname{peak-density} loses in DS3, where its Steady-State ARI falls to zero, and \modelname{volume-density} loses in five datasets. The density of the last absorbed sample is retained.
+
+\section{Validation}
+\label{sec:mi_validation}
+
+The four models of the chain, \modelname{vectorized}, \modelname{corrected}, \modelname{improved} and \modelname{final}, were tuned and evaluated again on the 94 validation runs, which took no part in any of the choices above (\cref{subsec:mi_runs}). \Cref{tab:mi_validation_ari_overall,tab:mi_validation_ari_steadystate} compare each model with its predecessor, and \cref{tab:mi_validation_final_vs_vectorized} compares the final model with the \modelname{vectorized} one directly.
+
+\input{ModelImprovement/artifacts/validation/ari_overall.tex}
+\input{ModelImprovement/artifacts/validation/ari_steadystate.tex}
+\input{ModelImprovement/artifacts/validation/final_vs_vectorized.tex}
+
+Every step of the chain is confirmed: each model improves its predecessor and none regresses on the two metrics of the decision rule.
+
+\begin{itemize}
+    \item The corrected model improves the \modelname{vectorized} one in B2, DS3, S32 and S64, on both metrics.
+    \item The improved model improves the corrected one in the Overall ARI of every dataset except CSN, and in the Steady-State ARI of B1, RBF, DS3, DS4, S32 and S64.
+    \item The final model improves the improved one in S32, on both metrics.
+\end{itemize}
+
+From the \modelname{vectorized} model to the final one, the Overall ARI improves in every dataset except CSN and the Steady-State ARI improves in all eight. The largest changes are in the streams with noise and movement: the median Overall ARI of B1 goes from $0.000$ to $0.853$ and that of S64 from $0.675$ to $1.000$, and the median Steady-State ARI of S32 and S64 goes from $0.140$ and $0.000$ to $1.000$. Averaged over the datasets, the median Overall ARI goes from $0.438$ to $0.631$ and the median Steady-State ARI from $0.180$ to $0.652$. The gains in the static shapes are significant but modest: in CSN, DS3 and DS4 the final model stays below $0.5$, a limitation that \cref{sec:mi_selection} examines.
+
+The two metrics that do not take part in the decision agree with it, with one exception (\cref{tab:mi_validation_ari_fifth,tab:mi_validation_ari_diff} of \cref{app:mi_tables}). The final model is better than the \modelname{vectorized} one at the fifth batch in B1, DS3, DS4, S32 and S64, and has a smaller maximum ARI drop in every dataset except CSN. The exception is the corrected model, whose ARI at the fifth batch is lower than that of the \modelname{vectorized} model in S64, $0.864$ against $0.924$; the improved model removes that loss.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{ModelImprovement/artifacts/validation/plots/ari_trajectories.png}
+    \caption{ARI of each evaluation batch for the accepted models: median and interquartile range over the 94 validation runs.}
+    \label{fig:mi_validation_trajectories}
+\end{figure}
+
+\Cref{fig:mi_validation_trajectories} shows where the gains come from. In B1, the \modelname{vectorized} and corrected models lose the two clusters when they cross and do not recover, while the improved and final models separate them again. In RBF, the first two models degrade along the stream and the last two hold their level. In S32 and S64, the \modelname{vectorized} model degrades along the stream, the corrected model stabilizes below one because it assigns the noise to the clusters, and the models with the noise label reach one.
+
+%%VALIDATION-COST%%
+
+\section{The Final Model}
+\label{sec:mi_final_model}
+
+\MicroTEDAClusPlus keeps the structure of \MicroTEDAClus: microclusters updated recursively with the TEDA statistics, macroclusters as connected components of the graph of intersecting active microclusters, and pruning of the inactive microclusters by vitality. It differs from the algorithm of the reference implementation in the five points that the experiments accepted, listed in \cref{tab:mi_final_differences}. It has three hyperparameters: the relative variance limit $r$, the decay, with $\rho = 1/\text{decay}$, and the noise distance $n_\sigma$.
+
+\begin{table}[htbp]
+\centering
+\caption{Differences between \MicroTEDAClusPlus and the algorithm of the reference implementation of \MicroTEDAClus.}
+\begin{tabular}{l p{0.36\textwidth} p{0.36\textwidth}}
+\toprule
+ & \MicroTEDAClus & \MicroTEDAClusPlus \\
+\midrule
+Membership & macrocluster with the largest density-weighted sum of $1 - \zeta$ & macrocluster of the active microcluster with the smallest standardized distance \\
+Update & every microcluster that accepts the sample & the nearest microcluster that accepts the sample \\
+Noise & every sample is assigned to a macrocluster & a sample farther than $n_\sigma$ standard deviations from every active microcluster is noise \\
+Variance limit & absolute, $r_0$ & relative to the variance of the stream, $r_0 = r\,\sigma^2_{\text{stream}}$ \\
+Distances & scaled by $2/d$ & not scaled \\
+\bottomrule
+\end{tabular}
+\label{tab:mi_final_differences}
+\end{table}
+
+\subsection{Microclusters}
+
+A microcluster $i$ is described by its number of samples $S^i$, its mean $\mu^i$, its variance $(\sigma^i)^2$, its density $D^i$, its vitality $v^i$ and a flag that tells whether it is active. The model also keeps the variance of the stream, $\sigma^2_{\text{stream}}$, the mean squared distance of the samples seen so far to their mean, updated before each batch is learned.
+
+For a sample $x$ and a microcluster $i$, let the statistics that the microcluster would have after absorbing the sample be
+
+\begin{equation}
+\begin{gathered}
+    S' = S^i + 1, \qquad \mu' = \frac{S' - 1}{S'} \mu^i + \frac{x}{S'}, \qquad \sigma'^2 = \frac{S' - 1}{S'} (\sigma^i)^2 + \frac{\lVert x - \mu' \rVert^2}{S' - 1}, \\
+    \xi' = \frac{1}{S'} + \frac{\lVert x - \mu' \rVert^2}{S' \sigma'^2}
+\end{gathered}
+\label{eq:mi_tentative_update}
+\end{equation}
+
+with $\xi' = 1/S'$ when $\sigma'^2 = 0$. The sample is an outlier to the microcluster if
+
+\begin{equation}
+    \begin{cases}
+        \sigma'^2 > r\,\sigma^2_{\text{stream}}, & S' < 3 \\[4pt]
+        \dfrac{\xi'}{2} > \dfrac{m(S')^2 + 1}{2 S'}, & S' \ge 3
+    \end{cases}
+    \label{eq:mi_final_outlier}
+\end{equation}
+
+where $m$ is the function of \cref{eq:m_function}. \Cref{alg:mi_final_microclusters} processes a sample.
+
+\begin{algorithm}[htbp]
+\caption{Microcluster update of \MicroTEDAClusPlus for a sample $x$}
+\label{alg:mi_final_microclusters}
+\begin{algorithmic}[1]
+\Require $x$, the microclusters, $r$, $\rho$, $\sigma^2_{\text{stream}}$
+\State $A \gets$ the microclusters to which $x$ is not an outlier by \cref{eq:mi_final_outlier}
+\If{$A = \emptyset$}
+    \State create a microcluster with $S = 1$, $\mu = x$, $\sigma^2 = 0$, $D = 0$, $v = 1$, flagged as active
+\Else
+    \State $i \gets \arg\min_{l \in A} \lVert x - \mu^l \rVert$
+    \State $v^i \gets v^i + \rho\,(\sigma^i - \lVert x - \mu^i \rVert)/\sigma^i$ if $\sigma^i > 0$, otherwise $v^i \gets 1$
+    \State $S^i \gets S'$, $\mu^i \gets \mu'$, $(\sigma^i)^2 \gets \sigma'^2$, $D^i \gets 2/\xi'$, from \cref{eq:mi_tentative_update}
+\EndIf
+\For{each microcluster $l$ that is not active}
+    \State $v^l \gets v^l - \rho$
+    \State remove $l$ if $v^l < 0$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Macroclusters}
+
+The macroclusters are rebuilt after each batch. Two microclusters intersect when \cref{eq:microcluster_intersection_condition} holds between their means and standard deviations, which defines the graph $\mathbb{G}_0$. In each connected component of $\mathbb{G}_0$, a microcluster is active if it has at least three samples and its density is not below the mean density of the microclusters of the component. The macroclusters are the connected components of $\mathbb{G}_1$, the subgraph of $\mathbb{G}_0$ induced by the active microclusters.
+
+\subsection{Prediction}
+
+Let $q^l(x) = \lVert x - \mu^l \rVert^2 / (\sigma^l)^2$ be the standardized squared distance of a sample to an active microcluster $l$, and $l^* = \arg\min_l q^l(x)$. The sample is labelled as noise if $q^{l^*}(x) > n_\sigma^2$, and receives the label of the macrocluster of $l^*$ otherwise. Before the first batch is learned there is no active microcluster, and every sample is labelled as noise.
+
+\subsection{What Remains of the Original Model}
+
+The function $m$, the density, the activation criterion, the two-pass construction of the macroclusters and the vitality mechanism are those of the reference implementation. Each of them was challenged in this chapter by at least one alternative and none of the alternatives improved the model. In particular, the density of a microcluster is still the density of the last sample it absorbed, the order dependence identified in \cref{subsubsec:order_dependent_characteristics}: in \MicroTEDAClusPlus it only decides which microclusters are active, and \cref{subsec:mi_density_revisited} verifies whether an order-independent density can replace it there.
+
+The hyperparameters are searched in $r \in [10^{-6}, 1]$ and $\text{decay} \in [10, 10^4]$, both on a logarithmic scale, and $n_\sigma \in [1, 10]$.

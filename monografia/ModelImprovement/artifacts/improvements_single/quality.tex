@@ -1,0 +1,42 @@
+\begin{table}[htbp]
+\centering
+\caption{Improvements, one at a time: Overall and Steady-State ARI. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively. The last column gives the outcome of the decision rule: improvement ($+$), regression ($-$), both ($\pm$) or neither ($=$).}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c c c}
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 & Rule \\
+\midrule
+\multicolumn{10}{l}{\textit{Overall ARI}} \\
+\modelname{corrected} & 0.037 & 0.578 & 0.498 & 0.599 & 0.239 & 0.242 & 0.964 & 0.856 &  \\
+\modelname{variance-cap} & 0.043 & 0.617 & 0.522 & 0.502 & 0.234 & 0.273 & 0.867 & 0.859 & $+$ \\
+\modelname{soft-activation} & 0.028 & 0.567 & 0.444 & 0.573 & \textcolor{red}{0.215} & 0.240 & 0.978 & 0.855 & $-$ \\
+\modelname{no-activation} & 0.004 & 0.475 & \textcolor{red}{0.171} & \textcolor{red}{0.422} & \textcolor{red}{0.215} & 0.259 & 0.978 & 0.857 & $-$ \\
+\modelname{single-graph} & 0.020 & 0.589 & 0.434 & 0.680 & 0.236 & 0.253 & 0.969 & 0.857 & $=$ \\
+\modelname{link-factor} & 0.113 & 0.598 & 0.438 & \textcolor{red}{0.449} & 0.220 & \textbf{0.271} & 0.957 & 0.893 & $\pm$ \\
+\modelname{recency} & 0.052 & \textcolor{red}{0.555} & 0.388 & \textcolor{red}{0.497} & 0.172 & \textbf{0.522} & 0.871 & 0.856 & $\pm$ \\
+\modelname{recency-inactive} & 0.067 & 0.592 & 0.508 & \textcolor{red}{0.481} & 0.237 & 0.232 & 0.940 & 0.856 & $-$ \\
+\modelname{forgetting} & 0.048 & 0.601 & 0.494 & 0.560 & 0.238 & 0.230 & 0.954 & 0.857 & $=$ \\
+\modelname{noise-label} & \textbf{0.919} & 0.613 & 0.520 & 0.540 & \textcolor{red}{0.151} & 0.191 & \textbf{0.982} & \textbf{1.000} & $\pm$ \\
+\modelname{single-assign} & 0.151 & \textbf{0.648} & 0.512 & 0.465 & 0.234 & 0.246 & \textbf{0.990} & \textbf{0.993} & $+$ \\
+\modelname{chi-threshold} & \textcolor{red}{0.000} & \textcolor{red}{0.000} & \textcolor{red}{0.000} & \textcolor{red}{0.000} & \textcolor{red}{0.000} & \textcolor{red}{0.000} & \textcolor{red}{0.860} & 0.859 & $-$ \\
+\modelname{relative-limit} & \textbf{0.085} & 0.628 & 0.501 & 0.595 & \textbf{0.351} & 0.336 & 0.885 & 0.856 & $\pm$ \\
+\midrule
+\multicolumn{10}{l}{\textit{Steady-State ARI}} \\
+\modelname{corrected} & 0.000 & 0.680 & 0.180 & 0.593 & 0.185 & 0.201 & 0.897 & 0.848 &  \\
+\modelname{variance-cap} & 0.000 & 0.929 & \textbf{0.504} & 0.429 & 0.179 & 0.208 & 0.853 & 0.849 & $+$ \\
+\modelname{soft-activation} & 0.000 & 0.538 & 0.018 & 0.617 & \textcolor{red}{0.163} & 0.195 & 0.964 & 0.857 & $-$ \\
+\modelname{no-activation} & 0.000 & \textcolor{red}{0.000} & 0.015 & 0.100 & \textcolor{red}{0.142} & 0.203 & 0.972 & 0.847 & $-$ \\
+\modelname{single-graph} & 0.000 & 0.637 & 0.227 & 0.731 & 0.184 & 0.205 & 0.895 & 0.855 & $=$ \\
+\modelname{link-factor} & 0.025 & 0.806 & 0.226 & 0.321 & 0.157 & 0.209 & 0.900 & 0.850 & $\pm$ \\
+\modelname{recency} & 0.000 & 0.430 & 0.002 & 0.003 & 0.185 & \textbf{0.482} & 0.889 & 0.847 & $\pm$ \\
+\modelname{recency-inactive} & 0.000 & 0.675 & 0.140 & 0.390 & 0.185 & 0.185 & 0.904 & 0.840 & $-$ \\
+\modelname{forgetting} & 0.000 & 0.773 & 0.448 & 0.504 & 0.185 & 0.200 & 0.897 & 0.853 & $=$ \\
+\modelname{noise-label} & \textbf{0.296} & 0.855 & 0.363 & 0.515 & \textcolor{red}{0.163} & 0.167 & \textbf{0.982} & \textbf{1.000} & $\pm$ \\
+\modelname{single-assign} & \textbf{0.000} & \textbf{0.938} & 0.425 & 0.524 & 0.176 & 0.197 & \textbf{0.983} & \textbf{0.990} & $+$ \\
+\modelname{chi-threshold} & \textcolor{red}{0.000} & \textcolor{red}{0.000} & \textcolor{red}{0.000} & \textcolor{red}{0.000} & \textcolor{red}{0.000} & \textcolor{red}{0.000} & 0.867 & 0.849 & $-$ \\
+\modelname{relative-limit} & \textbf{0.010} & \textbf{0.909} & 0.254 & 0.573 & \textbf{0.347} & \textcolor{red}{0.023} & 0.855 & 0.835 & $\pm$ \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_improvements_single_quality}
+\end{table}

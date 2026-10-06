@@ -1,0 +1,32 @@
+\begin{table}[htbp]
+\centering
+\caption{Direct comparisons between combinations: ARI at the fifth batch and maximum ARI drop. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l l c c c c c c c c}
+\toprule
+Model & Control & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{10}{l}{\textit{ARI at the Fifth Batch}} \\
+\modelname{single + relative} &  & 0.889 & 0.557 & 0.621 & 0.371 & 0.321 & 0.220 & 0.993 & 0.993 \\
+\modelname{noise + relative} &  & 0.978 & 0.567 & 0.643 & 0.561 & 0.243 & 0.184 & 0.988 & 0.986 \\
+\modelname{single + noise + relative} & \modelname{single + relative} & \textbf{0.978} & 0.573 & 0.629 & 0.455 & 0.296 & 0.231 & 0.991 & 0.991 \\
+\modelname{single + noise + relative} & \modelname{noise + relative} & 0.978 & 0.573 & 0.629 & 0.455 & 0.296 & 0.231 & 0.991 & 0.991 \\
+\modelname{single + noise + relative} & \modelname{cap + noise + relative} & 0.978 & 0.573 & 0.629 & 0.455 & 0.296 & \textcolor{red}{0.231} & 0.991 & 0.991 \\
+\modelname{cap + noise + relative} & \modelname{noise + relative} & 0.978 & 0.550 & 0.653 & 0.611 & 0.289 & \textbf{0.456} & 0.989 & 1.000 \\
+\modelname{single + cap + noise + relative} & \modelname{single + noise + relative} & 0.978 & 0.552 & 0.646 & 0.441 & \textcolor{red}{0.166} & 0.250 & 0.990 & 0.994 \\
+\modelname{single + cap + noise + relative} & \modelname{cap + noise + relative} & 0.978 & 0.552 & 0.646 & \textcolor{red}{0.441} & \textcolor{red}{0.166} & \textcolor{red}{0.250} & 0.990 & 0.994 \\
+\midrule
+\multicolumn{10}{l}{\textit{Maximum ARI Drop}} \\
+\modelname{single + relative} &  & 0.284 & 0.118 & 0.402 & 0.223 & 0.097 & 0.146 & 0.018 & 0.014 \\
+\modelname{noise + relative} &  & 0.617 & 0.122 & 0.629 & 0.260 & 0.170 & 0.231 & 0.000 & 0.000 \\
+\modelname{single + noise + relative} & \modelname{single + relative} & 0.136 & 0.131 & 0.484 & 0.200 & 0.116 & 0.186 & 0.017 & 0.018 \\
+\modelname{single + noise + relative} & \modelname{noise + relative} & \textbf{0.136} & 0.131 & 0.484 & 0.200 & 0.116 & \textbf{0.186} & 0.017 & \textcolor{red}{0.018} \\
+\modelname{single + noise + relative} & \modelname{cap + noise + relative} & 0.136 & 0.131 & 0.484 & 0.200 & 0.116 & \textcolor{red}{0.186} & 0.017 & 0.018 \\
+\modelname{cap + noise + relative} & \modelname{noise + relative} & 0.512 & 0.196 & 0.444 & 0.272 & 0.151 & \textbf{0.112} & 0.008 & 0.000 \\
+\modelname{single + cap + noise + relative} & \modelname{single + noise + relative} & 0.247 & 0.133 & 0.452 & 0.283 & 0.215 & 0.231 & 0.015 & 0.013 \\
+\modelname{single + cap + noise + relative} & \modelname{cap + noise + relative} & 0.247 & 0.133 & 0.452 & 0.283 & 0.215 & \textcolor{red}{0.231} & 0.015 & 0.013 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_improvements_selection_quality_other}
+\end{table}

@@ -1,0 +1,40 @@
+\begin{table}[htbp]
+\centering
+\caption{Refinements of the improved model: steady-state microcluster count and memory footprint, and cumulative fitting and prediction times measured under parallel load. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c c}
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{Steady-State Microcluster Count}} \\
+\modelname{improved} & 347 & 26 & 374 & 36 & 26 & 31 & 13 & 10 \\
+\modelname{improved + no-penalty} & 366 & 23 & 380 & 36 & 26 & 31 & 12 & 11 \\
+\modelname{improved + persistent-labels} & 292 & 24 & 283 & 52 & 26 & 234 & 12 & 10 \\
+\modelname{improved + forgetting} & 246 & 34 & 289 & 36 & 28 & 32 & 12 & 11 \\
+\modelname{improved + recency} & 268 & 30 & 518 & \textcolor{red}{245} & \textcolor{red}{386} & \textcolor{red}{632} & 14 & 10 \\
+\midrule
+\multicolumn{9}{l}{\textit{Steady-State Memory Footprint [kB]}} \\
+\modelname{improved} & 86 & 24 & 88 & 24 & 24 & 24 & 75 & 126 \\
+\modelname{improved + no-penalty} & 84 & 23 & 90 & 24 & 24 & 24 & 71 & \textbf{122} \\
+\modelname{improved + persistent-labels} & 63 & 23 & 66 & 26 & 24 & 60 & 75 & 126 \\
+\modelname{improved + forgetting} & 70 & 24 & 68 & 24 & 24 & 24 & 75 & 127 \\
+\modelname{improved + recency} & 46 & 24 & 89 & \textcolor{red}{45} & \textcolor{red}{85} & \textcolor{red}{94} & 76 & 126 \\
+\midrule
+\multicolumn{9}{l}{\textit{Cumulative Fitting Time [ms]}} \\
+\modelname{improved} & 170 & 40 & 500 & 45 & 110 & 120 & 50 & 50 \\
+\modelname{improved + no-penalty} & 145 & 40 & 435 & 50 & 100 & 120 & 60 & 40 \\
+\modelname{improved + persistent-labels} & 140 & 50 & 430 & 60 & 120 & 265 & \textbf{40} & 50 \\
+\modelname{improved + forgetting} & 125 & 35 & 375 & 40 & 120 & 90 & 50 & 40 \\
+\modelname{improved + recency} & 130 & 40 & 665 & \textcolor{red}{145} & \textcolor{red}{530} & \textcolor{red}{635} & \textbf{40} & 40 \\
+\midrule
+\multicolumn{9}{l}{\textit{Cumulative Prediction Time [ms]}} \\
+\modelname{improved} & 10 & 10 & 40 & 10 & 20 & 20 & 10 & 10 \\
+\modelname{improved + no-penalty} & 10 & 10 & 40 & 10 & 20 & 20 & 10 & \textbf{10} \\
+\modelname{improved + persistent-labels} & 10 & 10 & 40 & 10 & 20 & 20 & 10 & 10 \\
+\modelname{improved + forgetting} & 10 & 10 & 40 & 10 & 20 & 20 & 10 & 10 \\
+\modelname{improved + recency} & \textbf{10} & 10 & 50 & \textcolor{red}{20} & \textcolor{red}{50} & \textcolor{red}{50} & 10 & \textbf{10} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_refinements_cost}
+\end{table}

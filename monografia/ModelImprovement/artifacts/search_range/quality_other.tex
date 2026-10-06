@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Search range of the variance limit: ARI at the fifth batch and maximum ARI drop. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c c}
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{ARI at the Fifth Batch}} \\
+\modelname{nearest + no-penalty} & 0.875 & 0.564 & 0.594 & 0.558 & 0.254 & 0.102 & 0.869 & 0.863 \\
+\modelname{nearest + no-penalty, wide range} & 0.836 & 0.556 & 0.537 & 0.626 & \textbf{0.309} & \textbf{0.210} & 0.857 & 0.867 \\
+\midrule
+\multicolumn{9}{l}{\textit{Maximum ARI Drop}} \\
+\modelname{nearest + no-penalty} & 0.944 & 0.167 & 0.729 & 0.220 & 0.355 & 0.213 & 0.080 & 0.096 \\
+\modelname{nearest + no-penalty, wide range} & 0.939 & 0.111 & 0.716 & 0.290 & \textbf{0.159} & \textcolor{red}{0.481} & 0.082 & 0.101 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_search_range_quality_other}
+\end{table}

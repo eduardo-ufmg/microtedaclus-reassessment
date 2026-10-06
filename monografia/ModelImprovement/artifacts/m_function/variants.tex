@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\centering
+\caption{Reparameterizations of the m function: models evaluated.}
+\begin{tabular}{l p{0.62\textwidth}}
+\toprule
+Model & Change relative to its base \\
+\midrule
+\modelname{corrected} & membership by the smallest $d^2/\sigma^2$ \\
+\modelname{m-reparam} & $m(3) = 1$, $m(S_{95}) = 0.95\,m_{\max}$; $m_{\max}$ and $S_{95}$ tuned \\
+\modelname{m-constant} & constant $m$, tuned in $[1, 5]$ \\
+\modelname{m-asymptote} & original sigmoid with its asymptote tuned in $[1.05, 10]$ \\
+\bottomrule
+\end{tabular}
+\label{tab:mi_m_function_variants}
+\end{table}

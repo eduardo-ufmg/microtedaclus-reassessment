@@ -1,0 +1,38 @@
+\begin{table}[htbp]
+\centering
+\caption{Corrections, one at a time: ARI at the fifth batch and maximum ARI drop. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c c}
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{ARI at the Fifth Batch}} \\
+\modelname{vectorized} & 0.834 & 0.543 & 0.579 & 0.566 & 0.218 & 0.102 & 0.928 & 0.907 \\
+\modelname{born-inactive} & 0.849 & 0.571 & 0.575 & 0.510 & \textcolor{red}{0.129} & \textbf{0.175} & 0.931 & 0.961 \\
+\modelname{peak-density} & 0.856 & 0.544 & 0.610 & 0.498 & 0.222 & 0.102 & 0.948 & 0.894 \\
+\modelname{volume-density} & 0.825 & 0.573 & 0.540 & 0.380 & 0.218 & 0.146 & 0.993 & 0.884 \\
+\modelname{mature-mean} & 0.861 & 0.562 & 0.579 & 0.495 & 0.218 & 0.146 & 0.916 & 0.881 \\
+\modelname{no-penalty} & 0.845 & 0.548 & 0.579 & 0.567 & 0.218 & 0.102 & \textcolor{red}{0.869} & 0.863 \\
+\modelname{norm-typicality} & 0.830 & 0.561 & 0.580 & 0.424 & \textcolor{red}{0.130} & 0.000 & \textcolor{red}{0.785} & 0.869 \\
+\modelname{local-weights} & 0.821 & 0.577 & 0.639 & 0.451 & \textcolor{red}{0.124} & 0.000 & \textcolor{red}{0.803} & 0.876 \\
+\modelname{density-sum} & 0.829 & 0.527 & 0.641 & 0.497 & 0.218 & 0.102 & 0.880 & 0.881 \\
+\modelname{density-max} & 0.843 & 0.532 & 0.581 & 0.522 & 0.218 & 0.102 & \textcolor{red}{0.877} & 0.880 \\
+\modelname{nearest} & 0.844 & 0.562 & 0.637 & 0.617 & 0.254 & 0.102 & 0.956 & 0.867 \\
+\midrule
+\multicolumn{9}{l}{\textit{Maximum ARI Drop}} \\
+\modelname{vectorized} & 0.907 & 0.434 & 0.807 & 0.322 & 0.250 & 0.234 & 0.982 & 1.000 \\
+\modelname{born-inactive} & 0.903 & 0.305 & 0.667 & 0.325 & 0.254 & 0.256 & 0.316 & 1.000 \\
+\modelname{peak-density} & 0.913 & 0.262 & 0.730 & 0.301 & \textcolor{red}{0.267} & 0.265 & 1.000 & 1.000 \\
+\modelname{volume-density} & 0.824 & 0.329 & \textbf{0.542} & 0.329 & 0.255 & 0.222 & 1.000 & 1.000 \\
+\modelname{mature-mean} & 0.903 & 0.393 & 0.681 & 0.260 & \textcolor{red}{0.269} & 0.218 & 0.887 & 0.605 \\
+\modelname{no-penalty} & 0.903 & 0.309 & 0.807 & 0.300 & 0.250 & 0.233 & \textbf{0.077} & \textbf{0.097} \\
+\modelname{norm-typicality} & 0.904 & 0.390 & 0.686 & 0.322 & 0.230 & \textbf{0.148} & 0.282 & 0.171 \\
+\modelname{local-weights} & 0.897 & 0.405 & 0.694 & 0.265 & \textbf{0.218} & \textbf{0.172} & 0.194 & \textbf{0.171} \\
+\modelname{density-sum} & 0.905 & 0.620 & 0.734 & 0.222 & 0.250 & 0.262 & 0.968 & 1.000 \\
+\modelname{density-max} & 0.911 & 0.417 & 0.687 & 0.268 & 0.250 & 0.238 & 0.981 & 1.000 \\
+\modelname{nearest} & \textcolor{red}{0.931} & 0.191 & 0.714 & 0.220 & \textcolor{red}{0.356} & 0.212 & \textbf{0.084} & \textbf{0.109} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_corrections_single_quality_other}
+\end{table}
