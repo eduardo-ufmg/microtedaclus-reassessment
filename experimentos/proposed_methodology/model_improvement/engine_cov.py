@@ -32,7 +32,77 @@ def _shrunk_inverse(cov, trace, s, dim, kappa, out):
 
 
 @njit(cache=True)
-def _fit_kernel_cov(X, count, mass, mean, variance, cov, cov_inv, density, life, active, last_seen, label, n, clock, variance_limit, fading_factor, m_mode, m_up, m_a, m_b, s_max, cap_variance, life_mode, born_active, chi_dim, kappa,):  # fmt: skip
+def _evaluate_cov(i, x, count, mass, mean, variance, cov_inv, v, variance_limit, m_mode, m_up, m_a, m_b, s_max, cap_variance, chi_dim,):  # fmt: skip
+    """Tentatively absorb x into microcluster i; returns (outlier, s, var, norm_ecc, sq).
+
+    v receives x - mean and sq its squared norm.
+    """
+    dim = len(x)
+    s = count[i] + 1.0
+    if s_max > 0.0 and s > s_max:
+        s = s_max
+    ratio = (s - 1.0) / s
+
+    sq = 0.0
+    for j in range(dim):
+        v[j] = x[j] - mean[i, j]
+        sq += v[j] * v[j]
+    # trace of the covariance after absorbing x (x - new mean = ratio * v)
+    var = ratio * variance[i] + ratio * ratio * sq / (s - 1.0)
+
+    if mass[i] + 1.0 < 3.0:
+        return var > variance_limit, s, var, 0.5, sq
+
+    d0 = 0.0
+    for a in range(dim):
+        acc = 0.0
+        for b in range(dim):
+            acc += cov_inv[i, a, b] * v[b]
+        d0 += v[a] * acc
+    q0 = max(d0, 0.0) / dim
+    # inclusion identity of the scalar recursion applied to q0
+    q = ratio * q0 / (1.0 + ratio * q0 / (s - 1.0))
+    norm_ecc = (1.0 / s + q / s) / 2.0
+    m = _sensitivity(s, m_mode, m_up, m_a, m_b)
+    if chi_dim > 0.0:
+        limit = (2.0 + m * math.sqrt(2.0 / chi_dim)) / (2.0 * s)
+    else:
+        limit = (m * m + 1.0) / (2.0 * s)
+    outlier = norm_ecc > limit
+    if cap_variance and var > variance_limit:
+        outlier = True
+    return outlier, s, var, norm_ecc, sq
+
+
+@njit(cache=True)
+def _absorb_cov(i, v, s, var, norm_ecc, sq, clock, count, mass, mean, variance, cov, cov_inv, density, life, last_seen, fading_factor, life_mode, kappa,):  # fmt: skip
+    dim = len(v)
+    if life_mode == 0:
+        if variance[i] > 0.0:
+            radius = math.sqrt(variance[i])
+            life[i] += ((radius - math.sqrt(sq)) / radius) * fading_factor
+        else:
+            life[i] = 1.0
+    else:
+        life[i] = 1.0
+
+    ratio = (s - 1.0) / s
+    coef = ratio * ratio / (s - 1.0)
+    for a in range(dim):
+        for b in range(dim):
+            cov[i, a, b] = ratio * cov[i, a, b] + coef * v[a] * v[b]
+    for j in range(dim):
+        mean[i, j] += v[j] / s
+    count[i] = s
+    mass[i] += 1.0
+    variance[i] = var
+    density[i] = 1.0 / norm_ecc
+    last_seen[i] = clock
+    _shrunk_inverse(cov[i], var, s, dim, kappa, cov_inv[i])
+
+
+@njit(cache=True)
+def _fit_kernel_cov(X, count, mass, mean, variance, cov, cov_inv, density, life, active, last_seen, label, n, clock, variance_limit, fading_factor, m_mode, m_up, m_a, m_b, s_max, cap_variance, life_mode, born_active, chi_dim, single_assign, kappa,):  # fmt: skip
     n_samples, dim = X.shape
     v = np.empty(dim)
 
@@ -40,68 +110,34 @@ def _fit_kernel_cov(X, count, mass, mean, variance, cov, cov_inv, density, life,
         x = X[k]
         clock += 1
         is_new = True
+        best, best_dist = -1, np.inf
 
         for i in range(n):
-            s = count[i] + 1.0
-            if s_max > 0.0 and s > s_max:
-                s = s_max
-            ratio = (s - 1.0) / s
-
-            sq = 0.0
-            for j in range(dim):
-                v[j] = x[j] - mean[i, j]
-                sq += v[j] * v[j]
-            # trace of the covariance after absorbing x (x - new mean = ratio * v)
-            var = ratio * variance[i] + ratio * ratio * sq / (s - 1.0)
-
-            if mass[i] + 1.0 < 3.0:
-                outlier = var > variance_limit
-                norm_ecc = 0.5
-            else:
-                d0 = 0.0
-                for a in range(dim):
-                    acc = 0.0
-                    for b in range(dim):
-                        acc += cov_inv[i, a, b] * v[b]
-                    d0 += v[a] * acc
-                q0 = max(d0, 0.0) / dim
-                # inclusion identity of the scalar recursion applied to q0
-                q = ratio * q0 / (1.0 + ratio * q0 / (s - 1.0))
-                norm_ecc = (1.0 / s + q / s) / 2.0
-                m = _sensitivity(s, m_mode, m_up, m_a, m_b)
-                if chi_dim > 0.0:
-                    limit = (2.0 + m * math.sqrt(2.0 / chi_dim)) / (2.0 * s)
-                else:
-                    limit = (m * m + 1.0) / (2.0 * s)
-                outlier = norm_ecc > limit
-                if cap_variance and var > variance_limit:
-                    outlier = True
-
+            outlier, s, var, norm_ecc, sq = _evaluate_cov(
+                i, x, count, mass, mean, variance, cov_inv, v,
+                variance_limit, m_mode, m_up, m_a, m_b, s_max, cap_variance, chi_dim,
+            )  # fmt: skip
             if outlier:
                 continue
             is_new = False
-
-            if life_mode == 0:
-                if variance[i] > 0.0:
-                    radius = math.sqrt(variance[i])
-                    life[i] += ((radius - math.sqrt(sq)) / radius) * fading_factor
-                else:
-                    life[i] = 1.0
+            if single_assign:
+                if sq < best_dist:
+                    best, best_dist = i, sq
             else:
-                life[i] = 1.0
+                _absorb_cov(
+                    i, v, s, var, norm_ecc, sq, clock, count, mass, mean, variance, cov, cov_inv,
+                    density, life, last_seen, fading_factor, life_mode, kappa,
+                )  # fmt: skip
 
-            coef = ratio * ratio / (s - 1.0)
-            for a in range(dim):
-                for b in range(dim):
-                    cov[i, a, b] = ratio * cov[i, a, b] + coef * v[a] * v[b]
-            for j in range(dim):
-                mean[i, j] += v[j] / s
-            count[i] = s
-            mass[i] += 1.0
-            variance[i] = var
-            density[i] = 1.0 / norm_ecc
-            last_seen[i] = clock
-            _shrunk_inverse(cov[i], var, s, dim, kappa, cov_inv[i])
+        if single_assign and best >= 0:
+            outlier, s, var, norm_ecc, sq = _evaluate_cov(
+                best, x, count, mass, mean, variance, cov_inv, v,
+                variance_limit, m_mode, m_up, m_a, m_b, s_max, cap_variance, chi_dim,
+            )  # fmt: skip
+            _absorb_cov(
+                best, v, s, var, norm_ecc, sq, clock, count, mass, mean, variance, cov, cov_inv,
+                density, life, last_seen, fading_factor, life_mode, kappa,
+            )  # fmt: skip
 
         if is_new:
             count[n] = 1.0
@@ -171,8 +207,6 @@ class MicroTEDAClusCovarianceEngine(MicroTEDAClusEngine):
         **options
     ):
         options["dim_penalty"] = False
-        if options.get("single_assign"):
-            raise ValueError("single_assign is not available in the covariance engine")
         super().__init__(variance_limit, decay, **options)
         self.kappa = float(kappa)
         self.link_mode = link_mode
@@ -189,7 +223,7 @@ class MicroTEDAClusCovarianceEngine(MicroTEDAClusEngine):
             a["density"], a["life"], a["active"], a["last_seen"], a["label"], self._n, self._clock,
             self._current_limit(X), self.fading_factor, self.m_mode, self.m_up, self.m_a, self.m_b,
             self.s_max, self.cap_variance, self.life_mode, self.born_active,
-            float(X.shape[1]) if self.chi_dim else 0.0, self.kappa,
+            float(X.shape[1]) if self.chi_dim else 0.0, self.single_assign, self.kappa,
         )  # fmt: skip
 
     def _shrunk_covariance(self):

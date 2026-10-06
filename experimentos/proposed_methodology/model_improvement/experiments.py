@@ -9,7 +9,7 @@ part in the development of the model:
     validation   runs 126 to 219  the accepted models are confirmed on these runs
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from editorial_config import DATASET_ORDER
 
@@ -20,6 +20,10 @@ DATASETS = [*DATASET_ORDER, "SCL-32", "SCL-64"]
 DEVELOPMENT_RUNS = range(94, 126)
 VALIDATION_RUNS = range(126, 220)
 
+# Models accepted at the end of each stage
+CORRECTED = "c_nearest"
+IMPROVED = "ic_single_noise_relative"
+
 
 @dataclass(frozen=True)
 class Experiment:
@@ -28,6 +32,9 @@ class Experiment:
     question: str
     comparisons: tuple  # of (variant, control)
     runs: range = DEVELOPMENT_RUNS
+    stage_names: dict = field(
+        default_factory=dict
+    )  # accepted models shown by their stage name
 
     @property
     def variants(self) -> list[str]:
@@ -90,7 +97,7 @@ EXPERIMENTS = [
         "Improvements, one at a time",
         "Which single change improves the corrected model?",
         _against(
-            "c_nearest",
+            CORRECTED,
             "i_cap",
             "i_soft",
             "i_noact",
@@ -104,19 +111,21 @@ EXPERIMENTS = [
             "i_chi",
             "i_relative",
         ),
+        stage_names={CORRECTED: "corrected"},
     ),
     Experiment(
         "m_function",
         "Reparameterizations of the m function",
         "Does a tunable m function improve the corrected model?",
-        _against("c_nearest", "m_reparam", "m_constant", "m_asymptote"),
+        _against(CORRECTED, "m_reparam", "m_constant", "m_asymptote"),
+        stage_names={CORRECTED: "corrected"},
     ),
     Experiment(
         "improvements_combined",
         "Combined improvements",
         "Which combination of the changes that helped improves the corrected model without regression?",
         _against(
-            "c_nearest",
+            CORRECTED,
             "ic_single_cap",
             "ic_single_noise",
             "ic_single_relative",
@@ -129,6 +138,21 @@ EXPERIMENTS = [
             "ic_cap_noise_relative",
             "ic_single_cap_noise_relative",
         ),
+        stage_names={CORRECTED: "corrected"},
+    ),
+    Experiment(
+        "refinements",
+        "Refinements of the improved model",
+        "Which further change improves the improved model?",
+        _against(IMPROVED, "ir_nopen", "ir_labels", "ir_forget", "ir_recency"),
+        stage_names={IMPROVED: "improved"},
+    ),
+    Experiment(
+        "geometry",
+        "Covariance of the microclusters",
+        "Does a full covariance improve the isotropic model?",
+        _against("ir_nopen", "cov_directional", "cov_bhattacharyya"),
+        stage_names={IMPROVED: "improved"},
     ),
 ]
 

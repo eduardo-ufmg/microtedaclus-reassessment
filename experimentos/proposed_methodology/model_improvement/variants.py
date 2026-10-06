@@ -279,6 +279,59 @@ for size in (2, 3, 4):
         )
 
 
+# ----------------------------------------------------------------------------
+# Refinements of the improved model (single-assign + noise-label + relative-limit)
+# ----------------------------------------------------------------------------
+_, IMPROVED, IMPROVED_SPACE = combination("single", "noise", "relative")
+
+_add(
+    "ir_nopen",
+    "improved + no-penalty",
+    "",
+    {**IMPROVED, "dim_penalty": False},
+    IMPROVED_SPACE,
+)
+_add(
+    "ir_labels",
+    "improved + persistent-labels",
+    "macroclusters keep their label across updates",
+    {**IMPROVED, "stable_labels": True},
+    IMPROVED_SPACE,
+)
+_add(
+    "ir_forget",
+    "improved + forgetting",
+    "",
+    IMPROVED,
+    {**IMPROVED_SPACE, **FORGET_SPACE},
+)
+_add(
+    "ir_recency",
+    "improved + recency",
+    "",
+    {**IMPROVED, "life_mode": "recency"},
+    IMPROVED_SPACE,
+)
+
+# Geometry: full covariance against its isotropic counterpart (improved + no-penalty)
+_add(
+    "cov_directional",
+    "covariance, directional link",
+    "full covariance and Mahalanobis distance; intersection along the line that joins the means",
+    {**IMPROVED, "link_mode": "directional"},
+    IMPROVED_SPACE,
+    implementation="covariance",
+)
+_add(
+    "cov_bhattacharyya",
+    "covariance, Bhattacharyya link",
+    "full covariance and Mahalanobis distance; intersection by the Bhattacharyya distance",
+    {**IMPROVED, "link_mode": "bhattacharyya"},
+    IMPROVED_SPACE,
+    implementation="covariance",
+)
+
+
 def make_space(spec):
     class Space:
         def sample_parameters(self, trial):
