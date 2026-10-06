@@ -1,0 +1,5 @@
+# Raw outputs are kept locally for reference only; sources and generated tables are tracked.
+results*/
+metrics*/
+statistical_analysis*/
+plots/
