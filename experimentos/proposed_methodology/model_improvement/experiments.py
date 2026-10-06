@@ -111,6 +111,25 @@ EXPERIMENTS = [
         "Does a tunable m function improve the corrected model?",
         _against("c_nearest", "m_reparam", "m_constant", "m_asymptote"),
     ),
+    Experiment(
+        "improvements_combined",
+        "Combined improvements",
+        "Which combination of the changes that helped improves the corrected model without regression?",
+        _against(
+            "c_nearest",
+            "ic_single_cap",
+            "ic_single_noise",
+            "ic_single_relative",
+            "ic_cap_noise",
+            "ic_cap_relative",
+            "ic_noise_relative",
+            "ic_single_cap_noise",
+            "ic_single_cap_relative",
+            "ic_single_noise_relative",
+            "ic_cap_noise_relative",
+            "ic_single_cap_noise_relative",
+        ),
+    ),
 ]
 
 EXPERIMENT_BY_KEY = {e.key: e for e in EXPERIMENTS}

@@ -9,6 +9,7 @@ the registry reads as the sequence of changes that were tried:
 
 from dataclasses import dataclass, field
 from functools import partial
+from itertools import combinations
 
 BASE_SPACE = {
     "variance_limit": ("float", 0.0001, 100.0, True),
@@ -246,6 +247,36 @@ _add(
     CORRECTED,
     {"m_up": ("float", 1.05, 10.0, False)},
 )
+
+
+# ----------------------------------------------------------------------------
+# Combined improvements: every combination of the four changes that helped
+# ----------------------------------------------------------------------------
+COMPONENTS = {
+    "single": ("single-assign", {"single_assign": True}, {}),
+    "cap": ("variance-cap", {"cap_variance": True}, {}),
+    "noise": ("noise-label", {}, NOISE_SPACE),
+    "relative": ("relative-limit", {"relative_limit": True}, RELATIVE_SPACE),
+}
+
+
+def combination(*names) -> tuple[str, dict, dict]:
+    """Label, options and search space of the corrected model plus the named changes."""
+    options, space = dict(CORRECTED), {}
+    for name in names:
+        options.update(COMPONENTS[name][1])
+        space.update(COMPONENTS[name][2])
+    return " + ".join(COMPONENTS[name][0] for name in names), options, space
+
+
+for size in (2, 3, 4):
+    for names in combinations(COMPONENTS, size):
+        _add(
+            "ic_" + "_".join(names),
+            *combination(*names)[:1],
+            "",
+            *combination(*names)[1:]
+        )
 
 
 def make_space(spec):
