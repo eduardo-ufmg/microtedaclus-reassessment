@@ -44,8 +44,6 @@ DATASET_ORDER = [
     "chameleon_ds4",
 ]
 
-ITERATIVE_DATASET_ORDER = [*DATASET_ORDER, "SCL-32", "SCL-64"]
-
 DATASET_DISPLAY_NAMES = {
     dataset_id: spec.display_name for dataset_id, spec in DATASET_SPECS.items()
 }
