@@ -1,17 +1,19 @@
 """Reachability probe: what a search space contains versus what the tuning protocol selects.
 
 The probe draws configurations at random from a search space and scores each of
-them twice on one stream: with the objective of the hyperparameter search, on the
-first 20% of the stream, and with the evaluation metrics, on the remaining 80%.
-Comparing the two shows how much quality the search space holds and how much of
-it the tuning objective is able to recognize.
+them twice on every probed stream: with the objective of the hyperparameter
+search, on the first 20% of the stream, and with the evaluation metrics, on the
+remaining 80%. Comparing the two shows how much quality the search space holds
+and how much of it the tuning objective is able to recognize. The same
+configurations are scored on several runs, so that a configuration that is good
+on one stream by chance can be told from one that is good on the dataset.
 
 Usage (from experimentos/proposed_methodology):
-    python -m model_improvement.probe SPACE DATASET [N_CONFIGURATIONS]
+    python -m model_improvement.probe SPACE DATASET [N_RUNS] [N_CONFIGURATIONS]
 SPACE is `final` (the hyperparameters of the final model), `engine` (the final
 model's hyperparameters plus design options explored in the chapter) or
 `shrink:<exponent>` (the final model with a variance limit that shrinks as
-(n / 100)^-exponent).
+(n / 100)^-exponent). The streams are the first N_RUNS development runs.
 """
 
 import sys
@@ -72,7 +74,7 @@ def search_space(name: str):
 
 
 def score(task):
-    space_name, dataset, run, params = task
+    space_name, dataset, run, configuration, params = task
     model_class, search_space_class = search_space(space_name)
     X, y = load_stream(dataset, run)
     split = int(protocol.SPLIT_FRACTION * len(X))
@@ -89,6 +91,8 @@ def score(task):
         )
         ari = results["ari"].to_numpy()
         return {
+            "configuration": configuration,
+            "run": run,
             **params,
             "tuning_objective": tuning,
             "ari_overall": float(np.median(ari)),
@@ -99,29 +103,44 @@ def score(task):
         return None
 
 
-def main(space_name: str, dataset: str, n: int = 400):
+def summarize(df: pd.DataFrame) -> str:
+    """Contrast the configurations the tuning objective selects with the best of the space."""
+    selected = df.loc[df.groupby("run")["tuning_objective"].idxmax()]
+    best_per_run = df.groupby("run")["ari_overall"].max()
+    complete = df.groupby("configuration").filter(
+        lambda rows: len(rows) == df["run"].nunique()
+    )
+    across_runs = complete.groupby("configuration")["ari_overall"].median()
+    correlation = df.groupby("run")[["tuning_objective", "ari_overall"]].apply(
+        lambda rows: rows.corr(method="spearman").iloc[0, 1]
+    )
+    return (
+        f"{df['configuration'].nunique()} configurations on {df['run'].nunique()} runs | "
+        f"Overall ARI of the configuration selected in each run, median {selected.ari_overall.median():.3f} | "
+        f"best Overall ARI of each run, median {best_per_run.median():.3f} | "
+        f"best median Overall ARI of one configuration across the runs {across_runs.max():.3f} | "
+        f"Spearman, median {correlation.median():.2f}"
+    )
+
+
+def main(space_name: str, dataset: str, n_runs: int = 4, n: int = 400):
     _, search_space_class = search_space(space_name)
     study = optuna.create_study(sampler=optuna.samplers.RandomSampler(seed=SEED))
     configurations = [
         search_space_class().sample_parameters(study.ask()) for _ in range(n)
     ]
-    run = DEVELOPMENT_RUNS.start
-    tasks = [(space_name, dataset, run, c) for c in configurations]
+    tasks = [
+        (space_name, dataset, run, i, c)
+        for run in list(DEVELOPMENT_RUNS)[:n_runs]
+        for i, c in enumerate(configurations)
+    ]
     with ProcessPoolExecutor(max_workers=10, initializer=_single_threaded) as pool:
         rows = [r for r in pool.map(score, tasks, chunksize=4) if r]
     df = pd.DataFrame(rows)
     PROBE_DIR.mkdir(parents=True, exist_ok=True)
     df.to_csv(PROBE_DIR / f"{space_name.replace(':', '_')}_{dataset}.csv", index=False)
-
-    selected = df.sort_values("tuning_objective", ascending=False).iloc[0]
-    correlation = df[["tuning_objective", "ari_overall"]].corr(method="spearman")
-    print(
-        f"{space_name} on {dataset}: {len(df)} configurations | "
-        f"best Overall ARI in the space {df.ari_overall.max():.3f} | "
-        f"Overall ARI of the configuration with the best tuning objective {selected.ari_overall:.3f} | "
-        f"Spearman {correlation.iloc[0, 1]:.2f}"
-    )
+    print(f"{space_name} on {dataset}: {summarize(df)}")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], int(sys.argv[3]) if len(sys.argv) > 3 else 400)
+    main(sys.argv[1], sys.argv[2], *map(int, sys.argv[3:5]))

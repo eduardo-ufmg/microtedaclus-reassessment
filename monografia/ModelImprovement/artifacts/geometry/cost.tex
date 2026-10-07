@@ -8,23 +8,23 @@ Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
 \midrule
 \multicolumn{9}{l}{\textit{Steady-State Microcluster Count}} \\
 \modelname{final} & 366 & 23 & 380 & 36 & 26 & 31 & 12 & 11 \\
-\modelname{covariance, directional link} & - & - & 158 & - & 27 & - & - & - \\
-\modelname{covariance, Bhattacharyya link} & - & - & 276 & - & 22 & - & - & - \\
+\modelname{covariance, directional link} & 305 & 24 & 158 & 37 & 27 & 33 & 12 & \textcolor{red}{14} \\
+\modelname{covariance, Bhattacharyya link} & 343 & 22 & 282 & 32 & 24 & 33 & 12 & \textcolor{red}{14} \\
 \midrule
 \multicolumn{9}{l}{\textit{Steady-State Memory Footprint [kB]}} \\
 \modelname{final} & 84 & 23 & 90 & 24 & 24 & 24 & 71 & 122 \\
-\modelname{covariance, directional link} & - & - & 84 & - & \textcolor{red}{37} & - & - & - \\
-\modelname{covariance, Bhattacharyya link} & - & - & \textcolor{red}{98} & - & \textcolor{red}{37} & - & - & - \\
+\modelname{covariance, directional link} & \textcolor{red}{96} & \textcolor{red}{37} & 84 & \textcolor{red}{38} & \textcolor{red}{37} & 38 & \textcolor{red}{3296} & \textcolor{red}{13019} \\
+\modelname{covariance, Bhattacharyya link} & \textcolor{red}{122} & \textcolor{red}{37} & \textcolor{red}{106} & \textcolor{red}{38} & \textcolor{red}{37} & 38 & \textcolor{red}{3296} & \textcolor{red}{13019} \\
 \midrule
 \multicolumn{9}{l}{\textit{Cumulative Fitting Time [ms]}} \\
 \modelname{final} & 145 & 40 & 435 & 50 & 100 & 120 & 60 & 40 \\
-\modelname{covariance, directional link} & - & - & \textcolor{red}{595} & - & \textcolor{red}{170} & - & - & - \\
-\modelname{covariance, Bhattacharyya link} & - & - & \textcolor{red}{2550} & - & \textcolor{red}{200} & - & - & - \\
+\modelname{covariance, directional link} & \textcolor{red}{285} & \textcolor{red}{55} & \textcolor{red}{595} & \textcolor{red}{80} & \textcolor{red}{170} & 150 & \textcolor{red}{350} & \textcolor{red}{1425} \\
+\modelname{covariance, Bhattacharyya link} & \textcolor{red}{1190} & \textcolor{red}{80} & \textcolor{red}{3240} & \textcolor{red}{100} & \textcolor{red}{210} & 165 & \textcolor{red}{305} & \textcolor{red}{1235} \\
 \midrule
 \multicolumn{9}{l}{\textit{Cumulative Prediction Time [ms]}} \\
 \modelname{final} & 10 & 10 & 40 & 10 & 20 & 20 & 10 & 10 \\
-\modelname{covariance, directional link} & - & - & \textcolor{red}{50} & - & \textcolor{red}{25} & - & - & - \\
-\modelname{covariance, Bhattacharyya link} & - & - & 40 & - & 20 & - & - & - \\
+\modelname{covariance, directional link} & 15 & 10 & 50 & \textcolor{red}{20} & 25 & 20 & \textcolor{red}{90} & \textcolor{red}{315} \\
+\modelname{covariance, Bhattacharyya link} & 15 & 10 & 40 & \textcolor{red}{15} & 20 & 20 & \textcolor{red}{90} & \textcolor{red}{245} \\
 \bottomrule
 \end{tabular}
 }

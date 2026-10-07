@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Implementation optimization: Overall and Steady-State ARI. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively. The last column gives the outcome of the decision rule: improvement ($+$), regression ($-$), both ($\pm$) or neither ($=$).}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c c c}
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 & Rule \\
+\midrule
+\multicolumn{10}{l}{\textit{Overall ARI}} \\
+\modelname{original} & 0.000 & 0.532 & 0.335 & 0.457 & 0.206 & 0.220 & 0.869 & 0.857 &  \\
+\modelname{vectorized} & 0.000 & 0.581 & 0.328 & 0.520 & \textbf{0.230} & 0.235 & 0.851 & 0.859 & $+$ \\
+\midrule
+\multicolumn{10}{l}{\textit{Steady-State ARI}} \\
+\modelname{original} & 0.000 & 0.480 & 0.000 & 0.400 & 0.171 & 0.171 & 0.000 & 0.000 &  \\
+\modelname{vectorized} & 0.000 & 0.541 & 0.000 & 0.458 & 0.176 & 0.209 & 0.000 & 0.000 & $+$ \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_optimization_quality}
+\end{table}
