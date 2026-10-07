@@ -1,6 +1,6 @@
 \begin{table}[htbp]
 \centering
-\caption{Improvements, one at a time: steady-state microcluster count and memory footprint, and cumulative fitting and prediction times measured under parallel load. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\caption{Improvements, one at a time: steady-state microcluster count and memory footprint. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c c c c c}
 \toprule
@@ -35,36 +35,6 @@ Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
 \modelname{single-assign} & 23 & 23 & 46 & 24 & 55 & 51 & 73 & \textbf{125} \\
 \modelname{chi-threshold} & \textbf{23} & \textbf{23} & \textbf{23} & \textbf{23} & \textcolor{red}{214} & \textbf{51} & 70 & \textbf{121} \\
 \modelname{relative-limit} & 25 & 24 & 72 & 24 & \textbf{24} & \textbf{23} & 72 & 236 \\
-\midrule
-\multicolumn{9}{l}{\textit{Cumulative Fitting Time [ms]}} \\
-\modelname{corrected} & 40 & 40 & 435 & 40 & 170 & 160 & 45 & 90 \\
-\modelname{variance-cap} & 40 & 40 & 270 & 40 & 180 & 160 & \textcolor{red}{65} & 100 \\
-\modelname{soft-activation} & 60 & \textbf{30} & 520 & 65 & 190 & 195 & \textcolor{red}{80} & 80 \\
-\modelname{no-activation} & 60 & \textcolor{red}{130} & \textcolor{red}{830} & \textcolor{red}{110} & 205 & 180 & 80 & 120 \\
-\modelname{single-graph} & 60 & 40 & 430 & \textcolor{red}{115} & \textcolor{red}{380} & 150 & 55 & 150 \\
-\modelname{link-factor} & 35 & 30 & \textbf{175} & 50 & 190 & 160 & 50 & 45 \\
-\modelname{recency} & \textcolor{red}{70} & \textcolor{red}{50} & \textcolor{red}{540} & \textcolor{red}{170} & \textcolor{red}{3460} & \textcolor{red}{1790} & 55 & \textbf{55} \\
-\modelname{recency-inactive} & 60 & 50 & 410 & \textcolor{red}{45} & 170 & 145 & 70 & 115 \\
-\modelname{forgetting} & 60 & 40 & 390 & 40 & 170 & 150 & 40 & 90 \\
-\modelname{noise-label} & \textcolor{red}{85} & \textbf{30} & 170 & 50 & \textcolor{red}{225} & 140 & \textcolor{red}{55} & 85 \\
-\modelname{single-assign} & 30 & \textbf{30} & \textbf{180} & 50 & 185 & 165 & 50 & \textbf{40} \\
-\modelname{chi-threshold} & \textbf{30} & \textbf{30} & \textbf{85} & \textbf{30} & \textcolor{red}{2555} & \textbf{60} & 60 & 50 \\
-\modelname{relative-limit} & 50 & 40 & 550 & 60 & 130 & \textbf{120} & \textcolor{red}{60} & 90 \\
-\midrule
-\multicolumn{9}{l}{\textit{Cumulative Prediction Time [ms]}} \\
-\modelname{corrected} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
-\modelname{variance-cap} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
-\modelname{soft-activation} & 10 & 10 & 50 & 10 & 30 & 20 & \textcolor{red}{10} & 10 \\
-\modelname{no-activation} & \textcolor{red}{10} & \textcolor{red}{20} & \textcolor{red}{100} & \textcolor{red}{20} & 30 & 20 & \textcolor{red}{10} & \textcolor{red}{20} \\
-\modelname{single-graph} & 10 & 10 & 30 & \textcolor{red}{10} & \textcolor{red}{40} & 20 & 10 & 10 \\
-\modelname{link-factor} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
-\modelname{recency} & 10 & 10 & 40 & \textcolor{red}{20} & \textcolor{red}{65} & \textcolor{red}{85} & 10 & 10 \\
-\modelname{recency-inactive} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
-\modelname{forgetting} & 10 & 10 & 30 & 10 & 20 & 20 & 10 & 10 \\
-\modelname{noise-label} & 10 & 10 & 30 & 10 & \textcolor{red}{35} & 20 & \textcolor{red}{10} & 10 \\
-\modelname{single-assign} & 10 & \textbf{10} & 20 & 10 & 20 & 20 & 10 & 10 \\
-\modelname{chi-threshold} & 10 & 10 & \textbf{20} & 10 & \textbf{20} & \textbf{10} & 10 & 10 \\
-\modelname{relative-limit} & 10 & 10 & 40 & 10 & 20 & 20 & 10 & 10 \\
 \bottomrule
 \end{tabular}
 }

@@ -1,0 +1,22 @@
+\begin{table}[htbp]
+\centering
+\caption{Order-independent densities in the final model: cumulative fitting and prediction times, measured under parallel load. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c c}
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{Cumulative Fitting Time [ms]}} \\
+\modelname{final} & 145 & 40 & 435 & 50 & 100 & 120 & 60 & 40 \\
+\modelname{final + peak-density} & 140 & \textcolor{red}{50} & 470 & 50 & 110 & 130 & \textbf{40} & \textcolor{red}{60} \\
+\modelname{final + volume-density} & \textbf{55} & 40 & 275 & 40 & 100 & \textbf{80} & 60 & 40 \\
+\midrule
+\multicolumn{9}{l}{\textit{Cumulative Prediction Time [ms]}} \\
+\modelname{final} & 10 & 10 & 40 & 10 & 20 & 20 & 10 & 10 \\
+\modelname{final + peak-density} & 10 & 10 & 50 & 10 & 20 & 20 & 10 & \textcolor{red}{10} \\
+\modelname{final + volume-density} & 10 & 10 & 40 & 10 & 20 & \textbf{20} & 10 & 10 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_density_revisited_time}
+\end{table}

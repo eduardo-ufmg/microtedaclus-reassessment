@@ -1,0 +1,26 @@
+\begin{table}[htbp]
+\centering
+\caption{Refinements of the improved model: cumulative fitting and prediction times, measured under parallel load. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c c}
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{Cumulative Fitting Time [ms]}} \\
+\modelname{improved} & 170 & 40 & 500 & 45 & 110 & 120 & 50 & 50 \\
+\modelname{improved + no-penalty} & 145 & 40 & 435 & 50 & 100 & 120 & 60 & 40 \\
+\modelname{improved + persistent-labels} & 140 & 50 & 430 & 60 & 120 & 265 & \textbf{40} & 50 \\
+\modelname{improved + forgetting} & 125 & 35 & 375 & 40 & 120 & 90 & 50 & 40 \\
+\modelname{improved + recency} & 130 & 40 & 665 & \textcolor{red}{145} & \textcolor{red}{530} & \textcolor{red}{635} & \textbf{40} & 40 \\
+\midrule
+\multicolumn{9}{l}{\textit{Cumulative Prediction Time [ms]}} \\
+\modelname{improved} & 10 & 10 & 40 & 10 & 20 & 20 & 10 & 10 \\
+\modelname{improved + no-penalty} & 10 & 10 & 40 & 10 & 20 & 20 & 10 & \textbf{10} \\
+\modelname{improved + persistent-labels} & 10 & 10 & 40 & 10 & 20 & 20 & 10 & 10 \\
+\modelname{improved + forgetting} & 10 & 10 & 40 & 10 & 20 & 20 & 10 & 10 \\
+\modelname{improved + recency} & \textbf{10} & 10 & 50 & \textcolor{red}{20} & \textcolor{red}{50} & \textcolor{red}{50} & 10 & \textbf{10} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_refinements_time}
+\end{table}

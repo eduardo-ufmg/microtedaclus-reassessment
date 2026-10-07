@@ -1,6 +1,6 @@
 \begin{table}[htbp]
 \centering
-\caption{Direct comparisons between combinations: steady-state microcluster count and memory footprint, and cumulative fitting and prediction times measured under parallel load. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\caption{Direct comparisons between combinations: steady-state microcluster count and memory footprint. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l l c c c c c c c c}
 \toprule
@@ -25,26 +25,6 @@ Model & Control & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
 \modelname{cap + noise + relative} & \modelname{noise + relative} & 54 & 24 & 97 & 25 & 23 & \textcolor{red}{24} & 74 & 234 \\
 \modelname{single + cap + noise + relative} & \modelname{single + noise + relative} & 66 & 24 & 78 & 24 & \textbf{23} & 44 & 76 & 126 \\
 \modelname{single + cap + noise + relative} & \modelname{cap + noise + relative} & 66 & 24 & 78 & 24 & 23 & \textcolor{red}{44} & 76 & \textbf{126} \\
-\midrule
-\multicolumn{10}{l}{\textit{Cumulative Fitting Time [ms]}} \\
-\modelname{single + relative} &  & 65 & 40 & 320 & 40 & 110 & 90 & 50 & 50 \\
-\modelname{noise + relative} &  & 90 & 40 & 540 & 50 & 120 & 90 & 65 & 95 \\
-\modelname{single + noise + relative} & \modelname{single + relative} & \textcolor{red}{170} & 40 & 500 & 45 & 110 & 120 & 50 & 50 \\
-\modelname{single + noise + relative} & \modelname{noise + relative} & 170 & 40 & 500 & 45 & 110 & \textcolor{red}{120} & \textbf{50} & \textbf{50} \\
-\modelname{single + noise + relative} & \modelname{cap + noise + relative} & 170 & 40 & 500 & \textbf{45} & 110 & \textcolor{red}{120} & 50 & \textbf{50} \\
-\modelname{cap + noise + relative} & \modelname{noise + relative} & 95 & 50 & 415 & \textcolor{red}{60} & 115 & 100 & 50 & 200 \\
-\modelname{single + cap + noise + relative} & \modelname{single + noise + relative} & 160 & 40 & 470 & 40 & 100 & 240 & 50 & 45 \\
-\modelname{single + cap + noise + relative} & \modelname{cap + noise + relative} & 160 & \textbf{40} & 470 & \textbf{40} & 100 & \textcolor{red}{240} & \textbf{50} & \textbf{45} \\
-\midrule
-\multicolumn{10}{l}{\textit{Cumulative Prediction Time [ms]}} \\
-\modelname{single + relative} &  & 10 & 10 & 30 & 10 & 20 & 20 & 10 & 10 \\
-\modelname{noise + relative} &  & 10 & 10 & 40 & 10 & 20 & 20 & 10 & 10 \\
-\modelname{single + noise + relative} & \modelname{single + relative} & \textcolor{red}{10} & 10 & 40 & 10 & 20 & 20 & 10 & 10 \\
-\modelname{single + noise + relative} & \modelname{noise + relative} & 10 & 10 & 40 & 10 & 20 & \textcolor{red}{20} & 10 & 10 \\
-\modelname{single + noise + relative} & \modelname{cap + noise + relative} & 10 & 10 & 40 & 10 & 20 & \textcolor{red}{20} & 10 & 10 \\
-\modelname{cap + noise + relative} & \modelname{noise + relative} & 10 & 10 & 40 & 10 & 25 & 20 & \textbf{10} & 10 \\
-\modelname{single + cap + noise + relative} & \modelname{single + noise + relative} & 10 & 10 & 40 & 10 & 20 & 30 & 10 & 10 \\
-\modelname{single + cap + noise + relative} & \modelname{cap + noise + relative} & 10 & 10 & 40 & 10 & 20 & \textcolor{red}{30} & 10 & 10 \\
 \bottomrule
 \end{tabular}
 }

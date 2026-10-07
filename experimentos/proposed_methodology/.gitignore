@@ -225,3 +225,4 @@ data_samples*
 metrics*
 statistical_analysis*
 artifacts*
+!model_improvement/artifacts.py

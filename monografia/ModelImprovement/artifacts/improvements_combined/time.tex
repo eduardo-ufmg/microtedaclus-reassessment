@@ -1,0 +1,40 @@
+\begin{table}[htbp]
+\centering
+\caption{Combined improvements: cumulative fitting and prediction times, measured under parallel load. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c c}
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{Cumulative Fitting Time [ms]}} \\
+\modelname{corrected} & 40 & 40 & 435 & 40 & 170 & 160 & 45 & 90 \\
+\modelname{single + cap} & 30 & \textbf{40} & \textbf{235} & 50 & 240 & 200 & 40 & \textbf{60} \\
+\modelname{single + noise} & 50 & \textbf{30} & 265 & 40 & \textcolor{red}{320} & 160 & 40 & \textbf{50} \\
+\modelname{single + relative} & 65 & 40 & 320 & 40 & \textbf{110} & 90 & 50 & \textbf{50} \\
+\modelname{cap + noise} & 75 & 40 & 465 & 60 & 190 & 190 & \textcolor{red}{50} & 80 \\
+\modelname{cap + relative} & 65 & 65 & 485 & 50 & \textbf{110} & \textbf{110} & 60 & 135 \\
+\modelname{noise + relative} & \textcolor{red}{90} & 40 & 540 & 50 & 120 & \textbf{90} & \textcolor{red}{65} & 95 \\
+\modelname{single + cap + noise} & 60 & 50 & 235 & 40 & \textcolor{red}{245} & 170 & 40 & \textbf{40} \\
+\modelname{single + cap + relative} & 60 & 55 & 240 & 40 & \textbf{100} & 90 & \textbf{40} & \textbf{50} \\
+\modelname{single + noise + relative} & \textcolor{red}{170} & 40 & 500 & 45 & \textbf{110} & 120 & 50 & \textbf{50} \\
+\modelname{cap + noise + relative} & \textcolor{red}{95} & 50 & 415 & \textcolor{red}{60} & 115 & \textbf{100} & 50 & \textcolor{red}{200} \\
+\modelname{single + cap + noise + relative} & \textcolor{red}{160} & \textbf{40} & 470 & 40 & \textbf{100} & 240 & 50 & \textbf{45} \\
+\midrule
+\multicolumn{9}{l}{\textit{Cumulative Prediction Time [ms]}} \\
+\modelname{corrected} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
+\modelname{single + cap} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
+\modelname{single + noise} & 10 & 10 & 30 & 10 & \textcolor{red}{50} & 20 & 10 & 10 \\
+\modelname{single + relative} & 10 & 10 & 30 & 10 & 20 & 20 & 10 & 10 \\
+\modelname{cap + noise} & 10 & 10 & 35 & 10 & 30 & 30 & 10 & 10 \\
+\modelname{cap + relative} & 10 & 10 & 30 & 10 & 20 & 20 & 10 & 10 \\
+\modelname{noise + relative} & \textcolor{red}{10} & 10 & 40 & 10 & 20 & 20 & \textcolor{red}{10} & 10 \\
+\modelname{single + cap + noise} & 10 & 10 & 25 & 10 & \textcolor{red}{30} & \textcolor{red}{30} & 10 & 10 \\
+\modelname{single + cap + relative} & 10 & 10 & 30 & 10 & \textbf{20} & 20 & 10 & 10 \\
+\modelname{single + noise + relative} & \textcolor{red}{10} & 10 & 40 & 10 & 20 & \textcolor{red}{20} & \textcolor{red}{10} & 10 \\
+\modelname{cap + noise + relative} & \textcolor{red}{10} & 10 & 40 & 10 & 25 & 20 & 10 & 10 \\
+\modelname{single + cap + noise + relative} & \textcolor{red}{10} & 10 & 40 & 10 & \textbf{20} & \textcolor{red}{30} & 10 & 10 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_improvements_combined_time}
+\end{table}

@@ -1,6 +1,6 @@
 \begin{table}[htbp]
 \centering
-\caption{Search range of the variance limit: steady-state microcluster count and memory footprint, and cumulative fitting and prediction times measured under parallel load. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\caption{Search range of the variance limit: steady-state microcluster count and memory footprint. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c c c c c}
 \toprule
@@ -13,14 +13,6 @@ Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
 \multicolumn{9}{l}{\textit{Steady-State Memory Footprint [kB]}} \\
 \modelname{nearest + no-penalty} & 23 & 24 & 55 & 24 & 56 & 52 & 134 & 121 \\
 \modelname{nearest + no-penalty, wide range} & 23 & 24 & 52 & 24 & \textbf{24} & \textbf{23} & 76 & 126 \\
-\midrule
-\multicolumn{9}{l}{\textit{Cumulative Fitting Time [ms]}} \\
-\modelname{nearest + no-penalty} & 40 & 40 & 385 & 50 & 180 & 150 & 95 & 70 \\
-\modelname{nearest + no-penalty, wide range} & 40 & 40 & 270 & 40 & \textbf{110} & \textbf{80} & 80 & \textbf{50} \\
-\midrule
-\multicolumn{9}{l}{\textit{Cumulative Prediction Time [ms]}} \\
-\modelname{nearest + no-penalty} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
-\modelname{nearest + no-penalty, wide range} & 10 & 10 & 30 & 10 & \textbf{20} & 20 & 10 & 10 \\
 \bottomrule
 \end{tabular}
 }

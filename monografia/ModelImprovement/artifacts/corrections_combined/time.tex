@@ -1,0 +1,28 @@
+\begin{table}[htbp]
+\centering
+\caption{Combined corrections: cumulative fitting and prediction times, measured under parallel load. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c c}
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{Cumulative Fitting Time [ms]}} \\
+\modelname{nearest} & 40 & 40 & 435 & 40 & 170 & 160 & 45 & 90 \\
+\modelname{nearest + peak-density} & 60 & 40 & 225 & 50 & 190 & 160 & 40 & 140 \\
+\modelname{nearest + peak-density + mature-mean} & 65 & 40 & 335 & 40 & 185 & 200 & 50 & 115 \\
+\modelname{nearest + no-penalty} & 40 & 40 & 385 & 50 & 180 & 150 & \textcolor{red}{95} & 70 \\
+\modelname{nearest + peak-density + no-penalty} & 65 & 30 & 215 & 50 & 180 & 170 & \textcolor{red}{80} & 95 \\
+\modelname{nearest + peak-density + mature-mean + no-penalty} & 60 & 45 & 215 & 60 & 180 & 190 & \textcolor{red}{85} & 80 \\
+\midrule
+\multicolumn{9}{l}{\textit{Cumulative Prediction Time [ms]}} \\
+\modelname{nearest} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
+\modelname{nearest + peak-density} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
+\modelname{nearest + peak-density + mature-mean} & 10 & 10 & 30 & 10 & 25 & 20 & 10 & 10 \\
+\modelname{nearest + no-penalty} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
+\modelname{nearest + peak-density + no-penalty} & 10 & 10 & 20 & 10 & 30 & 20 & 10 & 10 \\
+\modelname{nearest + peak-density + mature-mean + no-penalty} & 10 & 10 & 20 & 10 & 20 & 20 & 10 & 10 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_corrections_combined_time}
+\end{table}

@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Implementation optimization: cumulative fitting and prediction times, measured under parallel load. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c c}
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{Cumulative Fitting Time [ms]}} \\
+\modelname{original} & 1055 & 680 & 30955 & 1850 & 17745 & 15865 & 840 & 725 \\
+\modelname{vectorized} & \textbf{40} & \textbf{40} & \textbf{215} & \textbf{50} & \textbf{180} & \textbf{175} & \textbf{60} & \textbf{55} \\
+\midrule
+\multicolumn{9}{l}{\textit{Cumulative Prediction Time [ms]}} \\
+\modelname{original} & 120 & 75 & 2330 & 135 & 1170 & 695 & 160 & 135 \\
+\modelname{vectorized} & \textbf{10} & \textbf{10} & \textbf{30} & \textbf{10} & \textbf{30} & \textbf{20} & \textbf{10} & \textbf{10} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_optimization_time}
+\end{table}

@@ -1,6 +1,6 @@
 \begin{table}[htbp]
 \centering
-\caption{Reparameterizations of the m function: steady-state microcluster count and memory footprint, and cumulative fitting and prediction times measured under parallel load. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
+\caption{Reparameterizations of the m function: steady-state microcluster count and memory footprint. Medians over runs 94 to 125. Bold and red values are significantly better and worse than the control of the row, respectively.}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c c c c c}
 \toprule
@@ -17,18 +17,6 @@ Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
 \modelname{m-reparam} & 24 & 23 & 51 & 24 & 55 & 51 & \textbf{71} & \textbf{121} \\
 \modelname{m-constant} & 28 & 24 & 45 & 24 & \textcolor{red}{106} & 51 & \textbf{70} & \textbf{121} \\
 \modelname{m-asymptote} & 40 & 23 & 73 & 25 & 63 & 52 & \textbf{70} & \textbf{121} \\
-\midrule
-\multicolumn{9}{l}{\textit{Cumulative Fitting Time [ms]}} \\
-\modelname{corrected} & 40 & 40 & 435 & 40 & 170 & 160 & 45 & 90 \\
-\modelname{m-reparam} & 50 & 45 & 335 & 50 & 185 & 180 & \textbf{30} & \textbf{40} \\
-\modelname{m-constant} & 60 & 60 & 265 & 40 & \textcolor{red}{625} & 115 & 40 & \textbf{40} \\
-\modelname{m-asymptote} & \textcolor{red}{100} & 40 & 445 & 40 & 240 & 145 & \textbf{40} & \textbf{40} \\
-\midrule
-\multicolumn{9}{l}{\textit{Cumulative Prediction Time [ms]}} \\
-\modelname{corrected} & 10 & 10 & 30 & 10 & 30 & 20 & 10 & 10 \\
-\modelname{m-reparam} & 10 & 10 & 35 & 10 & 30 & 20 & 10 & \textbf{10} \\
-\modelname{m-constant} & 10 & 10 & 30 & 10 & 20 & 20 & 10 & \textbf{10} \\
-\modelname{m-asymptote} & 10 & 10 & 40 & 10 & 20 & 20 & 10 & \textbf{10} \\
 \bottomrule
 \end{tabular}
 }
