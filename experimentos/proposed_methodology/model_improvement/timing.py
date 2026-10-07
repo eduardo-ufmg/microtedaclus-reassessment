@@ -14,8 +14,14 @@ tells them apart:
   both running the same configuration: each of the two is also timed with the
   hyperparameters tuned for the other.
 
+The whole pass is repeated and every repetition is kept (column `repetition`):
+the time of a task is the minimum over its repetitions, which discards the
+slowdowns that the machine, and not the model, causes. On a processor with
+cores of different speeds the process must also be restricted to cores of one
+kind, as in the usage line below.
+
 Usage (from experimentos/proposed_methodology):
-    python -m model_improvement.timing [RUNS_PER_DATASET]
+    taskset -c PERFORMANCE_CORES python -m model_improvement.timing [RUNS_PER_DATASET] [REPETITIONS]
 """
 
 import sys
@@ -62,7 +68,7 @@ def time_model(model: str, params: dict, X_eval, y_eval) -> dict:
     }
 
 
-def main(runs_per_dataset: int = len(DEVELOPMENT_RUNS)):
+def timing_pass(runs_per_dataset: int) -> list[dict]:
     rows = []
     for dataset in DATASETS:
         for run in list(DEVELOPMENT_RUNS)[:runs_per_dataset]:
@@ -82,10 +88,19 @@ def main(runs_per_dataset: int = len(DEVELOPMENT_RUNS)):
                         **time_model(model, params, X_eval, y_eval),
                     }
                 )
-        print(f"timed {dataset}", flush=True)
+    return rows
+
+
+def main(runs_per_dataset: int = len(DEVELOPMENT_RUNS), repetitions: int = 3):
+    rows = []
     OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(rows).to_csv(OUT_FILE, index=False)
+    for repetition in range(repetitions):
+        rows += [
+            {**row, "repetition": repetition} for row in timing_pass(runs_per_dataset)
+        ]
+        pd.DataFrame(rows).to_csv(OUT_FILE, index=False)
+        print(f"repetition {repetition + 1} of {repetitions} done", flush=True)
 
 
 if __name__ == "__main__":
-    main(int(sys.argv[1]) if len(sys.argv) > 1 else len(DEVELOPMENT_RUNS))
+    main(*map(int, sys.argv[1:3]))

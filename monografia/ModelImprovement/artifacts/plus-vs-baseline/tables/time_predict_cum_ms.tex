@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Cumulative Prediction Time [ms].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c }
+\toprule
+Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClus+} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textcolor{red}{95.0 (30.0, 270.0)} & \textbf{0.0 (0.0, 0.0)} \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{50.0 (20.0, 67.5)} & \textbf{0.0 (0.0, 0.0)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{795.0 (242.5, 4377.5)} & \textbf{10.0 (0.0, 10.0)} \\
+\datasetname{Cassini} & \textcolor{red}{60.0 (50.0, 70.0)} & \textbf{0.0 (0.0, 0.0)} \\
+\datasetname{Chameleon DS3} & \textcolor{red}{480.0 (280.0, 1010.0)} & \textbf{0.0 (0.0, 0.0)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{445.0 (262.5, 645.0)} & \textbf{0.0 (0.0, 0.0)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:plus-vs-baseline_time_predict_cum_ms}
+\end{table}

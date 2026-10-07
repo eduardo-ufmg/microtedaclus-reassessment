@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Maximum ARI Drop.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c }
+\toprule
+Dataset & \modelname{MicroTEDAClus} & \modelname{MicroTEDAClus+} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textcolor{red}{0.903 (0.859, 0.948)} & \textbf{0.132 (0.041, 0.682)} \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{0.332 (0.128, 0.612)} & \textbf{0.117 (0.032, 0.215)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{0.677 (0.395, 0.886)} & \textbf{0.406 (0.201, 0.583)} \\
+\datasetname{Cassini} & \textcolor{red}{0.295 (0.166, 0.452)} & \textbf{0.210 (0.139, 0.320)} \\
+\datasetname{Chameleon DS3} & \textcolor{red}{0.274 (0.230, 0.353)} & \textbf{0.105 (0.071, 0.181)} \\
+\datasetname{Chameleon DS4} & \textcolor{red}{0.292 (0.245, 0.329)} & \textbf{0.159 (0.124, 0.203)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:plus-vs-baseline_ari_diff}
+\end{table}

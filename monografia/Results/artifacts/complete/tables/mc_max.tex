@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Maximum Microcluster Count.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c }
+\toprule
+Dataset & \modelname{CluStream} & \modelname{DenStream} & \modelname{MicroTEDAClus} & \modelname{CEDAS} & \modelname{TEDACloud} & \modelname{AutoCloud} & \modelname{MicroTEDAClus+} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textcolor{red}{103 (69, 169)} & \textbf{7 (1, 40)} & \textcolor{red}{82 (28, 176)} & \textbf{9 (6, 14)} & \textbf{8 (5, 10)} & \textcolor{red}{1165 (7, 2252)} & \textcolor{red}{174 (62, 522)} \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{74 (43, 104)} & 17 (11, 21) & 45 (15, 57) & \textbf{2 (2, 3)} & \textbf{3 (1, 4)} & 3 (1, 2046) & 31 (24, 40) \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{530 (275, 804)} & \textbf{4 (1, 8)} & 215 (83, 535) & 11 (8, 18) & 14 (10, 18) & \textcolor{red}{14 (8, 6207)} & 170 (62, 394) \\
+\datasetname{Cassini} & 71 (41, 123) & 14 (9, 18) & 44 (37, 74) & \textbf{6 (3, 8)} & 16 (11, 19) & \textcolor{red}{1882 (5, 2728)} & 44 (36, 74) \\
+\datasetname{Chameleon DS3} & 105 (82, 166) & \textbf{2 (2, 3)} & \textcolor{red}{509 (323, 869)} & 10 (10, 10) & 10 (9, 11) & 12 (10, 14) & 40 (38, 41) \\
+\datasetname{Chameleon DS4} & 97 (70, 156) & \textbf{4 (4, 4)} & 430 (330, 867) & 10 (10, 10) & 9 (9, 21) & \textcolor{red}{5345 (5345, 5466)} & 40 (39, 62) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:complete_mc_max}
+\end{table}
