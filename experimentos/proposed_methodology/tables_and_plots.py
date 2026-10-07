@@ -22,6 +22,20 @@ DIR_METRICS_SCL = os.path.join(SCRIPT_DIR, "metrics", "scalability")
 DIR_STATS_BASE = os.path.join(SCRIPT_DIR, "statistical_analysis")
 
 
+def legend_above(fig, ax, fontsize: float = 10.0, smallest: float = 6.0):
+    """Legend above the axes; its font is reduced until it fits the width of the figure."""
+    while True:
+        legend = ax.legend(
+            loc="upper center", bbox_to_anchor=(0.5, 1.25), ncol=4, fontsize=fontsize
+        )
+        plt.tight_layout()
+        fig.canvas.draw()
+        box = legend.get_window_extent()
+        if (box.x0 >= 0 and box.x1 <= fig.bbox.x1) or fontsize <= smallest:
+            return
+        fontsize -= 0.5
+
+
 def subset_output_dir(subset_name: str) -> str:
     """Artifacts directory of the thesis chapter that presents a subset."""
     chapter = SUBSET_CHAPTERS[subset_name]
@@ -181,8 +195,7 @@ def plot_scalability(subset_name: str, subset_models: list, out_dir: str):
             ax.set_ylabel(metric.replace("_", " ").title())
             if is_log:
                 ax.set_yscale("log")
-            ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.25), ncol=4)
-            plt.tight_layout()
+            legend_above(fig, ax)
             fig.savefig(
                 os.path.join(out_dir, f"sample_scalability_{metric}_dim{dim}.png"),
                 dpi=300,
@@ -301,8 +314,7 @@ def plot_scalability(subset_name: str, subset_models: list, out_dir: str):
         ax.set_ylabel(ylabel)
         if is_log:
             ax.set_yscale("log")
-        ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.25), ncol=4)
-        plt.tight_layout()
+        legend_above(fig, ax)
         fig.savefig(os.path.join(out_dir, fname), dpi=300)
         plt.close(fig)
 

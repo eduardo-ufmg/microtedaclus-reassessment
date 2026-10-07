@@ -1,0 +1,28 @@
+\begin{table}[htbp]
+\centering
+\caption{ARI metrics of the scalability streams of the main experiment, per dimension: medians over 94 runs. Bold and red values are significantly better and worse than those of the baseline, respectively, with the $p$-values adjusted over the seven dimensions.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c }
+\toprule
+Model & $d = 1$ & $d = 2$ & $d = 4$ & $d = 8$ & $d = 16$ & $d = 32$ & $d = 64$ \\
+\midrule
+\multicolumn{8}{l}{\textit{Overall ARI}} \\
+\modelname{MicroTEDAClus} & 0.763 & 0.861 & 0.860 & 0.867 & 0.881 & 0.865 & 0.846 \\
+\modelname{MicroTEDAClus+} & 0.694 & \textbf{0.946} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} \\
+\midrule
+\multicolumn{8}{l}{\textit{Steady-State ARI}} \\
+\modelname{MicroTEDAClus} & 0.727 & 0.857 & 0.856 & 0.853 & 0.810 & 0.462 & 0.000 \\
+\modelname{MicroTEDAClus+} & 0.677 & \textbf{0.950} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} \\
+\midrule
+\multicolumn{8}{l}{\textit{ARI at the Fifth Batch}} \\
+\modelname{MicroTEDAClus} & 0.764 & 0.857 & 0.861 & 0.875 & 0.896 & 0.901 & 0.911 \\
+\modelname{MicroTEDAClus+} & 0.647 & \textbf{0.944} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} \\
+\midrule
+\multicolumn{8}{l}{\textit{Maximum ARI Drop}} \\
+\modelname{MicroTEDAClus} & 0.114 & 0.091 & 0.096 & 0.104 & 0.169 & 0.445 & 1.000 \\
+\modelname{MicroTEDAClus+} & 0.131 & \textbf{0.050} & \textbf{0.000} & \textbf{0.000} & \textbf{0.000} & \textbf{0.000} & \textbf{0.000} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_main_scalability_ari}
+\end{table}

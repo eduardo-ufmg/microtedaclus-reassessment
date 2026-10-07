@@ -60,26 +60,22 @@ def run_level(variant: str, runs: range) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def compare(control: str, variant: str, metric: str, runs: range) -> pd.DataFrame:
-    """Per-dataset paired comparison of a variant with its control on one metric."""
+def paired_comparisons(pairs: dict, metric: str) -> pd.DataFrame:
+    """Paired comparison of a variant with its control in each group of observations.
+
+    `pairs` maps a group (a dataset, a dimension) to the observations of the
+    control and of the variant over the same runs. The p-values of the groups
+    are corrected together.
+    """
     config = METRICS[metric]
-    ctrl, var = run_level(control, runs), run_level(variant, runs)
     rows = []
-    for dataset in DATASETS:
-        if ctrl.empty or var.empty:
-            break
-        a = ctrl[ctrl.dataset == dataset].set_index("run")[metric]
-        b = var[var.dataset == dataset].set_index("run")[metric]
-        common = a.index.intersection(b.index)
-        if len(common) == 0:
-            continue
-        x = np.asarray(config["round"](a.loc[common].to_numpy(dtype=float)))
-        y = np.asarray(config["round"](b.loc[common].to_numpy(dtype=float)))
-        delta = cliffs_delta(y, x)
+    for group, (control_values, variant_values) in pairs.items():
+        x = np.asarray(config["round"](np.asarray(control_values, dtype=float)))
+        y = np.asarray(config["round"](np.asarray(variant_values, dtype=float)))
         rows.append(
             {
-                "dataset": dataset,
-                "n": len(common),
+                "group": group,
+                "n": len(x),
                 "control_median": float(np.median(x)),
                 "control_q1": float(np.quantile(x, 0.25)),
                 "control_q3": float(np.quantile(x, 0.75)),
@@ -87,7 +83,7 @@ def compare(control: str, variant: str, metric: str, runs: range) -> pd.DataFram
                 "q1": float(np.quantile(y, 0.25)),
                 "q3": float(np.quantile(y, 0.75)),
                 "p": safe_wilcoxon(y, x),
-                "delta": delta,
+                "delta": cliffs_delta(y, x),
             }
         )
     out = pd.DataFrame(rows)
@@ -101,7 +97,22 @@ def compare(control: str, variant: str, metric: str, runs: range) -> pd.DataFram
     out["verdict"] = np.where(
         significant, np.where(improves, "better", "worse"), "same"
     )
-    return out.set_index("dataset")
+    return out.set_index("group")
+
+
+def compare(control: str, variant: str, metric: str, runs: range) -> pd.DataFrame:
+    """Per-dataset paired comparison of a variant with its control on one metric."""
+    ctrl, var = run_level(control, runs), run_level(variant, runs)
+    if ctrl.empty or var.empty:
+        return pd.DataFrame()
+    pairs = {}
+    for dataset in DATASETS:
+        a = ctrl[ctrl.dataset == dataset].set_index("run")[metric]
+        b = var[var.dataset == dataset].set_index("run")[metric]
+        common = a.index.intersection(b.index)
+        if len(common):
+            pairs[dataset] = (a.loc[common].to_numpy(), b.loc[common].to_numpy())
+    return paired_comparisons(pairs, metric).rename_axis("dataset")
 
 
 def decide(control: str, variant: str, runs: range) -> dict:

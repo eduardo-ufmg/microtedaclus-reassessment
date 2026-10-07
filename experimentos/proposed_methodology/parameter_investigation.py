@@ -3,7 +3,13 @@ import os
 import pandas as pd
 import numpy as np
 
-from editorial_config import DATASET_ORDER, MODEL_ORDER, dataset_display_name
+from editorial_config import (
+    BENCHMARK_MODELS,
+    DATASET_ORDER,
+    MODEL_ORDER,
+    dataset_display_name,
+    model_display_name,
+)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
@@ -17,7 +23,16 @@ DIR_OUT = os.path.join(
     "artifacts",
     "parameters",
 )
+DIR_OUT_RESULTS = os.path.join(
+    REPOSITORY_ROOT, "monografia", "Results", "artifacts", "parameters"
+)
 os.makedirs(DIR_OUT, exist_ok=True)
+os.makedirs(DIR_OUT_RESULTS, exist_ok=True)
+
+
+def output_dir(model: str) -> str:
+    """Benchmark models belong to the reassessment chapter; the proposed model to the results."""
+    return DIR_OUT if model in BENCHMARK_MODELS else DIR_OUT_RESULTS
 
 
 def format_model_name(model: str) -> str:
@@ -65,7 +80,7 @@ def process_model_parameters(df_params: pd.DataFrame, model: str) -> dict:
     latex_lines = [
         "\\begin{table}[htbp]",
         "\\centering",
-        f"\\caption{{Hyperparameter dispersion for {model}: median $(Q_1, Q_3)$ [QCD].}}",
+        f"\\caption{{Hyperparameter dispersion for {model_display_name(model)}: median $(Q_1, Q_3)$ [QCD].}}",
         "\\resizebox{\\textwidth}{!}{%",
         "\\begin{tabular}{l " + "c " * len(param_cols) + "}",
         "\\toprule",
@@ -117,7 +132,7 @@ def process_model_parameters(df_params: pd.DataFrame, model: str) -> dict:
         ]
     )
 
-    with open(os.path.join(DIR_OUT, f"{model}_parameters.tex"), "w") as f:
+    with open(os.path.join(output_dir(model), f"{model}_parameters.tex"), "w") as f:
         f.write("\n".join(latex_lines))
         f.write("\n")
 
@@ -200,7 +215,15 @@ def main():
             all_qcd_sums[model] = sums
             print(f"Generated parameter artifact for: {model}")
 
-    generate_qcd_sum_table(all_qcd_sums, models)
+    benchmark_models = [model for model in models if model in BENCHMARK_MODELS]
+    generate_qcd_sum_table(
+        {
+            model: all_qcd_sums[model]
+            for model in benchmark_models
+            if model in all_qcd_sums
+        },
+        benchmark_models,
+    )
     print("Generated unified QCD sum table.")
 
 
