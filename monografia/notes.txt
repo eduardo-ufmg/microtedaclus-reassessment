@@ -1,0 +1,14 @@
+Questions:
+- Please further explain `\subsection{Development and Validation Runs}`. I understand why "a model that is chosen for scoring best on a set of runs is expected to score somewhat worse on other runs", but not how we know that "the validation runs measure the accepted models on streams that did not select them".
+- What was the reason for you to have presented the names of the datasets in this chapter differently from the previous chapters?
+- By the end of the correction section, even after noticing that the range increase makes the no-penalty correction fit well with the nearest correction, you decided to not keep it? Why?
+- Please further explain your purity, homogeneity, and completeness analysis. I did not understand it.
+- Why did you decide to not explore some of the sensitivity function variations I tried in some of the previous path tries (e.g., constant m=3 and (a,b) as the tunable parameters)?
+- Did you decide to not keep the updates that do not strictly improve the model? Why not keep those that are equivalent in the results but conceptually better?
+
+
+Notes:
+- removed exact values from prose. i simply do not like it.
+- removed observation and analysis which are not proved or of which no evidence is shown through tables or figures. you may bring those analysis and observations back, but only if you are able to introduce the evidence as plots or tables or anything like that. measurements, characteristics, and behavior that are not strictly the final quality results are much welcome in the paper.
+- removed most of the in-prose parenthesis because I don't like them.
+- something that may be worth to mention somewhere: because some of the initially considered models (some benchmarks and the original implementation) are so slow, the objective function needed to reduce runtime to ensure feasibility. because of the same reason, we kept small $< 10000$ samples datasets. in a following chapter, we will validate with datasets of real data that are usually much larger

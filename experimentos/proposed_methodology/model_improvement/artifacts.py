@@ -191,12 +191,7 @@ def comparison_table(experiment, metrics, name, caption, with_rule=True):
 def experiment_tables(experiment):
     """Decision metrics for the chapter; the remaining metrics for the appendix."""
     runs = f"runs {experiment.runs.start} to {experiment.runs.stop - 1}"
-    marks = (
-        "Medians over "
-        + runs
-        + ". Bold and red values are significantly better and worse "
-        "than the control of the row, respectively"
-    )
+    marks = ""
     comparison_table(
         experiment,
         ["ari_overall", "ari_steadystate"],
@@ -691,9 +686,8 @@ def main_scalability_table(baseline="MicroTEDAClus", proposed="MicroTEDAClusPlus
         )
     write_table(
         ARTIFACT_DIR / "main_experiment" / "scalability_ari.tex",
-        "ARI metrics of the scalability streams of the main experiment, per dimension: medians over "
-        f"{runs['run'].nunique()} runs. Bold and red values are significantly better and worse than "
-        "those of the baseline, respectively, with the $p$-values adjusted over the seven dimensions.",
+        "ARI metrics of the scalability streams of the main experiment, per dimension. "
+        "$p$-values are adjusted over the seven dimensions.",
         "tab:mi_main_scalability_ari",
         "l " + "c " * len(dims),
         lines,
