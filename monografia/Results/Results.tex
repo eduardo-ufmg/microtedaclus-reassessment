@@ -1,7 +1,7 @@
 \chapter{Results}
 \label{chap:results}
 
-This chapter places \MicroTEDAClusPlus, the model defined in \cref{sec:mi_final_model}, among the benchmark models. It repeats the analysis of the complete model set of \cref{sec:reassessment_results} with eight models: the seven of that section, whose results are those already reported, and \MicroTEDAClusPlus, executed under the same protocol, on the same runs and on the same machine (\cref{sec:mi_main_experiment}).
+This chapter places \MicroTEDAClusPlus, the model defined in \cref{sec:mi_final_model}, among the benchmark models. It repeats the analysis of the complete model set of \cref{sec:reassessment_results} with eight models: the seven of that section, whose results are those already reported, and \MicroTEDAClusPlus.
 
 The statistical analysis is that of \cref{sec:statistical_significance}, applied to the eight models. Since the best and the worst model of a dataset can change when a model is added, the groups of the tables of this chapter are not necessarily those of the corresponding tables of \cref{sec:reassessment_results}. As there, a value in bold is statistically indistinguishable from the best model for that metric and dataset, and a value in red is statistically indistinguishable from the worst. Each table uses the runs that are valid for all of its models, which are 93 of the 94 in \BenchmarkOne, \BenchmarkTwo and \RandomRBFGeneratorEvents, so some of its medians differ in the last digit from those of \cref{sec:mi_main_experiment}.
 
@@ -13,11 +13,11 @@ The statistical analysis is that of \cref{sec:statistical_significance}, applied
 \input{Results/artifacts/complete/tables/ari_fifth.tex}
 \input{Results/artifacts/complete/tables/ari_diff.tex}
 
-In the Overall ARI, \MicroTEDAClusPlus is indistinguishable from the best model in four of the six datasets and from the worst in none (\cref{tab:complete_ari_overall}). It is the sole best model in \BenchmarkOne and \BenchmarkTwo, with medians of $0.894$ and $0.634$, and shares the best group with \TEDACloud in \RandomRBFGeneratorEvents and with \CluStream and \StreamKM in \ChameleonDSFour. It replaces \TEDACloud as the sole best model of \BenchmarkOne, and \CluStream and \MicroTEDAClus as the best models of \BenchmarkTwo. It is outside the best group in \ChameleonDSThree, where \CluStream and \StreamKM lead with $0.324$ and $0.330$ against its $0.288$, and in \Cassini, where \StreamKM remains the sole best model with $0.696$ against its $0.496$.
+In the Overall ARI, \cref{tab:complete_ari_overall}, \MicroTEDAClusPlus is indistinguishable from the best model in four of the six datasets and from the worst in none. It is the sole best model in \BenchmarkOne and \BenchmarkTwo, and shares the best group with \TEDACloud in \RandomRBFGeneratorEvents and with \CluStream and \StreamKM in \ChameleonDSFour. It replaces \TEDACloud as the sole best model of \BenchmarkOne, and \CluStream and \MicroTEDAClus as the best models of \BenchmarkTwo. It is outside the best group in \ChameleonDSThree, where \CluStream and \StreamKM lead, and in \Cassini, where \StreamKM remains the sole best model.
 
-At the penultimate batch, \MicroTEDAClusPlus is indistinguishable from the best model in the three datasets with concept drift: in \BenchmarkOne and \RandomRBFGeneratorEvents together with \TEDACloud, and in \BenchmarkTwo together with \StreamKM (\cref{tab:complete_ari_steadystate}). In the three datasets of static shapes the best group is formed by \CluStream, \StreamKM or both, and \MicroTEDAClusPlus is outside it, with medians of $0.300$, $0.316$ and $0.500$ against best medians of $0.341$, $0.320$ and $0.589$.
+At the penultimate batch, \cref{tab:complete_ari_steadystate}, \MicroTEDAClusPlus is indistinguishable from the best model in the three datasets with concept drift: in \BenchmarkOne and \RandomRBFGeneratorEvents together with \TEDACloud, and in \BenchmarkTwo together with \StreamKM. In the three datasets of static shapes the best group is formed by \CluStream, \StreamKM or both, and \MicroTEDAClusPlus is outside it.
 
-At the fifth batch, \MicroTEDAClusPlus is indistinguishable from the best model in four datasets, and is the sole best model in \ChameleonDSThree and \RandomRBFGeneratorEvents (\cref{tab:complete_ari_fifth}). It is outside the best group in \ChameleonDSFour, led by \CluStream, and in \Cassini, led by \StreamKM. In the maximum ARI drop, it is indistinguishable from the best model in \BenchmarkTwo and from the worst in \Cassini, and in neither group in the other four datasets (\cref{tab:complete_ari_diff}). \MicroTEDAClus, in turn, is indistinguishable from the worst model in the six datasets, as in \cref{sec:reassessment_results}. The smallest drops of this table belong in part to models whose ARI is close to zero throughout the stream, such as \CEDAS in the Chameleon datasets, which cannot drop.
+At the fifth batch, \cref{tab:complete_ari_fifth}, \MicroTEDAClusPlus is indistinguishable from the best model in four datasets, and is the sole best model in \ChameleonDSThree and \RandomRBFGeneratorEvents. It is outside the best group in \ChameleonDSFour, led by \CluStream, and in \Cassini, led by \StreamKM. In the maximum ARI drop, \cref{tab:complete_ari_diff}, it is indistinguishable from the best model in \BenchmarkTwo and from the worst in \Cassini, and in neither group in the other four datasets. \MicroTEDAClus, in turn, is indistinguishable from the worst model in the six datasets, as in \cref{sec:reassessment_results}. The smallest drops of this table belong in part to models whose ARI is close to zero throughout the stream, such as \CEDAS in the Chameleon datasets, which cannot drop.
 
 \begin{figure}[htbp]
     \centering
@@ -35,7 +35,7 @@ At the fifth batch, \MicroTEDAClusPlus is indistinguishable from the best model 
     \label{fig:complete_ari_feature_scalability}
 \end{figure}
 
-In the scalability streams, \MicroTEDAClusPlus has the highest median ARI of the eight models from two dimensions on (\cref{fig:complete_ari_sample_scalability,fig:complete_ari_feature_scalability}). With two dimensions, its median over the batches is $0.946$, against $0.933$ for \CEDAS and $0.887$ for \CluStream and \StreamKM. From four dimensions on, it shares a median of $1.000$ with \CEDAS, while \StreamKM and \CluStream approach that value as the dimension grows and reach $0.989$ and $0.991$ with 64 dimensions. The collapse of \MicroTEDAClus with the dimension, reported in \cref{sec:reassessment_results}, is absent from \MicroTEDAClusPlus. With one dimension, \MicroTEDAClus has the highest median, $0.763$, and \MicroTEDAClusPlus the second, $0.694$; \cref{sec:mi_main_experiment} shows that the difference between the two is not significant.
+In the scalability streams, \MicroTEDAClusPlus has the highest median ARI of the eight models from two dimensions on \cref{fig:complete_ari_sample_scalability,fig:complete_ari_feature_scalability}. From four dimensions on, it shares a median of $1.000$ with \CEDAS, while \StreamKM and \CluStream approach that value as the dimension grows. The collapse of \MicroTEDAClus with the dimension, reported in \cref{sec:reassessment_results}, is absent from \MicroTEDAClusPlus. With one dimension, \MicroTEDAClus has the highest median, and \MicroTEDAClusPlus the second; \cref{sec:mi_main_experiment} shows that the difference between the two is not significant.
 
 \section{Execution Time}
 \label{sec:results_time}
@@ -43,7 +43,7 @@ In the scalability streams, \MicroTEDAClusPlus has the highest median ARI of the
 \input{Results/artifacts/complete/tables/time_fit_cum_ms.tex}
 \input{Results/artifacts/complete/tables/time_predict_cum_ms.tex}
 
-\MicroTEDAClusPlus is indistinguishable from the fastest model in the two stages and in the six datasets (\cref{tab:complete_time_fit_cum_ms,tab:complete_time_predict_cum_ms}). In the fitting stage it is the sole fastest model in four datasets and shares the best group with \CEDAS in \BenchmarkOne and \RandomRBFGeneratorEvents. In the prediction stage it is the sole fastest model in the six datasets, a position that \StreamKM held alone or tied in \cref{sec:reassessment_results}. Its times are at or below the 10 ms resolution of the analysis; before the discretization, its median fitting time is between $12.6$ ms and $67.0$ ms and its median prediction time between $1.7$ ms and $5.6$ ms (\cref{sec:mi_main_experiment}).
+\MicroTEDAClusPlus is indistinguishable from the fastest model in the two stages and in the six datasets, show \cref{tab:complete_time_fit_cum_ms,tab:complete_time_predict_cum_ms}. In the fitting stage it is the sole fastest model in four datasets and shares the best group with \CEDAS in \BenchmarkOne and \RandomRBFGeneratorEvents. In the prediction stage it is the sole fastest model in the six datasets, a position that \StreamKM held alone or tied in \cref{sec:reassessment_results}. Its times are at or below the 10 ms resolution of the analysis.
 
 \begin{figure}[htbp]
     \centering
@@ -53,9 +53,9 @@ In the scalability streams, \MicroTEDAClusPlus has the highest median ARI of the
     \label{fig:complete_time_feature_scalability}
 \end{figure}
 
-\Cref{fig:complete_time_feature_scalability} shows the same in the scalability streams. The median fitting time of \MicroTEDAClusPlus stays between 13 ms and 17 ms from 1 to 64 dimensions, below that of every other model at every dimension: the next fastest, \CEDAS, goes from 26 ms to 234 ms, and \StreamKM from 40 ms to 754 ms. Its median prediction time stays at about 2 ms, against 9 ms or more for every other model at every dimension.
+\Cref{fig:complete_time_feature_scalability} shows the same in the scalability streams. The median fitting time of \MicroTEDAClusPlus stays below that of every other model at every dimension.
 
-The execution time measures an implementation and not only an algorithm. The benchmark models are executed through the implementations described in \cref{chap:methodology_reassessment}, and \MicroTEDAClusPlus through the implementation of \cref{sec:mi_optimization}, which runs its sequential part in compiled code. \Cref{subsec:mi_optimization_time} measures what the implementation alone contributes in the case of \MicroTEDAClus, a factor of 18 to 59.
+The execution time measures an implementation and not only an algorithm. The benchmark models are executed through the implementations described in \cref{chap:methodology_reassessment}, and \MicroTEDAClusPlus through the implementation of \cref{sec:mi_optimization}, which runs its sequential part in compiled code. \Cref{subsec:mi_optimization_time} measures what the implementation alone contributes in the case of \MicroTEDAClus.
 
 \section{Memory Usage}
 \label{sec:results_memory}
@@ -63,9 +63,9 @@ The execution time measures an implementation and not only an algorithm. The ben
 \input{Results/artifacts/complete/tables/memory_max_bytes.tex}
 \input{Results/artifacts/complete/tables/memory_steadystate_bytes.tex}
 
-Memory is the metric in which \MicroTEDAClusPlus does not lead. It is not indistinguishable from the best model in any dataset, at the maximum or at the steady state (\cref{tab:complete_memory_max_bytes,tab:complete_memory_steadystate_bytes}). The smallest footprints belong to \CEDAS, \TEDACloud and, in part of the datasets, \DenStream and \AutoCloud, with medians of 3072 B to 12288 B for the first two, against 13312 B to 25600 B for \MicroTEDAClusPlus. The latter values are a floor and not a measure of the microclusters in use, since the model reserves its arrays in advance (\cref{sec:mi_main_experiment}). Its maximum footprint is below those of \StreamKM, \CluStream and \MicroTEDAClus in every dataset, and below the last two by about one order of magnitude or more.
+Memory is the metric in which \MicroTEDAClusPlus does not lead. It is not indistinguishable from the best model in any dataset, at the maximum or at the steady state, \cref{tab:complete_memory_max_bytes,tab:complete_memory_steadystate_bytes}. The smallest footprints belong to \CEDAS, \TEDACloud and, in part of the datasets, \DenStream and \AutoCloud. Its maximum footprint is below those of \StreamKM, \CluStream and \MicroTEDAClus in every dataset, and below the last two by about one order of magnitude or more.
 
-In \BenchmarkOne, \MicroTEDAClusPlus is indistinguishable from the worst model on both memory metrics. The worst model of that dataset is \AutoCloud, whose footprint has a median of 669696 B and a first quartile of 5120 B, a dispersion wide enough for four other models to be indistinguishable from it, among them \MicroTEDAClusPlus with a median of 25600 B.
+In \BenchmarkOne, \MicroTEDAClusPlus is indistinguishable from the worst model on both memory metrics. The worst model of that dataset is \AutoCloud, whose footprint has a high median and a first quartile wide enough for four other models to be indistinguishable from it.
 
 \begin{figure}[htbp]
     \centering
@@ -75,7 +75,7 @@ In \BenchmarkOne, \MicroTEDAClusPlus is indistinguishable from the worst model o
     \label{fig:complete_mem_feature_scalability}
 \end{figure}
 
-In the scalability streams, the footprint of \MicroTEDAClusPlus grows linearly with the dimension (\cref{fig:complete_mem_feature_scalability}), from 11648 B with one dimension to 115456 B with 64. With 64 dimensions it is above those of \TEDACloud, \AutoCloud, \DenStream and \CEDAS, between 5600 B and 31712 B, and below those of \StreamKM, \MicroTEDAClus and \CluStream, between 261464 B and 3147704 B.
+In the scalability streams, \cref{fig:complete_mem_feature_scalability}, the footprint of \MicroTEDAClusPlus grows linearly with the dimension. With 64 dimensions it is above those of \TEDACloud, \AutoCloud, \DenStream and \CEDAS, and below those of \StreamKM, \MicroTEDAClus and \CluStream.
 
 \section{Microcluster Count}
 \label{sec:results_microclusters}
@@ -83,18 +83,18 @@ In the scalability streams, the footprint of \MicroTEDAClusPlus grows linearly w
 \input{Results/artifacts/complete/tables/mc_max.tex}
 \input{Results/artifacts/complete/tables/mc_steadystate.tex}
 
-\StreamKM does not expose a microcluster count and is absent from \cref{tab:complete_mc_max,tab:complete_mc_steadystate}. \MicroTEDAClusPlus is not indistinguishable from the model with the fewest microclusters in any dataset. Its median maximum is between 31 and 174, above those of \CEDAS, \TEDACloud and \DenStream, which keep fewer than 20 in every dataset, and below those of \CluStream in every dataset except \BenchmarkOne. In \BenchmarkOne it is indistinguishable from the worst model on both metrics, with a median maximum of 174 microclusters. The count of a model reflects the granularity of the configuration that the hyperparameter search selects for it as much as the model itself (\cref{sec:mi_selection}).
+\MicroTEDAClusPlus is not indistinguishable from the model with the fewest microclusters in any dataset. Its median maximum is above those of \CEDAS, \TEDACloud and \DenStream, which keep fewer than 20 in every dataset, and below those of \CluStream in every dataset except \BenchmarkOne. In \BenchmarkOne it is indistinguishable from the worst model on both metrics. The count of a model reflects the granularity of the configuration that the hyperparameter search selects for it as much as the model itself (\cref{sec:mi_selection}).
 
 \section{Hyperparameter Variability}
 \label{sec:results_parameters}
 
 \input{Results/artifacts/parameters/MicroTEDAClusPlus_parameters.tex}
 
-\Cref{tab:params_microtedaclusplus} gives the dispersion of the hyperparameters selected for \MicroTEDAClusPlus over the 94 runs, in the format of \cref{sec:parameter_variability}. Two observations follow from its comparison with the table of \MicroTEDAClus (\cref{tab:params_microtedaclus}).
+\Cref{tab:params_microtedaclusplus} gives the dispersion of the hyperparameters selected for \MicroTEDAClusPlus over the 94 runs, in the format of \cref{sec:parameter_variability}. Two observations follow from its comparison with the table of \MicroTEDAClus, \cref{tab:params_microtedaclus}.
 
-The first concerns the variance limit. The median of the limit selected for \MicroTEDAClus spans four orders of magnitude across the datasets, from $9.3 \times 10^{-4}$ in \RandomRBFGeneratorEvents to $6.9$ in \ChameleonDSFour, because it is an absolute variance and the datasets have different scales. The median of the relative limit of \MicroTEDAClusPlus spans little more than one, from $0.0036$ to $0.062$, and is nearly the same in the three datasets of static shapes, $0.058$, $0.062$ and $0.060$, whose coordinates differ in scale by two orders of magnitude. As \cref{sec:parameter_variability} reports for \MicroTEDAClus, its dispersion is larger in the three datasets with concept drift, with coefficients of $0.74$ to $0.98$, than in the three without it, with $0.07$ to $0.41$.
+The first concerns the variance limit. The median of the limit selected for \MicroTEDAClus spans four orders of magnitude across the datasets, from $\approx 10^{-3}$ in \RandomRBFGeneratorEvents to $\approx 10$ in \ChameleonDSFour, because it is an absolute variance and the datasets have different scales. The median of the relative limit of \MicroTEDAClusPlus spans little more than one and is nearly the same in the three datasets of static shapes, whose coordinates differ in scale by two orders of magnitude. As \cref{sec:parameter_variability} reports for \MicroTEDAClus, its dispersion is larger in the three datasets with concept drift, than in the three without it.
 
-The second concerns the new hyperparameter. The noise distance has a low dispersion in every dataset, with coefficients between $0.16$ and $0.27$ and medians between $5.7$ and $7.6$ standard deviations. The decay shows no relation with the concept drift, with coefficients between $0.30$ and $0.85$. In the Chameleon datasets every run processes the same stream (\cref{subsec:mi_runs}), so the dispersion of their rows is that of the hyperparameter search alone.
+The second concerns the new hyperparameter. The noise distance has a low dispersion in every dataset. The decay shows no relation with the concept drift. In the Chameleon datasets every run processes the same stream, as set in \cref{subsec:mi_runs}, so the dispersion of their rows is that of the hyperparameter search alone.
 
 \section{Chapter Summary}
 \label{sec:results_summary}

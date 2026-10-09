@@ -485,15 +485,13 @@ The streams of these runs took no part in the development of the model, as requi
 \input{ModelImprovement/artifacts/plus-vs-baseline/tables/ari_fifth.tex}
 \input{ModelImprovement/artifacts/plus-vs-baseline/tables/ari_diff.tex}
 
-\MicroTEDAClusPlus has a significantly higher Overall ARI than \MicroTEDAClus in five of the six datasets, and the two are not significantly different in \Cassini, with $0.496$ against $0.492$ (\cref{tab:plus-vs-baseline_ari_overall}). Its Steady-State ARI is significantly higher in all six (\cref{tab:plus-vs-baseline_ari_steadystate}). The largest differences are in the streams with concept drift. In \BenchmarkOne, the median Overall ARI goes from $0.029$ to $0.895$ and the median Steady-State ARI from $0.000$ to $0.868$. In \RandomRBFGeneratorEvents and \BenchmarkTwo, the Steady-State ARI goes from $0.000$ to $0.488$ and from $0.528$ to $0.849$. In the two Chameleon datasets the gains are smaller in absolute terms: the Overall ARI goes from $0.215$ to $0.288$ and from $0.202$ to $0.296$, and the Steady-State ARI from $0.126$ to $0.300$ and from $0.124$ to $0.316$.
+\MicroTEDAClusPlus has a significantly higher Overall ARI than \MicroTEDAClus in five of the six datasets, and the two are not significantly different in \Cassini, show \cref{tab:plus-vs-baseline_ari_overall}. Its Steady-State ARI is significantly higher in all six, see \cref{tab:plus-vs-baseline_ari_steadystate}. The largest differences are in the streams with concept drift. In the three datasets, both Overall and Steady-State median ARI are higher for \MicroTEDAClusPlus. In the two Chameleon datasets the gains are smaller in absolute terms.
 
-At the fifth batch, \MicroTEDAClusPlus is significantly better in \BenchmarkOne, \RandomRBFGeneratorEvents, \ChameleonDSThree and \ChameleonDSFour, and not significantly different in \BenchmarkTwo and \Cassini (\cref{tab:plus-vs-baseline_ari_fifth}). Its maximum ARI drop is significantly smaller in all six datasets (\cref{tab:plus-vs-baseline_ari_diff}): in \BenchmarkOne it falls from $0.903$ to $0.132$.
-
-These results agree with the validation of \cref{sec:mi_validation}, obtained with another implementation, on other runs and on another machine. The median Overall ARI of the final model in the validation runs is $0.853$, $0.626$, $0.488$, $0.482$, $0.290$ and $0.308$ for \BenchmarkOne, \BenchmarkTwo, \RandomRBFGeneratorEvents, \Cassini, \ChameleonDSThree and \ChameleonDSFour, against $0.895$, $0.635$, $0.492$, $0.496$, $0.288$ and $0.296$ here.
+At the fifth batch, in \cref{tab:plus-vs-baseline_ari_fifth}, \MicroTEDAClusPlus is significantly better in \BenchmarkOne, \RandomRBFGeneratorEvents, \ChameleonDSThree and \ChameleonDSFour, and not significantly different in \BenchmarkTwo and \Cassini. \Cref{tab:plus-vs-baseline_ari_diff} shows its maximum ARI drop is significantly smaller in all six datasets.
 
 \input{ModelImprovement/artifacts/main_experiment/scalability_ari.tex}
 
-\Cref{tab:mi_main_scalability_ari} gives the ARI metrics of the seven scalability streams, compared per dimension by the test of \cref{subsec:mi_decision_rule}. From two dimensions on, \MicroTEDAClusPlus is significantly better on the four metrics, and from four dimensions on its median ARI is $1.000$. The Steady-State ARI of \MicroTEDAClus decreases with the dimension, to $0.810$ with 16 dimensions, $0.462$ with 32 and $0.000$ with 64, the degradation along the stream that \cref{sec:reassessment_results} reports. \MicroTEDAClusPlus does not show it, as \cref{fig:mi_main_ari_scalability} illustrates.
+\Cref{tab:mi_main_scalability_ari} gives the ARI metrics of the seven scalability streams, compared per dimension by the test of \cref{subsec:mi_decision_rule}. From two dimensions on, \MicroTEDAClusPlus is significantly better on the four metrics. The Steady-State ARI of \MicroTEDAClus decreases with the dimension, the degradation along the stream that \cref{sec:reassessment_results} reports. \MicroTEDAClusPlus does not show it, as \cref{fig:mi_main_ari_scalability} illustrates.
 
 \begin{figure}[htbp]
     \centering
@@ -503,16 +501,16 @@ These results agree with the validation of \cref{sec:mi_validation}, obtained wi
     \label{fig:mi_main_ari_scalability}
 \end{figure}
 
-The stream with one dimension is the exception. The medians of \MicroTEDAClusPlus are lower than those of \MicroTEDAClus there, $0.694$ against $0.763$ in the Overall ARI and $0.677$ against $0.727$ in the Steady-State ARI, and none of the differences is significant. No one-dimensional stream took part in the development of the model, and this is the only stream of the main experiment in which the baseline has the higher median on these two metrics.
+The stream with one dimension is the exception. The medians of \MicroTEDAClusPlus are lower than those of \MicroTEDAClus there in the Overall and in the Steady-State ARI, and none of the differences is significant. No one-dimensional stream took part in the development of the model, and this is the only stream of the main experiment in which the baseline has the higher median on these two metrics.
 
 \subsection{Execution Time}
 
 \input{ModelImprovement/artifacts/plus-vs-baseline/tables/time_fit_cum_ms.tex}
 \input{ModelImprovement/artifacts/plus-vs-baseline/tables/time_predict_cum_ms.tex}
 
-\MicroTEDAClusPlus is significantly faster in the two stages and in the six datasets (\cref{tab:plus-vs-baseline_time_fit_cum_ms,tab:plus-vs-baseline_time_predict_cum_ms}). The analysis discretizes the execution times to 10 ms, a resolution suited to the benchmark models, and the times of \MicroTEDAClusPlus are at or below it, which is why its prediction time is printed as zero in five datasets. Before the discretization, its median fitting time is between $12.6$ ms (\BenchmarkTwo) and $67.0$ ms (\RandomRBFGeneratorEvents), and its median prediction time between $1.7$ ms and $5.6$ ms. The median fitting time of \MicroTEDAClus is between $576$ ms and $27.9$ s.
+\MicroTEDAClusPlus is significantly faster in the two stages and in the six datasets (\cref{tab:plus-vs-baseline_time_fit_cum_ms,tab:plus-vs-baseline_time_predict_cum_ms}). The analysis discretizes the execution times to 10 ms, a resolution suited to the benchmark models, and the times of \MicroTEDAClusPlus are at or below it, which is why its prediction time is printed as zero in five datasets.
 
-The ratio between the median fitting times of the two models is between 38 and 122 in \BenchmarkOne, \BenchmarkTwo, \Cassini and \RandomRBFGeneratorEvents, and reaches 860 in \ChameleonDSThree and 715 in \ChameleonDSFour. These ratios combine two effects: the optimization of \cref{sec:mi_optimization}, measured there at 18 to 59 times, and the number of microclusters that each tuned model keeps, which in the Chameleon datasets is an order of magnitude smaller for \MicroTEDAClusPlus (\cref{tab:plus-vs-baseline_mc_max}).
+The ratio between the median fitting times of the two models is in the tens in the \codename{R} datasets, and reaches the hundreds for the Chameleon datasets. These ratios combine two effects: the optimization of \cref{sec:mi_optimization}, and the number of microclusters that each tuned model keeps, which in the Chameleon datasets is an order of magnitude smaller for \MicroTEDAClusPlus (\cref{tab:plus-vs-baseline_mc_max}).
 
 \begin{figure}[htbp]
     \centering
@@ -522,23 +520,23 @@ The ratio between the median fitting times of the two models is between 38 and 1
     \label{fig:mi_main_cost_scalability}
 \end{figure}
 
-In the scalability streams, the median fitting time of \MicroTEDAClusPlus stays between 13 ms and 17 ms from 1 to 64 dimensions, against 309 ms to 1599 ms for \MicroTEDAClus (\cref{fig:mi_main_cost_scalability}).
+In the scalability streams, the median fitting time of \MicroTEDAClusPlus stays just over 10 ms from 1 to 64 dimensions, against hundreds of milliseconds for \MicroTEDAClus, in \cref{fig:mi_main_cost_scalability}.
 
 \subsection{Memory Usage}
 
 \input{ModelImprovement/artifacts/plus-vs-baseline/tables/memory_max_bytes.tex}
 \input{ModelImprovement/artifacts/plus-vs-baseline/tables/memory_steadystate_bytes.tex}
 
-The memory footprint of \MicroTEDAClusPlus is significantly smaller in the six datasets, at its maximum and at the steady state (\cref{tab:plus-vs-baseline_memory_max_bytes,tab:plus-vs-baseline_memory_steadystate_bytes}): its median maximum is 13312 B in four datasets and 25600 B in the other two, against 143872 B to 994304 B for \MicroTEDAClus. In those four datasets its footprint is the same in at least half of the runs. The model stores the microclusters in arrays that always have room for one new microcluster per sample of the next batch, and that are enlarged to twice the required size when that room runs out. The footprint that is measured is that of the allocated capacity, which is the same for every run that never keeps more than 100 microclusters.
+\cref{tab:plus-vs-baseline_memory_max_bytes,tab:plus-vs-baseline_memory_steadystate_bytes} the memory footprint of \MicroTEDAClusPlus is significantly smaller in the six datasets, at its maximum and at the steady state. The model stores the microclusters in arrays that always have room for one new microcluster per sample of the next batch, and that are enlarged to twice the required size when that room runs out. The footprint that is measured is that of the allocated capacity, which is the same for every run that never keeps more than 100 microclusters.
 
-In the scalability streams, the median maximum footprint of \MicroTEDAClusPlus grows linearly with the dimension, from 11648 B with one dimension to 115456 B with 64, since each microcluster stores one mean. That of \MicroTEDAClus is between 114088 B and 2303792 B (\cref{fig:mi_main_cost_scalability}).
+In the scalability streams, \cref{fig:mi_main_cost_scalability} shows that the median maximum footprint of \MicroTEDAClusPlus grows linearly with the dimension, since each microcluster stores one mean.
 
 \subsection{Microcluster Count}
 
 \input{ModelImprovement/artifacts/plus-vs-baseline/tables/mc_max.tex}
 \input{ModelImprovement/artifacts/plus-vs-baseline/tables/mc_steadystate.tex}
 
-The number of microclusters does not change in a single direction (\cref{tab:plus-vs-baseline_mc_max,tab:plus-vs-baseline_mc_steadystate}). \MicroTEDAClusPlus keeps significantly fewer microclusters in the Chameleon datasets, with a median maximum of 40 against 509 and 430, significantly more in \BenchmarkOne, with 174 against 82, and a number that is not significantly different in \BenchmarkTwo, \RandomRBFGeneratorEvents and \Cassini. The small counts of the Chameleon datasets are those of the coarse configurations that the hyperparameter search selects in static shapes (\cref{sec:mi_selection}).
+\cref{tab:plus-vs-baseline_mc_max,tab:plus-vs-baseline_mc_steadystate} indicate the number of microclusters does not change in a single direction. \MicroTEDAClusPlus keeps significantly fewer microclusters in the Chameleon datasets, significantly more in \BenchmarkOne, and a number that is not significantly different in \BenchmarkTwo, \RandomRBFGeneratorEvents and \Cassini. The small counts of the Chameleon datasets are those of the coarse configurations that the hyperparameter search selects in static shapes, as discussed in \cref{sec:mi_selection}.
 
 \subsection{Summary}
 
@@ -546,7 +544,7 @@ Under the protocol of the main experiment, \MicroTEDAClusPlus improves on \Micro
 
 \begin{itemize}
     \item \textbf{Clustering quality.} The Overall ARI is significantly higher in five of the six non-scalability datasets and the Steady-State ARI in all six; the maximum ARI drop is significantly smaller in all six. In the scalability streams, the four ARI metrics are significantly better from two dimensions on, and the degradation of \MicroTEDAClus along high-dimensional streams does not occur.
-    \item \textbf{Cost.} The fitting and prediction times and the memory footprint are significantly smaller in every dataset: the median fitting time by a factor of 38 to 860, and the median maximum memory footprint by a factor of 11 to 54.
+    \item \textbf{Cost.} The fitting and prediction times and the memory footprint are significantly smaller in every dataset.
 \end{itemize}
 
 It does not improve on it everywhere. The Overall ARI of \Cassini and the four ARI metrics of the one-dimensional stream are not significantly different, the latter with lower medians. The scores in the three datasets of static shapes remain at or below $0.5$, for the reason examined in \cref{sec:mi_selection}. And in \BenchmarkOne the model keeps two to four times as many microclusters as the baseline.
