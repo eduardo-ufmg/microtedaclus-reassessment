@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Cumulative Prediction Time [ms].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c }
+\toprule
+Dataset & \modelname{CluStream} & \modelname{DenStream} & \modelname{CEDAS} & \modelname{TEDACloud} & \modelname{AutoCloud} & \modelname{StreamKM} & \modelname{MicroTEDAClus+} \\
+\midrule
+\datasetname{Stream Benchmark 1} & 100.0 (70.0, 150.0) & 90.0 (10.0, 990.0) & 20.0 (10.0, 30.0) & 40.0 (20.0, 40.0) & \textcolor{red}{4770.0 (30.0, 7390.0)} & 10.0 (10.0, 10.0) & \textbf{0.0 (0.0, 0.0)} \\
+\datasetname{Stream Benchmark 2} & 80.0 (60.0, 110.0) & \textcolor{red}{140.0 (90.0, 240.0)} & 10.0 (10.0, 10.0) & 20.0 (10.0, 20.0) & \textcolor{red}{20.0 (10.0, 6910.0)} & 10.0 (10.0, 10.0) & \textbf{0.0 (0.0, 0.0)} \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{1220.0 (640.0, 1840.0)} & 150.0 (40.0, 350.0) & 60.0 (40.0, 90.0) & 150.0 (110.0, 190.0) & \textcolor{red}{160.0 (90.0, 50280.0)} & 30.0 (30.0, 40.0) & \textbf{10.0 (0.0, 10.0)} \\
+\datasetname{Cassini} & 80.0 (50.0, 120.0) & 135.0 (110.0, 187.5) & 20.0 (10.0, 20.0) & 70.0 (52.5, 90.0) & \textcolor{red}{6200.0 (30.0, 9052.5)} & 10.0 (10.0, 10.0) & \textbf{0.0 (0.0, 0.0)} \\
+\datasetname{Chameleon DS3} & \textcolor{red}{260.0 (220.0, 390.0)} & 70.0 (62.5, 70.0) & 70.0 (60.0, 70.0) & 110.0 (100.0, 117.5) & 160.0 (130.0, 180.0) & 30.0 (30.0, 40.0) & \textbf{0.0 (0.0, 0.0)} \\
+\datasetname{Chameleon DS4} & 200.0 (160.0, 300.0) & 110.0 (110.0, 110.0) & 50.0 (50.0, 50.0) & 100.0 (80.0, 190.0) & \textcolor{red}{35680.0 (35572.5, 36357.5)} & 30.0 (20.0, 30.0) & \textbf{0.0 (0.0, 0.0)} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:plus-vs-benchmarks_time_predict_cum_ms}
+\end{table}

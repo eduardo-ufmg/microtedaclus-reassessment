@@ -1,0 +1,25 @@
+\begin{table}[htbp]
+\centering
+\caption{Combined corrections: partitions predicted, as medians over the runs of the means over the batches of a run.}
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\begin{tabular}{l c c c c c c c c }
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{Predicted clusters}} \\
+true clusters & 3.0 & 3.0 & 4.1 & 3.0 & 9.9 & 8.8 & 4.0 & 4.0 \\
+\modelname{nearest} & 1.6 & 2.4 & 5.2 & 3.6 & 23.7 & 19.8 & 4.5 & 3.9 \\
+\modelname{nearest + no-penalty} & 1.7 & 2.7 & 4.9 & 3.8 & 23.6 & 19.3 & 2.9 & 2.9 \\
+\midrule
+\multicolumn{9}{l}{\textit{Homogeneity}} \\
+\modelname{nearest} & 0.31 & 0.64 & 0.51 & 0.74 & 0.77 & 0.68 & 0.92 & 0.76 \\
+\modelname{nearest + no-penalty} & 0.34 & 0.70 & 0.50 & 0.74 & 0.77 & 0.68 & 0.76 & 0.76 \\
+\midrule
+\multicolumn{9}{l}{\textit{Completeness}} \\
+\modelname{nearest} & 0.90 & 0.95 & 0.70 & 0.74 & 0.56 & 0.55 & 0.90 & 0.90 \\
+\modelname{nearest + no-penalty} & 0.91 & 0.92 & 0.70 & 0.72 & 0.56 & 0.55 & 0.92 & 0.92 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_corrections_combined_partitions}
+\end{table}

@@ -51,6 +51,11 @@ def run_level(variant: str, runs: range) -> pd.DataFrame:
             for name in DIAGNOSTICS:
                 if name in df.columns:
                     row[name] = df[name].mean()
+            if "n_pred" in df.columns:
+                # The first batch is predicted before any sample is learned, so it is left out.
+                predicted = df["n_pred"].to_numpy()
+                row["single_cluster_share"] = float(np.mean(predicted[1:] == 1))
+                row["ends_single_cluster"] = bool(predicted[-2] == 1)
             if par_file.exists():
                 params = pd.read_csv(par_file)
                 if not params.empty:

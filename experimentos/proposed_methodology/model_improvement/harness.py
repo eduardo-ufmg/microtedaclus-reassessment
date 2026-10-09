@@ -41,6 +41,9 @@ RESULTS_DIR = ROOT / "results_model_improvement"
 STREAM_WEIGHT = {"chameleon_ds3": 3, "random_rbf_events": 3, "chameleon_ds4": 2}
 
 
+TUNING_COLUMNS = ["variant", "dataset", "run", "trials", "tuning_seconds", "status"]
+
+
 def result_paths(variant: str, dataset: str, run: int) -> tuple[Path, Path]:
     """Result and parameter files of a task."""
     base = RESULTS_DIR / variant
@@ -162,7 +165,9 @@ def record(
     executed = tasks[tasks["status"] != "cached"]
     if not executed.empty:
         log = RESULTS_DIR / "tuning.csv"
-        executed.to_csv(log, mode="a", header=not log.exists(), index=False)
+        executed[TUNING_COLUMNS].to_csv(
+            log, mode="a", header=not log.exists(), index=False
+        )
 
 
 def main():

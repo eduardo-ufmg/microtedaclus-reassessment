@@ -386,7 +386,7 @@ def objective(trial, model_class, search_space_class, X_opt, y_opt, batch_size):
 \end{algorithmic}
 \end{algorithm}
 
-This tuning strategy's goal is to both reduce error- and bias-prone subjective decisions regarding the choice of hyperparameters and to prevent the selection of parameters that provide a small increase in the score at the cost of a significant increase in the execution time.
+This tuning strategy's goal is to both reduce error- and bias-prone subjective decisions regarding the choice of hyperparameters and to prevent the selection of parameters that provide a small increase in the score at the cost of a significant increase in the execution time. The search of each model ends at 100 trials or at 300 seconds, whichever comes first. The time term of the objective and the time limit of the search are both required by the cost of the experiments: some of the evaluated models are slow enough to make an unrestricted search unfeasible over the number of runs that the statistical analysis demands, and a slow model may therefore complete fewer trials than a fast one. The same cost is the reason why every dataset of the experiments has at most 10000 samples.
 
 \subsection{Multi-run Statistics} \label{subsec:multi_run_statistics}
 
@@ -462,7 +462,7 @@ For $N=1000$, $B=10^4$, $k_{\min}=3$, $k^* = 94$. \Cref{fig:medianiqr_convergenc
     \label{fig:medianiqr_convergence_with_k}
 \end{figure}
 
-\section{Datasets}
+\section{Datasets} \label{sec:datasets}
 
 The original work organizes the datasets used in its experiments into three categories: static, concept drift, and the synthetic datasets used for the scalability experiments. Although the selected datasets are commonly used in the literature for data stream clustering evaluation \cite{bezerra2016tedacloud,bezerra2020autocloud,zhang2022extension,nguyenLe2026beyondbinary,zubaroglu2023emcstream}, the following subsections discuss how some downsampling, cleaning, ordering, and scaling decisions had a significant and hidden impact on the experiment results and invalidated the conclusions drawn from them regarding real-world online stream clustering scenarios. In the following dataset plots, each sample is colored according to its cluster label.
 

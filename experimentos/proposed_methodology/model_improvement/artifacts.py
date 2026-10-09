@@ -12,15 +12,18 @@ Usage (from experimentos/proposed_methodology):
 """
 
 import argparse
+from functools import lru_cache
 from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.ticker import NullFormatter, ScalarFormatter
 import numpy as np
 import pandas as pd
 
+import protocol
 from compute_metrics import add_time_columns, is_valid_result, scalar_metrics
 from editorial_config import dataset_display_name, model_display_name
 from model_improvement import analysis
@@ -38,6 +41,7 @@ from model_improvement.experiments import (
 from model_improvement.harness import RESULTS_DIR, result_paths
 from model_improvement.variants import VARIANTS
 from statistic_analysis import METRICS
+from streams import load_stream
 
 ROOT = Path(__file__).resolve().parent.parent
 ARTIFACT_DIR = ROOT.parent.parent / "monografia" / "ModelImprovement" / "artifacts"
@@ -76,6 +80,26 @@ OUTCOME_SYMBOLS = {
 }
 CHAIN = ["vectorized", CORRECTED, IMPROVED, FINAL]
 PROBE_DATASETS = ["cassini", "chameleon_ds3", "chameleon_ds4"]
+QUALITY_METRICS = ["ari_overall", "ari_steadystate", "ari_fifth", "ari_diff"]
+COST_METRICS = [
+    "mc_max",
+    "mc_steadystate",
+    "memory_max_bytes",
+    "memory_steadystate_bytes",
+]
+# With more rows than this, the four ARI panels of an experiment do not fit one page.
+MAX_ROWS_IN_FOUR_PANELS = 8
+RULE_NOTE = (
+    "The last column gives the outcome of the decision rule: improvement ($+$), regression ($-$), "
+    "both ($\\pm$) or neither ($=$)."
+)
+TUNING_FILE = RESULTS_DIR / "tuning.csv"
+# Hyperparameters of the sensitivity function that each variant of the m function tunes.
+M_PARAMETERS = {
+    "m_reparam": (("m_up", r"$m_{\max}$"), ("m_a", r"$S_{95}$")),
+    "m_constant": (("m_up", r"$m$"),),
+    "m_asymptote": (("m_up", "asymptote"),),
+}
 PROBE_SPACES = {"final": "final", "engine": "extended"}
 CHAIN_COLORS = {
     "original": "xkcd:grey",
@@ -121,7 +145,7 @@ def write_table(
         r"\begin{table}[htbp]",
         r"\centering",
         rf"\caption{{{caption}}}",
-        r"\resizebox{\textwidth}{!}{%",
+        r"\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%",
         rf"\begin{{tabular}}{{{column_spec}}}",
         r"\toprule",
         *lines,
@@ -132,6 +156,35 @@ def write_table(
         r"\end{table}",
     ]
     path.write_text("\n".join(body) + "\n")
+
+
+def panel_table(folder, name, caption, panels, datasets=DATASETS, first_column="Model"):
+    """Panels of rows with one value per dataset.
+
+    `panels` is a list of (title, rows), and a row is (label, values, fmt), with
+    `values` indexed by dataset and `fmt` the function that formats one value.
+    """
+    lines = [
+        f"{first_column} & " + " & ".join(SHORT_NAMES[d] for d in datasets) + r" \\"
+    ]
+    for title, rows in panels:
+        lines.append(r"\midrule")
+        lines.append(
+            rf"\multicolumn{{{1 + len(datasets)}}}{{l}}{{\textit{{{title}}}}} \\"
+        )
+        for label, values, fmt in rows:
+            cells = [
+                fmt(values[d]) if d in values and not pd.isna(values[d]) else "-"
+                for d in datasets
+            ]
+            lines.append(" & ".join([label, *cells]) + r" \\")
+    write_table(
+        ARTIFACT_DIR / folder / f"{name}.tex",
+        caption,
+        f"tab:mi_{folder}_{name}",
+        "l " + "c " * len(datasets),
+        lines,
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -170,9 +223,10 @@ def comparison_table(experiment, metrics, name, caption, with_rule=True):
                     marked(number(metric, value), verdicts.get(dataset, "same"))
                 )
             if with_rule:
+                decides = control and metric in analysis.DECISION_METRICS
                 outcome = (
                     analysis.decide(control, variant, experiment.runs)["outcome"]
-                    if control
+                    if decides
                     else ""
                 )
                 cells.append(OUTCOME_SYMBOLS.get(outcome, ""))
@@ -189,96 +243,69 @@ def comparison_table(experiment, metrics, name, caption, with_rule=True):
 
 
 def experiment_tables(experiment):
-    """Decision metrics for the chapter; the remaining metrics for the appendix."""
-    runs = f"runs {experiment.runs.start} to {experiment.runs.stop - 1}"
-    marks = ""
-    comparison_table(
-        experiment,
-        ["ari_overall", "ari_steadystate"],
-        "quality",
-        f"{experiment.title}: Overall and Steady-State ARI. {marks}. The last column gives the outcome "
-        "of the decision rule: improvement ($+$), regression ($-$), both ($\\pm$) or neither ($=$).",
-    )
-    comparison_table(
-        experiment,
-        ["ari_fifth", "ari_diff"],
-        "quality_other",
-        f"{experiment.title}: ARI at the fifth batch and maximum ARI drop. {marks}.",
-        with_rule=False,
-    )
+    """ARI metrics for the chapter, in one table when it fits a page; cost metrics for the appendix."""
+    variants = {variant for variant, _ in experiment.comparisons}
+    controls = {control for _, control in experiment.comparisons}
+    rows = len(experiment.comparisons) + len(controls - variants)
+    if rows <= MAX_ROWS_IN_FOUR_PANELS:
+        comparison_table(
+            experiment,
+            QUALITY_METRICS,
+            "quality",
+            f"{experiment.title}: ARI metrics. {RULE_NOTE}",
+        )
+    else:
+        comparison_table(
+            experiment,
+            QUALITY_METRICS[:2],
+            "quality",
+            f"{experiment.title}: Overall and Steady-State ARI. {RULE_NOTE}",
+        )
+        comparison_table(
+            experiment,
+            QUALITY_METRICS[2:],
+            "quality_other",
+            f"{experiment.title}: ARI at the fifth batch and maximum ARI drop.",
+            with_rule=False,
+        )
     comparison_table(
         experiment,
         ["mc_steadystate", "memory_steadystate_bytes"],
         "cost",
-        f"{experiment.title}: steady-state microcluster count and memory footprint. {marks}.",
+        f"{experiment.title}: steady-state microcluster count and memory footprint.",
         with_rule=False,
     )
-    comparison_table(
-        experiment,
-        ["time_fit_cum_ms", "time_predict_cum_ms"],
-        "time",
-        f"{experiment.title}: cumulative fitting and prediction times, measured under parallel load. "
-        f"{marks}.",
-        with_rule=False,
-    )
-
-
-def variants_table(experiment):
-    """What each variant of an experiment changes."""
-    lines = [r"Model & Change relative to its base \\", r"\midrule"]
-    for key in experiment.variants:
-        variant = VARIANTS[key]
-        if variant.summary:
-            lines.append(
-                rf"{model(key, experiment.stage_names)} & {variant.summary} \\"
-            )
-    path = ARTIFACT_DIR / experiment.key / "variants.tex"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    body = [
-        r"\begin{table}[htbp]",
-        r"\centering",
-        rf"\caption{{{experiment.title}: models evaluated.}}",
-        r"\begin{tabular}{l p{0.62\textwidth}}",
-        r"\toprule",
-        *lines,
-        r"\bottomrule",
-        r"\end{tabular}",
-        rf"\label{{tab:mi_{experiment.key}_variants}}",
-        r"\end{table}",
-    ]
-    path.write_text("\n".join(body) + "\n")
 
 
 # -----------------------------------------------------------------------------
 # Chain tables (datasets in rows, models in columns, median and quartiles)
 # -----------------------------------------------------------------------------
-def chain_table(models, metric, runs, folder, name, caption):
-    """Each model is marked against the model in the column to its left."""
+def chain_table(models, metrics, runs, folder, name, caption):
+    """One panel per metric; each model is marked against the model in the column to its left."""
     header = " & ".join(model(m, STAGE_NAMES) for m in models)
-    lines = [f"Dataset & {header}" + r" \\", r"\midrule"]
+    lines = [f"Dataset & {header}" + r" \\"]
     levels = {m: analysis.run_level(m, runs) for m in models}
-    for dataset in DATASETS:
-        cells = [rf"\datasetname{{{dataset_display_name(dataset)}}}"]
-        for position, key in enumerate(models):
-            rl = levels[key]
-            values = (
-                rl[rl.dataset == dataset][metric]
-                if not rl.empty
-                else pd.Series(dtype=float)
-            )
-            if values.empty:
-                cells.append("-")
-                continue
-            disc = np.asarray(METRICS[metric]["round"](values.to_numpy(dtype=float)))
-            q1, med, q3 = np.quantile(disc, [0.25, 0.5, 0.75])
-            text = f"{number(metric, med)} ({number(metric, q1)}, {number(metric, q3)})"
-            verdict = "same"
-            if position > 0:
-                table = analysis.compare(models[position - 1], key, metric, runs)
-                if not table.empty and dataset in table.index:
+    for metric in metrics:
+        lines.append(r"\midrule")
+        lines.append(
+            rf"\multicolumn{{{1 + len(models)}}}{{l}}{{\textit{{{METRIC_TITLES[metric]}}}}} \\"
+        )
+        for dataset in DATASETS:
+            cells = [SHORT_NAMES[dataset]]
+            for position, key in enumerate(models):
+                rl = levels[key]
+                values = rl[rl.dataset == dataset][metric]
+                disc = np.asarray(
+                    METRICS[metric]["round"](values.to_numpy(dtype=float))
+                )
+                q1, med, q3 = np.quantile(disc, [0.25, 0.5, 0.75])
+                text = f"{number(metric, med)} ({number(metric, q1)}, {number(metric, q3)})"
+                verdict = "same"
+                if position > 0:
+                    table = analysis.compare(models[position - 1], key, metric, runs)
                     verdict = table.loc[dataset, "verdict"]
-            cells.append(marked(text, verdict))
-        lines.append(" & ".join(cells) + r" \\")
+                cells.append(marked(text, verdict))
+            lines.append(" & ".join(cells) + r" \\")
     write_table(
         ARTIFACT_DIR / folder / f"{name}.tex",
         caption,
@@ -292,18 +319,25 @@ def validation_tables():
     experiment = EXPERIMENT_BY_KEY["validation"]
     runs = experiment.runs
     note = (
-        f"Median and quartiles over the {len(runs)} validation runs. Each model is compared with the "
-        "model to its left: bold is significantly better, red is significantly worse."
+        f"median and quartiles over the {len(runs)} validation runs. Each model is compared with "
+        "the model to its left."
     )
-    for metric in METRIC_TITLES:
-        chain_table(
-            CHAIN,
-            metric,
-            runs,
-            "validation",
-            metric,
-            f"{METRIC_TITLES[metric]} of the accepted models. {note}",
-        )
+    chain_table(
+        CHAIN,
+        QUALITY_METRICS,
+        runs,
+        "validation",
+        "quality",
+        f"ARI metrics of the accepted models: {note}",
+    )
+    chain_table(
+        CHAIN,
+        COST_METRICS,
+        runs,
+        "validation",
+        "cost",
+        f"Microcluster count and memory footprint of the accepted models: {note}",
+    )
     end_to_end = type(experiment)(
         "validation",
         "Final model against the vectorized model",
@@ -314,10 +348,9 @@ def validation_tables():
     )
     comparison_table(
         end_to_end,
-        ["ari_overall", "ari_steadystate", "ari_fifth", "ari_diff"],
+        QUALITY_METRICS,
         "final_vs_vectorized",
-        f"Final model against the vectorized model on the {len(runs)} validation runs. Bold and red "
-        "values are significantly better and worse than the vectorized model, respectively.",
+        f"Final model against the vectorized model: medians over the {len(runs)} validation runs.",
         with_rule=False,
     )
 
@@ -325,12 +358,28 @@ def validation_tables():
 # -----------------------------------------------------------------------------
 # Diagnosis of a model (shape of its predicted partitions)
 # -----------------------------------------------------------------------------
+@lru_cache(maxsize=None)
+def true_noise(dataset: str, runs: range) -> float:
+    """Share of noise samples in the evaluation segment of a dataset: median over the runs."""
+    shares = []
+    for run in runs:
+        _, y = load_stream(dataset, run)
+        shares.append(np.mean(y[int(protocol.SPLIT_FRACTION * len(y)) :] == -1))
+    return float(np.median(shares))
+
+
+def run_medians(variant, runs, column):
+    """Median over the runs of one run-level column, per dataset."""
+    return analysis.run_level(variant, runs).groupby("dataset")[column].median()
+
+
 def diagnosis_table(variant, runs, folder="diagnosis"):
     rl = analysis.run_level(variant, runs)
     if rl.empty or "n_pred" not in rl.columns:
         return
     lines = [
-        r"Dataset & True clusters & Predicted clusters & Homogeneity & Completeness & Predicted noise [\%] \\",
+        r"Dataset & True clusters & Predicted clusters & Homogeneity & Completeness & "
+        r"True noise [\%] & Predicted noise [\%] \\",
         r"\midrule",
     ]
     grouped = rl.groupby("dataset")[
@@ -341,18 +390,275 @@ def diagnosis_table(variant, runs, folder="diagnosis"):
             continue
         g = grouped.loc[dataset]
         lines.append(
-            rf"\datasetname{{{dataset_display_name(dataset)}}} & {g.n_true:.1f} & {g.n_pred:.1f} & "
-            rf"{g.homogeneity:.2f} & {g.completeness:.2f} & {100 * g.noise_pred:.1f} \\"
+            rf"{SHORT_NAMES[dataset]} & {g.n_true:.1f} & {g.n_pred:.1f} & {g.homogeneity:.2f} & "
+            rf"{g.completeness:.2f} & {100 * true_noise(dataset, runs):.1f} & {100 * g.noise_pred:.1f} \\"
         )
     write_table(
         ARTIFACT_DIR / folder / f"{variant}.tex",
-        f"Predicted partitions of the {model(variant, STAGE_NAMES)} model: medians over the development "
-        "runs of the per-run means over the batches. The noise label counts as one cluster in the batches "
-        "that contain it. The first batch is predicted before any sample is learned and is labelled as noise "
-        "in full, which accounts for the predicted noise of a model that never labels noise.",
+        f"Partitions predicted by the {model(variant, STAGE_NAMES)} model: medians over the runs of the "
+        "means over the batches of a run. The noise label counts as one cluster. The first batch is "
+        "predicted before any sample is learned and is labelled as noise in full, which is the noise "
+        "that a model without a noise label predicts.",
         f"tab:mi_{folder}_{variant}",
-        "l c c c c c",
+        "l c c c c c c",
         lines,
+    )
+
+
+def partition_table(
+    folder, name, title, variants, runs=DEVELOPMENT_RUNS, stage_names=None
+):
+    """Shape of the partitions predicted by several models."""
+    labelled = [(model(v, stage_names), v) for v in variants]
+    panels = [
+        (
+            "Predicted clusters",
+            [
+                (
+                    "true clusters",
+                    run_medians(variants[0], runs, "n_true"),
+                    "{:.1f}".format,
+                )
+            ]
+            + [
+                (label, run_medians(v, runs, "n_pred"), "{:.1f}".format)
+                for label, v in labelled
+            ],
+        ),
+        (
+            "Homogeneity",
+            [
+                (label, run_medians(v, runs, "homogeneity"), "{:.2f}".format)
+                for label, v in labelled
+            ],
+        ),
+        (
+            "Completeness",
+            [
+                (label, run_medians(v, runs, "completeness"), "{:.2f}".format)
+                for label, v in labelled
+            ],
+        ),
+    ]
+    panel_table(
+        folder,
+        name,
+        f"{title}: partitions predicted, as medians over the runs of the means over the batches of a run.",
+        panels,
+    )
+
+
+def degenerate_table(
+    folder, name, title, variants, runs=DEVELOPMENT_RUNS, stage_names=None
+):
+    """How often a model predicts a single cluster."""
+    shares, endings = [], []
+    for v in variants:
+        rl = analysis.run_level(v, runs).groupby("dataset")
+        shares.append(
+            (
+                model(v, stage_names),
+                100 * rl["single_cluster_share"].median(),
+                "{:.0f}".format,
+            )
+        )
+        endings.append(
+            (model(v, stage_names), rl["ends_single_cluster"].sum(), "{:.0f}".format)
+        )
+    panel_table(
+        folder,
+        name,
+        f"{title}: batches of a run in which a single cluster is predicted, as the median over the "
+        f"runs of their share after the first batch, and runs, of {len(runs)}, whose penultimate batch "
+        "has a single predicted cluster.",
+        [
+            (r"Batches with a single predicted cluster [\%]", shares),
+            ("Runs that end with a single predicted cluster", endings),
+        ],
+    )
+
+
+def search_range_table(runs=DEVELOPMENT_RUNS):
+    """Variance limits that the wider search range selects, and the degenerate endings they bring."""
+    variants = [(model(v, STAGE_NAMES), v) for v in (CORRECTED, "c_nearest_wide")]
+    panel_table(
+        "search_range",
+        "selection",
+        "Search range of the variance limit: limit selected, as the median over the runs, and runs, of "
+        f"{len(runs)}, whose penultimate batch has a single predicted cluster.",
+        [
+            (
+                "Variance limit selected",
+                [
+                    (
+                        label,
+                        run_medians(v, runs, "param:variance_limit"),
+                        "{:.3g}".format,
+                    )
+                    for label, v in variants
+                ],
+            ),
+            (
+                "Runs that end with a single predicted cluster",
+                [
+                    (
+                        label,
+                        analysis.run_level(v, runs)
+                        .groupby("dataset")["ends_single_cluster"]
+                        .sum(),
+                        "{:.0f}".format,
+                    )
+                    for label, v in variants
+                ],
+            ),
+        ],
+    )
+
+
+def noise_label_table(runs=DEVELOPMENT_RUNS):
+    """Hyperparameters selected for the noise-label variant and the noise it predicts."""
+    noise = {d: 100 * true_noise(d, runs) for d in DATASETS}
+    panels = [
+        (
+            "Variance limit selected, searched up to 100",
+            [
+                (
+                    model(v, STAGE_NAMES),
+                    run_medians(v, runs, "param:variance_limit"),
+                    "{:.3g}".format,
+                )
+                for v in (CORRECTED, "i_noise")
+            ],
+        ),
+        (
+            "Noise distance selected, searched up to 10",
+            [
+                (
+                    model("i_noise"),
+                    run_medians("i_noise", runs, "param:noise_m"),
+                    "{:.1f}".format,
+                )
+            ],
+        ),
+        (
+            r"Samples labelled as noise [\%]",
+            [
+                ("true noise", noise, "{:.1f}".format),
+                (
+                    model("i_noise"),
+                    100 * run_medians("i_noise", runs, "noise_pred"),
+                    "{:.1f}".format,
+                ),
+            ],
+        ),
+    ]
+    panel_table(
+        "improvements_single",
+        "noise_label",
+        r"Hyperparameters selected for \modelname{noise-label} and share of the samples it labels as "
+        "noise: medians over the runs.",
+        panels,
+    )
+
+
+def m_tuned_table(runs=DEVELOPMENT_RUNS):
+    """Values that the search selects for the hyperparameters of the sensitivity function."""
+    rows = [
+        (
+            f"{model(v)}: {name}",
+            run_medians(v, runs, f"param:{parameter}"),
+            "{:.3g}".format,
+        )
+        for v, parameters in M_PARAMETERS.items()
+        for parameter, name in parameters
+    ]
+    panel_table(
+        "m_function",
+        "tuned",
+        "Values selected for the hyperparameters of the sensitivity function: medians over the runs.",
+        [("Selected value", rows)],
+        first_column="Model and hyperparameter",
+    )
+
+
+def tuning_noise_table(runs=DEVELOPMENT_RUNS):
+    """Two searches of one same algorithm: the improved and final models in two dimensions."""
+    first = analysis.run_level(IMPROVED, runs).set_index(["dataset", "run"])
+    second = analysis.run_level(FINAL, runs).set_index(["dataset", "run"])
+    parameters = [c for c in first.columns if c.startswith("param:")]
+    same_selection = pd.Series(
+        np.isclose(first[parameters], second[parameters], rtol=1e-9).all(axis=1),
+        index=first.index,
+    )
+    same_result = pd.Series(
+        np.isclose(first["ari_overall"], second["ari_overall"], atol=1e-12),
+        index=first.index,
+    )
+    two_dimensional = [d for d in DATASETS if not d.startswith("SCL-")]
+    panel_table(
+        "refinements",
+        "tuning_noise",
+        r"Two hyperparameter searches of one same algorithm with the same seeds, those of "
+        r"\modelname{improved} and \modelname{improved + no-penalty} in the two-dimensional datasets: "
+        f"number of runs, of {len(runs)}.",
+        [
+            (
+                "Runs",
+                [
+                    (
+                        "both searches select the same hyperparameters",
+                        same_selection.groupby("dataset").sum(),
+                        "{:.0f}".format,
+                    ),
+                    (
+                        "both evaluations have the same Overall ARI",
+                        same_result.groupby("dataset").sum(),
+                        "{:.0f}".format,
+                    ),
+                ],
+            )
+        ],
+        datasets=two_dimensional,
+        first_column="",
+    )
+
+
+def trials_table(runs=DEVELOPMENT_RUNS):
+    """Budget that the hyperparameter search spends on each implementation."""
+    tuning = pd.read_csv(TUNING_FILE)
+    tuning = tuning[
+        tuning["variant"].isin(["original", "vectorized"])
+        & tuning["run"].isin(runs)
+        & (tuning["status"] == "OK")
+    ]
+    tuning = tuning.drop_duplicates(["variant", "dataset", "run"], keep="last")
+    for column in ("trials", "tuning_seconds"):
+        tuning[column] = pd.to_numeric(tuning[column])
+    grouped = {
+        v: tuning[tuning["variant"] == v].groupby("dataset")
+        for v in ("original", "vectorized")
+    }
+    panel_table(
+        "optimization",
+        "trials",
+        "Hyperparameter search of the two implementations: medians over the runs. The search ends at "
+        f"{protocol.OPT_TRIALS} trials or {protocol.OPT_TIMEOUT} seconds.",
+        [
+            (
+                "Completed trials",
+                [
+                    (model(v), g["trials"].median(), "{:.0f}".format)
+                    for v, g in grouped.items()
+                ],
+            ),
+            (
+                "Duration of the search [s]",
+                [
+                    (model(v), g["tuning_seconds"].median(), "{:.0f}".format)
+                    for v, g in grouped.items()
+                ],
+            ),
+        ],
     )
 
 
@@ -371,6 +677,15 @@ def serial_times() -> pd.DataFrame:
         time_total_ms=("time_total_ms", "min"),
         microclusters=("microclusters", "first"),
     )
+
+
+def repetition_spread() -> float:
+    """Median over the tasks of the gap between their slowest and fastest executions, in percent."""
+    t = pd.read_csv(TIMING_FILE)
+    total = (t["time_fit_ms"] + t["time_predict_ms"]).groupby(
+        [t["dataset"], t["run"], t["model"], t["hyperparameters"]]
+    )
+    return float(100 * (total.max() / total.min() - 1).median())
 
 
 def quartiles(values, fmt) -> str:
@@ -417,11 +732,58 @@ def speedup_table():
         "Execution time of the evaluation segment, fitting plus prediction, of the original and "
         "vectorized implementations with the same hyperparameters, and speedup of the latter, computed "
         f"per run: median and quartiles over the {runs} development runs. Each task is executed alone, "
-        "and its time is the minimum of three executions.",
+        "and its time is the minimum of three executions, which differ by "
+        f"{repetition_spread():.1f}\\% in the median.",
         "tab:mi_optimization_speedup",
         "l c c c",
         lines,
     )
+
+
+def speedup_figure():
+    """Speedup of each run against the number of microclusters of its configuration."""
+    times = serial_times()
+    colors = plt.get_cmap("tab10")
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), sharex=True, sharey=True)
+    for ax, source in zip(axes, ("original", "vectorized")):
+        shared = times[times.hyperparameters == source]
+        total = shared.pivot(
+            index=["dataset", "run"], columns="model", values="time_total_ms"
+        )
+        count = shared[shared.model == "vectorized"].set_index(["dataset", "run"])[
+            "microclusters"
+        ]
+        for position, dataset in enumerate(DATASETS):
+            ax.scatter(
+                count.loc[dataset].clip(lower=1),
+                (total["original"] / total["vectorized"]).loc[dataset],
+                s=14,
+                color=colors(position),
+                label=SHORT_NAMES[dataset],
+            )
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_yticks([5, 10, 20, 50, 100])
+        ax.yaxis.set_major_formatter(ScalarFormatter())
+        ax.yaxis.set_minor_formatter(NullFormatter())
+        ax.set_title(
+            f"Hyperparameters tuned for the {VARIANTS[source].label} model", fontsize=10
+        )
+        ax.set_xlabel("Microclusters at the penultimate batch")
+    axes[0].set_ylabel("Speedup")
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(
+        handles,
+        labels,
+        loc="upper center",
+        ncol=len(DATASETS),
+        bbox_to_anchor=(0.5, 1.05),
+    )
+    plt.tight_layout(rect=(0, 0, 1, 0.97))
+    out = ARTIFACT_DIR / "optimization" / "plots" / "speedup.png"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out, dpi=300, bbox_inches="tight")
+    plt.close(fig)
 
 
 def serial_cost_table():
@@ -465,7 +827,8 @@ def serial_cost_table():
         ARTIFACT_DIR / "validation" / "serial_cost.tex",
         "Cost of the original implementation and of the accepted models on the evaluation segment, each "
         f"with the hyperparameters tuned for it: median and quartiles over the {runs} development runs. "
-        "Each task is executed alone, and its time is the minimum of three executions.",
+        "Each task is executed alone, and its time is the minimum of three executions, which differ by "
+        f"{repetition_spread():.1f}\\% in the median.",
         "tab:mi_validation_serial_cost",
         "l " + "c " * len(models),
         lines,
@@ -604,34 +967,43 @@ def probe_figure():
 
 
 def maturation_table():
-    """Batch ARI along the stream of the two configurations singled out by the probe."""
+    """Quality and structure along the stream of the two configurations singled out by the probe."""
     df = pd.read_csv(PROBE_DIR / "maturation.csv")
-    segments = [c for c in df.columns if c.startswith("ari_")]
-    means = df.groupby(["dataset", "configuration"], sort=False)[
-        [*segments, "microclusters_first_segment"]
-    ].mean()
+    segments = sorted(int(c.split("_")[1]) for c in df.columns if c.startswith("ari_"))
+    means = df.groupby(["dataset", "configuration"], sort=False).mean(numeric_only=True)
     width = 100 // len(segments)
-    spans = [f"{i * width}--{(i + 1) * width}\\%" for i in range(len(segments))]
-    lines = [
-        "Dataset & Configuration & "
-        + " & ".join(spans)
-        + r" & Microclusters at 20\% \\"
+    spans = [f"{(i - 1) * width}--{i * width}\\%" for i in segments]
+    lines = ["Dataset & Configuration & " + " & ".join(spans) + r" \\"]
+    panels = [
+        ("Median batch ARI", "ari", "{:.3f}".format),
+        ("Median number of predicted clusters", "clusters", "{:.1f}".format),
+        ("Microclusters at the end of the segment", "microclusters", "{:.0f}".format),
     ]
-    for dataset in PROBE_DATASETS:
+    for title, column, fmt in panels:
         lines.append(r"\midrule")
-        for position, (name, row) in enumerate(means.loc[dataset].iterrows()):
-            cells = [SHORT_NAMES[dataset] if position == 0 else "", name]
-            cells += [f"{row[c]:.3f}" for c in segments]
-            cells.append(f"{row['microclusters_first_segment']:.0f}")
-            lines.append(" & ".join(cells) + r" \\")
+        lines.append(
+            rf"\multicolumn{{{2 + len(segments)}}}{{l}}{{\textit{{{title}}}}} \\"
+        )
+        for dataset in PROBE_DATASETS:
+            rows = list(means.loc[dataset].iterrows())
+            if column == "clusters":
+                first = rows[0][1]
+                true = pd.Series(
+                    {f"clusters_{i}": first[f"true_clusters_{i}"] for i in segments}
+                )
+                rows.insert(0, ("true clusters", true))
+            for position, (name, row) in enumerate(rows):
+                cells = [SHORT_NAMES[dataset] if position == 0 else "", name]
+                cells += [fmt(row[f"{column}_{i}"]) for i in segments]
+                lines.append(" & ".join(cells) + r" \\")
     write_table(
         ARTIFACT_DIR / "selection" / "maturation.tex",
-        "Median batch ARI in each fifth of the stream, for the two configurations of the final model's "
-        "space of \\cref{tab:mi_selection_probe}, when the model learns the whole stream from its first "
-        "sample. The first fifth is the segment that the hyperparameter search sees. Means over four "
-        "streams in CSN; single stream in DS3 and DS4.",
+        "The two configurations of the final model's space of \\cref{tab:mi_selection_probe} along the "
+        "stream, in fifths, when the model learns the whole stream from its first sample. The first "
+        "fifth is the segment that the hyperparameter search sees. Means over four streams in CSN; "
+        "single stream in DS3 and DS4.",
         "tab:mi_selection_maturation",
-        "l l " + "c " * (len(segments) + 1),
+        "l l " + "c " * len(segments),
         lines,
     )
 
@@ -798,7 +1170,6 @@ def main():
         return
 
     for experiment in EXPERIMENTS:
-        variants_table(experiment)
         if not available(experiment):
             print(f"{experiment.key}: results missing, tables skipped")
             continue
@@ -808,11 +1179,36 @@ def main():
         else:
             experiment_tables(experiment)
         print(f"{experiment.key}: tables written")
-    for variant in ("vectorized", CORRECTED):
-        diagnosis_table(variant, DEVELOPMENT_RUNS)
+    diagnosis_table(CORRECTED, DEVELOPMENT_RUNS)
+    degenerate_table(
+        "corrections_single",
+        "degenerate",
+        "Corrections, one at a time",
+        ["vectorized", "c_nopen", "c_nearest"],
+    )
+    partition_table(
+        "corrections_combined",
+        "partitions",
+        "Combined corrections",
+        ["c_nearest", "cc_nearest_nopen"],
+    )
+    degenerate_table(
+        "improvements_single",
+        "degenerate",
+        "Improvements, one at a time",
+        [CORRECTED, "i_relative", "i_chi"],
+        stage_names=STAGE_NAMES,
+    )
+    search_range_table()
+    noise_label_table()
+    m_tuned_table()
+    tuning_noise_table()
+    if TUNING_FILE.exists():
+        trials_table()
 
     if TIMING_FILE.exists():
         speedup_table()
+        speedup_figure()
         serial_cost_table()
         print("serial timing: tables written")
     if all(

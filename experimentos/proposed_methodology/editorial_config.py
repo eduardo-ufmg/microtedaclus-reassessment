@@ -72,7 +72,7 @@ SUBSET_MODEL_NAMES = {
     "original-paper": {"MicroTEDAClus", "DenStream", "CluStream", "StreamKM"},
     "teda-micro-based": {"MicroTEDAClus", "AutoCloud", "CEDAS", "TEDACloud"},
     "plus-vs-baseline": {"MicroTEDAClus", "MicroTEDAClusPlus"},
-    "complete": set(MODEL_ORDER),
+    "plus-vs-benchmarks": set(MODEL_ORDER) - {"MicroTEDAClus"},
 }
 
 # Thesis chapter whose artifacts directory receives the tables and plots of each subset.
@@ -81,7 +81,7 @@ SUBSET_CHAPTERS = {
     "original-paper": "MethodologyReassessment",
     "teda-micro-based": "MethodologyReassessment",
     "plus-vs-baseline": "ModelImprovement",
-    "complete": "Results",
+    "plus-vs-benchmarks": "Results",
 }
 
 SUBSETS = {

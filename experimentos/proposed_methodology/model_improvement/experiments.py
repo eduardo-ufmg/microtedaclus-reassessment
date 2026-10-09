@@ -102,6 +102,7 @@ EXPERIMENTS = [
         "Search range of the variance limit",
         "Does the fixed search range of the variance limit constrain the model?",
         _against(CORRECTED, "c_nearest_wide"),
+        stage_names=STAGE_NAMES,
     ),
     Experiment(
         "improvements_single",

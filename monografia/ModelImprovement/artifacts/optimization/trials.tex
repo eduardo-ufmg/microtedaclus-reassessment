@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Hyperparameter search of the two implementations: medians over the runs. The search ends at 100 trials or 300 seconds.}
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\begin{tabular}{l c c c c c c c c }
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{Completed trials}} \\
+\modelname{original} & 100 & 100 & 64 & 100 & 17 & 32 & 100 & 100 \\
+\modelname{vectorized} & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+\midrule
+\multicolumn{9}{l}{\textit{Duration of the search [s]}} \\
+\modelname{original} & 29 & 37 & 302 & 89 & 303 & 303 & 72 & 81 \\
+\modelname{vectorized} & 2 & 2 & 7 & 3 & 10 & 9 & 4 & 3 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_optimization_trials}
+\end{table}

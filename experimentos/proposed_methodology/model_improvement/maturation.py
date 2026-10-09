@@ -3,10 +3,10 @@
 For each probed dataset, the configuration with the highest tuning objective and
 the one with the highest Overall ARI of the final model's space learn the whole
 stream from its first sample, in the prequential manner of the protocol. The
-batch ARI is summarized in fifths of the stream, the first of which is the
-segment that the hyperparameter search sees. The result tells whether a
-configuration that the objective ranks low is worse from the start or only
-slower to mature.
+batch ARI, the number of predicted clusters and the number of microclusters are
+summarized in fifths of the stream, the first of which is the segment that the
+hyperparameter search sees. The result tells whether a configuration that the
+objective ranks low is worse from the start or only slower to mature.
 
 Usage (from experimentos/proposed_methodology), after the probes of the final space:
     python -m model_improvement.maturation
@@ -17,6 +17,7 @@ import pandas as pd
 
 import protocol
 from model_improvement.experiments import FINAL
+from model_improvement.harness import batch_diagnostics
 from model_improvement.probe import PROBE_DIR
 from model_improvement.variants import resolve
 from streams import load_stream
@@ -49,7 +50,11 @@ def main():
             params["decay"] = int(params["decay"])
             for run in runs:
                 X, y = load_stream(dataset, run)
-                results = pd.DataFrame(protocol.evaluate(model_class(**params), X, y))
+                results = pd.DataFrame(
+                    protocol.evaluate(
+                        model_class(**params), X, y, batch_diagnostics=batch_diagnostics
+                    )
+                )
                 segments = [
                     results.iloc[rows_of_segment]
                     for rows_of_segment in np.array_split(
@@ -59,9 +64,11 @@ def main():
                 row = {"dataset": dataset, "configuration": name, "run": run}
                 for position, segment in enumerate(segments, start=1):
                     row[f"ari_{position}"] = segment["ari"].median()
-                row["microclusters_first_segment"] = segments[0][
-                    "microcluster_count"
-                ].iloc[-1]
+                    row[f"clusters_{position}"] = segment["n_pred"].median()
+                    row[f"true_clusters_{position}"] = segment["n_true"].median()
+                    row[f"microclusters_{position}"] = segment[
+                        "microcluster_count"
+                    ].iloc[-1]
                 rows.append(row)
         print(f"{dataset} done", flush=True)
     pd.DataFrame(rows).to_csv(OUT_FILE, index=False)

@@ -1,19 +1,37 @@
 \begin{table}[htbp]
 \centering
-\caption{Median batch ARI in each fifth of the stream, for the two configurations of the final model's space of \cref{tab:mi_selection_probe}, when the model learns the whole stream from its first sample. The first fifth is the segment that the hyperparameter search sees. Means over four streams in CSN; single stream in DS3 and DS4.}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{l l c c c c c c }
+\caption{The two configurations of the final model's space of \cref{tab:mi_selection_probe} along the stream, in fifths, when the model learns the whole stream from its first sample. The first fifth is the segment that the hyperparameter search sees. Means over four streams in CSN; single stream in DS3 and DS4.}
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\begin{tabular}{l l c c c c c }
 \toprule
-Dataset & Configuration & 0--20\% & 20--40\% & 40--60\% & 60--80\% & 80--100\% & Microclusters at 20\% \\
+Dataset & Configuration & 0--20\% & 20--40\% & 40--60\% & 60--80\% & 80--100\% \\
 \midrule
-CSN & highest objective & 0.673 & 0.586 & 0.472 & 0.446 & 0.442 & 35 \\
- & highest Overall ARI & 0.355 & 0.803 & 0.937 & 0.981 & 0.998 & 216 \\
+\multicolumn{7}{l}{\textit{Median batch ARI}} \\
+CSN & highest objective & 0.673 & 0.586 & 0.472 & 0.446 & 0.442 \\
+ & highest Overall ARI & 0.355 & 0.803 & 0.937 & 0.981 & 0.998 \\
+DS3 & highest objective & 0.442 & 0.382 & 0.311 & 0.302 & 0.277 \\
+ & highest Overall ARI & 0.272 & 0.267 & 0.486 & 0.243 & 0.388 \\
+DS4 & highest objective & 0.387 & 0.383 & 0.345 & 0.346 & 0.286 \\
+ & highest Overall ARI & 0.247 & 0.500 & 0.573 & 0.555 & 0.559 \\
 \midrule
-DS3 & highest objective & 0.442 & 0.382 & 0.311 & 0.302 & 0.277 & 32 \\
- & highest Overall ARI & 0.272 & 0.267 & 0.486 & 0.243 & 0.388 & 544 \\
+\multicolumn{7}{l}{\textit{Median number of predicted clusters}} \\
+CSN & true clusters & 3.0 & 3.0 & 3.0 & 3.0 & 3.0 \\
+ & highest objective & 4.5 & 6.2 & 7.4 & 8.1 & 8.5 \\
+ & highest Overall ARI & 11.8 & 6.0 & 4.4 & 3.9 & 3.0 \\
+DS3 & true clusters & 10.0 & 10.0 & 10.0 & 10.0 & 10.0 \\
+ & highest objective & 7.0 & 8.0 & 8.0 & 8.0 & 7.0 \\
+ & highest Overall ARI & 27.5 & 10.0 & 7.0 & 5.0 & 5.0 \\
+DS4 & true clusters & 9.0 & 9.0 & 9.0 & 9.0 & 9.0 \\
+ & highest objective & 7.0 & 7.5 & 7.0 & 7.5 & 7.0 \\
+ & highest Overall ARI & 32.0 & 20.5 & 14.0 & 10.0 & 8.0 \\
 \midrule
-DS4 & highest objective & 0.387 & 0.383 & 0.345 & 0.346 & 0.286 & 29 \\
- & highest Overall ARI & 0.247 & 0.500 & 0.573 & 0.555 & 0.559 & 490 \\
+\multicolumn{7}{l}{\textit{Microclusters at the end of the segment}} \\
+CSN & highest objective & 35 & 34 & 34 & 34 & 33 \\
+ & highest Overall ARI & 216 & 327 & 396 & 409 & 420 \\
+DS3 & highest objective & 32 & 35 & 30 & 29 & 26 \\
+ & highest Overall ARI & 544 & 824 & 1038 & 1231 & 1333 \\
+DS4 & highest objective & 29 & 35 & 29 & 27 & 27 \\
+ & highest Overall ARI & 490 & 742 & 943 & 1128 & 1283 \\
 \bottomrule
 \end{tabular}
 }

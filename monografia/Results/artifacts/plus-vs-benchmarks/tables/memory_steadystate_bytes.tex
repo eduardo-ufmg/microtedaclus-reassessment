@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical analysis for the Steady-State Memory Footprint [B].}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c c c c }
+\toprule
+Dataset & \modelname{CluStream} & \modelname{DenStream} & \modelname{CEDAS} & \modelname{TEDACloud} & \modelname{AutoCloud} & \modelname{StreamKM} & \modelname{MicroTEDAClus+} \\
+\midrule
+\datasetname{Stream Benchmark 1} & \textcolor{red}{214016 (146432, 347136)} & 12288 (4096, 23552) & 7168 (5120, 11264) & \textbf{6144 (4096, 7168)} & \textcolor{red}{644096 (5120, 859136)} & \textcolor{red}{16384 (13312, 23552)} & \textcolor{red}{25600 (13312, 49152)} \\
+\datasetname{Stream Benchmark 2} & \textcolor{red}{155648 (96256, 220160)} & 23552 (18432, 28672) & 3072 (3072, 4096) & \textbf{2048 (2048, 3072)} & 2048 (2048, 765952) & 17408 (13312, 25600) & 13312 (13312, 13312) \\
+\datasetname{Random RBF Generator with Events} & \textcolor{red}{1091584 (568320, 1679360)} & \textbf{9216 (4096, 14336)} & \textbf{8192 (6144, 13312)} & \textbf{9216 (6144, 12288)} & \textcolor{red}{9216 (5120, 2421760)} & 31744 (17408, 107520) & 24576 (13312, 48128) \\
+\datasetname{Cassini} & 151040 (89088, 257536) & 18944 (16384, 24576) & \textbf{5120 (4096, 6144)} & 8704 (7168, 12288) & \textcolor{red}{701440 (3072, 983552)} & 17408 (13312, 29696) & 13312 (13312, 13312) \\
+\datasetname{Chameleon DS3} & \textcolor{red}{222720 (172544, 342784)} & 6144 (6144, 6144) & 8192 (8192, 8192) & \textbf{3072 (3072, 4096)} & 6144 (5120, 7168) & 20480 (17408, 32768) & 13312 (13312, 13312) \\
+\datasetname{Chameleon DS4} & 205824 (149504, 325120) & 9216 (9216, 9216) & 8192 (8192, 8192) & \textbf{4096 (3072, 11264)} & \textcolor{red}{1959936 (1959936, 1999872)} & 28160 (20480, 41216) & 13312 (13312, 13312) \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:plus-vs-benchmarks_memory_steadystate_bytes}
+\end{table}

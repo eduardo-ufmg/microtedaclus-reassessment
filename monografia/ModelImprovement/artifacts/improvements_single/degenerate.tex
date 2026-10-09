@@ -1,0 +1,22 @@
+\begin{table}[htbp]
+\centering
+\caption{Improvements, one at a time: batches of a run in which a single cluster is predicted, as the median over the runs of their share after the first batch, and runs, of 32, whose penultimate batch has a single predicted cluster.}
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\begin{tabular}{l c c c c c c c c }
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{Batches with a single predicted cluster [\%]}} \\
+\modelname{corrected} & 44 & 0 & 0 & 0 & 0 & 5 & 0 & 0 \\
+\modelname{relative-limit} & 26 & 0 & 0 & 0 & 0 & 2 & 0 & 0 \\
+\modelname{chi-threshold} & 100 & 100 & 99 & 100 & 100 & 100 & 0 & 0 \\
+\midrule
+\multicolumn{9}{l}{\textit{Runs that end with a single predicted cluster}} \\
+\modelname{corrected} & 24 & 12 & 8 & 5 & 0 & 0 & 0 & 0 \\
+\modelname{relative-limit} & 16 & 3 & 9 & 5 & 4 & 10 & 0 & 0 \\
+\modelname{chi-threshold} & 32 & 29 & 30 & 32 & 32 & 32 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_improvements_single_degenerate}
+\end{table}

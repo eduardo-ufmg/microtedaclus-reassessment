@@ -1,93 +1,60 @@
-\chapter[Complementary Tables]{Complementary Tables of the Model Improvement Experiments}
+\chapter{Complementary Tables of the Model Improvement Experiments}
+\chaptermark{Complementary Tables}
 \label{app:mi_tables}
 
-This appendix collects, for each experiment of \cref{chap:ModelImprovement}, the tables of the metrics that do not take part in the decision rule of \cref{subsec:mi_decision_rule}: the ARI at the fifth batch and the maximum ARI drop, and the cost metrics. The tables follow the conventions of that chapter. Their values are medians over the development runs, a value in bold is significantly better than that of its control and a value in red is significantly worse. The execution times of these tables are measured while ten tasks run in parallel; \cref{tab:mi_optimization_speedup,tab:mi_validation_serial_cost} give the times measured one task at a time.
+This appendix collects, for each experiment of \cref{chap:ModelImprovement}, the cost metrics that do not take part in the decision rule of \cref{subsec:mi_decision_rule}: the microcluster count and the memory footprint. The tables follow the conventions of that chapter.
 
 \section{Implementation Optimization}
 
-\input{ModelImprovement/artifacts/optimization/quality_other.tex}
 \input{ModelImprovement/artifacts/optimization/cost.tex}
-\input{ModelImprovement/artifacts/optimization/time.tex}
-\clearpage
 
 \section{Corrections One at a Time}
 
-\input{ModelImprovement/artifacts/corrections_single/quality_other.tex}
 \input{ModelImprovement/artifacts/corrections_single/cost.tex}
-\input{ModelImprovement/artifacts/corrections_single/time.tex}
 \clearpage
 
 \section{Combined Corrections}
 
-\input{ModelImprovement/artifacts/corrections_combined/quality_other.tex}
 \input{ModelImprovement/artifacts/corrections_combined/cost.tex}
-\input{ModelImprovement/artifacts/corrections_combined/time.tex}
-\clearpage
 
 \section{Search Range of the Variance Limit}
 
-\input{ModelImprovement/artifacts/search_range/quality_other.tex}
 \input{ModelImprovement/artifacts/search_range/cost.tex}
-\input{ModelImprovement/artifacts/search_range/time.tex}
 \clearpage
 
 \section{Improvements One at a Time}
 
-\input{ModelImprovement/artifacts/improvements_single/quality_other.tex}
 \input{ModelImprovement/artifacts/improvements_single/cost.tex}
-\input{ModelImprovement/artifacts/improvements_single/time.tex}
 \clearpage
 
 \section{Sensitivity Function}
 
-\input{ModelImprovement/artifacts/m_function/quality_other.tex}
 \input{ModelImprovement/artifacts/m_function/cost.tex}
-\input{ModelImprovement/artifacts/m_function/time.tex}
-\clearpage
 
 \section{Combined Improvements}
 
-\input{ModelImprovement/artifacts/improvements_combined/quality_other.tex}
 \input{ModelImprovement/artifacts/improvements_combined/cost.tex}
-\input{ModelImprovement/artifacts/improvements_combined/time.tex}
 \clearpage
 
 \section{Direct Comparisons Between Combinations}
 
-\input{ModelImprovement/artifacts/improvements_selection/quality_other.tex}
 \input{ModelImprovement/artifacts/improvements_selection/cost.tex}
-\input{ModelImprovement/artifacts/improvements_selection/time.tex}
-\clearpage
 
 \section{Refinements of the Improved Model}
 
-\input{ModelImprovement/artifacts/refinements/quality_other.tex}
 \input{ModelImprovement/artifacts/refinements/cost.tex}
-\input{ModelImprovement/artifacts/refinements/time.tex}
 \clearpage
 
 \section{Covariance of the Microclusters}
 
-\input{ModelImprovement/artifacts/geometry/quality_other.tex}
 \input{ModelImprovement/artifacts/geometry/cost.tex}
-\input{ModelImprovement/artifacts/geometry/time.tex}
-\clearpage
 
 \section{Order-Independent Densities in the Final Model}
 
-\input{ModelImprovement/artifacts/density_revisited/quality_other.tex}
 \input{ModelImprovement/artifacts/density_revisited/cost.tex}
-\input{ModelImprovement/artifacts/density_revisited/time.tex}
 \clearpage
 
 \section{Validation}
 
-The tables of this section give the median and the quartiles over the 94 validation runs, and compare each model with the model to its left.
-
-\input{ModelImprovement/artifacts/validation/ari_fifth.tex}
-\input{ModelImprovement/artifacts/validation/ari_diff.tex}
-\input{ModelImprovement/artifacts/validation/memory_max_bytes.tex}
-\input{ModelImprovement/artifacts/validation/memory_steadystate_bytes.tex}
-\input{ModelImprovement/artifacts/validation/mc_max.tex}
-\input{ModelImprovement/artifacts/validation/mc_steadystate.tex}
+\input{ModelImprovement/artifacts/validation/cost.tex}
 \clearpage

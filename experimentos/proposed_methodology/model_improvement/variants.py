@@ -133,7 +133,7 @@ _add(
 )
 _add(
     "c_nearest_wide",
-    "nearest, wide range",
+    "wide-range",
     r"variance limit searched in $[10^{-4}, 10^{4}]$",
     NEAREST,
     {"variance_limit": ("float", 0.0001, 10000.0, True)},

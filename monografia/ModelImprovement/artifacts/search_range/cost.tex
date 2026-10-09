@@ -1,18 +1,18 @@
 \begin{table}[htbp]
 \centering
 \caption{Search range of the variance limit: steady-state microcluster count and memory footprint.}
-\resizebox{\textwidth}{!}{%
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
 \begin{tabular}{l c c c c c c c c}
 \toprule
 Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
 \midrule
 \multicolumn{9}{l}{\textit{Steady-State Microcluster Count}} \\
-\modelname{nearest + no-penalty} & 8 & 29 & 168 & 44 & 114 & 121 & 32 & 34 \\
-\modelname{nearest + no-penalty, wide range} & 12 & 36 & 110 & 39 & \textbf{26} & \textbf{1} & 40 & 26 \\
+\modelname{corrected} & 8 & 19 & 197 & 45 & 115 & 120 & 6 & 28 \\
+\modelname{wide-range} & 12 & 33 & 92 & 42 & \textbf{27} & \textbf{1} & 9 & 20 \\
 \midrule
 \multicolumn{9}{l}{\textit{Steady-State Memory Footprint [kB]}} \\
-\modelname{nearest + no-penalty} & 23 & 24 & 55 & 24 & 56 & 52 & 134 & 121 \\
-\modelname{nearest + no-penalty, wide range} & 23 & 24 & 52 & 24 & \textbf{24} & \textbf{23} & 76 & 126 \\
+\modelname{corrected} & 23 & 23 & 62 & 24 & 56 & 52 & 72 & 138 \\
+\modelname{wide-range} & 23 & 24 & 42 & 24 & \textbf{24} & \textbf{23} & 72 & 126 \\
 \bottomrule
 \end{tabular}
 }
