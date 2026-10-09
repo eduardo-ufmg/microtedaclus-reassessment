@@ -132,10 +132,10 @@ _add(
     {**NEAREST_PEAK, "activation_scope": "mature", "dim_penalty": False},
 )
 _add(
-    "cc_nearest_nopen_wide",
-    "nearest + no-penalty, wide range",
+    "c_nearest_wide",
+    "nearest, wide range",
     r"variance limit searched in $[10^{-4}, 10^{4}]$",
-    {**NEAREST, "dim_penalty": False},
+    NEAREST,
     {"variance_limit": ("float", 0.0001, 10000.0, True)},
 )
 
