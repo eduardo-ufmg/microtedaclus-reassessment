@@ -51,7 +51,7 @@ A variant and its control are compared per dataset and per metric, over the runs
     \item is \textbf{mixed} ($\pm$) if both happen, and \textbf{indistinguishable} ($=$) if neither does.
 \end{itemize}
 
-Only a variant that improves its control can replace it. The ARI at the fifth batch and the maximum ARI drop are reported, but do not take part in the decision. The microcluster count and the memory footprint are also reported, in \cref{app:mi_tables}, and never decide an outcome. The execution time is not reported per experiment, because the experiments run ten tasks in parallel, which disturbs it. The tables of this chapter give medians over the development runs, unless they state otherwise. A value in bold is significantly better than the value of its control, and a value in red is significantly worse. This differs from \cref{sec:reassessment_results}, where the emphasis marks the best and the worst models of each dataset.
+Only a variant that improves its control can replace it. The ARI at the fifth batch and the maximum ARI drop are reported, but do not take part in the decision. The microcluster count and the memory footprint are also reported, in \cref{app:mi_tables}, and never decide an outcome. A value in bold is significantly better than the value of its control, and a value in red is significantly worse.
 
 \section{Implementation Optimization}
 \label{sec:mi_optimization}
