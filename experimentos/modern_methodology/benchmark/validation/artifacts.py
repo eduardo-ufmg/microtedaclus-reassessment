@@ -15,6 +15,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from benchmark.display import SHORT_NAMES, columns
 from benchmark.validation.generators import OUT_DIR, STREAM_DESCRIPTORS, WINDOW
 from pfc_shared.latex import marked, panel_table, write_table
 
@@ -23,15 +24,6 @@ ARTIFACT_DIR = (
     ROOT.parent.parent / "monografia" / "Modernization" / "artifacts" / "generators"
 )
 
-SHORT_NAMES = {
-    "benchmark_1": "B1",
-    "benchmark_2": "B2",
-    "random_rbf_events": "RBF",
-    "cassini": "CSN",
-    "chameleon_ds3": "DS3",
-    "chameleon_ds4": "DS4",
-    **{f"SCL-{d}": f"S{d}" for d in (1, 2, 4, 8, 16, 32, 64)},
-}
 DATASETS = ["benchmark_1", "benchmark_2", "random_rbf_events", "cassini"]
 DESCRIPTOR_TITLES = {
     "clusters": "Clusters present",
@@ -43,10 +35,6 @@ DESCRIPTOR_TITLES = {
 }
 SOURCE_NAMES = {"R": "R", "port": "port", "port, own labels": "port, own labels"}
 SOURCE_COLORS = {"R": "xkcd:blue", "port": "xkcd:orange"}
-
-
-def columns(datasets):
-    return {d: SHORT_NAMES[d] for d in datasets}
 
 
 def comparison_rows(tests, medians_of, row_label, fmt):

@@ -16,21 +16,45 @@ def add_time_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def scalar_metrics(df: pd.DataFrame) -> dict:
-    """Run-level metrics of one result file (after add_time_columns)."""
+def quality_metrics(df: pd.DataFrame) -> dict:
+    """Run-level ARI metrics of one result file."""
     ari_array = df["ari"].to_numpy()
-    mem_array = df["memory_bytes"].to_numpy()
-    mc_array = df["microcluster_count"].to_numpy()
-
     return {
         "ari_overall": np.median(ari_array),
         "ari_steadystate": ari_array[-2],
         "ari_fifth": ari_array[4],
         "ari_diff": np.max(ari_array) - ari_array[-2],
+    }
+
+
+def time_metrics(df: pd.DataFrame) -> dict:
+    """Run-level time metrics of one result file (after add_time_columns)."""
+    return {
         "time_predict_cum_ms": df["time_predict_ms"].sum(),
         "time_fit_cum_ms": df["time_fit_ms"].sum(),
+    }
+
+
+def memory_metrics(df: pd.DataFrame) -> dict:
+    """Run-level memory metrics of one result file."""
+    mem_array = df["memory_bytes"].to_numpy()
+    return {
         "memory_max_bytes": np.max(mem_array),
         "memory_steadystate_bytes": mem_array[-2],
-        "mc_max": np.max(mc_array),
-        "mc_steadystate": mc_array[-2],
+    }
+
+
+def microcluster_metrics(df: pd.DataFrame) -> dict:
+    """Run-level microcluster count metrics of one result file."""
+    mc_array = df["microcluster_count"].to_numpy()
+    return {"mc_max": np.max(mc_array), "mc_steadystate": mc_array[-2]}
+
+
+def scalar_metrics(df: pd.DataFrame) -> dict:
+    """Run-level metrics of one result file (after add_time_columns)."""
+    return {
+        **quality_metrics(df),
+        **time_metrics(df),
+        **memory_metrics(df),
+        **microcluster_metrics(df),
     }

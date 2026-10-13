@@ -13,18 +13,11 @@ from functools import lru_cache
 
 import numpy as np
 import pandas as pd
-from statsmodels.stats.multitest import multipletests
 
 from compute_metrics import add_time_columns, is_valid_result, scalar_metrics
 from model_improvement.experiments import DATASETS
 from model_improvement.harness import result_paths
-from statistic_analysis import (
-    ALPHA,
-    CLIFFS_DELTA_THRESHOLD,
-    METRICS,
-    cliffs_delta,
-    safe_wilcoxon,
-)
+from pfc_shared.statistics import METRICS, paired_comparisons
 
 # A change is accepted or rejected on these metrics only; the others are reported.
 DECISION_METRICS = ("ari_overall", "ari_steadystate")
@@ -63,46 +56,6 @@ def run_level(variant: str, runs: range) -> pd.DataFrame:
                         row[f"param:{name}"] = float(value)
             rows.append(row)
     return pd.DataFrame(rows)
-
-
-def paired_comparisons(pairs: dict, metric: str) -> pd.DataFrame:
-    """Paired comparison of a variant with its control in each group of observations.
-
-    `pairs` maps a group (a dataset, a dimension) to the observations of the
-    control and of the variant over the same runs. The p-values of the groups
-    are corrected together.
-    """
-    config = METRICS[metric]
-    rows = []
-    for group, (control_values, variant_values) in pairs.items():
-        x = np.asarray(config["round"](np.asarray(control_values, dtype=float)))
-        y = np.asarray(config["round"](np.asarray(variant_values, dtype=float)))
-        rows.append(
-            {
-                "group": group,
-                "n": len(x),
-                "control_median": float(np.median(x)),
-                "control_q1": float(np.quantile(x, 0.25)),
-                "control_q3": float(np.quantile(x, 0.75)),
-                "median": float(np.median(y)),
-                "q1": float(np.quantile(y, 0.25)),
-                "q3": float(np.quantile(y, 0.75)),
-                "p": safe_wilcoxon(y, x),
-                "delta": cliffs_delta(y, x),
-            }
-        )
-    out = pd.DataFrame(rows)
-    if out.empty:
-        return out
-    out["p_adj"] = multipletests(out["p"], alpha=ALPHA, method="holm")[1]
-    significant = (out["p_adj"] < ALPHA) & (
-        out["delta"].abs() >= CLIFFS_DELTA_THRESHOLD
-    )
-    improves = out["delta"] > 0 if config["dir"] == "max" else out["delta"] < 0
-    out["verdict"] = np.where(
-        significant, np.where(improves, "better", "worse"), "same"
-    )
-    return out.set_index("group")
 
 
 def compare(control: str, variant: str, metric: str, runs: range) -> pd.DataFrame:
