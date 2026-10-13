@@ -7,7 +7,6 @@ half-life, the number of samples after which a weight halves.
 import numpy as np
 from river import cluster
 
-from benchmark.evaluation import BATCH_SIZE
 from benchmark.hyperparameters import Kind
 
 
@@ -18,46 +17,6 @@ def _samples(X):
 
 def _noise(X):
     return np.full(len(X), -1)
-
-
-class CluStream:
-    HYPERPARAMETERS = {
-        "n_macro_clusters": Kind.CLUSTERS,
-        "max_micro_clusters": Kind.SUMMARY_SIZE,
-        "micro_cluster_r_factor": Kind.MULTIPLIER,
-        "time_window": Kind.HORIZON,
-    }
-    SEEDED = True
-
-    def __init__(
-        self,
-        n_macro_clusters=5,
-        max_micro_clusters=100,
-        micro_cluster_r_factor=2.0,
-        time_window=1000,
-        seed=0,
-    ):
-        # The macroclusters are computed once for every batch that the protocol predicts.
-        self.core = cluster.CluStream(
-            n_macro_clusters=n_macro_clusters,
-            max_micro_clusters=max_micro_clusters,
-            micro_cluster_r_factor=micro_cluster_r_factor,
-            time_window=time_window,
-            time_gap=BATCH_SIZE,
-            seed=seed,
-        )
-
-    def learn(self, X):
-        for x in _samples(X):
-            self.core.learn_one(x)
-
-    def predict(self, X):
-        if not self.core.centers:
-            return _noise(X)
-        return np.array([self.core.predict_one(x) for x in _samples(X)])
-
-    def summary_size(self):
-        return len(self.core.micro_clusters)
 
 
 class DBSTREAM:

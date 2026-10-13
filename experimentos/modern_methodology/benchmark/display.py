@@ -16,23 +16,19 @@ MAIN_DATASETS = [d for d in SHORT_NAMES if d not in SCALABILITY_DATASETS]
 
 MODEL_NAMES = {
     "MicroTEDAClusPlus": "MicroTEDAClus+",
-    "CluStream": "CluStream",
     "DenStream": "DenStream",
     "DBSTREAM": "DBSTREAM",
     "BIRCH": "BIRCH",
     "MiniBatchKMeans": "Mini-batch k-means",
     "BICO": "BICO",
-    "MCMSTStream": "MCMSTStream",
 }
 MODEL_COLORS = {
     "MicroTEDAClusPlus": "xkcd:red",
-    "CluStream": "xkcd:blue",
-    "DenStream": "xkcd:green",
+    "DenStream": "xkcd:blue",
     "DBSTREAM": "xkcd:orange",
     "BIRCH": "xkcd:purple",
     "MiniBatchKMeans": "xkcd:brown",
-    "BICO": "xkcd:teal",
-    "MCMSTStream": "xkcd:grey",
+    "BICO": "xkcd:green",
 }
 
 

@@ -7,20 +7,17 @@ kind of every hyperparameter it exposes, and whether it takes a seed.
 """
 
 from benchmark.models.bico import Bico
-from benchmark.models.mcmststream import MCMSTStream
 from benchmark.models.microtedaclus_plus import MicroTEDAClusPlus
-from benchmark.models.river import DBSTREAM, CluStream, DenStream
+from benchmark.models.river import DBSTREAM, DenStream
 from benchmark.models.scikit import Birch, MiniBatchKMeans
 
 MODELS = {
     "MicroTEDAClusPlus": MicroTEDAClusPlus,
-    "CluStream": CluStream,
     "DenStream": DenStream,
     "DBSTREAM": DBSTREAM,
     "BIRCH": Birch,
     "MiniBatchKMeans": MiniBatchKMeans,
     "BICO": Bico,
-    "MCMSTStream": MCMSTStream,
 }
 
 
