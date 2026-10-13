@@ -40,6 +40,8 @@ from model_improvement.experiments import (
 )
 from model_improvement.harness import RESULTS_DIR, result_paths
 from model_improvement.variants import VARIANTS
+from pfc_shared import latex
+from pfc_shared.latex import marked, write_table
 from statistic_analysis import METRICS
 from streams import load_stream
 
@@ -129,61 +131,15 @@ def number(metric: str, value: float) -> str:
     return METRICS[metric]["fmt"].format(value)
 
 
-def marked(text: str, verdict: str) -> str:
-    if verdict == "better":
-        return rf"\textbf{{{text}}}"
-    if verdict == "worse":
-        return rf"\textcolor{{red}}{{{text}}}"
-    return text
-
-
-def write_table(
-    path: Path, caption: str, label: str, column_spec: str, lines: list[str]
-):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    body = [
-        r"\begin{table}[htbp]",
-        r"\centering",
-        rf"\caption{{{caption}}}",
-        r"\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%",
-        rf"\begin{{tabular}}{{{column_spec}}}",
-        r"\toprule",
-        *lines,
-        r"\bottomrule",
-        r"\end{tabular}",
-        "}",
-        rf"\label{{{label}}}",
-        r"\end{table}",
-    ]
-    path.write_text("\n".join(body) + "\n")
-
-
 def panel_table(folder, name, caption, panels, datasets=DATASETS, first_column="Model"):
-    """Panels of rows with one value per dataset.
-
-    `panels` is a list of (title, rows), and a row is (label, values, fmt), with
-    `values` indexed by dataset and `fmt` the function that formats one value.
-    """
-    lines = [
-        f"{first_column} & " + " & ".join(SHORT_NAMES[d] for d in datasets) + r" \\"
-    ]
-    for title, rows in panels:
-        lines.append(r"\midrule")
-        lines.append(
-            rf"\multicolumn{{{1 + len(datasets)}}}{{l}}{{\textit{{{title}}}}} \\"
-        )
-        for label, values, fmt in rows:
-            cells = [
-                fmt(values[d]) if d in values and not pd.isna(values[d]) else "-"
-                for d in datasets
-            ]
-            lines.append(" & ".join([label, *cells]) + r" \\")
-    write_table(
+    """Panels of rows with one value per dataset, in the folder of an experiment."""
+    latex.panel_table(
         ARTIFACT_DIR / folder / f"{name}.tex",
         caption,
         f"tab:mi_{folder}_{name}",
-        "l " + "c " * len(datasets),
-        lines,
+        {d: SHORT_NAMES[d] for d in datasets},
+        panels,
+        first_column,
     )
 
 

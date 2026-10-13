@@ -3,7 +3,7 @@
 import warnings
 
 import numpy as np
-from scipy.stats import wilcoxon
+from scipy.stats import mannwhitneyu, wilcoxon
 
 ALPHA = 0.05
 CLIFFS_DELTA_THRESHOLD = 0.147
@@ -61,3 +61,10 @@ def safe_wilcoxon(x: np.ndarray, y: np.ndarray) -> float:
             return float(wilcoxon(x, y).pvalue)
         except ValueError:
             return 1.0
+
+
+def safe_mannwhitney(x: np.ndarray, y: np.ndarray) -> float:
+    """Two-sided Mann-Whitney U test of two independent samples; 1 if they are constant and equal."""
+    if np.all(x == x[0]) and np.all(y == x[0]):
+        return 1.0
+    return float(mannwhitneyu(x, y, alternative="two-sided").pvalue)

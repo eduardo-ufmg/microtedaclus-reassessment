@@ -1,0 +1,47 @@
+"""Models of scikit-learn that learn incrementally."""
+
+import numpy as np
+from sklearn.cluster import Birch as CoreBirch
+from sklearn.cluster import MiniBatchKMeans as CoreMiniBatchKMeans
+
+
+class _Incremental:
+    """A scikit-learn estimator with `partial_fit`; it predicts noise until it has learned a batch."""
+
+    core = None
+
+    def __init__(self):
+        self._has_learned = False
+
+    def learn(self, X):
+        self.core.partial_fit(X)
+        self._has_learned = True
+
+    def predict(self, X):
+        if not self._has_learned:
+            return np.full(len(X), -1)
+        return np.asarray(self.core.predict(X))
+
+
+class MiniBatchKMeans(_Incremental):
+    def __init__(self, n_clusters=3, seed=0):
+        super().__init__()
+        self.core = CoreMiniBatchKMeans(
+            n_clusters=n_clusters, random_state=seed, n_init=1
+        )
+
+    def summary_size(self):
+        return self.core.n_clusters
+
+
+class Birch(_Incremental):
+    def __init__(self, threshold=0.5, branching_factor=50, n_clusters=3):
+        super().__init__()
+        self.core = CoreBirch(
+            threshold=threshold,
+            branching_factor=branching_factor,
+            n_clusters=n_clusters,
+        )
+
+    def summary_size(self):
+        return len(self.core.subcluster_centers_) if self._has_learned else 0
