@@ -4,6 +4,8 @@ import numpy as np
 from sklearn.cluster import Birch as CoreBirch
 from sklearn.cluster import MiniBatchKMeans as CoreMiniBatchKMeans
 
+from benchmark.hyperparameters import Kind
+
 
 class _Incremental:
     """A scikit-learn estimator with `partial_fit`; it predicts noise until it has learned a batch."""
@@ -24,6 +26,9 @@ class _Incremental:
 
 
 class MiniBatchKMeans(_Incremental):
+    HYPERPARAMETERS = {"n_clusters": Kind.CLUSTERS}
+    SEEDED = True
+
     def __init__(self, n_clusters=3, seed=0):
         super().__init__()
         self.core = CoreMiniBatchKMeans(
@@ -35,13 +40,11 @@ class MiniBatchKMeans(_Incremental):
 
 
 class Birch(_Incremental):
-    def __init__(self, threshold=0.5, branching_factor=50, n_clusters=3):
+    HYPERPARAMETERS = {"threshold": Kind.DISTANCE, "n_clusters": Kind.CLUSTERS}
+
+    def __init__(self, threshold=0.5, n_clusters=3):
         super().__init__()
-        self.core = CoreBirch(
-            threshold=threshold,
-            branching_factor=branching_factor,
-            n_clusters=n_clusters,
-        )
+        self.core = CoreBirch(threshold=threshold, n_clusters=n_clusters)
 
     def summary_size(self):
         return len(self.core.subcluster_centers_) if self._has_learned else 0

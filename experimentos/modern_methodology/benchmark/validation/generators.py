@@ -7,8 +7,9 @@ ported generator is compared with the R-generated streams in three ways:
   time (Cassini and the two benchmarks), two-sample tests on the pooled
   coordinates of every cluster and on the cluster proportions;
 - descriptors: statistics of the structure of a stream, computed in windows
-  and summarized per stream, which also cover the stream whose samples depend
-  on one another (Random RBF with events);
+  and summarized per stream, and the number of clusters that the stream
+  creates, which also cover the stream whose samples depend on one another
+  (Random RBF with events);
 - behaviour: the ARI of models with fixed hyperparameters on both sources.
 
 Usage (from experimentos/modern_methodology):
@@ -51,6 +52,8 @@ WINDOW = 500
 BLOCK = 1000
 INITIAL_RBF_CLUSTERS = 3
 DESCRIPTORS = ["clusters", "noise", "spread", "displacement", "separation"]
+# Descriptors of a stream: the means of those of its windows and the clusters it creates.
+STREAM_DESCRIPTORS = [*DESCRIPTORS, "created"]
 # Number of clusters at the start of each stream, for the models that need it.
 STARTING_CLUSTERS = {
     "cassini": 3,
@@ -218,6 +221,7 @@ def main():
                     "source": source,
                     "run": run,
                     **described[DESCRIPTORS].mean(),
+                    "created": len(np.unique(y[y >= 0])),
                 }
             )
             if dataset == "random_rbf_events":
@@ -244,7 +248,7 @@ def main():
     pd.concat(windows).to_csv(OUT_DIR / "descriptors_by_window.csv", index=False)
     runs = pd.DataFrame(runs)
     runs.to_csv(OUT_DIR / "descriptors_by_run.csv", index=False)
-    compare(runs, DESCRIPTORS, ["dataset"]).to_csv(
+    compare(runs, STREAM_DESCRIPTORS, ["dataset"]).to_csv(
         OUT_DIR / "descriptor_tests.csv", index=False
     )
     pd.DataFrame(noise).to_csv(OUT_DIR / "rbf_noise_by_block.csv", index=False)

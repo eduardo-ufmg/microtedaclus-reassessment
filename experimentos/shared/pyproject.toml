@@ -5,9 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pfc-shared"
 version = "1.0.0"
-description = "Code shared by the experiments of the thesis: MicroTEDAClus+, run-level metrics and statistical ingredients."
+description = "Code shared by the experiments of the thesis: MicroTEDAClus+, run-level metrics, statistical ingredients and the previous hyperparameter selection."
 requires-python = ">=3.11"
-dependencies = ["numpy", "scipy", "pandas", "numba", "statsmodels"]
+dependencies = ["numpy", "scipy", "pandas", "numba", "statsmodels", "scikit-learn", "optuna"]
 
 [tool.setuptools]
 packages = ["pfc_shared"]
