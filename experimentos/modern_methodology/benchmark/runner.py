@@ -181,7 +181,6 @@ def main():
         ProcessPoolExecutor(
             max_workers=arguments.workers,
             mp_context=multiprocessing.get_context("spawn"),
-            max_tasks_per_child=200,
         ) as pool,
     ):
         writer = csv.DictWriter(stored, fieldnames=TASK_COLUMNS)
