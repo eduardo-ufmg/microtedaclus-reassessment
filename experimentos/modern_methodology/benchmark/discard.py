@@ -10,9 +10,8 @@ Usage (from experimentos/modern_methodology):
 """
 
 import argparse
+import csv
 import shutil
-
-import pandas as pd
 
 from benchmark import analysis
 from benchmark.models import MODELS
@@ -24,13 +23,18 @@ def discard(model: str) -> None:
     for part in PARTS:
         tasks_file = part / "tasks.csv"
         if tasks_file.exists():
-            tasks = pd.read_csv(tasks_file, dtype=str, keep_default_na=False)
-            kept = tasks[tasks.model != model]
+            # Rows pass through the reader and the writer that the experiment uses, so
+            # those that stay are written exactly as they were.
+            with tasks_file.open(newline="") as stored:
+                header, *rows = csv.reader(stored)
+            of_model = header.index("model")
+            kept = [row for row in rows if row[of_model] != model]
             partial = tasks_file.with_suffix(".partial")
-            kept.to_csv(partial, index=False)
+            with partial.open("w", newline="") as stored:
+                csv.writer(stored).writerows([header, *kept])
             partial.replace(tasks_file)
             print(
-                f"{part.name}: {len(tasks) - len(kept)} tasks of {len(tasks)} discarded"
+                f"{part.name}: {len(rows) - len(kept)} tasks of {len(rows)} discarded"
             )
         folders = sorted((part / "batches").glob(f"*/{model}"))
         for folder in folders:
