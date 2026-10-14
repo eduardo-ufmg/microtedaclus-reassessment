@@ -43,6 +43,16 @@ METRICS = {
         "round": lambda x: np.round(x / 1024) * 1024,
         "fmt": "{:.0f}",
     },
+    "memory_retained_bytes": {
+        "dir": "min",
+        "round": lambda x: np.round(x / 1024) * 1024,
+        "fmt": "{:.0f}",
+    },
+    "memory_peak_bytes": {
+        "dir": "min",
+        "round": lambda x: np.round(x / 1024) * 1024,
+        "fmt": "{:.0f}",
+    },
     "mc_max": {"dir": "min", "round": lambda x: np.round(x), "fmt": "{:.0f}"},
     "mc_steadystate": {"dir": "min", "round": lambda x: np.round(x), "fmt": "{:.0f}"},
 }

@@ -5,7 +5,7 @@ pandas==3.0.5
 numba==0.67.0
 optuna==4.9.0
 river==0.26.1
-pympler==1.1
+memray==1.20.0
 statsmodels==0.15.0
 matplotlib==3.11.1
 pyarrow==25.0.1

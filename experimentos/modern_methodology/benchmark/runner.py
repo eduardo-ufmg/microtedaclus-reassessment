@@ -5,12 +5,13 @@ selected on the first part of the stream, and a new model with them is
 evaluated prequentially on the rest. Tasks run in parallel processes, in the
 order of their run, so the experiment can stop after any run with the same runs
 complete for every dataset and model. A finished task is written at once, and a
-new call continues from the tasks that are missing.
+new call continues from the tasks that are missing. The run ends with an error
+if no task finishes within the stall limit.
 
 Usage (from experimentos/modern_methodology):
     python -m benchmark.runner OUT [--runs FIRST LAST] [--models M ...] [--datasets D ...]
                                [--workers N] [--trials N] [--length-factor F]
-                               [--protocol rules|previous]
+                               [--protocol rules|previous] [--stall-limit SECONDS]
 OUT receives tasks.csv, with one row per task, and batches/DATASET/MODEL/RUN.csv.
 It holds the results of one configuration: a protocol, a number of trials and a
 length factor.
@@ -29,13 +30,10 @@ for _variable in (
     )
 
 import argparse
-import csv
 import json
-import multiprocessing
 import time
 import warnings
 import zlib
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import numpy as np
@@ -43,6 +41,7 @@ import numpy as np
 from benchmark.datasets import BASE_SEED, DATASETS, load_stream
 from benchmark.evaluation import prequential
 from benchmark.models import MODELS, build
+from benchmark.parallel import STALL_LIMIT, finished_tasks, run_tasks
 from benchmark.tuning import PROTOCOLS, TRIALS, split
 
 N_RUNS = 94
@@ -130,15 +129,6 @@ def configuration_matches(out: Path, configuration: dict) -> bool:
     return True
 
 
-def finished_tasks(tasks_file: Path) -> set:
-    if not tasks_file.exists():
-        return set()
-    with tasks_file.open(newline="") as stored:
-        return {
-            (r["dataset"], r["model"], int(r["run"])) for r in csv.DictReader(stored)
-        }
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("out", type=Path)
@@ -153,6 +143,7 @@ def main():
     parser.add_argument("--trials", type=int, default=TRIALS)
     parser.add_argument("--length-factor", type=int, default=1)
     parser.add_argument("--protocol", default="rules", choices=list(PROTOCOLS))
+    parser.add_argument("--stall-limit", type=int, default=STALL_LIMIT)
     arguments = parser.parse_args()
 
     configuration = {
@@ -174,21 +165,10 @@ def main():
     ]
     print(f"{len(tasks)} tasks to run, {len(finished)} already finished", flush=True)
 
-    is_new = not tasks_file.exists()
-    started = time.perf_counter()
-    with (
-        tasks_file.open("a", newline="") as stored,
-        ProcessPoolExecutor(
-            max_workers=arguments.workers,
-            mp_context=multiprocessing.get_context("spawn"),
-        ) as pool,
-    ):
-        writer = csv.DictWriter(stored, fieldnames=TASK_COLUMNS)
-        if is_new:
-            writer.writeheader()
-        futures = [
-            pool.submit(
-                run_task,
+    run_tasks(
+        run_task,
+        [
+            (
                 str(arguments.out),
                 *task,
                 arguments.protocol,
@@ -196,24 +176,12 @@ def main():
                 arguments.length_factor,
             )
             for task in tasks
-        ]
-        for done, future in enumerate(as_completed(futures), start=1):
-            row = future.result()
-            writer.writerow(row)
-            stored.flush()
-            os.fsync(stored.fileno())
-            if row["status"] != "OK":
-                print(
-                    f"{row['dataset']} {row['model']} {row['run']}: {row['status']}",
-                    flush=True,
-                )
-            if done % 50 == 0 or done == len(tasks):
-                hours = (time.perf_counter() - started) / 3600
-                remaining = hours / done * (len(tasks) - done)
-                print(
-                    f"{done}/{len(tasks)} tasks, {hours:.2f} h elapsed, about {remaining:.1f} h left",
-                    flush=True,
-                )
+        ],
+        tasks_file,
+        TASK_COLUMNS,
+        arguments.workers,
+        arguments.stall_limit,
+    )
 
 
 if __name__ == "__main__":

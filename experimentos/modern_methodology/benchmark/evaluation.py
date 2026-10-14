@@ -9,6 +9,19 @@ from sklearn.metrics import adjusted_rand_score
 BATCH_SIZE = 100
 
 
+def batches(n_samples: int, batch_size=BATCH_SIZE):
+    """Rows of the consecutive whole batches of a stream."""
+    for batch in range(n_samples // batch_size):
+        yield slice(batch * batch_size, (batch + 1) * batch_size)
+
+
+def process(model, X, batch_size=BATCH_SIZE) -> None:
+    """Predict and learn every batch of a stream, keeping nothing."""
+    for rows_of_batch in batches(len(X), batch_size):
+        model.predict(X[rows_of_batch])
+        model.learn(X[rows_of_batch])
+
+
 def prequential(model, X, y, batch_size=BATCH_SIZE, measure=False) -> pd.DataFrame:
     """ARI of the model at every batch of the stream.
 
@@ -17,8 +30,7 @@ def prequential(model, X, y, batch_size=BATCH_SIZE, measure=False) -> pd.DataFra
     read.
     """
     rows = []
-    for batch in range(len(X) // batch_size):
-        rows_of_batch = slice(batch * batch_size, (batch + 1) * batch_size)
+    for batch, rows_of_batch in enumerate(batches(len(X), batch_size)):
         X_batch = X[rows_of_batch]
 
         wall, cpu = time.perf_counter_ns(), time.process_time_ns()

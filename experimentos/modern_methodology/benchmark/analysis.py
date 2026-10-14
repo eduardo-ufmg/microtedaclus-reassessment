@@ -17,15 +17,24 @@ from benchmark.hyperparameters import search_space
 from benchmark.models import MODELS
 from benchmark.runner import batches_file, stream_length
 from benchmark.tuning import split
-from pfc_shared.metrics import microcluster_metrics, quality_metrics
+from pfc_shared.metrics import (
+    add_time_columns,
+    microcluster_metrics,
+    quality_metrics,
+    time_metrics,
+)
 from pfc_shared.statistics import METRICS, paired_comparisons, process_metric
 
 ROOT = Path(__file__).resolve().parents[1]
 MAIN = ROOT / "results_main"
 PREVIOUS_PROTOCOL = ROOT / "results_previous_protocol"
+TIMING = ROOT / "results_timing"
+MEMORY = ROOT / "results_memory"
 
 QUALITY_METRICS = ("ari_overall", "ari_steadystate", "ari_fifth", "ari_diff")
 SUMMARY_METRICS = ("mc_max", "mc_steadystate")
+TIME_METRICS = ("time_fit_cum_ms", "time_predict_cum_ms")
+MEMORY_METRICS = ("memory_retained_bytes", "memory_peak_bytes")
 
 
 def length_factor(out: Path) -> int:
@@ -57,6 +66,29 @@ def run_level(out: Path) -> pd.DataFrame:
             }
         )
     return pd.DataFrame(rows)
+
+
+def timing_level() -> pd.DataFrame:
+    """One row per task of the timing pass: its time metrics."""
+    rows = []
+    for file in sorted((TIMING / "batches").glob("*/*/*.csv")):
+        dataset, model = file.parts[-3:-1]
+        batches = add_time_columns(pd.read_csv(file))
+        rows.append(
+            {
+                "dataset": dataset,
+                "model": model,
+                "run": int(file.stem),
+                **time_metrics(batches),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def memory_level() -> pd.DataFrame:
+    """One row per task of the memory pass: its memory metrics."""
+    tasks = pd.read_csv(MEMORY / "tasks.csv")
+    return tasks[tasks.status == "OK"].drop(columns="status")
 
 
 def complete_runs(results: pd.DataFrame, models) -> list:

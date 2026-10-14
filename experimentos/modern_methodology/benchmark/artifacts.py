@@ -51,6 +51,10 @@ TITLES = {
     "ari_diff": "Maximum ARI drop",
     "mc_max": "Largest summary",
     "mc_steadystate": "Steady-state summary",
+    "time_fit_cum_ms": "Learning time of the evaluation segment, in milliseconds",
+    "time_predict_cum_ms": "Prediction time of the evaluation segment, in milliseconds",
+    "memory_retained_bytes": "Memory held at the end of the stream, in KiB",
+    "memory_peak_bytes": "Peak memory during the evaluation, in KiB",
 }
 GROUPS = (
     "A value in bold is statistically indistinguishable from the best model of its dataset, "
@@ -58,7 +62,12 @@ GROUPS = (
 )
 
 
-def tier_panels(results, metrics, models, datasets):
+def _in_kib(value: str) -> str:
+    return f"{float(value) / 1024:.0f}"
+
+
+def tier_panels(results, metrics, models, datasets, shown=str):
+    """A panel per metric; `shown` rewrites the text of a median, such as to change its unit."""
     panels = []
     for metric in metrics:
         of_metric = analysis.tiers(results, metric, models, datasets)
@@ -66,7 +75,7 @@ def tier_panels(results, metrics, models, datasets):
         for model in models:
             of_model = of_metric[of_metric.model == model].set_index("dataset")
             values = {
-                dataset: marked(row["median"], row["verdict"])
+                dataset: marked(shown(row["median"]), row["verdict"])
                 for dataset, row in of_model.iterrows()
             }
             rows.append((model_label(model), values, str))
@@ -102,6 +111,43 @@ def summary_table(results, models, runs):
         columns(SHORT_NAMES),
         tier_panels(results, analysis.SUMMARY_METRICS, models, list(SHORT_NAMES)),
     )
+
+
+def cost_tables(models):
+    """Time and memory of the models, from the passes that measure them."""
+    if (analysis.TIMING / "batches").exists():
+        timing = analysis.timing_level()
+        runs = analysis.complete_runs(timing, models)
+        panel_table(
+            ARTIFACT_DIR / "time.tex",
+            f"Execution time of the models, each task measured alone: medians over {len(runs)} runs. "
+            f"{GROUPS}",
+            "tab:mod_time",
+            columns(SHORT_NAMES),
+            tier_panels(
+                analysis.on_complete_runs(timing, models),
+                analysis.TIME_METRICS,
+                models,
+                list(SHORT_NAMES),
+            ),
+        )
+    if (analysis.MEMORY / "tasks.csv").exists():
+        memory = analysis.memory_level()
+        runs = analysis.complete_runs(memory, models)
+        panel_table(
+            ARTIFACT_DIR / "memory.tex",
+            f"Memory of the models, counted from every allocation of their process: medians over "
+            f"{len(runs)} runs. {GROUPS}",
+            "tab:mod_memory",
+            columns(SHORT_NAMES),
+            tier_panels(
+                analysis.on_complete_runs(memory, models),
+                analysis.MEMORY_METRICS,
+                models,
+                list(SHORT_NAMES),
+                shown=_in_kib,
+            ),
+        )
 
 
 def protocol_table(rules, previous):
@@ -348,6 +394,8 @@ def main():
     ends_table(at_the_ends(complete, ranges), models, len(runs))
     dimension_figure(complete, models)
     stream_figure(analysis.MAIN, models, runs)
+
+    cost_tables(models)
 
     if (analysis.PREVIOUS_PROTOCOL / "tasks.csv").exists():
         previous = analysis.run_level(analysis.PREVIOUS_PROTOCOL)
