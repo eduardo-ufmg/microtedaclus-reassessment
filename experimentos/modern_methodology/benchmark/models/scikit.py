@@ -26,13 +26,16 @@ class _Incremental:
 
 
 class MiniBatchKMeans(_Incremental):
-    HYPERPARAMETERS = {"n_clusters": Kind.CLUSTERS}
+    HYPERPARAMETERS = {"n_clusters": Kind.CLUSTERS, "reassignment_ratio": Kind.RATIO}
     SEEDED = True
 
-    def __init__(self, n_clusters=3, seed=0):
+    def __init__(self, n_clusters=3, reassignment_ratio=0.01, seed=0):
         super().__init__()
         self.core = CoreMiniBatchKMeans(
-            n_clusters=n_clusters, random_state=seed, n_init=1
+            n_clusters=n_clusters,
+            reassignment_ratio=reassignment_ratio,
+            random_state=seed,
+            n_init=1,
         )
 
     def summary_size(self):
