@@ -13,7 +13,7 @@ from pathlib import Path
 import pandas as pd
 
 from benchmark.datasets import DATASETS, load_stream
-from benchmark.hyperparameters import search_space
+from benchmark.hyperparameters import ranges_of_kinds
 from benchmark.models import MODELS
 from benchmark.runner import batches_file, stream_length
 from benchmark.tuning import split
@@ -142,28 +142,37 @@ def against(control: pd.DataFrame, variant: pd.DataFrame, metric: str) -> pd.Dat
     return paired_comparisons(pairs, metric).rename_axis("dataset")
 
 
-@lru_cache(maxsize=None)
 def search_ranges(out: Path, runs: tuple) -> pd.DataFrame:
-    """Search range of every hyperparameter of every model, in every dataset and run."""
+    """Search range of every hyperparameter of every model, in every dataset and run.
+
+    The ranges come from the streams again, which takes long for the longest
+    streams, so they are kept in OUT/search_ranges.csv once computed.
+    """
+    stored = out / "search_ranges.csv"
+    if stored.exists():
+        ranges = pd.read_csv(stored)
+        if set(runs) <= set(ranges.run):
+            return ranges[ranges.run.isin(runs)]
     rows = []
     for dataset in DATASETS:
         for run in runs:
             X, y = load_stream(dataset, run, stream_length(dataset, length_factor(out)))
             (X_tuning, y_tuning), _ = split(X, y)
+            of_kind = ranges_of_kinds(X_tuning, y_tuning)
             for model, model_class in MODELS.items():
-                for name, of_name in search_space(
-                    model_class, X_tuning, y_tuning
-                ).items():
+                for name, kind in model_class.HYPERPARAMETERS.items():
                     rows.append(
                         {
                             "dataset": dataset,
                             "run": run,
                             "model": model,
                             "hyperparameter": name,
-                            "kind": model_class.HYPERPARAMETERS[name].value,
-                            "low": of_name.low,
-                            "high": of_name.high,
-                            "log": of_name.log,
+                            "kind": kind.value,
+                            "low": of_kind[kind].low,
+                            "high": of_kind[kind].high,
+                            "log": of_kind[kind].log,
                         }
                     )
-    return pd.DataFrame(rows)
+    ranges = pd.DataFrame(rows)
+    ranges.to_csv(stored, index=False)
+    return ranges

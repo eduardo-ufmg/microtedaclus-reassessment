@@ -1,0 +1,54 @@
+\begin{table}[htbp]
+\centering
+\caption{Percentage of the 94 runs in which the selected value of a hyperparameter lies within a twentieth of the width of its search range from one of its ends, in the scale of the search.}
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\begin{tabular}{l c c c c c c c c c c c c c }
+\toprule
+Model and hyperparameter & B1 & B2 & RBF & CSN & DS3 & DS4 & S1 & S2 & S4 & S8 & S16 & S32 & S64 \\
+\midrule
+\multicolumn{14}{l}{\textit{At the lower end}} \\
+\modelname{MicroTEDAClus+}, \texttt{variance\_limit} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 6 & 13 & 4 & 6 & 3 \\
+\modelname{MicroTEDAClus+}, \texttt{decay} & 31 & 13 & 16 & 0 & 4 & 3 & 3 & 1 & 5 & 2 & 3 & 2 & 4 \\
+\modelname{MicroTEDAClus+}, \texttt{noise\_distance} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 2 & 0 & 3 \\
+\modelname{DenStream}, \texttt{epsilon} & 7 & 2 & 0 & 0 & 0 & 2 & 0 & 3 & 0 & 0 & 1 & 1 & 1 \\
+\modelname{DenStream}, \texttt{half\_life} & 0 & 1 & 6 & 0 & 2 & 9 & 2 & 1 & 1 & 1 & 7 & 7 & 4 \\
+\modelname{DenStream}, \texttt{mu} & 46 & 4 & 18 & 1 & 17 & 14 & 21 & 29 & 69 & 52 & 18 & 15 & 14 \\
+\modelname{DenStream}, \texttt{outlier\_ratio} & 6 & 10 & 4 & 6 & 3 & 3 & 7 & 6 & 3 & 4 & 4 & 5 & 5 \\
+\modelname{DenStream}, \texttt{n\_samples\_init} & 0 & 3 & 1 & 13 & 0 & 1 & 3 & 3 & 0 & 1 & 1 & 0 & 1 \\
+\modelname{DBSTREAM}, \texttt{clustering\_threshold} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\
+\modelname{DBSTREAM}, \texttt{half\_life} & 0 & 3 & 19 & 1 & 3 & 3 & 5 & 1 & 0 & 0 & 0 & 0 & 3 \\
+\modelname{DBSTREAM}, \texttt{cleanup\_interval} & 6 & 3 & 4 & 2 & 4 & 5 & 6 & 2 & 2 & 3 & 5 & 5 & 5 \\
+\modelname{DBSTREAM}, \texttt{intersection\_factor} & 3 & 0 & 2 & 1 & 2 & 5 & 6 & 5 & 2 & 1 & 1 & 7 & 2 \\
+\modelname{DBSTREAM}, \texttt{minimum\_weight} & 19 & 13 & 27 & 11 & 18 & 15 & 13 & 32 & 50 & 44 & 40 & 18 & 15 \\
+\modelname{BIRCH}, \texttt{threshold} & 1 & 3 & 16 & 6 & 6 & 7 & 9 & 23 & 51 & 70 & 73 & 90 & 9 \\
+\modelname{BIRCH}, \texttt{n\_clusters} & 16 & 0 & 0 & 0 & 0 & 0 & 3 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\modelname{Mini-batch k-means}, \texttt{n\_clusters} & 3 & 0 & 0 & 5 & 0 & 0 & 9 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\modelname{Mini-batch k-means}, \texttt{reassignment\_ratio} & 1 & 7 & 19 & 3 & 7 & 5 & 28 & 46 & 59 & 51 & 48 & 29 & 20 \\
+\modelname{BICO}, \texttt{n\_clusters} & 15 & 0 & 0 & 1 & 0 & 0 & 5 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\modelname{BICO}, \texttt{summary\_size} & 11 & 1 & 1 & 12 & 1 & 2 & 4 & 0 & 1 & 2 & 1 & 0 & 0 \\
+\midrule
+\multicolumn{14}{l}{\textit{At the upper end}} \\
+\modelname{MicroTEDAClus+}, \texttt{variance\_limit} & 0 & 0 & 0 & 0 & 0 & 0 & 34 & 5 & 1 & 4 & 5 & 4 & 5 \\
+\modelname{MicroTEDAClus+}, \texttt{decay} & 0 & 0 & 0 & 15 & 18 & 7 & 11 & 7 & 3 & 4 & 6 & 7 & 3 \\
+\modelname{MicroTEDAClus+}, \texttt{noise\_distance} & 24 & 2 & 4 & 9 & 10 & 5 & 0 & 2 & 2 & 0 & 0 & 3 & 1 \\
+\modelname{DenStream}, \texttt{epsilon} & 1 & 2 & 10 & 14 & 4 & 5 & 28 & 3 & 0 & 1 & 2 & 2 & 1 \\
+\modelname{DenStream}, \texttt{half\_life} & 4 & 7 & 1 & 3 & 5 & 6 & 3 & 6 & 6 & 4 & 3 & 5 & 9 \\
+\modelname{DenStream}, \texttt{mu} & 0 & 10 & 1 & 3 & 0 & 1 & 6 & 1 & 0 & 0 & 0 & 2 & 2 \\
+\modelname{DenStream}, \texttt{outlier\_ratio} & 3 & 5 & 2 & 4 & 3 & 6 & 5 & 4 & 4 & 3 & 3 & 5 & 5 \\
+\modelname{DenStream}, \texttt{n\_samples\_init} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\modelname{DBSTREAM}, \texttt{clustering\_threshold} & 0 & 61 & 9 & 27 & 62 & 11 & 22 & 6 & 2 & 0 & 3 & 5 & 3 \\
+\modelname{DBSTREAM}, \texttt{half\_life} & 16 & 9 & 3 & 5 & 7 & 6 & 4 & 10 & 11 & 20 & 16 & 9 & 7 \\
+\modelname{DBSTREAM}, \texttt{cleanup\_interval} & 3 & 7 & 5 & 1 & 10 & 2 & 6 & 3 & 5 & 11 & 5 & 4 & 6 \\
+\modelname{DBSTREAM}, \texttt{intersection\_factor} & 9 & 23 & 1 & 0 & 9 & 4 & 3 & 3 & 14 & 34 & 16 & 19 & 5 \\
+\modelname{DBSTREAM}, \texttt{minimum\_weight} & 14 & 1 & 0 & 6 & 5 & 5 & 3 & 0 & 0 & 0 & 0 & 3 & 4 \\
+\modelname{BIRCH}, \texttt{threshold} & 53 & 0 & 0 & 0 & 0 & 0 & 3 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\modelname{BIRCH}, \texttt{n\_clusters} & 53 & 1 & 26 & 0 & 0 & 1 & 12 & 79 & 62 & 5 & 2 & 15 & 94 \\
+\modelname{Mini-batch k-means}, \texttt{n\_clusters} & 96 & 0 & 5 & 0 & 0 & 0 & 0 & 12 & 30 & 30 & 12 & 24 & 33 \\
+\modelname{Mini-batch k-means}, \texttt{reassignment\_ratio} & 3 & 5 & 0 & 1 & 0 & 1 & 4 & 4 & 2 & 0 & 0 & 0 & 0 \\
+\modelname{BICO}, \texttt{n\_clusters} & 85 & 0 & 21 & 0 & 0 & 0 & 1 & 62 & 97 & 73 & 12 & 0 & 6 \\
+\modelname{BICO}, \texttt{summary\_size} & 5 & 12 & 9 & 1 & 7 & 7 & 5 & 3 & 2 & 7 & 4 & 10 & 5 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mod_ends}
+\end{table}

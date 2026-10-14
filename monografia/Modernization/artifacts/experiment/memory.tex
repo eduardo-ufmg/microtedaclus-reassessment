@@ -1,0 +1,28 @@
+\begin{table}[htbp]
+\centering
+\caption{Memory of the models, counted from every allocation of their process: medians over 94 runs. A value in bold is statistically indistinguishable from the best model of its dataset, and a value in red from the worst.}
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\begin{tabular}{l c c c c c c c c c c c c c }
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S1 & S2 & S4 & S8 & S16 & S32 & S64 \\
+\midrule
+\multicolumn{14}{l}{\textit{Memory held at the end of the stream, in KiB}} \\
+\modelname{MicroTEDAClus+} & 11 & 11 & 11 & 45 & 24 & 21 & 9 & 11 & 27 & 21 & 33 & 58 & 109 \\
+\modelname{DenStream} & 36 & 6 & 18 & \textbf{6} & 8 & 8 & \textbf{6} & 15 & 29 & 32 & 20 & 36 & 70 \\
+\modelname{DBSTREAM} & \textcolor{red}{146} & \textbf{4} & 46 & 8 & 8 & 16 & 9 & 36 & 105 & 230 & 308 & 35 & 102 \\
+\modelname{BIRCH} & 7 & \textcolor{red}{13} & \textcolor{red}{2550} & \textcolor{red}{256} & 18 & \textcolor{red}{13} & \textcolor{red}{10} & \textcolor{red}{1415} & \textcolor{red}{2195} & \textcolor{red}{2642} & \textcolor{red}{2387} & \textcolor{red}{2562} & \textcolor{red}{2488} \\
+\modelname{Mini-batch k-means} & \textbf{6} & 6 & \textbf{6} & \textbf{6} & \textbf{6} & \textbf{6} & 6 & \textbf{6} & \textbf{6} & \textbf{6} & \textbf{6} & \textbf{7} & \textbf{8} \\
+\modelname{BICO} & 23 & \textcolor{red}{82} & 185 & 17 & \textcolor{red}{60} & \textcolor{red}{32} & \textcolor{red}{20} & 22 & 34 & 64 & 120 & 116 & 262 \\
+\midrule
+\multicolumn{14}{l}{\textit{Peak memory during the evaluation, in KiB}} \\
+\modelname{MicroTEDAClus+} & 260 & 121 & 314 & \textcolor{red}{2857} & \textcolor{red}{1300} & \textcolor{red}{428} & \textcolor{red}{156} & 171 & 380 & 286 & 158 & 206 & 230 \\
+\modelname{DenStream} & \textcolor{red}{752} & \textcolor{red}{199} & 842 & 53 & 80 & 80 & \textcolor{red}{146} & 567 & 896 & 1032 & 684 & 1232 & 2925 \\
+\modelname{DBSTREAM} & 196 & 42 & 88 & 46 & 46 & 56 & 44 & 74 & 150 & 303 & 436 & 260 & 546 \\
+\modelname{BIRCH} & 30 & \textcolor{red}{46} & \textcolor{red}{219946} & \textcolor{red}{2045} & 63 & 46 & \textcolor{red}{38} & \textcolor{red}{79212} & \textcolor{red}{148181} & \textcolor{red}{143234} & \textcolor{red}{73834} & \textcolor{red}{44954} & \textcolor{red}{16332} \\
+\modelname{Mini-batch k-means} & \textbf{20} & \textbf{20} & \textbf{24} & \textbf{20} & \textbf{22} & \textbf{24} & \textbf{19} & \textbf{20} & \textbf{21} & \textbf{21} & \textbf{20} & \textbf{24} & \textbf{26} \\
+\modelname{BICO} & 102 & \textcolor{red}{186} & 363 & 94 & 118 & 78 & 105 & 106 & 121 & 158 & 266 & 276 & 558 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mod_memory}
+\end{table}

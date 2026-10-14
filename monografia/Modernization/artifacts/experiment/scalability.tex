@@ -1,0 +1,28 @@
+\begin{table}[htbp]
+\centering
+\caption{Quality of the models along the dimension of the data: medians over 94 runs. A value in bold is statistically indistinguishable from the best model of its dataset, and a value in red from the worst.}
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\begin{tabular}{l c c c c c c c }
+\toprule
+Model & S1 & S2 & S4 & S8 & S16 & S32 & S64 \\
+\midrule
+\multicolumn{8}{l}{\textit{Overall ARI}} \\
+\modelname{MicroTEDAClus+} & \textcolor{red}{0.719} & \textbf{0.938} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} \\
+\modelname{DenStream} & 0.780 & 0.885 & 0.961 & 0.968 & \textcolor{red}{0.978} & \textcolor{red}{0.991} & 1.000 \\
+\modelname{DBSTREAM} & \textbf{0.776} & 0.928 & 0.966 & 0.975 & \textcolor{red}{0.975} & \textcolor{red}{0.982} & 0.986 \\
+\modelname{BIRCH} & \textbf{0.806} & 0.923 & 0.951 & 1.000 & \textbf{1.000} & 1.000 & \textcolor{red}{0.895} \\
+\modelname{Mini-batch k-means} & \textbf{0.779} & \textcolor{red}{0.855} & \textcolor{red}{0.901} & \textcolor{red}{0.948} & \textcolor{red}{0.981} & 1.000 & 1.000 \\
+\modelname{BICO} & \textbf{0.800} & 0.891 & 0.940 & 0.963 & 0.982 & \textbf{1.000} & 1.000 \\
+\midrule
+\multicolumn{8}{l}{\textit{Steady-State ARI}} \\
+\modelname{MicroTEDAClus+} & \textcolor{red}{0.698} & \textbf{0.925} & \textbf{0.998} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} \\
+\modelname{DenStream} & 0.748 & 0.875 & 0.957 & 0.968 & \textcolor{red}{0.972} & \textcolor{red}{0.999} & 1.000 \\
+\modelname{DBSTREAM} & \textbf{0.776} & \textbf{0.917} & 0.971 & 0.974 & \textcolor{red}{0.972} & \textcolor{red}{0.981} & 0.984 \\
+\modelname{BIRCH} & \textbf{0.792} & \textbf{0.913} & 0.954 & 1.000 & \textbf{1.000} & 1.000 & \textcolor{red}{0.881} \\
+\modelname{Mini-batch k-means} & \textbf{0.795} & \textcolor{red}{0.849} & \textcolor{red}{0.902} & \textcolor{red}{0.946} & 0.982 & 1.000 & \textbf{1.000} \\
+\modelname{BICO} & \textbf{0.758} & 0.888 & 0.933 & 0.965 & 0.983 & \textbf{1.000} & \textbf{1.000} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mod_scalability}
+\end{table}

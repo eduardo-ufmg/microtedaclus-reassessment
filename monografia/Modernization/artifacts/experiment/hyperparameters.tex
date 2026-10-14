@@ -1,0 +1,37 @@
+\begin{table}[htbp]
+\centering
+\caption{Hyperparameters that the search selects for each model, and the kind that gives each its range.}
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\begin{tabular}{l l l}
+\toprule
+Model & Hyperparameter & Kind \\
+\midrule
+\modelname{MicroTEDAClus+} & \texttt{variance\_limit} & Relative variance \\
+ & \texttt{decay} & Horizon \\
+ & \texttt{noise\_distance} & Multiplier \\
+\midrule
+\modelname{DenStream} & \texttt{epsilon} & Distance \\
+ & \texttt{half\_life} & Horizon \\
+ & \texttt{mu} & Minimum points \\
+ & \texttt{outlier\_ratio} & Ratio \\
+ & \texttt{n\_samples\_init} & Horizon \\
+\midrule
+\modelname{DBSTREAM} & \texttt{clustering\_threshold} & Distance \\
+ & \texttt{half\_life} & Horizon \\
+ & \texttt{cleanup\_interval} & Horizon \\
+ & \texttt{intersection\_factor} & Ratio \\
+ & \texttt{minimum\_weight} & Minimum points \\
+\midrule
+\modelname{BIRCH} & \texttt{threshold} & Distance \\
+ & \texttt{n\_clusters} & Clusters \\
+\midrule
+\modelname{Mini-batch k-means} & \texttt{n\_clusters} & Clusters \\
+ & \texttt{reassignment\_ratio} & Ratio \\
+\midrule
+\modelname{BICO} & \texttt{n\_clusters} & Clusters \\
+ & \texttt{summary\_size} & Summary size \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mod_hyperparameters}
+\end{table}
