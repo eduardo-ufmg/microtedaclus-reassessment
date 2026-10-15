@@ -204,7 +204,7 @@ def _fit_kernel(X, count, mass, mean, variance, density, life, active, last_seen
 
 def _max_per_group(values, group, n_groups):
     """Row-wise maximum of the columns of each group (groups are column labels)."""
-    order = np.argsort(group, category="stable")
+    order = np.argsort(group, kind="stable")
     starts = np.searchsorted(group[order], np.arange(n_groups))
     return np.maximum.reduceat(values[:, order], starts, axis=1)
 

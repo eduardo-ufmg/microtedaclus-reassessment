@@ -184,7 +184,7 @@ def protocol_table(rules, previous):
 
 
 def hyperparameter_table(models):
-    lines = [r"Model & Hyperparameter & Kind \\"]
+    lines = [r"Model & Hyperparameter & Category \\"]
     for model in models:
         lines.append(r"\midrule")
         for position, (name, category) in enumerate(

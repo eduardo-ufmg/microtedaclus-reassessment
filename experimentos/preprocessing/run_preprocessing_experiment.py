@@ -118,7 +118,7 @@ def op_scaled(X, y):
 
 
 def op_ordered(X, y):
-    idx = np.argsort(y, category="stable")
+    idx = np.argsort(y, kind="stable")
     return X[idx], y[idx]
 
 
