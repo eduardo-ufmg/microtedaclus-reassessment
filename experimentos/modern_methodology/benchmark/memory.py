@@ -1,18 +1,18 @@
 """Memory of the models with their selected hyperparameters.
 
-Every finished task of the experiment is evaluated again while every allocation
-of its process is tracked, whether Python or compiled code makes it. Two
-quantities are kept: the memory still allocated when the stream ends, which is
-what the model holds, and the peak during the evaluation, which adds the
-working memory of the steps of the model.
+The tasks of the first runs of the experiment are evaluated again while every
+allocation of their process is tracked, whether Python or compiled code makes
+it. Two quantities are kept: the memory still allocated when the stream ends,
+which is what the model holds, and the peak during the evaluation, which adds
+the working memory of the steps of the model.
 
-For the numbers to repeat, a task is evaluated once without tracking, so that
-whatever is loaded or created on first use is in place, and then tracked three
-times, of which the smallest values are kept: what the libraries keep allocated
-between uses adds to a measurement and never subtracts from it. Each process
-runs one thread, with the hash seed of Python fixed, and tracks a small
-evaluation when it starts, which takes the allocations of the first tracking of
-a process.
+Every task runs in a new process, so that no task inherits what an earlier one
+left allocated. The process first tracks a small evaluation, which takes the
+allocations of the first tracking of a process; then a model of the task
+processes the first batches of the stream untracked, so that what it loads or
+creates on first use is in place; then a new model of the task is evaluated
+once under tracking. Each process runs one thread, with the hash seed of Python
+fixed.
 
 Usage (from experimentos/modern_methodology):
     python -m benchmark.memory [--runs FIRST LAST] [--models M ...] [--workers N]
@@ -45,10 +45,10 @@ import pandas as pd
 
 from benchmark import analysis
 from benchmark.datasets import load_stream
-from benchmark.evaluation import process
+from benchmark.evaluation import process, warm_up
 from benchmark.models import MODELS, build
 from benchmark.parallel import STALL_LIMIT, finished_tasks, run_tasks
-from benchmark.runner import N_RUNS, stream_length, task_seeds
+from benchmark.runner import COST_RUNS, stream_length, task_seeds
 from benchmark.tuning import split
 
 OUT = analysis.ROOT / "results_memory"
@@ -60,11 +60,11 @@ TASK_COLUMNS = [
     "memory_retained_bytes",
     "memory_peak_bytes",
 ]
-REPETITIONS = 3  # tracked evaluations of a task
 _first_tracking_done = False
 
 
-def _tracked_once(make_model, X) -> tuple[int, int]:
+def tracked(make_model, X) -> tuple[int, int]:
+    """Bytes that a new model holds after a stream, and the peak while it processes the stream."""
     with tempfile.TemporaryDirectory() as directory:
         trace = Path(directory) / "allocations.bin"
         with memray.Tracker(
@@ -86,16 +86,6 @@ def _tracked_once(make_model, X) -> tuple[int, int]:
     return retained, peak
 
 
-def tracked(make_model, X) -> tuple[int, int]:
-    """Bytes that a model holds after a stream, and the peak while it processes the stream."""
-    process(
-        make_model(), X
-    )  # everything loaded or created on first use is now in place
-    gc.collect()
-    passes = [_tracked_once(make_model, X) for _ in range(REPETITIONS)]
-    return min(retained for retained, _ in passes), min(peak for _, peak in passes)
-
-
 def _first_tracking():
     """Track a small evaluation once in a process, before its first measurement."""
     global _first_tracking_done
@@ -115,9 +105,13 @@ def measure_task(dataset: str, model: str, run: int, hyperparameters: str, facto
         _, (X_evaluation, _) = split(X, y)
         _, model_seed = task_seeds(dataset, model, run)
         selected = json.loads(hyperparameters)
-        retained, peak = tracked(
-            lambda: build(MODELS[model], selected, model_seed), X_evaluation
-        )
+
+        def make_model():
+            return build(MODELS[model], selected, model_seed)
+
+        warm_up(make_model, X_evaluation)
+        gc.collect()
+        retained, peak = tracked(make_model, X_evaluation)
         return row | {
             "status": "OK",
             "memory_retained_bytes": retained,
@@ -129,7 +123,7 @@ def measure_task(dataset: str, model: str, run: int, hyperparameters: str, facto
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("--runs", type=int, nargs=2, default=[0, N_RUNS - 1])
+    parser.add_argument("--runs", type=int, nargs=2, default=[0, COST_RUNS - 1])
     parser.add_argument(
         "--models", nargs="+", default=list(MODELS), choices=list(MODELS)
     )
@@ -162,6 +156,7 @@ def main():
         TASK_COLUMNS,
         arguments.workers,
         arguments.stall_limit,
+        tasks_per_process=1,
     )
 
 

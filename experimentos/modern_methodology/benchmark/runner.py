@@ -45,6 +45,7 @@ from benchmark.parallel import STALL_LIMIT, finished_tasks, run_tasks
 from benchmark.tuning import PROTOCOLS, TRIALS, split
 
 N_RUNS = 94
+COST_RUNS = 10  # first runs whose tasks the timing and memory passes measure
 TASK_COLUMNS = [
     "dataset",
     "model",

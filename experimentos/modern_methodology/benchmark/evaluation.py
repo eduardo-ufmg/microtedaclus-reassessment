@@ -7,6 +7,7 @@ import pandas as pd
 from sklearn.metrics import adjusted_rand_score
 
 BATCH_SIZE = 100
+WARM_UP_BATCHES = 3  # batches that a model processes before its cost is measured
 
 
 def batches(n_samples: int, batch_size=BATCH_SIZE):
@@ -20,6 +21,15 @@ def process(model, X, batch_size=BATCH_SIZE) -> None:
     for rows_of_batch in batches(len(X), batch_size):
         model.predict(X[rows_of_batch])
         model.learn(X[rows_of_batch])
+
+
+def warm_up(make_model, X, batch_size=BATCH_SIZE) -> None:
+    """Let a new model process the first batches of a stream and discard it.
+
+    Whatever the model loads or creates on its first use is then in place, so
+    that a measurement that follows counts the model and not its first use.
+    """
+    process(make_model(), X[: WARM_UP_BATCHES * batch_size], batch_size)
 
 
 def prequential(model, X, y, batch_size=BATCH_SIZE, measure=False) -> pd.DataFrame:

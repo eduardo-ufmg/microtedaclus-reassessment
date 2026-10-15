@@ -38,20 +38,30 @@ def _terminate(signal_number, frame):
 
 
 def run_tasks(
-    function, tasks, tasks_file: Path, columns, workers, stall_limit=STALL_LIMIT
+    function,
+    tasks,
+    tasks_file: Path,
+    columns,
+    workers,
+    stall_limit=STALL_LIMIT,
+    tasks_per_process=None,
 ):
     """Run `function(*task)` for every task and append the row it returns to `tasks_file`.
 
     The tasks start in the given order, in `workers` processes. A row has the
     key of its task and a status, "OK" or the error. The program ends with an
-    error if no task finishes within `stall_limit` seconds.
+    error if no task finishes within `stall_limit` seconds. With
+    `tasks_per_process`, a process is replaced after that many tasks, so that
+    with one every task starts in a new process.
     """
     signal.signal(signal.SIGTERM, _terminate)  # so that the workers end with the run
     is_new = not tasks_file.exists()
     started = time.perf_counter()
     with (
         tasks_file.open("a", newline="") as stored,
-        multiprocessing.get_context("spawn").Pool(workers) as pool,
+        multiprocessing.get_context("spawn").Pool(
+            workers, maxtasksperchild=tasks_per_process
+        ) as pool,
     ):
         writer = csv.DictWriter(stored, fieldnames=columns)
         if is_new:
