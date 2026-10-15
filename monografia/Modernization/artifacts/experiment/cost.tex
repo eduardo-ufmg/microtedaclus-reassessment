@@ -1,0 +1,44 @@
+\begin{table}[htbp]
+\centering
+\caption{Execution time and memory of the models, each task measured alone and its memory counted from every allocation of its process: medians over 10 runs. A value in bold is statistically indistinguishable from the best model of its dataset, and a value in red from the worst.}
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\begin{tabular}{l c c c c c c }
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 \\
+\midrule
+\multicolumn{7}{l}{\textit{Learning time of the evaluation segment, in milliseconds}} \\
+\modelname{MicroTEDAClus+} & 85 & 60 & \textbf{185} & 365 & \textcolor{red}{90} & 30 \\
+\modelname{DenStream} & 180 & 40 & \textbf{140} & 40 & 20 & 20 \\
+\modelname{DBSTREAM} & \textcolor{red}{815} & 60 & \textcolor{red}{505} & 90 & 50 & 70 \\
+\modelname{BIRCH} & 200 & \textcolor{red}{275} & \textcolor{red}{715} & \textcolor{red}{1685} & \textcolor{red}{100} & \textcolor{red}{80} \\
+\modelname{Mini-batch k-means} & 60 & 60 & \textbf{150} & 60 & 30 & 30 \\
+\modelname{BICO} & \textbf{10} & \textbf{10} & \textbf{100} & \textbf{10} & \textbf{0} & \textbf{0} \\
+\midrule
+\multicolumn{7}{l}{\textit{Prediction time of the evaluation segment, in milliseconds}} \\
+\modelname{MicroTEDAClus+} & \textbf{10} & \textbf{10} & \textbf{20} & \textbf{20} & \textbf{10} & \textbf{0} \\
+\modelname{DenStream} & \textcolor{red}{220} & 20 & 100 & \textbf{20} & \textbf{15} & 10 \\
+\modelname{DBSTREAM} & \textcolor{red}{175} & 20 & 145 & 30 & 20 & 20 \\
+\modelname{BIRCH} & 60 & 65 & 165 & 100 & 30 & 20 \\
+\modelname{Mini-batch k-means} & 20 & 20 & 60 & \textbf{20} & \textbf{10} & 10 \\
+\modelname{BICO} & \textcolor{red}{170} & \textcolor{red}{160} & \textcolor{red}{825} & \textcolor{red}{165} & \textcolor{red}{95} & \textcolor{red}{70} \\
+\midrule
+\multicolumn{7}{l}{\textit{Memory held at the end of the stream, in KiB}} \\
+\modelname{MicroTEDAClus+} & 11 & \textbf{11} & 11 & 44 & \textcolor{red}{22} & 11 \\
+\modelname{DenStream} & 42 & \textbf{6} & 14 & \textbf{6} & 9 & 9 \\
+\modelname{DBSTREAM} & \textcolor{red}{205} & \textbf{4} & 29 & 9 & 8 & \textcolor{red}{28} \\
+\modelname{BIRCH} & 8 & \textcolor{red}{53} & \textcolor{red}{86} & \textcolor{red}{642} & \textcolor{red}{20} & \textcolor{red}{20} \\
+\modelname{Mini-batch k-means} & \textbf{6} & \textbf{6} & \textbf{6} & \textbf{6} & \textbf{6} & \textbf{6} \\
+\modelname{BICO} & 16 & \textcolor{red}{22} & \textcolor{red}{284} & 21 & \textcolor{red}{31} & \textcolor{red}{30} \\
+\midrule
+\multicolumn{7}{l}{\textit{Peak memory during the evaluation, in KiB}} \\
+\modelname{MicroTEDAClus+} & 281 & \textcolor{red}{125} & \textcolor{red}{251} & \textcolor{red}{3026} & \textcolor{red}{880} & \textcolor{red}{148} \\
+\modelname{DenStream} & \textcolor{red}{763} & \textcolor{red}{248} & \textcolor{red}{415} & 50 & 81 & \textcolor{red}{69} \\
+\modelname{DBSTREAM} & \textcolor{red}{302} & 43 & 73 & 48 & 47 & 68 \\
+\modelname{BIRCH} & \textcolor{red}{30} & \textcolor{red}{180} & \textcolor{red}{350} & \textcolor{red}{12815} & \textcolor{red}{70} & \textcolor{red}{72} \\
+\modelname{Mini-batch k-means} & \textbf{24} & \textbf{28} & \textbf{26} & \textbf{24} & \textbf{33} & \textbf{30} \\
+\modelname{BICO} & 98 & \textcolor{red}{102} & \textcolor{red}{508} & 103 & 86 & \textcolor{red}{84} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mod_cost}
+\end{table}

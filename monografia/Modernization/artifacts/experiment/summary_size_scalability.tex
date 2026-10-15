@@ -1,0 +1,28 @@
+\begin{table}[htbp]
+\centering
+\caption{Number of structures in the summary that each model keeps of the stream along the dimension of the data: medians over 94 runs. A value in bold is statistically indistinguishable from the best model of its dataset, and a value in red from the worst.}
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\begin{tabular}{l c c c c c c c }
+\toprule
+Model & S1 & S2 & S4 & S8 & S16 & S32 & S64 \\
+\midrule
+\multicolumn{8}{l}{\textit{Largest summary}} \\
+\modelname{MicroTEDAClus+} & \textcolor{red}{44} & 68 & 112 & 90 & 40 & 54 & 34 \\
+\modelname{DenStream} & 4 & 10 & 19 & 12 & \textbf{5} & \textbf{4} & \textbf{4} \\
+\modelname{DBSTREAM} & 10 & 30 & 71 & 107 & 85 & 10 & 18 \\
+\modelname{BIRCH} & \textcolor{red}{12} & \textcolor{red}{3150} & \textcolor{red}{4317} & \textcolor{red}{4236} & \textcolor{red}{3018} & \textcolor{red}{2324} & \textcolor{red}{1325} \\
+\modelname{Mini-batch k-means} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{5} & \textbf{4} & 5 & 5 \\
+\modelname{BICO} & \textcolor{red}{34} & 36 & 62 & 116 & 192 & 106 & 128 \\
+\midrule
+\multicolumn{8}{l}{\textit{Steady-state summary}} \\
+\modelname{MicroTEDAClus+} & \textcolor{red}{31} & 28 & 42 & 40 & 21 & 32 & 16 \\
+\modelname{DenStream} & 4 & 10 & 18 & 12 & \textbf{4} & \textbf{4} & \textbf{4} \\
+\modelname{DBSTREAM} & 10 & 29 & 68 & 103 & 80 & 10 & 16 \\
+\modelname{BIRCH} & \textcolor{red}{12} & \textcolor{red}{3140} & \textcolor{red}{4298} & \textcolor{red}{4220} & \textcolor{red}{3004} & \textcolor{red}{2312} & \textcolor{red}{1318} \\
+\modelname{Mini-batch k-means} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{5} & \textbf{4} & 5 & 5 \\
+\modelname{BICO} & \textcolor{red}{33} & 32 & 55 & 98 & 140 & 92 & 105 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mod_summary_size_scalability}
+\end{table}

@@ -108,12 +108,16 @@ def process_metric(
         q1s = df_disc.quantile(0.25)
         q3s = df_disc.quantile(0.75)
 
+        # The references are the models of optimal and pessimal median; among
+        # models that share it, the one of optimal or pessimal mean rank over
+        # the runs, the statistic of the Friedman test.
+        order = pd.DataFrame(
+            {"median": medians, "rank": df_disc.rank(axis=1).mean()}
+        ).sort_values(["median", "rank"])
         if config["dir"] == "max":
-            best_model = medians.idxmax()
-            worst_model = medians.idxmin()
+            best_model, worst_model = order.index[-1], order.index[0]
         else:
-            best_model = medians.idxmin()
-            worst_model = medians.idxmax()
+            best_model, worst_model = order.index[0], order.index[-1]
 
         # The Friedman test needs at least three models. With two, the pairwise
         # test below is the whole comparison, so no omnibus test precedes it.

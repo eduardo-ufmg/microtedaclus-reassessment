@@ -2,25 +2,25 @@
 \centering
 \caption{Number of structures in the summary that each model keeps of the stream: medians over 94 runs. A value in bold is statistically indistinguishable from the best model of its dataset, and a value in red from the worst.}
 \adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
-\begin{tabular}{l c c c c c c c c c c c c c }
+\begin{tabular}{l c c c c c c }
 \toprule
-Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S1 & S2 & S4 & S8 & S16 & S32 & S64 \\
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 \\
 \midrule
-\multicolumn{14}{l}{\textit{Largest summary}} \\
-\modelname{MicroTEDAClus+} & 66 & 31 & 84 & \textcolor{red}{409} & \textcolor{red}{268} & \textcolor{red}{124} & \textcolor{red}{44} & 68 & 112 & 90 & 40 & 54 & 34 \\
-\modelname{DenStream} & 89 & \textbf{4} & 14 & 4 & \textbf{5} & \textbf{5} & 4 & 10 & 19 & 12 & \textbf{5} & \textbf{4} & \textbf{4} \\
-\modelname{DBSTREAM} & \textcolor{red}{154} & \textbf{3} & 44 & 7 & 6 & 14 & 10 & 30 & 71 & 107 & 85 & 10 & 18 \\
-\modelname{BIRCH} & 5 & \textcolor{red}{19} & \textcolor{red}{5265} & \textcolor{red}{470} & 32 & \textcolor{red}{18} & \textcolor{red}{12} & \textcolor{red}{3150} & \textcolor{red}{4317} & \textcolor{red}{4236} & \textcolor{red}{3018} & \textcolor{red}{2324} & \textcolor{red}{1325} \\
-\modelname{Mini-batch k-means} & \textbf{4} & 3 & \textbf{9} & \textbf{3} & 6 & 6 & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{5} & \textbf{4} & 5 & 5 \\
-\modelname{BICO} & 42 & \textcolor{red}{290} & 668 & 20 & 184 & 84 & \textcolor{red}{34} & 36 & 62 & 116 & 192 & 106 & 128 \\
+\multicolumn{7}{l}{\textit{Largest summary}} \\
+\modelname{MicroTEDAClus+} & 66 & 31 & 84 & \textcolor{red}{409} & \textcolor{red}{268} & \textcolor{red}{124} \\
+\modelname{DenStream} & 89 & 4 & 14 & 4 & \textbf{5} & \textbf{5} \\
+\modelname{DBSTREAM} & \textcolor{red}{154} & 3 & 44 & 7 & 6 & 14 \\
+\modelname{BIRCH} & 5 & \textcolor{red}{19} & \textcolor{red}{5265} & \textcolor{red}{470} & 32 & \textcolor{red}{18} \\
+\modelname{Mini-batch k-means} & \textbf{4} & \textbf{3} & \textbf{9} & \textbf{3} & 6 & 6 \\
+\modelname{BICO} & 42 & \textcolor{red}{290} & 668 & 20 & 184 & 84 \\
 \midrule
-\multicolumn{14}{l}{\textit{Steady-state summary}} \\
-\modelname{MicroTEDAClus+} & 60 & 5 & 48 & 384 & \textcolor{red}{242} & \textcolor{red}{112} & \textcolor{red}{31} & 28 & 42 & 40 & 21 & 32 & 16 \\
-\modelname{DenStream} & 23 & \textbf{3} & 11 & \textbf{3} & \textbf{5} & \textbf{5} & 4 & 10 & 18 & 12 & \textbf{4} & \textbf{4} & \textbf{4} \\
-\modelname{DBSTREAM} & \textcolor{red}{138} & \textbf{3} & 38 & 7 & 6 & 14 & 10 & 29 & 68 & 103 & 80 & 10 & 16 \\
-\modelname{BIRCH} & 5 & \textcolor{red}{19} & \textcolor{red}{5258} & \textcolor{red}{470} & 32 & \textcolor{red}{18} & \textcolor{red}{12} & \textcolor{red}{3140} & \textcolor{red}{4298} & \textcolor{red}{4220} & \textcolor{red}{3004} & \textcolor{red}{2312} & \textcolor{red}{1318} \\
-\modelname{Mini-batch k-means} & \textbf{4} & 3 & \textbf{9} & 3 & 6 & 6 & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{5} & \textbf{4} & 5 & 5 \\
-\modelname{BICO} & 36 & \textcolor{red}{244} & 590 & 18 & 131 & 60 & \textcolor{red}{33} & 32 & 55 & 98 & 140 & 92 & 105 \\
+\multicolumn{7}{l}{\textit{Steady-state summary}} \\
+\modelname{MicroTEDAClus+} & 60 & 5 & 48 & 384 & \textcolor{red}{242} & \textcolor{red}{112} \\
+\modelname{DenStream} & 23 & 3 & 11 & 3 & \textbf{5} & \textbf{5} \\
+\modelname{DBSTREAM} & \textcolor{red}{138} & 3 & 38 & 7 & 6 & 14 \\
+\modelname{BIRCH} & 5 & \textcolor{red}{19} & \textcolor{red}{5258} & \textcolor{red}{470} & 32 & \textcolor{red}{18} \\
+\modelname{Mini-batch k-means} & \textbf{4} & \textbf{3} & \textbf{9} & \textbf{3} & 6 & 6 \\
+\modelname{BICO} & 36 & \textcolor{red}{244} & 590 & 18 & 131 & 60 \\
 \bottomrule
 \end{tabular}
 }

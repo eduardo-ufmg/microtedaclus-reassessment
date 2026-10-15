@@ -62,6 +62,10 @@ GROUPS = (
 )
 
 
+def _in_ms(value: str) -> str:
+    return f"{float(value):.0f}"
+
+
 def _in_kib(value: str) -> str:
     return f"{float(value) / 1024:.0f}"
 
@@ -103,49 +107,59 @@ def quality_tables(results, models, runs):
 
 
 def summary_table(results, models, runs):
-    panel_table(
-        ARTIFACT_DIR / "summary_size.tex",
-        f"Number of structures in the summary that each model keeps of the stream: medians over {runs} "
-        f"runs. {GROUPS}",
-        "tab:mod_summary_size",
-        columns(SHORT_NAMES),
-        tier_panels(results, analysis.SUMMARY_METRICS, models, list(SHORT_NAMES)),
-    )
+    """Size of the summaries, in the six datasets and along the dimension of the data."""
+    for name, label, datasets, scope in (
+        ("summary_size", "tab:mod_summary_size", MAIN_DATASETS, ""),
+        (
+            "summary_size_scalability",
+            "tab:mod_summary_size_scalability",
+            SCALABILITY_DATASETS,
+            " along the dimension of the data",
+        ),
+    ):
+        panel_table(
+            ARTIFACT_DIR / f"{name}.tex",
+            f"Number of structures in the summary that each model keeps of the stream{scope}: "
+            f"medians over {runs} runs. {GROUPS}",
+            label,
+            columns(datasets),
+            tier_panels(results, analysis.SUMMARY_METRICS, models, datasets),
+        )
 
 
 def cost_tables(models):
     """Time and memory of the models, from the passes that measure them."""
-    if (analysis.TIMING / "batches").exists():
-        timing = analysis.timing_level()
-        runs = analysis.complete_runs(timing, models)
+    if (
+        not (analysis.TIMING / "batches").exists()
+        or not (analysis.MEMORY / "tasks.csv").exists()
+    ):
+        return
+    timing = analysis.timing_level()
+    memory = analysis.memory_level()
+    runs = analysis.complete_runs(timing, models)
+    if analysis.complete_runs(memory, models) != runs:
+        raise ValueError("The time and memory passes completed different runs")
+    timing = analysis.on_complete_runs(timing, models)
+    memory = analysis.on_complete_runs(memory, models)
+    for name, label, datasets, scope in (
+        ("cost", "tab:mod_cost", MAIN_DATASETS, ""),
+        (
+            "cost_scalability",
+            "tab:mod_cost_scalability",
+            SCALABILITY_DATASETS,
+            " along the dimension of the data",
+        ),
+    ):
         panel_table(
-            ARTIFACT_DIR / "time.tex",
-            f"Execution time of the models, each task measured alone: medians over {len(runs)} runs. "
+            ARTIFACT_DIR / f"{name}.tex",
+            f"Execution time and memory of the models{scope}, each task measured alone and its "
+            f"memory counted from every allocation of its process: medians over {len(runs)} runs. "
             f"{GROUPS}",
-            "tab:mod_time",
-            columns(SHORT_NAMES),
-            tier_panels(
-                analysis.on_complete_runs(timing, models),
-                analysis.TIME_METRICS,
-                models,
-                list(SHORT_NAMES),
-            ),
-        )
-    if (analysis.MEMORY / "tasks.csv").exists():
-        memory = analysis.memory_level()
-        runs = analysis.complete_runs(memory, models)
-        panel_table(
-            ARTIFACT_DIR / "memory.tex",
-            f"Memory of the models, counted from every allocation of their process: medians over "
-            f"{len(runs)} runs. {GROUPS}",
-            "tab:mod_memory",
-            columns(SHORT_NAMES),
-            tier_panels(
-                analysis.on_complete_runs(memory, models),
-                analysis.MEMORY_METRICS,
-                models,
-                list(SHORT_NAMES),
-                shown=_in_kib,
+            label,
+            columns(datasets),
+            tier_panels(timing, analysis.TIME_METRICS, models, datasets, shown=_in_ms)
+            + tier_panels(
+                memory, analysis.MEMORY_METRICS, models, datasets, shown=_in_kib
             ),
         )
 
