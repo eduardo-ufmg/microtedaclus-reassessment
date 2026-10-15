@@ -112,8 +112,8 @@ def kddcup99():
 def covertype():
     """The ten quantitative features; the 44 binary indicators are left out."""
     with gzip.open(checked("covertype/covtype.data.gz"), "rt") as handle:
-        data = pd.read_csv(handle, header=None)
-    return _valid(data.iloc[:, :10], data[54])
+        data = pd.read_csv(handle, header=None, usecols=[*range(10), 54])
+    return _valid(data[list(range(10))], data[54])
 
 
 @lru_cache(maxsize=None)
