@@ -2,15 +2,15 @@
 
 import numpy as np
 
-from benchmark.hyperparameters import Kind
+from benchmark.hyperparameters import Category
 from pfc_shared.microtedaclus_plus import MicroTEDAClusPlus as Core
 
 
 class MicroTEDAClusPlus:
     HYPERPARAMETERS = {
-        "variance_limit": Kind.RELATIVE_VARIANCE,
-        "decay": Kind.HORIZON,
-        "noise_distance": Kind.MULTIPLIER,
+        "variance_limit": Category.RELATIVE_VARIANCE,
+        "decay": Category.HORIZON,
+        "noise_distance": Category.MULTIPLIER,
     }
 
     def __init__(self, variance_limit=0.01, decay=100, noise_distance=6.0):

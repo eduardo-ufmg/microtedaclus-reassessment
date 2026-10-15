@@ -29,7 +29,7 @@ from scipy.spatial import cKDTree
 from scipy.spatial.distance import pdist
 
 
-class Kind(Enum):
+class Category(Enum):
     DISTANCE = "distance"
     RELATIVE_VARIANCE = "relative variance"
     HORIZON = "horizon"
@@ -58,7 +58,7 @@ def _integers(low, high, log=True) -> Range:
     return Range(low, max(low, int(np.floor(high))), log, integer=True)
 
 
-def ranges_of_kinds(X: np.ndarray, y: np.ndarray) -> dict[Kind, Range]:
+def ranges_of_kinds(X: np.ndarray, y: np.ndarray) -> dict[Category, Range]:
     """Search range of every category of hyperparameter, from a tuning segment and its labels."""
     n = len(X)
     k = max(1, len(np.unique(y[y >= 0])))
@@ -69,19 +69,19 @@ def ranges_of_kinds(X: np.ndarray, y: np.ndarray) -> dict[Kind, Range]:
     between = float(np.median(pdist(X)))
     total_variance = float(X.var(axis=0).sum())
     return {
-        Kind.DISTANCE: Range(nearest, between, log=True, integer=False),
-        Kind.RELATIVE_VARIANCE: Range(
+        Category.DISTANCE: Range(nearest, between, log=True, integer=False),
+        Category.RELATIVE_VARIANCE: Range(
             nearest**2 / total_variance,
             between**2 / total_variance,
             log=True,
             integer=False,
         ),
-        Kind.HORIZON: _integers(n / 100, n),
-        Kind.SUMMARY_SIZE: _integers(2 * k, n / 4),
-        Kind.MINIMUM_POINTS: _integers(2, np.sqrt(n)),
-        Kind.RATIO: Range(0.01, 0.99, log=False, integer=False),
-        Kind.MULTIPLIER: Range(1.0, 10.0, log=False, integer=False),
-        Kind.CLUSTERS: _integers(2, 2 * k, log=False),
+        Category.HORIZON: _integers(n / 100, n),
+        Category.SUMMARY_SIZE: _integers(2 * k, n / 4),
+        Category.MINIMUM_POINTS: _integers(2, np.sqrt(n)),
+        Category.RATIO: Range(0.01, 0.99, log=False, integer=False),
+        Category.MULTIPLIER: Range(1.0, 10.0, log=False, integer=False),
+        Category.CLUSTERS: _integers(2, 2 * k, log=False),
     }
 
 

@@ -4,11 +4,14 @@ import numpy as np
 from bico import BICO as CoreBico
 from sklearn.cluster import KMeans
 
-from benchmark.hyperparameters import Kind
+from benchmark.hyperparameters import Category
 
 
 class Bico:
-    HYPERPARAMETERS = {"n_clusters": Kind.CLUSTERS, "summary_size": Kind.SUMMARY_SIZE}
+    HYPERPARAMETERS = {
+        "n_clusters": Category.CLUSTERS,
+        "summary_size": Category.SUMMARY_SIZE,
+    }
     SEEDED = True
 
     def __init__(self, n_clusters=3, summary_size=600, seed=0):

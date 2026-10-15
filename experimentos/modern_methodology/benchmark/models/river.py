@@ -7,7 +7,7 @@ half-life, the number of samples after which a weight halves.
 import numpy as np
 from river import cluster
 
-from benchmark.hyperparameters import Kind
+from benchmark.hyperparameters import Category
 
 
 def _samples(X):
@@ -21,11 +21,11 @@ def _noise(X):
 
 class DBSTREAM:
     HYPERPARAMETERS = {
-        "clustering_threshold": Kind.DISTANCE,
-        "half_life": Kind.HORIZON,
-        "cleanup_interval": Kind.HORIZON,
-        "intersection_factor": Kind.RATIO,
-        "minimum_weight": Kind.MINIMUM_POINTS,
+        "clustering_threshold": Category.DISTANCE,
+        "half_life": Category.HORIZON,
+        "cleanup_interval": Category.HORIZON,
+        "intersection_factor": Category.RATIO,
+        "minimum_weight": Category.MINIMUM_POINTS,
     }
 
     def __init__(
@@ -61,11 +61,11 @@ class DenStream:
     """DenStream; `outlier_ratio` places the outlier threshold beta * mu between 1 and mu."""
 
     HYPERPARAMETERS = {
-        "epsilon": Kind.DISTANCE,
-        "half_life": Kind.HORIZON,
-        "mu": Kind.MINIMUM_POINTS,
-        "outlier_ratio": Kind.RATIO,
-        "n_samples_init": Kind.HORIZON,
+        "epsilon": Category.DISTANCE,
+        "half_life": Category.HORIZON,
+        "mu": Category.MINIMUM_POINTS,
+        "outlier_ratio": Category.RATIO,
+        "n_samples_init": Category.HORIZON,
     }
 
     def __init__(

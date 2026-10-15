@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.cluster import Birch as CoreBirch
 from sklearn.cluster import MiniBatchKMeans as CoreMiniBatchKMeans
 
-from benchmark.hyperparameters import Kind
+from benchmark.hyperparameters import Category
 
 
 class _Incremental:
@@ -26,7 +26,10 @@ class _Incremental:
 
 
 class MiniBatchKMeans(_Incremental):
-    HYPERPARAMETERS = {"n_clusters": Kind.CLUSTERS, "reassignment_ratio": Kind.RATIO}
+    HYPERPARAMETERS = {
+        "n_clusters": Category.CLUSTERS,
+        "reassignment_ratio": Category.RATIO,
+    }
     SEEDED = True
 
     def __init__(self, n_clusters=3, reassignment_ratio=0.01, seed=0):
@@ -43,7 +46,7 @@ class MiniBatchKMeans(_Incremental):
 
 
 class Birch(_Incremental):
-    HYPERPARAMETERS = {"threshold": Kind.DISTANCE, "n_clusters": Kind.CLUSTERS}
+    HYPERPARAMETERS = {"threshold": Category.DISTANCE, "n_clusters": Category.CLUSTERS}
 
     def __init__(self, threshold=0.5, n_clusters=3):
         super().__init__()

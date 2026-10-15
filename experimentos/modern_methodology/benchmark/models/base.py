@@ -4,11 +4,13 @@ from typing import ClassVar, Protocol
 
 import numpy as np
 
-from benchmark.hyperparameters import Kind
+from benchmark.hyperparameters import Category
 
 
 class StreamClusterer(Protocol):
-    HYPERPARAMETERS: ClassVar[dict[str, Kind]]  # category of every tuned hyperparameter
+    HYPERPARAMETERS: ClassVar[
+        dict[str, Category]
+    ]  # category of every tuned hyperparameter
 
     def learn(self, X: np.ndarray) -> None:
         """Update the model with a batch of samples."""

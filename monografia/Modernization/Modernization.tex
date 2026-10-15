@@ -1,7 +1,7 @@
 \chapter{Experiment Modernization}
 \label{chap:modernization}
 
-The main experiment of the previous chapters runs part of its generators in \codename{R} and \codename{Java}, as \cref{chap:methodology_reassessment} describes, and its protocol carries the constraints of that environment. Its hyperparameter search penalizes the execution time and stops at a time limit, and its datasets have at most 10000 samples, because some of the models are too slow for an unrestricted search, as seem in \cref{subsec:hyperparameter_tuning}. The ranges of that search were set by hand, as values that seemed reasonable after a brief survey of the literature \cite{cao2006density,aggarwal2003framework,hyde2017fully,ackermann2012streamkmpp,bezerra2016tedacloud,bezerra2020autocloud}. \Cref{sec:mi_selection} found that the objective of the search observes too short a segment of the stream to recognize the configurations that are best in the long run, and that the search is itself a source of variation.
+The main experiment of the previous chapters runs part of its generators in \codename{R} and \codename{Java}, as \cref{chap:methodology_reassessment} describes, and its protocol carries the constraints of that environment. Its hyperparameter search penalizes the execution time and stops at a time limit, and its datasets have at most 10000 samples, because some of the models are too slow for an unrestricted search, as seen in \cref{subsec:hyperparameter_tuning}. The ranges of that search were set by hand, as values that seemed reasonable after a brief survey of the literature \cite{cao2006density,aggarwal2003framework,hyde2017fully,ackermann2012streamkmpp,bezerra2016tedacloud,bezerra2020autocloud}. \Cref{sec:mi_selection} found that the objective of the search observes too short a segment of the stream to recognize the configurations that are best in the long run, and that the search is itself a source of variation.
 
 This chapter replaces the environment, the benchmark models and the hyperparameter selection, and repeats the main experiment under them. The model it evaluates is \MicroTEDAClusPlus as \cref{sec:mi_final_model} defines it, without changes.
 
@@ -15,7 +15,7 @@ The experiment is written in \codename{Python} only. Its numerical parts run in 
 
 Four generators of \cref{sec:datasets} ran in \codename{R}: that of \Cassini and those of \BenchmarkOne, \BenchmarkTwo and \RandomRBFGeneratorEvents, the last from MOA \cite{bifet2010moa} through \codename{streamMOA} \cite{streamMOA2024}. They are ported to \codename{Python}, following their reference implementations step by step. The Chameleon datasets remain the files of \cref{sec:datasets}, and the scalability streams were already generated in \codename{Python}. A stream is determined by its dataset and its run, which seed its generator.
 
-The structure of the four streams is compared through the behaviour of three models with fixed hyperparameters through their ARI, \cref{tab:mod_generators_behaviour}. No test finds a difference in the behaviour of the models.
+Each port is checked against the streams that \codename{R} generated for the previous experiment through the ARI of three models with fixed hyperparameters, \cref{tab:mod_generators_behaviour}, compared by the Mann-Whitney test with the Holm correction and the threshold on Cliff's delta of \cref{sec:statistical_significance}. No test finds a difference.
 
 \input{Modernization/artifacts/generators/behaviour.tex}
 
@@ -60,7 +60,7 @@ Each hyperparameter belongs to a category, given in \cref{tab:mod_hyperparameter
 \caption{Rule of each category of hyperparameter, for a tuning segment of $n$ samples with $k$ labelled clusters. Horizons, summary sizes, minimum points and numbers of clusters are integers.}
 \begin{tabular}{p{0.16\textwidth} p{0.29\textwidth} p{0.29\textwidth} l}
 \toprule
-category & Lower end & Upper end & Scale \\
+Category & Lower end & Upper end & Scale \\
 \midrule
 Distance & median distance from a sample to its nearest neighbour & median distance between two samples & logarithmic \\
 Relative variance & square of the lower distance, as a fraction of the total variance & square of the upper distance, as a fraction of the total variance & logarithmic \\

@@ -31,7 +31,7 @@ from benchmark.display import (
     model_label,
 )
 from benchmark.evaluation import BATCH_SIZE
-from benchmark.hyperparameters import Kind
+from benchmark.hyperparameters import Category
 from benchmark.models import MODELS
 from benchmark.runner import batches_file
 from pfc_shared.latex import marked, panel_table, write_table
@@ -223,12 +223,12 @@ def _interval(low, high, integer):
 def range_table(ranges, runs):
     """Ranges that the rules give in each dataset, for the kinds that depend on the tuning segment."""
     kinds = {
-        Kind.DISTANCE: False,
-        Kind.RELATIVE_VARIANCE: False,
-        Kind.HORIZON: True,
-        Kind.SUMMARY_SIZE: True,
-        Kind.MINIMUM_POINTS: True,
-        Kind.CLUSTERS: True,
+        Category.DISTANCE: False,
+        Category.RELATIVE_VARIANCE: False,
+        Category.HORIZON: True,
+        Category.SUMMARY_SIZE: True,
+        Category.MINIMUM_POINTS: True,
+        Category.CLUSTERS: True,
     }
     of_kind = ranges.drop_duplicates(["dataset", "run", "category"])
     medians = of_kind.groupby(["dataset", "category"])[["low", "high"]].median()
