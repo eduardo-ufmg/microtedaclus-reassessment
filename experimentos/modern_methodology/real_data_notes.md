@@ -88,8 +88,8 @@ memory on INSECTS in the first smoke run. The limit depends on the summary only,
 machine, and bounds both time and memory: at 2,500 structures BIRCH re-clusters in about
 0.6 s, and the fine-grained trials stop early. Consequences to disclose: configurations that
 keep more than a quarter of the tuning segment are excluded from the search, and a model can
-fail a task. In the second smoke run (3 trials per search), 3 of 48 tasks failed by the limit:
-BIRCH on INSECTS reoccurring and on KDD 99 (recorded order), DBSTREAM on Gas. Expect BIRCH, which
+fail a task. In the smoke runs (3 trials per search), 3 of 48 tasks failed by the limit:
+BIRCH on INSECTS reoccurring and on KDD 99 (in both orders), DBSTREAM on Gas. Expect BIRCH, which
 never forgets, to fail often on the long and drifting streams; that is a finding to report,
 not an error. Alternative: a limit of the whole tuning segment (10,000), with BIRCH tasks of
 up to six hours each. Applies to the real datasets only; Chapter 5 is unaffected.
@@ -145,7 +145,12 @@ took 17.7 s (MicroTEDAClus+), 20 s (BIRCH) and 47 s (DBSTREAM), on the way to 98
   48 tasks in 2.4 minutes, "The experiment is complete.", no process left. Run again with
   `--runs 0 1` on three datasets, it skipped the 48 finished tasks and ran the 18 new ones.
 - `python -m benchmark.real_artifacts` produced every table and the figure from those results.
-- Stopping the runner with SIGTERM ends its workers (checked).
+- Stopping the runner alone with SIGTERM, mid-run, ended it and its workers, kept the 22
+  finished tasks, and the same command resumed and completed the other 26 (checked on the
+  final archive).
+- In the figure of the smoke run, BIRCH scores 1 on stretches of the abrupt INSECTS stream
+  where the batches hold one class (6.5% of its batches) and BIRCH puts each in one cluster:
+  the effect of [D12], small in this stream; worth a sentence in the chapter if it persists.
 
 ## Expected duration
 
