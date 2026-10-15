@@ -124,6 +124,8 @@ def tiers(results: pd.DataFrame, metric: str, models, datasets) -> pd.DataFrame:
     rows = []
     for dataset, of_dataset in cells.iterrows():
         for model, cell in of_dataset.items():
+            if not isinstance(cell, str):  # a model without results on this dataset
+                continue
             value, _, tags = cell.partition(" [")
             verdict = {"B]": "better", "W]": "worse"}.get(tags, "same")
             rows.append(

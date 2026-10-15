@@ -118,8 +118,10 @@ REAL_DATASETS = {
         standardized=True,
     ),
     "gas_drift": Dataset(_gas_drift, None, shuffle=False, standardized=True),
+    # Shuffled: in its recorded order, almost every batch of KDD Cup 99 holds a single
+    # class, which leaves the batch ARI nothing to measure but whether a model lumps it.
     "kddcup99": Dataset(
-        _file(real_data.kddcup99), None, shuffle=False, standardized=True
+        _file(real_data.kddcup99), None, shuffle=True, standardized=True
     ),
     "covertype": Dataset(
         _file(real_data.covertype), None, shuffle=False, standardized=True
