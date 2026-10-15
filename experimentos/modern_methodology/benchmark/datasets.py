@@ -2,7 +2,10 @@
 
 A stream is identified by a dataset and a run. Its random generator is seeded
 by the base seed, the dataset and the run, so the same pair gives the same
-stream on any machine.
+stream on any machine. The synthetic datasets are those of `DATASETS`; the real
+datasets, read from files by `benchmark.real_data`, are those of
+`REAL_DATASETS`, and their features are standardized by the tuning segment of
+each stream, see `benchmark.preprocessing`.
 """
 
 import zlib
@@ -17,6 +20,7 @@ from scipy.io import arff
 from benchmark.generators.cassini import cassini
 from benchmark.generators.moving_gaussians import benchmark_1, benchmark_2
 from benchmark.generators.rbf_events import rbf_events
+from benchmark import real_data
 
 BASE_SEED = 42
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
@@ -28,6 +32,9 @@ class Dataset:
     generate: Callable  # (length, rng) -> (X, y), with noise labelled -1
     length: int | None  # number of samples; None for a file of fixed size
     shuffle: bool  # whether the order of the samples is random
+    standardized: bool = (
+        False  # whether the features are standardized by the tuning segment
+    )
 
 
 def _chameleon(file_name):
@@ -72,13 +79,66 @@ DATASETS = {
 }
 
 
+def _gas_drift(length, rng):
+    """The batches in their order, which carries the drift, each shuffled: its order is not recorded."""
+    X, y, batches = real_data.gas_drift()
+    order = np.concatenate(
+        [
+            rng.permutation(np.flatnonzero(batches == batch))
+            for batch in np.unique(batches)
+        ]
+    )
+    return X[order], y[order]
+
+
+def _file(reader, *arguments):
+    return lambda length, rng: reader(*arguments)
+
+
+REAL_DATASETS = {
+    "insects_abrupt": Dataset(
+        _file(real_data.insects, "insects_abrupt/abrupt_balanced.csv"),
+        None,
+        shuffle=False,
+        standardized=True,
+    ),
+    "insects_incremental": Dataset(
+        _file(real_data.insects, "insects_incremental/incremental_balanced.csv"),
+        None,
+        shuffle=False,
+        standardized=True,
+    ),
+    "insects_incremental_reoccurring": Dataset(
+        _file(
+            real_data.insects,
+            "insects_incremental_reoccurring/incremental_reoccurring_balanced.csv",
+        ),
+        None,
+        shuffle=False,
+        standardized=True,
+    ),
+    "gas_drift": Dataset(_gas_drift, None, shuffle=False, standardized=True),
+    "kddcup99": Dataset(
+        _file(real_data.kddcup99), None, shuffle=False, standardized=True
+    ),
+    "covertype": Dataset(
+        _file(real_data.covertype), None, shuffle=False, standardized=True
+    ),
+    "pendigits": Dataset(
+        _file(real_data.pendigits), None, shuffle=True, standardized=True
+    ),
+    "shuttle": Dataset(_file(real_data.shuttle), None, shuffle=True, standardized=True),
+}
+STREAMS = {**DATASETS, **REAL_DATASETS}
+
+
 def stream_rng(dataset: str, run: int) -> np.random.Generator:
     return np.random.default_rng([BASE_SEED, zlib.crc32(dataset.encode()), run])
 
 
 def load_stream(dataset: str, run: int, length: int | None = None):
     """Samples and labels of a stream; `length` overrides the length of a generated dataset."""
-    spec = DATASETS[dataset]
+    spec = STREAMS[dataset]
     rng = stream_rng(dataset, run)
     X, y = spec.generate(length or spec.length, rng)
     if spec.shuffle:

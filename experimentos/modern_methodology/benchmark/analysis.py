@@ -12,11 +12,11 @@ from pathlib import Path
 
 import pandas as pd
 
-from benchmark.datasets import DATASETS, load_stream
-from benchmark.hyperparameters import ranges_of_categories
+from benchmark.datasets import DATASETS
+from benchmark.hyperparameters import RULES
 from benchmark.models import MODELS
+from benchmark.preprocessing import segments
 from benchmark.runner import batches_file, stream_length
-from benchmark.tuning import split
 from pfc_shared.metrics import (
     add_time_columns,
     microcluster_metrics,
@@ -28,6 +28,7 @@ from pfc_shared.statistics import METRICS, paired_comparisons, process_metric
 ROOT = Path(__file__).resolve().parents[1]
 MAIN = ROOT / "results_main"
 PREVIOUS_PROTOCOL = ROOT / "results_previous_protocol"
+REAL = ROOT / "results_real"
 TIMING = ROOT / "results_timing"
 MEMORY = ROOT / "results_memory"
 
@@ -37,8 +38,12 @@ TIME_METRICS = ("time_fit_cum_ms", "time_predict_cum_ms")
 MEMORY_METRICS = ("memory_retained_bytes", "memory_peak_bytes")
 
 
+def configuration(out: Path) -> dict:
+    return json.loads((out / "configuration.json").read_text())
+
+
 def length_factor(out: Path) -> int:
-    return json.loads((out / "configuration.json").read_text())["length_factor"]
+    return configuration(out)["length_factor"]
 
 
 @lru_cache(maxsize=None)
@@ -91,16 +96,18 @@ def memory_level() -> pd.DataFrame:
     return tasks[tasks.status == "OK"].drop(columns="status")
 
 
-def complete_runs(results: pd.DataFrame, models) -> list:
+def complete_runs(results: pd.DataFrame, models, datasets=DATASETS) -> list:
     """Runs that every given model finished on every dataset."""
-    of_models = results[results.model.isin(models)]
+    of_models = results[results.model.isin(models) & results.dataset.isin(datasets)]
     finished = of_models.groupby("run").size()
-    return sorted(finished.index[finished == len(DATASETS) * len(models)])
+    return sorted(finished.index[finished == len(datasets) * len(models)])
 
 
-def on_complete_runs(results: pd.DataFrame, models) -> pd.DataFrame:
+def on_complete_runs(results: pd.DataFrame, models, datasets=DATASETS) -> pd.DataFrame:
     return results[
-        results.model.isin(models) & results.run.isin(complete_runs(results, models))
+        results.model.isin(models)
+        & results.dataset.isin(datasets)
+        & results.run.isin(complete_runs(results, models, datasets))
     ]
 
 
@@ -142,23 +149,26 @@ def against(control: pd.DataFrame, variant: pd.DataFrame, metric: str) -> pd.Dat
     return paired_comparisons(pairs, metric).rename_axis("dataset")
 
 
-def search_ranges(out: Path, runs: tuple) -> pd.DataFrame:
+def search_ranges(out: Path, runs: tuple, datasets=tuple(DATASETS)) -> pd.DataFrame:
     """Search range of every hyperparameter of every model, in every dataset and run.
 
-    The ranges come from the streams again, which takes long for the longest
-    streams, so they are kept in OUT/search_ranges.csv once computed.
+    The ranges come from the streams again, by the rules of the protocol of
+    OUT, which takes long for the longest streams, so they are kept in
+    OUT/search_ranges.csv once computed.
     """
     stored = out / "search_ranges.csv"
     if stored.exists():
         ranges = pd.read_csv(stored)
         if set(runs) <= set(ranges.run):
             return ranges[ranges.run.isin(runs)]
+    rules = RULES[configuration(out)["protocol"]]
     rows = []
-    for dataset in DATASETS:
+    for dataset in datasets:
         for run in runs:
-            X, y = load_stream(dataset, run, stream_length(dataset, length_factor(out)))
-            (X_tuning, y_tuning), _ = split(X, y)
-            of_category = ranges_of_categories(X_tuning, y_tuning)
+            (X_tuning, y_tuning), _ = segments(
+                dataset, run, stream_length(dataset, length_factor(out))
+            )
+            of_category = rules(X_tuning, y_tuning)
             for model, model_class in MODELS.items():
                 for name, category in model_class.HYPERPARAMETERS.items():
                     rows.append(
@@ -171,6 +181,7 @@ def search_ranges(out: Path, runs: tuple) -> pd.DataFrame:
                             "low": of_category[category].low,
                             "high": of_category[category].high,
                             "log": of_category[category].log,
+                            "logit": of_category[category].logit,
                         }
                     )
     ranges = pd.DataFrame(rows)

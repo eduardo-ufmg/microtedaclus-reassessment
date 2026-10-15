@@ -1,8 +1,9 @@
 """Hyperparameter selection of a model on the first part of a stream.
 
-Two protocols select the hyperparameters: that of this experiment, by rules,
-and that of the previous experiment, kept to measure what the change of
-protocol does to the one model that both experiments share.
+Three protocols select the hyperparameters: that of this experiment, by rules;
+the same with the widened rules, for the real datasets; and that of the
+previous experiment, kept to measure what the change of protocol does to the
+one model that both experiments share.
 
 By rules, the search sees the tuning segment only, which is what a deployment has before
 the stream continues: its samples and their labels. The ranges come from the
@@ -20,12 +21,13 @@ import numpy as np
 import optuna
 
 from benchmark.evaluation import prequential
-from benchmark.hyperparameters import search_space
+from benchmark.hyperparameters import RULES, search_space
 from benchmark.models import MicroTEDAClusPlus, build
 from pfc_shared import previous_protocol
 from pfc_shared.microtedaclus_plus import MicroTEDAClusPlus as PreviousMicroTEDAClusPlus
 
 SPLIT_FRACTION = 0.2
+TUNING_LIMIT = 10_000  # samples; the longest tuning segment of the synthetic experiment
 TRIALS = 100
 FAILED = -1.0  # objective of a configuration with which the model raises an error
 
@@ -33,8 +35,12 @@ optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 
 def split(X, y):
-    """The tuning segment and the evaluation segment of a stream."""
-    at = int(SPLIT_FRACTION * len(X))
+    """The tuning segment and the evaluation segment of a stream.
+
+    The tuning segment is the first fifth of the stream, up to the limit of
+    samples beyond which a search is not affordable for the slowest models.
+    """
+    at = min(int(SPLIT_FRACTION * len(X)), TUNING_LIMIT)
     return (X[:at], y[:at]), (X[at:], y[at:])
 
 
@@ -43,17 +49,28 @@ def objective_of(results) -> float:
     return float(np.median(ari[len(ari) // 2 :]))
 
 
-def tune(model_class, X, y, search_seed: int, model_seed: int, trials: int = TRIALS):
+def tune(
+    model_class,
+    X,
+    y,
+    search_seed: int,
+    model_seed: int,
+    trials: int = TRIALS,
+    rules: str = "rules",
+):
     """Selection by rules: the hyperparameters and a summary of the search.
 
-    The hyperparameters are None if every trial failed.
+    The hyperparameters are None if every trial failed. They are kept as the
+    model takes them, which differs from what the search samples for a range on
+    the logit scale.
     """
-    space = search_space(model_class, X, y)
+    space = search_space(model_class, X, y, RULES[rules])
 
     def objective(trial):
         hyperparameters = {
             name: of_name.suggest(trial, name) for name, of_name in space.items()
         }
+        trial.set_user_attr("hyperparameters", hyperparameters)
         try:
             results = prequential(build(model_class, hyperparameters, model_seed), X, y)
         except Exception as error:
@@ -73,7 +90,13 @@ def tune(model_class, X, y, search_seed: int, model_seed: int, trials: int = TRI
         "objective": study.best_value,
         "tuning_seconds": time.perf_counter() - started,
     }
-    return (study.best_params if failed < len(study.trials) else None), summary
+    selected = study.best_trial.user_attrs["hyperparameters"]
+    return (selected if failed < len(study.trials) else None), summary
+
+
+def tune_widened(model_class, X, y, search_seed, model_seed, trials=TRIALS):
+    """Selection by the widened rules, for the real datasets."""
+    return tune(model_class, X, y, search_seed, model_seed, trials, rules="widened")
 
 
 def tune_previous(
@@ -111,4 +134,4 @@ def tune_previous(
     return (study.best_params if complete else None), summary
 
 
-PROTOCOLS = {"rules": tune, "previous": tune_previous}
+PROTOCOLS = {"rules": tune, "widened": tune_widened, "previous": tune_previous}

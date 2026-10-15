@@ -11,7 +11,8 @@ if no task finishes within the stall limit.
 Usage (from experimentos/modern_methodology):
     python -m benchmark.runner OUT [--runs FIRST LAST] [--models M ...] [--datasets D ...]
                                [--workers N] [--trials N] [--length-factor F]
-                               [--protocol rules|previous] [--stall-limit SECONDS]
+                               [--protocol rules|widened|previous] [--stall-limit SECONDS]
+                               [--memory-limit GIGABYTES]
 OUT receives tasks.csv, with one row per task, and batches/DATASET/MODEL/RUN.csv.
 It holds the results of one configuration: a protocol, a number of trials and a
 length factor.
@@ -38,11 +39,12 @@ from pathlib import Path
 
 import numpy as np
 
-from benchmark.datasets import BASE_SEED, DATASETS, load_stream
+from benchmark.datasets import BASE_SEED, DATASETS, STREAMS
 from benchmark.evaluation import prequential
 from benchmark.models import MODELS, build
 from benchmark.parallel import STALL_LIMIT, finished_tasks, run_tasks
-from benchmark.tuning import PROTOCOLS, TRIALS, split
+from benchmark.preprocessing import segments
+from benchmark.tuning import PROTOCOLS, TRIALS
 
 N_RUNS = 94
 COST_RUNS = 10  # first runs whose tasks the timing and memory passes measure
@@ -69,7 +71,7 @@ def task_seeds(dataset: str, model: str, run: int) -> tuple[int, int]:
 
 def stream_length(dataset: str, length_factor: int) -> int | None:
     """Length of a generated stream; None for a file, which has its own."""
-    length = DATASETS[dataset].length
+    length = STREAMS[dataset].length
     return None if length is None else length * length_factor
 
 
@@ -90,8 +92,9 @@ def run_task(
     warnings.simplefilter("ignore")
     row = {"dataset": dataset, "model": model, "run": run}
     try:
-        X, y = load_stream(dataset, run, stream_length(dataset, length_factor))
-        (X_tuning, y_tuning), (X_evaluation, y_evaluation) = split(X, y)
+        (X_tuning, y_tuning), (X_evaluation, y_evaluation) = segments(
+            dataset, run, stream_length(dataset, length_factor)
+        )
         search_seed, model_seed = task_seeds(dataset, model, run)
         hyperparameters, summary = PROTOCOLS[protocol](
             MODELS[model], X_tuning, y_tuning, search_seed, model_seed, trials
@@ -138,13 +141,19 @@ def main():
         "--models", nargs="+", default=list(MODELS), choices=list(MODELS)
     )
     parser.add_argument(
-        "--datasets", nargs="+", default=list(DATASETS), choices=list(DATASETS)
+        "--datasets", nargs="+", default=list(DATASETS), choices=list(STREAMS)
     )
     parser.add_argument("--workers", type=int, default=os.cpu_count())
     parser.add_argument("--trials", type=int, default=TRIALS)
     parser.add_argument("--length-factor", type=int, default=1)
     parser.add_argument("--protocol", default="rules", choices=list(PROTOCOLS))
     parser.add_argument("--stall-limit", type=int, default=STALL_LIMIT)
+    parser.add_argument(
+        "--memory-limit",
+        type=float,
+        default=None,
+        help="gigabytes of memory per worker; a task that needs more fails",
+    )
     arguments = parser.parse_args()
 
     configuration = {
@@ -182,6 +191,11 @@ def main():
         TASK_COLUMNS,
         arguments.workers,
         arguments.stall_limit,
+        memory_limit=(
+            None
+            if arguments.memory_limit is None
+            else int(arguments.memory_limit * 2**30)
+        ),
     )
 
 

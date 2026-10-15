@@ -13,6 +13,16 @@ SHORT_NAMES = {
 }
 SCALABILITY_DATASETS = [f"SCL-{d}" for d in SCALABILITY_DIMENSIONS]
 MAIN_DATASETS = [d for d in SHORT_NAMES if d not in SCALABILITY_DATASETS]
+REAL_SHORT_NAMES = {
+    "insects_abrupt": "INS-A",
+    "insects_incremental": "INS-I",
+    "insects_incremental_reoccurring": "INS-R",
+    "gas_drift": "GAS",
+    "kddcup99": "KDD",
+    "covertype": "COV",
+    "pendigits": "PEN",
+    "shuttle": "SHU",
+}
 
 MODEL_NAMES = {
     "MicroTEDAClusPlus": "MicroTEDAClus+",
@@ -34,7 +44,8 @@ MODEL_COLORS = {
 
 def columns(datasets) -> dict:
     """Column headers of a table with one column per dataset."""
-    return {dataset: SHORT_NAMES[dataset] for dataset in datasets}
+    names = SHORT_NAMES | REAL_SHORT_NAMES
+    return {dataset: names[dataset] for dataset in datasets}
 
 
 def model_label(model: str) -> str:

@@ -18,6 +18,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy.special import logit
 
 from benchmark import analysis
 from benchmark.datasets import SCALABILITY_DIMENSIONS
@@ -282,7 +283,12 @@ def at_the_ends(results, ranges, tolerance=0.05) -> pd.DataFrame:
         merged = of_name.merge(selected, on=["dataset", "run"]).dropna(subset=[column])
         if merged.empty:
             continue
-        scale = np.log if merged["log"].iloc[0] else (lambda values: values)
+        if "logit" in merged and merged["logit"].iloc[0]:
+            scale = logit
+        elif merged["log"].iloc[0]:
+            scale = np.log
+        else:
+            scale = lambda values: values  # noqa: E731
         low, high, value = (
             scale(merged[c].astype(float)) for c in ("low", "high", column)
         )
@@ -339,7 +345,7 @@ def _bands(ax, x, values, model):
     ax.fill_between(x, q1, q3, color=MODEL_COLORS[model], alpha=0.15)
 
 
-def _save(fig, axes, name, columns_of_legend=4):
+def _save(fig, axes, name, columns_of_legend=4, directory=ARTIFACT_DIR):
     handles, labels = np.ravel(axes)[0].get_legend_handles_labels()
     fig.legend(
         handles,
@@ -349,7 +355,7 @@ def _save(fig, axes, name, columns_of_legend=4):
         bbox_to_anchor=(0.5, 1.12),
     )
     plt.tight_layout()
-    out = ARTIFACT_DIR / "plots" / name
+    out = directory / "plots" / name
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=300, bbox_inches="tight")
     plt.close(fig)
