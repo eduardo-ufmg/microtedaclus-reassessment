@@ -221,8 +221,8 @@ def _interval(low, high, integer):
 
 
 def range_table(ranges, runs):
-    """Ranges that the rules give in each dataset, for the kinds that depend on the tuning segment."""
-    kinds = {
+    """Ranges that the rules give in each dataset, for the categories that depend on the tuning segment."""
+    categories = {
         Category.DISTANCE: False,
         Category.RELATIVE_VARIANCE: False,
         Category.HORIZON: True,
@@ -230,18 +230,18 @@ def range_table(ranges, runs):
         Category.MINIMUM_POINTS: True,
         Category.CLUSTERS: True,
     }
-    of_kind = ranges.drop_duplicates(["dataset", "run", "category"])
-    medians = of_kind.groupby(["dataset", "category"])[["low", "high"]].median()
+    of_category = ranges.drop_duplicates(["dataset", "run", "category"])
+    medians = of_category.groupby(["dataset", "category"])[["low", "high"]].median()
     lines = [
         "Dataset & "
-        + " & ".join(category.value.capitalize() for category in kinds)
+        + " & ".join(category.value.capitalize() for category in categories)
         + r" \\",
         r"\midrule",
     ]
     for dataset, short in SHORT_NAMES.items():
         cells = [
             _interval(*medians.loc[(dataset, category.value)], integer)
-            for category, integer in kinds.items()
+            for category, integer in categories.items()
         ]
         lines.append(" & ".join([short, *cells]) + r" \\")
     write_table(
@@ -249,7 +249,7 @@ def range_table(ranges, runs):
         f"Search ranges that the rules give to each category of hyperparameter: medians over {runs} runs of "
         "the two ends of each range.",
         "tab:mod_ranges",
-        "l " + "c " * len(kinds),
+        "l " + "c " * len(categories),
         lines,
     )
 

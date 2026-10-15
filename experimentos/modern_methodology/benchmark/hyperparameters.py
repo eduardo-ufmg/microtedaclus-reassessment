@@ -58,7 +58,7 @@ def _integers(low, high, log=True) -> Range:
     return Range(low, max(low, int(np.floor(high))), log, integer=True)
 
 
-def ranges_of_kinds(X: np.ndarray, y: np.ndarray) -> dict[Category, Range]:
+def ranges_of_categories(X: np.ndarray, y: np.ndarray) -> dict[Category, Range]:
     """Search range of every category of hyperparameter, from a tuning segment and its labels."""
     n = len(X)
     k = max(1, len(np.unique(y[y >= 0])))
@@ -87,8 +87,8 @@ def ranges_of_kinds(X: np.ndarray, y: np.ndarray) -> dict[Category, Range]:
 
 def search_space(model_class, X: np.ndarray, y: np.ndarray) -> dict[str, Range]:
     """Search range of every hyperparameter of a model, from a tuning segment and its labels."""
-    of_kind = ranges_of_kinds(X, y)
+    of_category = ranges_of_categories(X, y)
     return {
-        name: of_kind[category]
+        name: of_category[category]
         for name, category in model_class.HYPERPARAMETERS.items()
     }

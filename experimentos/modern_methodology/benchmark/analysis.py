@@ -13,7 +13,7 @@ from pathlib import Path
 import pandas as pd
 
 from benchmark.datasets import DATASETS, load_stream
-from benchmark.hyperparameters import ranges_of_kinds
+from benchmark.hyperparameters import ranges_of_categories
 from benchmark.models import MODELS
 from benchmark.runner import batches_file, stream_length
 from benchmark.tuning import split
@@ -158,7 +158,7 @@ def search_ranges(out: Path, runs: tuple) -> pd.DataFrame:
         for run in runs:
             X, y = load_stream(dataset, run, stream_length(dataset, length_factor(out)))
             (X_tuning, y_tuning), _ = split(X, y)
-            of_kind = ranges_of_kinds(X_tuning, y_tuning)
+            of_category = ranges_of_categories(X_tuning, y_tuning)
             for model, model_class in MODELS.items():
                 for name, category in model_class.HYPERPARAMETERS.items():
                     rows.append(
@@ -168,9 +168,9 @@ def search_ranges(out: Path, runs: tuple) -> pd.DataFrame:
                             "model": model,
                             "hyperparameter": name,
                             "category": category.value,
-                            "low": of_kind[category].low,
-                            "high": of_kind[category].high,
-                            "log": of_kind[category].log,
+                            "low": of_category[category].low,
+                            "high": of_category[category].high,
+                            "log": of_category[category].log,
                         }
                     )
     ranges = pd.DataFrame(rows)
