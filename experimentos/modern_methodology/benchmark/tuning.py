@@ -21,7 +21,7 @@ import numpy as np
 import optuna
 
 from benchmark.evaluation import prequential
-from benchmark.hyperparameters import RULES, search_space
+from benchmark.hyperparameters import RULES, search_space, summary_limit
 from benchmark.models import MicroTEDAClusPlus, build
 from pfc_shared import previous_protocol
 from pfc_shared.microtedaclus_plus import MicroTEDAClusPlus as PreviousMicroTEDAClusPlus
@@ -62,9 +62,12 @@ def tune(
 
     The hyperparameters are None if every trial failed. They are kept as the
     model takes them, which differs from what the search samples for a range on
-    the logit scale.
+    the logit scale. Under the widened rules, a trial whose summary exceeds the
+    limit of `benchmark.hyperparameters.summary_limit` fails, and the summary of
+    the search carries the limit for the evaluation.
     """
     space = search_space(model_class, X, y, RULES[rules])
+    limit = summary_limit(X, y) if rules == "widened" else None
 
     def objective(trial):
         hyperparameters = {
@@ -72,7 +75,12 @@ def tune(
         }
         trial.set_user_attr("hyperparameters", hyperparameters)
         try:
-            results = prequential(build(model_class, hyperparameters, model_seed), X, y)
+            results = prequential(
+                build(model_class, hyperparameters, model_seed),
+                X,
+                y,
+                summary_limit=limit,
+            )
         except Exception as error:
             trial.set_user_attr("error", repr(error))
             return FAILED
@@ -90,6 +98,8 @@ def tune(
         "objective": study.best_value,
         "tuning_seconds": time.perf_counter() - started,
     }
+    if limit is not None:
+        summary["summary_limit"] = limit
     selected = study.best_trial.user_attrs["hyperparameters"]
     return (selected if failed < len(study.trials) else None), summary
 

@@ -36,6 +36,12 @@ search; the minimum points and the ratio are the two exceptions:
 
 They also take the median distance between two samples from a fixed sample of
 pairs, because a long tuning segment has too many pairs to measure them all.
+
+Under the widened rules, no model may keep a larger summary than the largest that
+the summary-size rule allows, a quarter of the tuning segment: a configuration
+whose summary grows beyond it fails, in the search and in the evaluation alike.
+At the fine end of the widened ranges a summary can hold one structure per
+sample, and the cost of several models grows with the square of their summary.
 """
 
 from dataclasses import dataclass
@@ -78,6 +84,14 @@ class Range:
                 expit(trial.suggest_float(name, logit(self.low), logit(self.high)))
             )
         return trial.suggest_float(name, self.low, self.high, log=self.log)
+
+
+def summary_limit(X: np.ndarray, y: np.ndarray) -> int:
+    """Largest summary that a model may keep under the widened rules: the upper end of the
+    summary-size range, a quarter of the tuning segment and at least twice its classes.
+    """
+    k = max(1, len(np.unique(y[y >= 0])))
+    return max(2 * k, len(X) // 4)
 
 
 def _integers(low, high, log=True) -> Range:

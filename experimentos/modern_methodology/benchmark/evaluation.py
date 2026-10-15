@@ -34,12 +34,19 @@ def warm_up(make_model, X, batches=WARM_UP_BATCHES, batch_size=BATCH_SIZE) -> No
     process(make_model(), X[:end], batch_size)
 
 
-def prequential(model, X, y, batch_size=BATCH_SIZE, measure=False) -> pd.DataFrame:
+class SummaryLimitExceeded(Exception):
+    """A model kept a larger summary than it is allowed."""
+
+
+def prequential(
+    model, X, y, batch_size=BATCH_SIZE, measure=False, summary_limit=None
+) -> pd.DataFrame:
     """ARI of the model at every batch of the stream.
 
     With `measure`, also the time of each step and the size of the summary
     after each batch, in the columns that the run-level metrics of the thesis
-    read.
+    read. With `summary_limit`, a model whose summary exceeds it after a batch
+    raises SummaryLimitExceeded.
     """
     rows = []
     for batch, rows_of_batch in enumerate(batches(len(X), batch_size)):
@@ -59,6 +66,10 @@ def prequential(model, X, y, batch_size=BATCH_SIZE, measure=False) -> pd.DataFra
             time.perf_counter_ns() - wall,
         )
 
+        if summary_limit is not None and model.summary_size() > summary_limit:
+            raise SummaryLimitExceeded(
+                f"the summary exceeded {summary_limit} structures at batch {batch}"
+            )
         row = {
             "batch": batch,
             "ari": adjusted_rand_score(y[rows_of_batch], predictions),

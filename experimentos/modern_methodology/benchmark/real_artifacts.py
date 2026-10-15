@@ -1,8 +1,11 @@
 """Tables and figures of the experiment on the real datasets.
 
 Written under monografia/RealData/artifacts/ from the results of
-`run_real_experiment.sh`. A dataset is analysed over the runs that every model
-finished on it, so a task that fails removes its run from its dataset only.
+`run_real_experiment.sh`. A task fails when its model exceeds the limit of its
+summary or of its memory. A model that failed in more than half of the runs of
+a dataset is left out of that dataset, and the other models are compared over
+the runs that all of them finished on it, so a failed task removes its run from
+its dataset only.
 
 Usage (from experimentos/modern_methodology):
     python -m benchmark.real_artifacts [--results DIR] [--out DIR]
@@ -41,14 +44,50 @@ OUT = analysis.ROOT.parent.parent / "monografia" / "RealData" / "artifacts"
 INSECTS_ABRUPT_CHANGES = (14352, 19500, 33240, 38682, 39510)
 
 
-def complete_by_dataset(results, models):
-    """The results of the runs that every model finished on each dataset, and their number."""
+def failures(tasks: pd.DataFrame) -> pd.DataFrame:
+    """Number of failed tasks of every model in every dataset."""
+    failed = tasks.assign(failed=tasks.status != "OK")
+    return failed.pivot_table(
+        index="model", columns="dataset", values="failed", aggfunc="sum"
+    )
+
+
+def complete_by_dataset(results, tasks, models):
+    """The results of each dataset over the runs that its models finished, and their number.
+
+    A model that failed in more than half of the runs of a dataset is left out of it.
+    """
     kept, runs = [], {}
     for dataset in DATASETS:
-        of_dataset = analysis.on_complete_runs(results, models, [dataset])
+        attempted = tasks[tasks.dataset == dataset]
+        finished = attempted[attempted.status == "OK"].groupby("model").size()
+        staying = [
+            m for m in models if finished.get(m, 0) > attempted.run.nunique() / 2
+        ]
+        of_dataset = analysis.on_complete_runs(results, staying, [dataset])
         kept.append(of_dataset)
         runs[dataset] = of_dataset.run.nunique()
     return pd.concat(kept), runs
+
+
+def failure_table(tasks, models, out):
+    counts = failures(tasks)
+    rows = [
+        (
+            model_label(model),
+            counts.loc[model].to_dict() if model in counts.index else {},
+            "{:.0f}".format,
+        )
+        for model in models
+    ]
+    panel_table(
+        out / "failures.tex",
+        "Number of runs in which a model failed on a real dataset, by keeping a larger summary "
+        "than a quarter of the tuning segment or by exceeding the memory of its process.",
+        "tab:real_failures",
+        columns(DATASETS),
+        [("Failed runs", rows)],
+    )
 
 
 def run_text(runs: dict) -> str:
@@ -138,16 +177,23 @@ def main():
     arguments = parser.parse_args()
 
     results = analysis.run_level(arguments.results)
-    models = [m for m in MODELS if m in set(results.model)]
-    complete, runs = complete_by_dataset(results, models)
+    tasks = pd.read_csv(arguments.results / "tasks.csv")
+    models = [m for m in MODELS if m in set(tasks.model)]
+    complete, runs = complete_by_dataset(results, tasks, models)
     print(f"{len(models)} models; complete runs by dataset: {runs}")
 
     arguments.out.mkdir(parents=True, exist_ok=True)
+    failure_table(tasks, models, arguments.out)
     quality_table(complete, models, runs, arguments.out)
     summary_table(complete, models, runs, arguments.out)
     ends_table(arguments.results, complete, models, arguments.out)
-    abrupt_runs = sorted(complete[complete.dataset == "insects_abrupt"].run.unique())
-    insects_abrupt_figure(arguments.results, models, abrupt_runs, arguments.out)
+    abrupt = complete[complete.dataset == "insects_abrupt"]
+    insects_abrupt_figure(
+        arguments.results,
+        [m for m in models if m in set(abrupt.model)],
+        sorted(abrupt.run.unique()),
+        arguments.out,
+    )
 
 
 if __name__ == "__main__":

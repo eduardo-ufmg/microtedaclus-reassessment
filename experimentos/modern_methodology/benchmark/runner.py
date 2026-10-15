@@ -99,6 +99,7 @@ def run_task(
         hyperparameters, summary = PROTOCOLS[protocol](
             MODELS[model], X_tuning, y_tuning, search_seed, model_seed, trials
         )
+        limit = summary.pop("summary_limit", None)
         row |= summary
         if hyperparameters is None:
             return row | {"status": "ERROR: every trial failed"}
@@ -110,6 +111,7 @@ def run_task(
             X_evaluation,
             y_evaluation,
             measure=True,
+            summary_limit=limit,
         )
         row["evaluation_seconds"] = time.perf_counter() - started
 
