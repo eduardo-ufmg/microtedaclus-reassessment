@@ -23,13 +23,15 @@ def process(model, X, batch_size=BATCH_SIZE) -> None:
         model.learn(X[rows_of_batch])
 
 
-def warm_up(make_model, X, batch_size=BATCH_SIZE) -> None:
-    """Let a new model process the first batches of a stream and discard it.
+def warm_up(make_model, X, batches=WARM_UP_BATCHES, batch_size=BATCH_SIZE) -> None:
+    """Let a new model process the first batches of a stream, or all of it, and discard it.
 
     Whatever the model loads or creates on its first use is then in place, so
     that a measurement that follows counts the model and not its first use.
+    With `batches` None, the model processes the whole stream.
     """
-    process(make_model(), X[: WARM_UP_BATCHES * batch_size], batch_size)
+    end = None if batches is None else batches * batch_size
+    process(make_model(), X[:end], batch_size)
 
 
 def prequential(model, X, y, batch_size=BATCH_SIZE, measure=False) -> pd.DataFrame:

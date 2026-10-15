@@ -8,10 +8,12 @@ the working memory of the steps of the model.
 
 Every task runs in a new process, so that no task inherits what an earlier one
 left allocated. The process first tracks a small evaluation, which takes the
-allocations of the first tracking of a process; then a model of the task
-processes the first batches of the stream untracked, so that what it loads or
-creates on first use is in place; then a new model of the task is evaluated
-once under tracking. Each process runs one thread, with the hash seed of Python
+allocations of the first tracking of a process. A model of the task then
+processes the whole evaluation segment untracked, because some models allocate
+on first use well into the stream, and new models of the task are evaluated
+three times under tracking, of which the smallest values are kept: what the
+libraries keep allocated between uses adds to a measurement and never
+subtracts from it. Each process runs one thread, with the hash seed of Python
 fixed.
 
 Usage (from experimentos/modern_methodology):
@@ -60,6 +62,7 @@ TASK_COLUMNS = [
     "memory_retained_bytes",
     "memory_peak_bytes",
 ]
+TRACKED_EVALUATIONS = 3
 _first_tracking_done = False
 
 
@@ -109,9 +112,13 @@ def measure_task(dataset: str, model: str, run: int, hyperparameters: str, facto
         def make_model():
             return build(MODELS[model], selected, model_seed)
 
-        warm_up(make_model, X_evaluation)
+        warm_up(make_model, X_evaluation, batches=None)
         gc.collect()
-        retained, peak = tracked(make_model, X_evaluation)
+        evaluations = [
+            tracked(make_model, X_evaluation) for _ in range(TRACKED_EVALUATIONS)
+        ]
+        retained = min(held for held, _ in evaluations)
+        peak = min(highest for _, highest in evaluations)
         return row | {
             "status": "OK",
             "memory_retained_bytes": retained,
