@@ -80,7 +80,7 @@ The optimization therefore preserves the clustering quality of the reference imp
 
 The durations of \cref{tab:mi_optimization_trials} do not measure the optimization alone. They are taken while other tasks run on the same machine, and the two models are tuned independently, so a difference between them mixes the implementation, the load of the machine and the hyperparameters that each search selected. The speedup is therefore measured separately.
 
-Each implementation replays the evaluation segment of every development run with the same hyperparameters: those tuned for the \modelname{original} model in that run and, in a second measurement, those tuned for the \modelname{vectorized} model. Each task is executed alone, on processor cores of a single kind and with the dynamic frequency scaling of the processor disabled, and the compiled kernel is executed once before being timed. The whole set of tasks is executed three times, and the time of a task is the minimum of its three executions.
+Each implementation replays the evaluation segment of every development run with the same hyperparameters: those tuned for the \modelname{original} model in that run and, in a second measurement, those tuned for the \modelname{vectorized} model. Each task is executed alone, on processor cores of a single category and with the dynamic frequency scaling of the processor disabled, and the compiled kernel is executed once before being timed. The whole set of tasks is executed three times, and the time of a task is the minimum of its three executions.
 
 \input{ModelImprovement/artifacts/optimization/speedup.tex}
 

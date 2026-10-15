@@ -8,7 +8,7 @@ from benchmark.hyperparameters import Kind
 
 
 class StreamClusterer(Protocol):
-    HYPERPARAMETERS: ClassVar[dict[str, Kind]]  # kind of every tuned hyperparameter
+    HYPERPARAMETERS: ClassVar[dict[str, Kind]]  # category of every tuned hyperparameter
 
     def learn(self, X: np.ndarray) -> None:
         """Update the model with a batch of samples."""

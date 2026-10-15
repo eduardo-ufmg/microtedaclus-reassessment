@@ -1,7 +1,7 @@
-"""Hyperparameters by kind, and the rules that give every kind its search range.
+"""Hyperparameters by category, and the rules that give every category its search range.
 
-A model declares the kind of each hyperparameter it exposes. The range of a
-kind is computed from the tuning segment by one rule, the same for every model,
+A model declares the category of each hyperparameter it exposes. The range of a
+category is computed from the tuning segment by one rule, the same for every model,
 so no range is chosen for a model or for a dataset by hand.
 
 Rules, for a tuning segment of n samples with k labelled clusters:
@@ -59,7 +59,7 @@ def _integers(low, high, log=True) -> Range:
 
 
 def ranges_of_kinds(X: np.ndarray, y: np.ndarray) -> dict[Kind, Range]:
-    """Search range of every kind of hyperparameter, from a tuning segment and its labels."""
+    """Search range of every category of hyperparameter, from a tuning segment and its labels."""
     n = len(X)
     k = max(1, len(np.unique(y[y >= 0])))
     to_neighbour = cKDTree(X).query(X, k=2)[0][:, 1]
@@ -88,4 +88,7 @@ def ranges_of_kinds(X: np.ndarray, y: np.ndarray) -> dict[Kind, Range]:
 def search_space(model_class, X: np.ndarray, y: np.ndarray) -> dict[str, Range]:
     """Search range of every hyperparameter of a model, from a tuning segment and its labels."""
     of_kind = ranges_of_kinds(X, y)
-    return {name: of_kind[kind] for name, kind in model_class.HYPERPARAMETERS.items()}
+    return {
+        name: of_kind[category]
+        for name, category in model_class.HYPERPARAMETERS.items()
+    }

@@ -160,17 +160,17 @@ def search_ranges(out: Path, runs: tuple) -> pd.DataFrame:
             (X_tuning, y_tuning), _ = split(X, y)
             of_kind = ranges_of_kinds(X_tuning, y_tuning)
             for model, model_class in MODELS.items():
-                for name, kind in model_class.HYPERPARAMETERS.items():
+                for name, category in model_class.HYPERPARAMETERS.items():
                     rows.append(
                         {
                             "dataset": dataset,
                             "run": run,
                             "model": model,
                             "hyperparameter": name,
-                            "kind": kind.value,
-                            "low": of_kind[kind].low,
-                            "high": of_kind[kind].high,
-                            "log": of_kind[kind].log,
+                            "category": category.value,
+                            "low": of_kind[category].low,
+                            "high": of_kind[category].high,
+                            "log": of_kind[category].log,
                         }
                     )
     ranges = pd.DataFrame(rows)

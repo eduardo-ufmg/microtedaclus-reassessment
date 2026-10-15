@@ -18,7 +18,7 @@ The whole pass is repeated and every repetition is kept (column `repetition`):
 the time of a task is the minimum over its repetitions, which discards the
 slowdowns that the machine, and not the model, causes. On a processor with
 cores of different speeds the process must also be restricted to cores of one
-kind, as in the usage line below.
+category, as in the usage line below.
 
 Usage (from experimentos/proposed_methodology):
     taskset -c PERFORMANCE_CORES python -m model_improvement.timing [RUNS_PER_DATASET] [REPETITIONS]

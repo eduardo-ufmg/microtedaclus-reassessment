@@ -187,15 +187,17 @@ def hyperparameter_table(models):
     lines = [r"Model & Hyperparameter & Kind \\"]
     for model in models:
         lines.append(r"\midrule")
-        for position, (name, kind) in enumerate(MODELS[model].HYPERPARAMETERS.items()):
+        for position, (name, category) in enumerate(
+            MODELS[model].HYPERPARAMETERS.items()
+        ):
             label = model_label(model) if position == 0 else ""
             escaped = name.replace("_", r"\_")
             lines.append(
-                rf"{label} & \texttt{{{escaped}}} & {kind.value.capitalize()} \\"
+                rf"{label} & \texttt{{{escaped}}} & {category.value.capitalize()} \\"
             )
     write_table(
         ARTIFACT_DIR / "hyperparameters.tex",
-        "Hyperparameters that the search selects for each model, and the kind that gives each its range.",
+        "Hyperparameters that the search selects for each model, and the category that gives each its range.",
         "tab:mod_hyperparameters",
         "l l l",
         lines,
@@ -228,21 +230,23 @@ def range_table(ranges, runs):
         Kind.MINIMUM_POINTS: True,
         Kind.CLUSTERS: True,
     }
-    of_kind = ranges.drop_duplicates(["dataset", "run", "kind"])
-    medians = of_kind.groupby(["dataset", "kind"])[["low", "high"]].median()
+    of_kind = ranges.drop_duplicates(["dataset", "run", "category"])
+    medians = of_kind.groupby(["dataset", "category"])[["low", "high"]].median()
     lines = [
-        "Dataset & " + " & ".join(kind.value.capitalize() for kind in kinds) + r" \\",
+        "Dataset & "
+        + " & ".join(category.value.capitalize() for category in kinds)
+        + r" \\",
         r"\midrule",
     ]
     for dataset, short in SHORT_NAMES.items():
         cells = [
-            _interval(*medians.loc[(dataset, kind.value)], integer)
-            for kind, integer in kinds.items()
+            _interval(*medians.loc[(dataset, category.value)], integer)
+            for category, integer in kinds.items()
         ]
         lines.append(" & ".join([short, *cells]) + r" \\")
     write_table(
         ARTIFACT_DIR / "ranges.tex",
-        f"Search ranges that the rules give to each kind of hyperparameter: medians over {runs} runs of "
+        f"Search ranges that the rules give to each category of hyperparameter: medians over {runs} runs of "
         "the two ends of each range.",
         "tab:mod_ranges",
         "l " + "c " * len(kinds),

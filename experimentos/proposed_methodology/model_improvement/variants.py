@@ -353,8 +353,8 @@ def make_space(spec):
     class Space:
         def sample_parameters(self, trial):
             params = {}
-            for name, (kind, low, high, log) in spec.items():
-                if kind == "float":
+            for name, (category, low, high, log) in spec.items():
+                if category == "float":
                     params[name] = trial.suggest_float(name, low, high, log=log)
                 else:
                     params[name] = trial.suggest_int(name, low, high, log=log)
