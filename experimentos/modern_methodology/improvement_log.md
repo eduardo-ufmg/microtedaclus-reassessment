@@ -68,3 +68,24 @@ follows: with a covariance, q is a Mahalanobis distance and concentrates in the 
 - `low_variance`: the variance limit searched from a tenth of the lower end of the
   relative-variance range. Reason: that end binds in 56% to 84% of the runs of INSECTS,
   Covertype and Pendigits in the real-data experiment.
+
+Result (192 tasks each; control all OK, low_variance 3 failed by the summary limit):
+
+| | INS-A | INS-I | INS-R | GAS | PEN | SHU |
+|---|---|---|---|---|---|---|
+| Overall ARI, median | 0.011 > **0.142** | 0.087 > **0.137** | 0.013 > **0.107** | 0.163 > 0.154 | 0.406 > **0.505** | 0.458 > 0.417 |
+| Steady-State ARI | (not deciding) | 0.105 > 0.164 | (not deciding) | 0.093 > 0.076 | 0.372 > **0.543** | 0.415 > 0.365 |
+| steady-state summary | 77 > 451 | 93 > 106 | 9 > 215 | 112 > 122 | 71 > 263 | 193 > 161 |
+
+Outcome **+** (5 significant gains, no loss). The summaries are larger where the model
+improves; the variance limit at its new lower end binds in no run of any dataset (it did in
+75%, 84%, 34% and 81% of the runs of INS-A, INS-I, INS-R and PEN with the control's range).
+**Kept: low_variance becomes the control.** INSECTS moves from near zero to the level of
+Mini-batch k-means in the real-data experiment (0.13 to 0.18).
+
+## Round 2: formation of microclusters (control: low_variance)
+
+The five m variants of commit f36ba01 and Chapter 3's chi-threshold, each on low_variance:
+`m_const` (m = 3), `m_scalar` (constant m in [1, 5]), `m_param` (sigmoid with a in
+[0.0007, 0.07] and b in [3, 1000], log), `m_reparam` (up in [1.05, 10], k95 in [5, 5000]),
+`m_reparam_up3` (up = 3, k95 tuned), `chi_threshold` (q <= 1 + m sqrt(2/d)).
