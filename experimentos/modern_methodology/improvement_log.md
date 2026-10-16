@@ -89,3 +89,11 @@ The five m variants of commit f36ba01 and Chapter 3's chi-threshold, each on low
 `m_const` (m = 3), `m_scalar` (constant m in [1, 5]), `m_param` (sigmoid with a in
 [0.0007, 0.07] and b in [3, 1000], log), `m_reparam` (up in [1.05, 10], k95 in [5, 5000]),
 `m_reparam_up3` (up = 3, k95 tuned), `chi_threshold` (q <= 1 + m sqrt(2/d)).
+
+Prepared for round 3 (geometry and density, `geometry_round`) and round 4 (Chapter 3's remaining
+candidates plus `no_noise` and `no_activation`, suggested by the diagnosis, `remaining_round`).
+Cost check of round 3 on one run with 3 trials: the full covariance takes 91 s to tune and
+116 s to evaluate on Gas (128 dimensions), about 50 minutes per Gas task at 100 trials, some
+7 hours of Gas per covariance candidate on the notebook. Decision: round 3 runs the diagonal
+engine and the densities first, and then a single covariance candidate, with the density that
+the round keeps, instead of two.

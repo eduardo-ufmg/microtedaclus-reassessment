@@ -169,6 +169,117 @@ def threshold_round(round, control):
         )
 
 
+def geometry_round(round, control):
+    """The shape of the microclusters and the density that decides their activation.
+
+    The scalar variance assumes the same dispersion in every direction; the real
+    classes are strongly anisotropic. The diagonal engine keeps one variance per
+    feature, the covariance engine a full covariance (directional link, defined in
+    every dimension). The densities: S / sigma^2 (volume, Eduardo's order-independent
+    density) and the logarithm of samples per volume of the geometry of the engine.
+    """
+    base = CANDIDATES[control]
+    if base.engine != "scalar":
+        raise ValueError("the geometry round starts from the scalar engine")
+    variants = {
+        "diagonal": ("one variance per feature", "diagonal", {}),
+        "covariance": (
+            "full covariance, directional link",
+            "covariance",
+            {"link_mode": "directional"},
+        ),
+        "volume_density": (
+            "density S / sigma^2 (order-independent)",
+            "scalar",
+            {"density": "volume"},
+        ),
+        "log_density": (
+            "log of samples per volume of an isotropic microcluster",
+            "scalar",
+            {"density": "log_volume"},
+        ),
+        "diagonal_log_density": (
+            "one variance per feature, log of samples per axis-aligned volume",
+            "diagonal",
+            {"density": "log_volume"},
+        ),
+        "covariance_log_density": (
+            "full covariance, log of samples per volume of the covariance",
+            "covariance",
+            {"link_mode": "directional", "density": "log_volume"},
+        ),
+    }
+    for name, (summary, engine, options) in variants.items():
+        add(
+            name,
+            round,
+            control,
+            summary,
+            {**base.options, **options},
+            base.space,
+            engine,
+        )
+
+
+def remaining_round(round, control):
+    """Chapter 3's candidates outside its final model, and two suggested by the diagnosis.
+
+    Of the diagnosis: the noise label is off (the real classes have no noise), and every
+    mature microcluster is active (the activation discards most of the few mature ones).
+    """
+    base = CANDIDATES[control]
+    without_noise = {k: v for k, v in base.space.items() if k != "noise_m"}
+    variants = {
+        "recency": (
+            "every microcluster not updated by a sample decays",
+            {"life_mode": "recency"},
+            base.space,
+        ),
+        "link_factor": (
+            "intersection dist <= l (sigma_i + sigma_j), l tuned in [0.5, 4]",
+            {},
+            {**base.space, "link": Range(0.5, 4.0, log=False, integer=False)},
+        ),
+        "norm_typicality": (
+            "membership by normalized typicality",
+            {"membership": "norm_typicality"},
+            base.space,
+        ),
+        "local_weights": (
+            "membership weighted by the density at the sample",
+            {"membership": "local_weights"},
+            base.space,
+        ),
+        "mature_mean": (
+            "activation mean over mature microclusters only",
+            {"activation_scope": "mature"},
+            base.space,
+        ),
+        "no_noise": ("no noise label", {"noise_m": 0.0}, without_noise),
+        "no_activation": (
+            "every mature microcluster is active",
+            {"activation": "none"},
+            base.space,
+        ),
+    }
+    if base.engine == "scalar":
+        variants["dim_penalty"] = (
+            "dimensionality penalty 2/d restored",
+            {"dim_penalty": True},
+            base.space,
+        )
+    for name, (summary, options, space) in variants.items():
+        add(
+            name,
+            round,
+            control,
+            summary,
+            {**base.options, **options},
+            space,
+            base.engine,
+        )
+
+
 # ----------------------------------------------------------------------------
 # Round 2: the formation of microclusters, on low_variance (kept in round 1)
 # ----------------------------------------------------------------------------
