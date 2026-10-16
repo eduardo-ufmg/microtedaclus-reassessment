@@ -1,0 +1,44 @@
+\begin{table}[htbp]
+\centering
+\caption{Quality of the models on the real datasets: medians over 17 to 32 runs, depending on the dataset. A value in bold is statistically indistinguishable from the best model of its dataset, and a value in red from the worst.}
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\begin{tabular}{l c c c c c c c c }
+\toprule
+Model & INS-A & INS-I & INS-R & GAS & KDD & COV & PEN & SHU \\
+\midrule
+\multicolumn{9}{l}{\textit{Overall ARI}} \\
+\modelname{MicroTEDAClus+} & \textcolor{red}{0.017} & \textcolor{red}{0.088} & \textcolor{red}{0.013} & \textcolor{red}{0.162} & 0.664 & \textcolor{red}{0.000} & \textcolor{red}{0.413} & \textbf{0.444} \\
+\modelname{DenStream} & \textbf{0.172} & \textbf{0.179} & \textbf{0.154} & 0.189 & \textbf{0.947} & 0.054 & \textbf{0.514} & \textbf{0.374} \\
+\modelname{DBSTREAM} & 0.157 & \textcolor{red}{0.092} & 0.085 & \textcolor{red}{0.152} & 0.917 & \textbf{0.068} & \textbf{0.547} & \textbf{0.374} \\
+\modelname{BIRCH} & - & - & 0.057 & - & \textcolor{red}{0.093} & \textbf{0.067} & \textbf{0.517} & \textcolor{red}{0.000} \\
+\modelname{Mini-batch k-means} & \textbf{0.198} & \textbf{0.170} & 0.114 & \textbf{0.208} & 0.918 & \textbf{0.072} & \textbf{0.526} & \textbf{0.446} \\
+\modelname{BICO} & \textbf{0.182} & 0.151 & 0.125 & \textcolor{red}{0.174} & 0.562 & \textbf{0.071} & \textbf{0.540} & \textbf{0.361} \\
+\midrule
+\multicolumn{9}{l}{\textit{Steady-State ARI}} \\
+\modelname{MicroTEDAClus+} & 0.000 & \textcolor{red}{0.103} & \textbf{0.000} & 0.097 & 0.656 & \textbf{1.000} & \textcolor{red}{0.336} & \textbf{0.399} \\
+\modelname{DenStream} & 0.000 & \textbf{0.262} & \textcolor{red}{0.000} & \textbf{0.138} & \textbf{0.929} & \textcolor{red}{0.000} & \textbf{0.509} & \textbf{0.361} \\
+\modelname{DBSTREAM} & 0.000 & \textcolor{red}{0.144} & \textcolor{red}{0.000} & \textbf{0.116} & \textbf{0.890} & \textcolor{red}{0.000} & \textbf{0.523} & \textbf{0.306} \\
+\modelname{BIRCH} & - & - & \textcolor{red}{0.000} & - & \textcolor{red}{0.022} & \textcolor{red}{0.000} & \textbf{0.516} & \textcolor{red}{0.000} \\
+\modelname{Mini-batch k-means} & 0.000 & \textbf{0.245} & \textcolor{red}{0.000} & \textbf{0.135} & \textbf{0.894} & \textcolor{red}{0.000} & \textbf{0.525} & \textbf{0.358} \\
+\modelname{BICO} & 0.000 & 0.211 & \textcolor{red}{0.000} & \textbf{0.115} & 0.501 & \textcolor{red}{0.000} & \textbf{0.534} & \textbf{0.297} \\
+\midrule
+\multicolumn{9}{l}{\textit{ARI at the fifth batch}} \\
+\modelname{MicroTEDAClus+} & \textcolor{red}{0.026} & \textcolor{red}{0.046} & \textcolor{red}{0.004} & \textbf{0.371} & \textcolor{red}{0.639} & \textcolor{red}{-0.005} & \textcolor{red}{0.347} & \textbf{0.396} \\
+\modelname{DenStream} & 0.134 & \textcolor{red}{0.044} & \textbf{0.096} & \textcolor{red}{0.000} & \textcolor{red}{0.600} & \textcolor{red}{-0.002} & \textcolor{red}{0.388} & \textcolor{red}{0.000} \\
+\modelname{DBSTREAM} & \textcolor{red}{0.037} & \textcolor{red}{0.077} & 0.047 & \textbf{0.277} & \textbf{0.924} & \textcolor{red}{0.000} & \textbf{0.516} & \textbf{0.438} \\
+\modelname{BIRCH} & - & - & \textbf{0.131} & - & \textcolor{red}{0.436} & \textcolor{red}{-0.001} & \textbf{0.523} & \textbf{0.319} \\
+\modelname{Mini-batch k-means} & \textbf{0.176} & \textbf{0.205} & \textbf{0.211} & \textbf{0.315} & \textbf{0.896} & \textbf{0.026} & \textbf{0.490} & \textbf{0.375} \\
+\modelname{BICO} & \textbf{0.185} & 0.166 & \textbf{0.209} & \textbf{0.332} & \textbf{0.925} & \textbf{0.018} & \textbf{0.513} & \textbf{0.406} \\
+\midrule
+\multicolumn{9}{l}{\textit{Maximum ARI drop}} \\
+\modelname{MicroTEDAClus+} & 0.207 & 0.114 & \textbf{0.294} & \textcolor{red}{0.548} & 0.344 & \textbf{0.000} & \textcolor{red}{0.268} & 0.377 \\
+\modelname{DenStream} & \textcolor{red}{0.454} & \textbf{0.092} & \textbf{0.500} & \textbf{0.438} & \textbf{0.071} & \textcolor{red}{1.000} & \textbf{0.147} & \textbf{0.304} \\
+\modelname{DBSTREAM} & 0.413 & 0.139 & \textbf{0.382} & \textbf{0.491} & \textbf{0.101} & 0.876 & \textbf{0.184} & 0.384 \\
+\modelname{BIRCH} & - & - & \textbf{0.445} & - & \textcolor{red}{0.925} & 0.871 & \textbf{0.156} & \textcolor{red}{0.678} \\
+\modelname{Mini-batch k-means} & 0.455 & 0.117 & \textbf{0.438} & \textbf{0.473} & \textbf{0.091} & \textcolor{red}{1.000} & \textbf{0.156} & \textbf{0.344} \\
+\modelname{BICO} & 0.467 & \textcolor{red}{0.158} & \textcolor{red}{0.593} & \textbf{0.526} & 0.499 & \textcolor{red}{1.000} & \textbf{0.173} & 0.460 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:real_quality}
+\end{table}

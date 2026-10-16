@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Number of runs in which a model failed on a real dataset, by keeping a larger summary than a quarter of the tuning segment or by exceeding the memory of its process.}
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\begin{tabular}{l c c c c c c c c }
+\toprule
+Model & INS-A & INS-I & INS-R & GAS & KDD & COV & PEN & SHU \\
+\midrule
+\multicolumn{9}{l}{\textit{Failed runs}} \\
+\modelname{MicroTEDAClus+} & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\
+\modelname{DenStream} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\modelname{DBSTREAM} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\modelname{BIRCH} & 30 & 29 & 10 & 25 & 15 & 0 & 3 & 0 \\
+\modelname{Mini-batch k-means} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\modelname{BICO} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:real_failures}
+\end{table}

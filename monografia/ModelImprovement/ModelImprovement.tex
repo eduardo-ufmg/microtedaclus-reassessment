@@ -460,9 +460,7 @@ Distances & scaled by $2/d$ & not scaled \\
 
 \subsection{Microclusters}
 
-A microcluster $i$ is described by its number of samples $S^i$, its mean $\mu^i$, its variance $(\sigma^i)^2$, its density $D^i$, its vitality $v^i$ and a flag that tells whether it is active. The model also keeps the variance of the stream, $\sigma^2_{\text{stream}}$, the mean squared distance of the samples seen so far to their mean, updated before each batch is learned.
-
-For a sample $x$ and a microcluster $i$, let the statistics that the microcluster would have after absorbing the sample be
+A microcluster $i$ is described by its number of samples $S^i$, its mean $\mu^i$, its variance $(\sigma^i)^2$, its density $D^i$, its vitality $v^i$ and a flag that tells whether it is active. The model also keeps the variance of the stream, $\sigma^2_{\text{stream}}$, the mean squared distance of the samples seen so far to their mean, updated before each batch is learned. For a sample $x$ and a microcluster $i$,
 
 \begin{equation}
 \begin{gathered}
@@ -472,9 +470,10 @@ For a sample $x$ and a microcluster $i$, let the statistics that the microcluste
 \label{eq:mi_tentative_update}
 \end{equation}
 
-with $\xi' = 1/S'$ when $\sigma'^2 = 0$. The sample is an outlier to the microcluster if
+where $\xi' = 1/S'$ when $\sigma'^2 = 0$. The sample is an outlier to the microcluster, $\text{outlier} \in [\text{false}, \text{true}]$, if
 
 \begin{equation}
+    \text{outlier} =
     \begin{cases}
         \sigma'^2 > r\,\sigma^2_{\text{stream}}, & S' < 3 \\[4pt]
         \dfrac{\xi'}{2} > \dfrac{m(S')^2 + 1}{2 S'}, & S' \ge 3
@@ -482,7 +481,7 @@ with $\xi' = 1/S'$ when $\sigma'^2 = 0$. The sample is an outlier to the microcl
     \label{eq:mi_final_outlier}
 \end{equation}
 
-where $m$ is the function of \cref{eq:m_function}. \Cref{alg:mi_final_microclusters} processes a sample.
+\Cref{alg:mi_final_microclusters} processes a sample.
 
 \begin{algorithm}[htbp]
 \caption{Microcluster update of \MicroTEDAClusPlus for a sample $x$}
@@ -510,7 +509,18 @@ The macroclusters are rebuilt after each batch. Two microclusters intersect when
 
 \subsection{Prediction}
 
-Let $q^l(x) = \lVert x - \mu^l \rVert^2 / (\sigma^l)^2$ be the standardized squared distance of a sample to an active microcluster $l$, and $l^* = \arg\min_l q^l(x)$. The sample is labelled as noise if $q^{l^*}(x) > n_\sigma^2$, and receives the label of the macrocluster of $l^*$ otherwise. Before the first batch is learned there is no active microcluster, and every sample is labelled as noise.
+For $q^l(x) = \lVert x - \mu^l \rVert^2 / (\sigma^l)^2$, the standardized squared distance of a sample to an active microcluster $l$, and $l^* = \arg\min_l q^l(x)$,
+
+\begin{equation}
+    l_x =
+    \begin{cases}
+        -1, & q^{l^*}(x) > n_\sigma^2 \\[2pt]
+        l_\text{macro}(l^*), & \text{otherwise}
+    \end{cases}
+    \label{eq:mi_final_prediction}
+\end{equation}
+
+Before the first batch is learned there is no active microcluster, and every sample is labelled as noise.
 
 \subsection{What Remains of the Original Model}
 

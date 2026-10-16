@@ -1,0 +1,54 @@
+\begin{table}[htbp]
+\centering
+\caption{Percentage of the runs in which the selected value of a hyperparameter lies within a twentieth of the width of its widened search range from one of its ends, in the scale of the search.}
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\begin{tabular}{l c c c c c c c c }
+\toprule
+Model and hyperparameter & INS-A & INS-I & INS-R & GAS & KDD & COV & PEN & SHU \\
+\midrule
+\multicolumn{9}{l}{\textit{At the lower end}} \\
+\modelname{MicroTEDAClus+}, \texttt{variance\_limit} & 75 & 84 & 23 & 0 & 0 & 56 & 69 & 0 \\
+\modelname{MicroTEDAClus+}, \texttt{decay} & 12 & 19 & 5 & 6 & 0 & 9 & 24 & 0 \\
+\modelname{MicroTEDAClus+}, \texttt{noise\_distance} & 6 & 6 & 27 & 0 & 0 & 19 & 0 & 0 \\
+\modelname{DenStream}, \texttt{epsilon} & 16 & 16 & 14 & 0 & 12 & 9 & 0 & 0 \\
+\modelname{DenStream}, \texttt{half\_life} & 6 & 3 & 5 & 0 & 12 & 0 & 0 & 6 \\
+\modelname{DenStream}, \texttt{mu} & 6 & 3 & 0 & 13 & 0 & 3 & 10 & 3 \\
+\modelname{DenStream}, \texttt{outlier\_ratio} & 3 & 9 & 0 & 0 & 12 & 0 & 7 & 6 \\
+\modelname{DenStream}, \texttt{n\_samples\_init} & 0 & 3 & 5 & 0 & 12 & 3 & 0 & 9 \\
+\modelname{DBSTREAM}, \texttt{clustering\_threshold} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\modelname{DBSTREAM}, \texttt{half\_life} & 0 & 6 & 0 & 0 & 0 & 0 & 0 & 3 \\
+\modelname{DBSTREAM}, \texttt{cleanup\_interval} & 0 & 12 & 5 & 10 & 6 & 6 & 3 & 6 \\
+\modelname{DBSTREAM}, \texttt{intersection\_factor} & 3 & 0 & 0 & 0 & 0 & 9 & 0 & 3 \\
+\modelname{DBSTREAM}, \texttt{minimum\_weight} & 3 & 3 & 14 & 13 & 0 & 6 & 21 & 6 \\
+\modelname{BIRCH}, \texttt{threshold} & - & - & 0 & - & 0 & 0 & 0 & 0 \\
+\modelname{BIRCH}, \texttt{n\_clusters} & - & - & 0 & - & 0 & 0 & 0 & 0 \\
+\modelname{Mini-batch k-means}, \texttt{n\_clusters} & 0 & 0 & 23 & 0 & 65 & 0 & 0 & 97 \\
+\modelname{Mini-batch k-means}, \texttt{reassignment\_ratio} & 3 & 0 & 5 & 10 & 29 & 9 & 3 & 22 \\
+\modelname{BICO}, \texttt{n\_clusters} & 0 & 3 & 14 & 0 & 12 & 0 & 0 & 84 \\
+\modelname{BICO}, \texttt{summary\_size} & 0 & 6 & 0 & 0 & 6 & 9 & 0 & 6 \\
+\midrule
+\multicolumn{9}{l}{\textit{At the upper end}} \\
+\modelname{MicroTEDAClus+}, \texttt{variance\_limit} & 0 & 3 & 0 & 0 & 0 & 3 & 0 & 0 \\
+\modelname{MicroTEDAClus+}, \texttt{decay} & 0 & 0 & 0 & 3 & 18 & 0 & 0 & 38 \\
+\modelname{MicroTEDAClus+}, \texttt{noise\_distance} & 3 & 12 & 9 & 13 & 0 & 9 & 3 & 16 \\
+\modelname{DenStream}, \texttt{epsilon} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\modelname{DenStream}, \texttt{half\_life} & 3 & 3 & 0 & 10 & 6 & 3 & 14 & 16 \\
+\modelname{DenStream}, \texttt{mu} & 0 & 3 & 0 & 3 & 6 & 3 & 3 & 0 \\
+\modelname{DenStream}, \texttt{outlier\_ratio} & 9 & 3 & 5 & 3 & 0 & 3 & 7 & 6 \\
+\modelname{DenStream}, \texttt{n\_samples\_init} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\modelname{DBSTREAM}, \texttt{clustering\_threshold} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\modelname{DBSTREAM}, \texttt{half\_life} & 6 & 6 & 9 & 6 & 0 & 3 & 14 & 6 \\
+\modelname{DBSTREAM}, \texttt{cleanup\_interval} & 0 & 6 & 9 & 3 & 6 & 3 & 0 & 16 \\
+\modelname{DBSTREAM}, \texttt{intersection\_factor} & 3 & 6 & 18 & 6 & 0 & 0 & 0 & 0 \\
+\modelname{DBSTREAM}, \texttt{minimum\_weight} & 0 & 3 & 9 & 10 & 0 & 3 & 0 & 0 \\
+\modelname{BIRCH}, \texttt{threshold} & - & - & 0 & - & 0 & 0 & 0 & 0 \\
+\modelname{BIRCH}, \texttt{n\_clusters} & - & - & 23 & - & 53 & 16 & 10 & 3 \\
+\modelname{Mini-batch k-means}, \texttt{n\_clusters} & 0 & 0 & 0 & 3 & 0 & 6 & 0 & 0 \\
+\modelname{Mini-batch k-means}, \texttt{reassignment\_ratio} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\modelname{BICO}, \texttt{n\_clusters} & 0 & 0 & 0 & 3 & 0 & 0 & 0 & 0 \\
+\modelname{BICO}, \texttt{summary\_size} & 6 & 3 & 5 & 10 & 0 & 6 & 3 & 0 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:real_ends}
+\end{table}
