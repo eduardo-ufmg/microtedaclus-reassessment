@@ -182,9 +182,18 @@ RULES = {"rules": ranges_of_categories, "widened": widened_ranges_of_categories}
 def search_space(
     model_class, X: np.ndarray, y: np.ndarray, rules=ranges_of_categories
 ) -> dict[str, Range]:
-    """Search range of every hyperparameter of a model, from a tuning segment and its labels."""
+    """Search range of every hyperparameter of a model, from a tuning segment and its labels.
+
+    A model declares, for each hyperparameter, its category, a fixed Range, or a
+    function that derives its Range from the ranges of the categories.
+    """
     of_category = rules(X, y)
-    return {
-        name: of_category[category]
-        for name, category in model_class.HYPERPARAMETERS.items()
-    }
+    space = {}
+    for name, spec in model_class.HYPERPARAMETERS.items():
+        if isinstance(spec, Category):
+            space[name] = of_category[spec]
+        elif isinstance(spec, Range):
+            space[name] = spec
+        else:
+            space[name] = spec(of_category)
+    return space
