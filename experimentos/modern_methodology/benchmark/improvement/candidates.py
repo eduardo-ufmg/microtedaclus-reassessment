@@ -284,3 +284,9 @@ def remaining_round(round, control):
 # Round 2: the formation of microclusters, on low_variance (kept in round 1)
 # ----------------------------------------------------------------------------
 threshold_round(2, "low_variance")
+
+
+# ----------------------------------------------------------------------------
+# Round 3: geometry and density, on low_variance (round 2 kept nothing)
+# ----------------------------------------------------------------------------
+geometry_round(3, "low_variance")

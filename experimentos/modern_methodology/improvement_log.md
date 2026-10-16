@@ -97,3 +97,50 @@ Cost check of round 3 on one run with 3 trials: the full covariance takes 91 s t
 7 hours of Gas per covariance candidate on the notebook. Decision: round 3 runs the diagonal
 engine and the densities first, and then a single covariance candidate, with the density that
 the round keeps, instead of two.
+
+Results (each against low_variance; Overall ARI medians, control > candidate):
+
+- `m_const`: **-** (0 gains, 7 losses). Overall ARI INS-A 0.142 > 0.003, INS-I 0.137 > 0.007,
+  INS-R 0.107 > 0.000, GAS 0.154 > 0.051, PEN 0.505 > 0.085, SHU unchanged; steady-state
+  summaries of 1 to 6 structures. With m = 3 from the third sample on, microclusters absorb
+  nearly everything and the model lumps the stream. The strict early m keeps microclusters
+  apart; the hypothesis that young microclusters are too strict is not supported in this
+  direction. Dropped.
+- `m_scalar`: **-** (0 gains, 7 losses). Overall ARI INS-A 0.142 > 0.010, INS-I 0.137 > 0.008,
+  INS-R 0.107 > 0.005, GAS 0.154 > 0.131, PEN 0.504 > 0.106; Shuttle unchanged. The search
+  selects m near 1.2 to 2.1 (medians by dataset), and the summaries are several times smaller
+  than the control's. A constant m, even close to the original sigmoid's value for young
+  microclusters, loses the growth of m with S. Dropped.
+- `m_param`: **-** (0 gains, 5 losses). Overall ARI INS-A 0.142 > 0.074, INS-I 0.137 > 0.037,
+  INS-R 0.107 > 0.009, PEN 0.502 > 0.465; GAS and SHU unchanged. The search selects a and b
+  close to the original constants (medians a 0.004 to 0.008, b 102 to 177, against 0.007 and
+  100): the original sigmoid is near what the search prefers, and two more hyperparameters
+  spread the same 100 trials, as Chapter 3 observed. Dropped.
+- `m_reparam`: **-** (0 gains, 2 losses). Overall ARI INS-A 0.142 > 0.125, INS-I 0.130 > 0.065;
+  higher but not significantly in GAS (0.154 > 0.170), PEN (0.504 > 0.528) and SHU (0.417 >
+  0.440). The search selects a higher asymptote than 3 (up 3.9 to 5.7) reached more slowly
+  (k95 640 to 1,700 samples; the original sigmoid reaches 95% of 3 near 520). Being analytically
+  preferred keeps an indistinguishable candidate, not one with losses. Dropped.
+- `m_reparam_up3`: **-** (0 gains, 2 losses). Overall ARI INS-A 0.142 > 0.118 and Steady-State
+  ARI INS-I 0.164 > 0.083; the rest within noise. The search selects k95 of 630 to 1,500, a
+  slower growth of m than the original sigmoid's. Dropped.
+
+  So none of the five m variants helps: two make m constant and lose most (the growth of m with
+  S matters), and the three that keep a growing m either re-find the original constants or
+  prefer a slower growth, and lose on INSECTS.
+- `chi_threshold`: **+ by the rule** (1 gain, 0 losses), **not kept: an override of the rule,
+  flagged.** Its only significant change is a small gain in the Steady-State ARI of INS-I
+  (0.164 > 0.175, delta 0.35). Its Overall ARI is lower in five datasets with deltas of -0.19
+  to -0.30 (INS-A 0.142 > 0.124, p = 0.07 after Holm; INS-I, INS-R, GAS, PEN), none
+  significant, and higher only in SHU (delta 0.15); its summaries are larger and it failed
+  more tasks (5 against 3). The consistent direction says a slightly worse model with one
+  favourable cell, so the conservative choice, which claims no improvement, is taken.
+
+Round 2 keeps nothing: **low_variance remains the control.** On the real datasets the original
+m function and the original threshold hold against every alternative tried.
+
+## Round 3: geometry and density (control: low_variance)
+
+First part: `diagonal` (one variance per feature), `volume_density` (S / sigma^2),
+`log_density` (log of samples per isotropic volume), `diagonal_log_density`. Second part,
+after them: a single full-covariance candidate, with the density that the first part keeps.
