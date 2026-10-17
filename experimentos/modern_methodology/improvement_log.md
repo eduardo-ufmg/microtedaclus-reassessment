@@ -235,6 +235,13 @@ Results of round 4 (against low_variance):
   means with scaled deviations, so it acts as a link factor of about 4/d and microclusters
   almost never intersect. Good for INS-I, bad for the static datasets. Gains do not outnumber
   losses. Dropped; the much smaller summary is noted as the one clear cost advantage seen so far.
+- `norm_typicality` (membership by normalized typicality): **-** (0 gains, 10 losses), every
+  deciding cell, Overall ARI deltas -0.48 to -0.98 (INS-A 0.142 > 0.047, PEN 0.502 > 0.337).
+  The nearest-microcluster membership of Chapter 3 holds on the real data. Dropped.
+- `local_weights` (membership weighted by the density at the sample): **-** (0 gains, 9 losses),
+  like norm_typicality (Overall INS-A 0.142 > 0.049, PEN 0.505 > 0.360). Dropped.
+
+Round 4 keeps `no_noise`, and `link_factor` provisionally; the control of round 5 is no_noise.
 
 ## Round 5: on no_noise (registered while round 4 finishes)
 
