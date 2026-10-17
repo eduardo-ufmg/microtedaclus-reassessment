@@ -280,6 +280,33 @@ def remaining_round(round, control):
         )
 
 
+def combine(name, round, control, change, summary=""):
+    """The change that `change` made to its own control, applied to another control."""
+    base, candidate = CANDIDATES[control], CANDIDATES[change]
+    origin = CANDIDATES[candidate.control]
+    options = {
+        k: v for k, v in candidate.options.items() if origin.options.get(k, None) != v
+    }
+    space = {
+        k: v for k, v in candidate.space.items() if origin.space.get(k, None) is not v
+    }
+    removed = [k for k in origin.space if k not in candidate.space]
+    merged_space = {
+        k: v for k, v in {**base.space, **space}.items() if k not in removed
+    }
+    if candidate.engine != origin.engine:
+        raise ValueError("combine applies changes of options and space only")
+    add(
+        name,
+        round,
+        control,
+        summary or f"{control} with the change of {change}",
+        {**base.options, **options},
+        merged_space,
+        base.engine,
+    )
+
+
 # ----------------------------------------------------------------------------
 # Round 2: the formation of microclusters, on low_variance (kept in round 1)
 # ----------------------------------------------------------------------------
@@ -296,3 +323,24 @@ geometry_round(3, "low_variance")
 # Round 4: the remaining candidates, on low_variance (round 3 kept nothing)
 # ----------------------------------------------------------------------------
 remaining_round(4, "low_variance")
+
+
+# ----------------------------------------------------------------------------
+# Round 5: on no_noise (kept in round 4)
+# ----------------------------------------------------------------------------
+combine(
+    "no_noise_link",
+    5,
+    "no_noise",
+    "link_factor",
+    "no noise label, intersection factor l tuned in [0.5, 4] (link_factor, kept provisionally)",
+)
+add(
+    "no_noise_link_wide",
+    5,
+    "no_noise",
+    "no noise label, intersection factor l tuned in [0.05, 4] on a log scale; the 2/d penalty "
+    "acted as l of about 4/d, which helped INS-I and lies below the range of link_factor",
+    CANDIDATES["no_noise"].options,
+    {**CANDIDATES["no_noise"].space, "link": Range(0.05, 4.0, log=True, integer=False)},
+)

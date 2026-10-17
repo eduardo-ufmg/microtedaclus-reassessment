@@ -191,3 +191,56 @@ From the diagnosis first: `no_noise` (no noise label; the real classes have no n
 `no_activation` (every mature microcluster is active). Then Chapter 3's candidates outside its
 final model: `mature_mean`, `link_factor` (l in [0.5, 4]), `recency`, `dim_penalty`
 (2/d restored), `norm_typicality`, `local_weights`.
+
+Results of round 4 (against low_variance):
+
+- `no_noise`: **+** (1 gain, 0 losses). Overall ARI of INS-R 0.107 > 0.144 (delta 0.65);
+  positive but not significant in INS-A (0.139 > 0.153, delta 0.49, p = 0.08), INS-I and GAS;
+  slightly negative, not significant, in PEN (delta -0.20) and SHU (-0.04). More tasks fail by
+  the summary limit (9 against 3) and the summary of INS-R is larger (215 > 709): the label
+  acts on the prediction only, so the larger summaries come from the search, which without the
+  noise distance tunes two hyperparameters instead of three. **Kept**: + by the rule, consistent
+  with the absence of a noise class in these datasets, and one hyperparameter fewer. The other
+  candidates of the round continue against low_variance, the control of the round; any of them
+  that is kept is then tested together with no_noise.
+- `no_activation`: **±** (2 gains, 6 losses). Gains in SHU only (Overall 0.409 > 0.449, Steady
+  0.362 > 0.445); losses in the Overall ARI of INS-A, INS-I, INS-R, GAS, PEN (deltas -0.52 to
+  -0.79) and the Steady-State ARI of INS-I. It fails 42 tasks by the summary limit and its
+  summaries grow several times: only inactive microclusters decay, so with every mature one
+  active almost nothing is pruned. The activation matters on the real data. Dropped.
+- `mature_mean` (activation mean over mature microclusters only, from Eduardo's correction):
+  **=** (no significant change on the deciding metrics). Analytically preferred, but its
+  summary is significantly larger in INS-A (433 > 1,230 at the steady state) and it fails 11
+  tasks against 3; the Overall ARI leans negative (INS-R delta -0.33, not significant). The
+  condition of a summary not clearly larger is not met. Not kept.
+- `link_factor` (intersection dist <= l (sigma_i + sigma_j), l in [0.5, 4]): **+ by the rule**
+  (1 gain, 0 losses), **kept provisionally (flagged).** Gain: PEN Overall ARI 0.505 > 0.612
+  (delta 0.51), and its fifth-batch ARI 0.346 > 0.530. But INSECTS leans negative: Overall
+  deltas -0.35 (INS-A, p = 0.06), -0.16 (INS-I), -0.36 (INS-R), none significant. The search
+  selects very different links (medians 0.85 in INS-R, 1.25 in PEN, 3.2 in SHU). Unlike
+  `chi_threshold`, the gain is large; the lean on INSECTS is re-examined in the test of the
+  combination with no_noise, and the candidate is dropped there if it turns into losses.
+- `recency` (every microcluster not updated by a sample decays): **±** (2 gains, 3 losses).
+  Gains in SHU (Overall 0.410 > 0.445, Steady 0.366 > 0.474); losses in the Overall ARI of
+  INS-I (0.139 > 0.079) and INS-R (0.107 > 0.046) and the Steady-State ARI of INS-I. Gains do
+  not outnumber losses. Dropped. Shuttle, dominated by one class, gains from the changes that
+  hurt INSECTS (no_activation, recency).
+- `dim_penalty` (the 2/d factor restored): **±** (2 gains, 4 losses). Gains in INS-I, large
+  (Overall 0.137 > 0.148, delta 0.66; Steady 0.164 > 0.240, delta 0.95), and in the fifth-batch
+  ARI of INS-A and INS-I (not deciding); losses in PEN (0.505 > 0.373) and SHU (0.417 > 0.192),
+  on both metrics. Summaries about ten times smaller in every dataset (12 to 44 structures
+  against 100 to 450) and no failure. Diagnosis from the engine: the factor cancels in the
+  outlier test, the prediction and the noise label, where distances and variances are scaled
+  alike, but not in the intersection condition, which compares unscaled distances between
+  means with scaled deviations, so it acts as a link factor of about 4/d and microclusters
+  almost never intersect. Good for INS-I, bad for the static datasets. Gains do not outnumber
+  losses. Dropped; the much smaller summary is noted as the one clear cost advantage seen so far.
+
+## Round 5: on no_noise (registered while round 4 finishes)
+
+- `no_noise_link`: the change of link_factor on no_noise, the test of the combination that
+  decides whether link_factor, kept provisionally, stays.
+- `no_noise_link_wide`: the intersection factor searched on a log scale in [0.05, 4]. Reason:
+  dim_penalty showed that a link of about 4/d (0.12 in INSECTS) helps INS-I, below the range of
+  link_factor, while link_factor's larger links helped PEN; a wider range lets the search
+  choose per dataset.
