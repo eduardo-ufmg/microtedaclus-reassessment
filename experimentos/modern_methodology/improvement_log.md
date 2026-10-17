@@ -251,3 +251,18 @@ Round 4 keeps `no_noise`, and `link_factor` provisionally; the control of round 
   dim_penalty showed that a link of about 4/d (0.12 in INSECTS) helps INS-I, below the range of
   link_factor, while link_factor's larger links helped PEN; a wider range lets the search
   choose per dataset.
+
+Diagnosis of the current model (replay of low_variance and no_noise, runs 32-35 of INS-A and
+INS-I): the problem has changed. The model no longer underfits; it over-segments. It predicts
+26 to 28 clusters per batch in INS-A (5 classes) and 11 to 14 in INS-I (6), from 66 to 95 and
+12 to 17 macroclusters; homogeneity 0.55 to 0.64 and 0.39 to 0.46, completeness about 0.33 to
+0.35. The classes are split over many clusters, and completeness now limits the ARI. The early
+batches remain weaker (median ARI of the first 20 batches 0.06 to 0.12 against 0.15 overall),
+with few active microclusters at first. Merging more would raise completeness, but on INSECTS
+link_factor's search chose links below the default (medians 0.85 to 1.9 against 2), so the
+objective on the tuning segment may not reward merging there.
+
+Round 5 stopped on 2026-10-17 at Eduardo's request (notebook turned off): no_noise_link had 89
+of 192 tasks saved; no_noise_link_wide not started. To resume, from experimentos/modern_methodology:
+`for c in no_noise_link no_noise_link_wide; do .venv/bin/python -m benchmark.improvement.run $c --workers 4 --memory-limit 1.25; done`
+(finished tasks are skipped).
