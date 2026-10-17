@@ -144,3 +144,50 @@ m function and the original threshold hold against every alternative tried.
 First part: `diagonal` (one variance per feature), `volume_density` (S / sigma^2),
 `log_density` (log of samples per isotropic volume), `diagonal_log_density`. Second part,
 after them: a single full-covariance candidate, with the density that the first part keeps.
+
+Results of round 3, first part (against low_variance):
+
+- `diagonal`: **-** (0 gains, 5 losses). Overall ARI INS-A 0.142 > 0.093, INS-I 0.130 > 0.026,
+  INS-R 0.107 > 0.007 (deltas -0.74 to -0.87), Steady-State ARI INS-I 0.163 > 0.000 and GAS
+  0.076 > 0.033. Replay on INS-I: the search finds worse configurations already on the tuning
+  segment (ARI 0.02 and 0.09 against the control's 0.17 and 0.18), one run settling on a large
+  variance limit and a single cluster, the other labelling 23% to 30% of the samples as noise.
+  Likely mechanism: the real classes vary in a few directions, so a maturing microcluster has
+  tiny variances in most features, and the per-feature standardized distance turns small
+  deviations in those features into outliers. Dropped. The full covariance shares the
+  mechanism, more strongly, so before its eight hours a probe: `covariance` on runs 32-39 of
+  INS-I, PEN and SHU (cheap datasets); the full run continues from it if the probe does not
+  regress clearly.
+- `covariance` probe (runs 32-39 of INS-I, PEN, SHU): INS-I collapses, ARI 0.000 in every
+  shared run on both deciding metrics (0.142 and 0.164 for the control, delta -1.0,
+  significant), with 5 microclusters at the end of the stream; PEN lower (deltas -0.78 and
+  -0.89, not significant over 6 runs); SHU higher on the Overall ARI (0.426 > 0.548, delta
+  0.41, not significant). The same failure as the diagonal engine, stronger. **Not run in full
+  (flagged): neither covariance candidate continues.** The isotropic microcluster is retained
+  on the real data, against the analytical expectation; the measured anisotropy is that of
+  whole classes, and inside a microcluster the few directions of variance make the
+  standardized distance over-strict in all the others.
+- `volume_density` (S / sigma^2, Eduardo's order-independent density): **±** (1 gain, 1 loss).
+  Gain: Steady-State ARI of SHU 0.365 > 0.473 (delta 0.40). Loss: Overall ARI of INS-A 0.142 >
+  0.110 (delta -0.72). It also fails far more tasks by the summary limit (11 of 32 in PEN, 4 in
+  INS-A, against 1 and 1), and its summary on INS-R grows fivefold (215 > 1,122); the
+  mechanism of the INS-A loss was not examined beyond these counts. The gains do not outnumber
+  the losses and the failures are a real cost. Dropped.
+- `log_density` (log of samples per isotropic volume): **-** (0 gains, 6 losses). Overall ARI
+  INS-A 0.142 > 0.092, INS-R 0.107 > 0.038, PEN 0.505 > 0.420, SHU 0.417 > 0.180 (deltas -0.57
+  to -0.94); Steady-State ARI of PEN and SHU lower. Dropped.
+- `diagonal_log_density`: **stopped before it ran (flagged).** Both of its parts regress
+  strongly on their own, and the diagonal engine fails at forming microclusters whatever the
+  density that decides the activation, so the pair cannot be kept; stopping saved some two
+  hours.
+
+Round 3 keeps nothing: **low_variance remains the control.** On the real data the isotropic
+microcluster and the density of the last absorbed sample hold against both geometries and the
+three densities.
+
+## Round 4: remaining candidates (control: low_variance)
+
+From the diagnosis first: `no_noise` (no noise label; the real classes have no noise) and
+`no_activation` (every mature microcluster is active). Then Chapter 3's candidates outside its
+final model: `mature_mean`, `link_factor` (l in [0.5, 4]), `recency`, `dim_penalty`
+(2/d restored), `norm_typicality`, `local_weights`.

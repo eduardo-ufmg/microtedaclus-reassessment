@@ -290,3 +290,9 @@ threshold_round(2, "low_variance")
 # Round 3: geometry and density, on low_variance (round 2 kept nothing)
 # ----------------------------------------------------------------------------
 geometry_round(3, "low_variance")
+
+
+# ----------------------------------------------------------------------------
+# Round 4: the remaining candidates, on low_variance (round 3 kept nothing)
+# ----------------------------------------------------------------------------
+remaining_round(4, "low_variance")
