@@ -10,6 +10,6 @@ for candidate in no_noise_link low_variance no_noise; do
     .venv/bin/python -m benchmark.improvement.run "$candidate" --runs 0 31 \
         --datasets insects_abrupt insects_incremental insects_incremental_reoccurring gas_drift \
         kddcup99 covertype pendigits shuttle \
-        --out results_confirmation --stall-limit 10800 "$@"
+        --out results_confirmation --stall-limit 10800 --memory-limit 4 "$@"
 done
 echo "The confirmation is complete."

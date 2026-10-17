@@ -303,3 +303,28 @@ and evaluated on runs 0-31 of all eight real datasets of the real-data experimen
 benchmark models and MicroTEDAClus+ of that experiment (the control needs no new run: it
 reproduces MicroTEDAClus+ exactly). KDD 99 and Covertype took no part in the development and
 act as held-out datasets; runs 0-31 took no part either.
+
+Tests before the hand-off: `run_confirmation.sh` run end to end from a fresh copy of the
+committed code (`--runs 0 0 --trials 3`). The first test found that KDD 99 and Covertype cannot
+even be read under the runner's default memory cap of 1.5 GB per worker (the real-data run used
+5 GB); the script now passes 4 GB, and the user's `--memory-limit` still overrides it. With it,
+all 24 tasks of the three candidates finished, and `python -m benchmark.improvement.confirmation`
+produced the comparison from them.
+
+Hand-off: `confirmation_experiment.tar.gz` (the committed code of `experimentos/modern_methodology`
+and `experimentos/shared`, plus the nine data files of the real-data run). On the remote
+machine, from the folder that holds `experimentos/` (with the `.venv` and the `results_real` of
+the real-data run, which the analysis reads locally, not remotely):
+
+    tar -xzf confirmation_experiment.tar.gz
+    cd experimentos/modern_methodology
+    nohup ./run_confirmation.sh --workers 16 --memory-limit 5 > run_confirmation.log 2>&1 &
+
+768 tasks (3 candidates x 8 datasets x 32 runs), the final model first. Expected 1 to 2 hours
+(the MicroTEDAClus+ tasks of the real-data run took 46 s each in median, at most 4 minutes; the
+improved models keep larger summaries); the stall limit ends a run that finishes no task for
+three hours. Progress: `tail -n 3 run_confirmation.log`; finished: it ends with "The
+confirmation is complete."; failures by SummaryLimitExceeded are expected and do not stop it.
+Stop: `pkill -TERM -f "benchmark.improvement.run"`; resume: the same command. Bring back:
+`tar -czf confirmation_results.tar.gz results_confirmation run_confirmation.log`, unpacked in
+`experimentos/modern_methodology/`; then `python -m benchmark.improvement.confirmation`.
