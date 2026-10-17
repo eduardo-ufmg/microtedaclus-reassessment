@@ -266,3 +266,15 @@ Round 5 stopped on 2026-10-17 at Eduardo's request (notebook turned off): no_noi
 of 192 tasks saved; no_noise_link_wide not started. To resume, from experimentos/modern_methodology:
 `for c in no_noise_link no_noise_link_wide; do .venv/bin/python -m benchmark.improvement.run $c --workers 4 --memory-limit 1.25; done`
 (finished tasks are skipped).
+
+Results of round 5 (against no_noise; resumed on 2026-10-17 after the pause):
+
+- `no_noise_link`: **±** (3 gains, 2 losses). Gains: Overall ARI GAS 0.174 > 0.202, PEN 0.495 >
+  0.576, Steady-State GAS 0.100 > 0.134; SHU 0.392 > 0.469 not significant. Losses: Overall ARI
+  INS-I 0.137 > 0.110 and INS-R 0.144 > 0.110. The search selects links of 2.0 to 2.4 in INSECTS,
+  near the default 2, and does worse there: the extra hyperparameter spreads the same 100
+  trials (a limit of the search, not a defect of the model). Gains outnumber losses: **the
+  combination test confirms link_factor.** Against the benchmark models of the real-data
+  experiment, it brings the model to or near the best in GAS, PEN and SHU, at the cost of
+  INS-I and INS-R. Whether it or no_noise_link_wide becomes the control is decided by comparing
+  the two directly once the latter finishes.
