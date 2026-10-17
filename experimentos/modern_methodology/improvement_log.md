@@ -278,3 +278,28 @@ Results of round 5 (against no_noise; resumed on 2026-10-17 after the pause):
   experiment, it brings the model to or near the best in GAS, PEN and SHU, at the cost of
   INS-I and INS-R. Whether it or no_noise_link_wide becomes the control is decided by comparing
   the two directly once the latter finishes.
+- `no_noise_link_wide` (link on a log scale in [0.05, 4]): against no_noise **±** (1 gain, 1
+  loss: Steady-State INS-I 0.168 > 0.226; Overall INS-R 0.144 > 0.106). The search selects the
+  small links that dim_penalty pointed to where they help (medians 0.12 in INS-I, 0.15 in INS-R,
+  with summaries about ten times smaller there) and larger ones elsewhere (1.0 in PEN, 3.2 in
+  SHU). Against no_noise_link it is **+ by the rule** (2 gains, both in INS-I: Overall delta
+  0.64, Steady 0.80), but every other cell leans negative without significance (PEN -0.39, GAS
+  -0.26, INS-A -0.15, INS-R -0.12, SHU -0.09; Steady PEN -0.20, GAS -0.11). **Not adopted
+  (flagged)**, for the reason chi_threshold was not: one favourable dataset and a consistent
+  negative lean elsewhere. no_noise_link is also the more competitive of the two against the
+  benchmark models of the real-data experiment (medians at or near the best in GAS, PEN, SHU).
+
+Round 5 keeps no_noise_link. With about 27 candidates run and round 5 keeping a change, the
+stopping rule of the plan is met: **the investigation stops here, and the final model is
+no_noise_link**: MicroTEDAClus+ with (1) the variance limit searched one decade lower, (2) no
+noise label, (3) the intersection factor tuned in [0.5, 4]. What remains open: the model
+over-segments INSECTS and starts slowly; the link that helps INSECTS (small) hurts the static
+datasets, and the search on the tuning segment does not choose it reliably.
+
+## Confirmation (to run remotely)
+
+The final model, and the two intermediate steps of its chain (low_variance, no_noise), tuned
+and evaluated on runs 0-31 of all eight real datasets of the real-data experiment, against the
+benchmark models and MicroTEDAClus+ of that experiment (the control needs no new run: it
+reproduces MicroTEDAClus+ exactly). KDD 99 and Covertype took no part in the development and
+act as held-out datasets; runs 0-31 took no part either.
