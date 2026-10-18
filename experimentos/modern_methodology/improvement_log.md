@@ -349,3 +349,8 @@ the best in GAS and SHU, with the worst in INS-I. ARI at the fifth batch: tied w
 The chain, paired on the evaluation runs, reproduces the development: low_variance improves
 MicroTEDAClus+ in INS-A, INS-I, INS-R and PEN; no_noise improves low_variance in INS-R; the link
 gains in PEN and COV and loses in INS-R.
+
+**Decision (Eduardo, 2026-10-17): the improved model is competitive enough, and the effort is
+reported; the experiments are done.** Reporting rule: detail the three kept changes
+(low_variance, no_noise, the tuned link) and the confirmation; mention and explain the rejected
+candidates briefly, without tables or extensive comparisons of each path.
