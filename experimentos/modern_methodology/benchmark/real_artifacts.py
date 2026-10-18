@@ -93,6 +93,12 @@ def complete_by_dataset(results, tasks, models):
 
 def failure_table(tasks, models, out):
     counts = failures(tasks)
+    kinds = set(
+        tasks.status[tasks.status != "OK"].str.extract(r"^ERROR: (\w+)", expand=False)
+    )
+    assert kinds <= {
+        "SummaryLimitExceeded"
+    }, f"the caption names only the summary limit: {kinds}"
     rows = [
         (
             model_label(model),
@@ -103,8 +109,8 @@ def failure_table(tasks, models, out):
     ]
     panel_table(
         out / "failures.tex",
-        "Number of runs in which a model failed on a real dataset, by keeping a larger summary "
-        "than a quarter of the tuning segment or by exceeding the memory of its process.",
+        "Number of runs in which a model failed on a real dataset. Every failure is a summary "
+        "that exceeded a quarter of the tuning segment.",
         "tab:real_failures",
         columns(DATASETS),
         [("Failed runs", rows)],
