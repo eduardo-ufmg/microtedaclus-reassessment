@@ -56,7 +56,10 @@ DESCRIPTION = {
     "pendigits": (r"\Pendigits", "alpaydin1996pen", "shuffled"),
     "shuttle": (r"\Shuttle", "statlog_shuttle", "shuffled"),
 }
-SINGLE_BATCH_METRICS = ("ari_steadystate", "ari_diff")
+SINGLE_BATCH_METRICS = (
+    "ari_steadystate",
+    "ari_diff",
+)  # both read the penultimate batch
 OUT = analysis.ROOT.parent.parent / "monografia" / "RealData" / "artifacts"
 # Change points of the abrupt INSECTS stream, in samples from its start (Souza et al., 2020)
 INSECTS_ABRUPT_CHANGES = (14352, 19500, 33240, 38682, 39510)
@@ -204,9 +207,9 @@ def quality_table(results, models, runs, excluded, out):
     panel_table(
         out / "quality.tex",
         f"Quality of the models on the real datasets: medians over {run_text(runs)}. {GROUPS} "
-        "A dash marks a value left out: the Steady-State ARI and the maximum ARI drop of the "
-        "streams that hold batches of a single class, and the values of a model that failed in "
-        "more than half of the runs of a dataset.",
+        "A dash marks a value left out: the Steady-State ARI and the maximum ARI drop, which "
+        "read the penultimate batch, of the streams in which that batch holds a single class, "
+        "and the values of a model that failed in more than half of the runs of a dataset.",
         "tab:real_quality",
         columns(DATASETS),
         panels,
@@ -260,7 +263,7 @@ def main():
     dataset_table(arguments.out)
     shares = single_class_shares()
     single_class_table(shares, arguments.out)
-    excluded = set(shares.index[shares["evaluated"] > 0])
+    excluded = set(shares.index[shares["penultimate"] > 0])
     print("single-batch metrics left out of:", sorted(excluded))
     failure_table(tasks, models, arguments.out)
     quality_table(complete, models, runs, excluded, arguments.out)

@@ -1,6 +1,6 @@
 \begin{table}[htbp]
 \centering
-\caption{Quality of the models on the real datasets: medians over 32 runs, except 22 in INS-R, 31 in GAS, 17 in KDD, 29 in PEN. A value in bold is statistically indistinguishable from the best model of its dataset, and a value in red from the worst. A dash marks a value left out: the Steady-State ARI and the maximum ARI drop of the streams that hold batches of a single class, and the values of a model that failed in more than half of the runs of a dataset.}
+\caption{Quality of the models on the real datasets: medians over 32 runs, except 22 in INS-R, 31 in GAS, 17 in KDD, 29 in PEN. A value in bold is statistically indistinguishable from the best model of its dataset, and a value in red from the worst. A dash marks a value left out: the Steady-State ARI and the maximum ARI drop, which read the penultimate batch, of the streams in which that batch holds a single class, and the values of a model that failed in more than half of the runs of a dataset.}
 \adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
 \begin{tabular}{l c c c c c c c c }
 \toprule
