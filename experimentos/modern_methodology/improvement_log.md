@@ -328,3 +328,24 @@ confirmation is complete."; failures by SummaryLimitExceeded are expected and do
 Stop: `pkill -TERM -f "benchmark.improvement.run"`; resume: the same command. Bring back:
 `tar -czf confirmation_results.tar.gz results_confirmation run_confirmation.log`, unpacked in
 `experimentos/modern_methodology/`; then `python -m benchmark.improvement.confirmation`.
+
+## Confirmation results (2026-10-17)
+
+768 tasks, all finished; failures only by the summary limit: no_noise_link 12 (8 in Covertype),
+low_variance 19 (14 in Covertype), no_noise 22 (17 in Covertype). Archive identical to the
+unpacked results. `python -m benchmark.improvement.confirmation`, runs 0-31 against the
+benchmark models and MicroTEDAClus+ of the real-data experiment (same streams and seeds):
+
+Overall ARI, datasets in which a model is tied with the best / with the worst (of 8):
+k-means 5 / 0, DenStream 4 / 0, BICO 3 / 1, DBSTREAM 2 / 2, BIRCH 2 / 2 (absent from 3),
+**final model 2 / 0** (PEN 0.579 and SHU 0.500, the highest medians there), MicroTEDAClus+
+1 / 6. Elsewhere the final model is tied with neither group: INS-A 0.142 (best 0.198), INS-I
+0.128 (0.179), INS-R 0.097 (0.154), GAS 0.191 (0.208), KDD 0.702 (0.947), COV 0.059 (0.072).
+Steady-State ARI (on the five datasets whose penultimate batch is not of one class): tied with
+the best in GAS and SHU, with the worst in INS-I. ARI at the fifth batch: tied with the worst in
+5 of 8 (the slow start). Held-out datasets: KDD in the middle (0.702 against MicroTEDAClus+'s
+0.664 and the best 0.947), COV in the middle with 8 failed runs.
+
+The chain, paired on the evaluation runs, reproduces the development: low_variance improves
+MicroTEDAClus+ in INS-A, INS-I, INS-R and PEN; no_noise improves low_variance in INS-R; the link
+gains in PEN and COV and loses in INS-R.
