@@ -102,7 +102,7 @@ M_PARAMETERS = {
     "m_constant": (("m_up", r"$m$"),),
     "m_asymptote": (("m_up", "asymptote"),),
 }
-PROBE_SPACES = {"final": "final", "engine": "extended"}
+PROBE_SPACES = {"final": "MicroTEDAClus+", "engine": "extended"}
 CHAIN_COLORS = {
     "original": "xkcd:grey",
     "vectorized": "xkcd:blue",
@@ -296,7 +296,7 @@ def validation_tables():
     )
     end_to_end = type(experiment)(
         "validation",
-        "Final model against the vectorized model",
+        "MicroTEDAClus+ against the vectorized model",
         "",
         ((FINAL, "vectorized"),),
         runs,
@@ -306,7 +306,7 @@ def validation_tables():
         end_to_end,
         QUALITY_METRICS,
         "final_vs_vectorized",
-        f"Final model against the vectorized model: medians over the {len(runs)} validation runs.",
+        f"\\MicroTEDAClusPlus{{}} against the vectorized model: medians over the {len(runs)} validation runs.",
         with_rule=False,
     )
 
@@ -862,7 +862,7 @@ def probe_table():
         "400 configurations are drawn at random, and the rows give the one with the highest objective and "
         "the one with the highest Overall ARI. The values are means over four streams in CSN and the "
         "values of the single stream in DS3 and DS4; the microcluster count is that of the penultimate "
-        "batch. The first row of each dataset is the final model as the protocol tunes it: medians over "
+        "batch. The first row of each dataset is \\MicroTEDAClusPlus{} as the protocol tunes it: medians over "
         "the development runs.",
         "tab:mi_selection_probe",
         "l l l c c c c c c",
@@ -872,7 +872,7 @@ def probe_table():
 
 
 def probe_figure():
-    """Tuning objective against Overall ARI of the configurations of the final model's space."""
+    """Tuning objective against Overall ARI of the configurations of the space of MicroTEDAClus+."""
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.6), sharey=True)
     tuned = analysis.run_level(FINAL, DEVELOPMENT_RUNS)
     for ax, dataset in zip(axes, PROBE_DATASETS):
@@ -954,7 +954,7 @@ def maturation_table():
                 lines.append(" & ".join(cells) + r" \\")
     write_table(
         ARTIFACT_DIR / "selection" / "maturation.tex",
-        "The two configurations of the final model's space of \\cref{tab:mi_selection_probe} along the "
+        "The two configurations of the search space of \\MicroTEDAClusPlus{} of \\cref{tab:mi_selection_probe} along the "
         "stream, in fifths, when the model learns the whole stream from its first sample. The first "
         "fifth is the segment that the hyperparameter search sees. Means over four streams in CSN; "
         "single stream in DS3 and DS4.",

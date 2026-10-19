@@ -1,26 +1,26 @@
 \begin{table}[htbp]
 \centering
-\caption{Configurations of two search spaces scored by the objective of the hyperparameter search, on the first 20\% of the stream, and by the evaluation metrics, on the remaining 80\%. For each space, 400 configurations are drawn at random, and the rows give the one with the highest objective and the one with the highest Overall ARI. The values are means over four streams in CSN and the values of the single stream in DS3 and DS4; the microcluster count is that of the penultimate batch. The first row of each dataset is the final model as the protocol tunes it: medians over the development runs.}
+\caption{Configurations of two search spaces scored by the objective of the hyperparameter search, on the first 20\% of the stream, and by the evaluation metrics, on the remaining 80\%. For each space, 400 configurations are drawn at random, and the rows give the one with the highest objective and the one with the highest Overall ARI. The values are means over four streams in CSN and the values of the single stream in DS3 and DS4; the microcluster count is that of the penultimate batch. The first row of each dataset is \MicroTEDAClusPlus{} as the protocol tunes it: medians over the development runs.}
 \adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
 \begin{tabular}{l l l c c c c c c}
 \toprule
 Dataset & Space & Configuration & Objective & Overall ARI & Steady-State ARI & Microclusters & $r$ & decay \\
 \midrule
 CSN & final & tuned by the protocol & - & 0.454 & 0.460 & 36 & 0.0609 & 46 \\
- & final & highest objective & 0.436 & 0.467 & 0.426 & 32 & 0.0621 & 40 \\
- & final & highest Overall ARI & 0.150 & 0.883 & 0.917 & 418 & 0.0086 & 1944 \\
+ & MicroTEDAClus+ & highest objective & 0.436 & 0.467 & 0.426 & 32 & 0.0621 & 40 \\
+ & MicroTEDAClus+ & highest Overall ARI & 0.150 & 0.883 & 0.917 & 418 & 0.0086 & 1944 \\
  & extended & highest objective & 0.445 & 0.423 & 0.043 & 4 & 0.2391 & 45 \\
  & extended & highest Overall ARI & 0.092 & 0.977 & 0.996 & 610 & 0.0064 & 3507 \\
 \midrule
 DS3 & final & tuned by the protocol & - & 0.304 & 0.337 & 26 & 0.0610 & 34 \\
- & final & highest objective & 0.395 & 0.275 & 0.267 & 30 & 0.0570 & 52 \\
- & final & highest Overall ARI & 0.057 & 0.587 & 0.625 & 1238 & 0.0032 & 8694 \\
+ & MicroTEDAClus+ & highest objective & 0.395 & 0.275 & 0.267 & 30 & 0.0570 & 52 \\
+ & MicroTEDAClus+ & highest Overall ARI & 0.057 & 0.587 & 0.625 & 1238 & 0.0032 & 8694 \\
  & extended & highest objective & 0.261 & 0.302 & 0.265 & 47 & 0.1648 & 50 \\
  & extended & highest Overall ARI & 0.049 & 0.721 & 0.797 & 1445 & 0.0024 & 3857 \\
 \midrule
 DS4 & final & tuned by the protocol & - & 0.254 & 0.320 & 31 & 0.0559 & 51 \\
- & final & highest objective & 0.335 & 0.281 & 0.341 & 27 & 0.0570 & 52 \\
- & final & highest Overall ARI & 0.043 & 0.514 & 0.474 & 1104 & 0.0032 & 8694 \\
+ & MicroTEDAClus+ & highest objective & 0.335 & 0.281 & 0.341 & 27 & 0.0570 & 52 \\
+ & MicroTEDAClus+ & highest Overall ARI & 0.043 & 0.514 & 0.474 & 1104 & 0.0032 & 8694 \\
  & extended & highest objective & 0.274 & 0.352 & 0.352 & 23 & 0.0609 & 16 \\
  & extended & highest Overall ARI & 0.113 & 0.594 & 0.657 & 426 & 0.0050 & 159 \\
 \bottomrule

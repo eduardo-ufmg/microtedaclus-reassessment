@@ -29,7 +29,7 @@ STAGE_NAMES = {
     "vectorized": "vectorized",
     CORRECTED: "corrected",
     IMPROVED: "improved",
-    FINAL: "final",
+    FINAL: "MicroTEDAClus+",
 }
 
 
@@ -177,14 +177,14 @@ EXPERIMENTS = [
         "Covariance of the microclusters",
         "Does a full covariance improve the isotropic model?",
         _against(FINAL, "cov_directional", "cov_bhattacharyya"),
-        stage_names={FINAL: "final"},
+        stage_names={FINAL: "MicroTEDAClus+"},
     ),
     Experiment(
         "density_revisited",
-        "Order-independent densities in the final model",
-        "Do the order-independent densities, rejected as corrections, cost quality in the final model?",
+        "Order-independent densities in \\MicroTEDAClusPlus{}",
+        "Do the order-independent densities, rejected as corrections, cost quality in MicroTEDAClus+?",
         _against(FINAL, "fd_peak", "fd_volume"),
-        stage_names={FINAL: "final"},
+        stage_names={FINAL: "MicroTEDAClus+"},
     ),
     Experiment(
         "validation",

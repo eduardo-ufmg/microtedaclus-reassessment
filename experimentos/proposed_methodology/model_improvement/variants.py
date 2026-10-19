@@ -333,16 +333,14 @@ _add(
 
 
 # ----------------------------------------------------------------------------
-# The final model (improved + no-penalty) and the densities revisited on it
+# MicroTEDAClus+ (improved + no-penalty) and the densities revisited on it
 # ----------------------------------------------------------------------------
 FINAL = {**IMPROVED, "dim_penalty": False}
 
-_add(
-    "fd_peak", "final + peak-density", "", {**FINAL, "density": "peak"}, IMPROVED_SPACE
-)
+_add("fd_peak", "peak-density", "", {**FINAL, "density": "peak"}, IMPROVED_SPACE)
 _add(
     "fd_volume",
-    "final + volume-density",
+    "volume-density",
     "",
     {**FINAL, "density": "volume"},
     IMPROVED_SPACE,

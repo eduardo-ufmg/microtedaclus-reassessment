@@ -1,20 +1,20 @@
 \begin{table}[htbp]
 \centering
-\caption{Order-independent densities in the final model: steady-state microcluster count and memory footprint.}
+\caption{Order-independent densities in \MicroTEDAClusPlus{}: steady-state microcluster count and memory footprint.}
 \adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
 \begin{tabular}{l c c c c c c c c}
 \toprule
 Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
 \midrule
 \multicolumn{9}{l}{\textit{Steady-State Microcluster Count}} \\
-\modelname{final} & 366 & 23 & 380 & 36 & 26 & 31 & 12 & 11 \\
-\modelname{final + peak-density} & 239 & 26 & 336 & 46 & \textbf{4} & 94 & \textbf{9} & 9 \\
-\modelname{final + volume-density} & \textbf{70} & 28 & 148 & 30 & 28 & 40 & 10 & 10 \\
+\modelname{MicroTEDAClus+} & 366 & 23 & 380 & 36 & 26 & 31 & 12 & 11 \\
+\modelname{peak-density} & 239 & 26 & 336 & 46 & \textbf{4} & 94 & \textbf{9} & 9 \\
+\modelname{volume-density} & \textbf{70} & 28 & 148 & 30 & 28 & 40 & 10 & 10 \\
 \midrule
 \multicolumn{9}{l}{\textit{Steady-State Memory Footprint [kB]}} \\
-\modelname{final} & 84 & 23 & 90 & 24 & 24 & 24 & 71 & 122 \\
-\modelname{final + peak-density} & 58 & 24 & 84 & 25 & \textbf{23} & 46 & 71 & 122 \\
-\modelname{final + volume-density} & 26 & 24 & 46 & 24 & \textcolor{red}{24} & 25 & 71 & 122 \\
+\modelname{MicroTEDAClus+} & 84 & 23 & 90 & 24 & 24 & 24 & 71 & 122 \\
+\modelname{peak-density} & 58 & 24 & 84 & 25 & \textbf{23} & 46 & 71 & 122 \\
+\modelname{volume-density} & 26 & 24 & 46 & 24 & \textcolor{red}{24} & 25 & 71 & 122 \\
 \bottomrule
 \end{tabular}
 }
