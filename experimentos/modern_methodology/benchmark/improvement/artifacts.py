@@ -5,10 +5,10 @@ only when they exist:
 
 - chain.tex: the kept changes, each against the step before it, on the
   development runs (results_improvement);
-- selection.tex: the selected variance limit and link factor along the chain;
+- variance.tex and link.tex: the selected variance limit and link factor;
 - candidates.tex: every candidate outside the chain against its control;
 - diagnosis.tex: what MicroTEDAClus+ of Chapter 3 does on the real datasets, from
-  the replay of its selected configurations (results_real/diagnosis);
+  the replays of benchmark.improvement.diagnose (results_real/diagnosis);
 - confirmation.tex: the chain on the runs of the real-data experiment
   (results_confirmation, with MicroTEDAClus+ from results_real);
 - quality.tex, failures.tex and cost.tex: the final version of MicroTEDAClus+,
@@ -250,9 +250,9 @@ def _median_qcd(values: pd.Series) -> str:
     return f"{median:.2f} [{(q3 - q1) / (q3 + q1):.2f}]"
 
 
-def selection_table():
+def variance_table():
     """How often the variance limit sits at the lower end of its range, before and after
-    its range is extended, and the link factor that the search selects."""
+    its range is extended."""
     ranges = variance_ranges()
     searched = {"control": 1, "low_variance": 10}  # the divisor of the lower end
     results = pd.concat([development(name) for name in searched])
@@ -271,15 +271,12 @@ def selection_table():
             ]
         ),
     ).set_index(["model", "dataset"])
-    percent = "{:.0f}".format
-    linked = development("no_noise_link").groupby("dataset")["param:link"]
     panel_table(
-        OUT / "selection.tex",
-        "Selected hyperparameters along the chain, on the development runs: the percentage "
-        "of the runs in which the selected variance limit lies within a twentieth of the "
-        "width of its range from its lower end, in the logarithmic scale of the search, "
-        "and the median and quartile coefficient of dispersion of the selected link factor.",
-        "tab:ri_selection",
+        OUT / "variance.tex",
+        "Percentage of the development runs in which the selected variance limit lies within "
+        "a twentieth of the width of its range from its lower end, in the logarithmic scale "
+        "of the search.",
+        "tab:ri_variance",
         columns(DEVELOPMENT_DATASETS),
         [
             (
@@ -288,16 +285,31 @@ def selection_table():
                     (
                         CHAIN[name],
                         (100 * ends.loc[name, "lower"]).to_dict(),
-                        percent,
+                        "{:.0f}".format,
                     )
                     for name in searched
                 ],
-            ),
-            (
-                "Link factor",
-                [(CHAIN["no_noise_link"], linked.apply(_median_qcd).to_dict(), str)],
-            ),
+            )
         ],
+    )
+
+
+def link_table():
+    """The link factor that the search selects."""
+    linked = development("no_noise_link").groupby("dataset")["param:link"]
+    panel_table(
+        OUT / "link.tex",
+        "Link factor selected on the development runs: median and quartile coefficient of "
+        "dispersion.",
+        "tab:ri_link",
+        columns(DEVELOPMENT_DATASETS),
+        [
+            (
+                CHAIN["no_noise_link"],
+                [("Link factor", linked.apply(_median_qcd).to_dict(), str)],
+            )
+        ],
+        first_column="",
     )
 
 
@@ -363,9 +375,9 @@ def diagnosis_table():
     ]
     panel_table(
         OUT / "diagnosis.tex",
-        f"{EARLIER} on the real datasets of the development, replayed with the "
-        "hyperparameters selected in the real-data experiment: medians over the batches of "
-        f"a stream, then medians over {run_text(runs)}. A mature microcluster has three "
+        f"{EARLIER} on the real datasets of the development, in the runs of the real-data "
+        "experiment: medians over the batches of the evaluation segment, then medians over "
+        f"{run_text(runs)}. A mature microcluster has three "
         "samples or more.",
         "tab:ri_diagnosis",
         columns(DEVELOPMENT_DATASETS),
@@ -505,8 +517,8 @@ def partitions_table():
     fewest = pd.concat(runs.values(), axis=1).min(axis=1).to_dict()
     panel_table(
         OUT / "partitions.tex",
-        r"The partitions of the two versions of \MicroTEDAClusPlus{} on the real datasets, replayed "
-        "with the hyperparameters selected for each: medians over the batches of a stream, "
+        r"The partitions of the two versions of \MicroTEDAClusPlus{} on the real datasets: "
+        "medians over the batches of the evaluation segment, "
         f"then medians over the runs, at least {run_text(fewest)}. Homogeneity and "
         "completeness compare the clusters predicted for a batch with its classes, over the "
         "samples not labelled as noise.",
@@ -528,7 +540,8 @@ def main():
         "Steady-State ARI left out of", sorted(development_excluded), sorted(excluded)
     )
     development_chain(development_excluded)
-    selection_table()
+    variance_table()
+    link_table()
     candidates_table()
     confirmation_chain(excluded)
     if (analysis.REAL / "diagnosis" / "MicroTEDAClusPlus.csv").exists():
