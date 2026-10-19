@@ -11,7 +11,6 @@ only when they exist:
   the replay of its selected configurations (results_real/diagnosis);
 - confirmation.tex: the chain on the runs of the real-data experiment
   (results_confirmation, with MicroTEDAClus+ from results_real);
-- runs.tex: the final version in the confirmation and in its own experiment;
 - quality.tex, failures.tex and cost.tex: the final version of MicroTEDAClus+,
   tuned and evaluated as every model of the real-data experiment
   (results_final_model, results_timing_real, results_memory_real), against the
@@ -222,32 +221,6 @@ def confirmation_chain(excluded):
         "real-data experiment",
         "tab:ri_confirmation",
         OUT / "confirmation.tex",
-    )
-
-
-def runs_table(excluded):
-    """The final version in the confirmation and in its own experiment, on the same streams:
-    the experimental implementation with the seeds of MicroTEDAClus+ of Chapter 3, and the
-    implementation on its own with its own seeds."""
-    final = r"\modelname{MicroTEDAClus+}"
-    chain_table(
-        {
-            CHAIN["no_noise_link"]: analysis.run_level(CONFIRMATION / "no_noise_link"),
-            final: analysis.run_level(FINAL_EXPERIMENT),
-        },
-        {
-            CHAIN["no_noise_link"]: failed_tasks(CONFIRMATION / "no_noise_link"),
-            final: failed_tasks(FINAL_EXPERIMENT),
-        },
-        DATASETS,
-        excluded,
-        len(CONFIRMATION_RUNS),
-        r"The final version of \MicroTEDAClusPlus{} in the last step of the confirmation, with "
-        r"the experimental implementation and the seeds of \MicroTEDAClusPlus{} of "
-        r"\cref{chap:ModelImprovement}, and in its own experiment, implemented on its own and "
-        "with its own seeds, on the same streams",
-        "tab:ri_runs",
-        OUT / "runs.tex",
     )
 
 
@@ -561,7 +534,6 @@ def main():
     if (analysis.REAL / "diagnosis" / "MicroTEDAClusPlus.csv").exists():
         diagnosis_table()
     if (FINAL_EXPERIMENT / "tasks.csv").exists():
-        runs_table(excluded)
         comparison_tables(excluded)
         if (FINAL_EXPERIMENT / "diagnosis" / f"{FINAL}.csv").exists():
             partitions_table()
