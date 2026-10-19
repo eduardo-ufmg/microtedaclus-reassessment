@@ -7,5 +7,5 @@ cd "$(dirname "$0")"
 .venv/bin/python -m benchmark.runner results_real --protocol widened --runs 0 31 \
     --datasets insects_abrupt insects_incremental insects_incremental_reoccurring gas_drift \
     kddcup99 covertype pendigits shuttle \
-    --stall-limit 10800 "$@"
+    --models MicroTEDAClusPlus DenStream DBSTREAM BIRCH MiniBatchKMeans BICO --stall-limit 10800 "$@"
 echo "The experiment is complete."

@@ -17,10 +17,12 @@ subtracts from it. Each process runs one thread, with the hash seed of Python
 fixed.
 
 Usage (from experimentos/modern_methodology):
-    python -m benchmark.memory [--runs FIRST LAST] [--models M ...] [--workers N]
-                               [--stall-limit SECONDS]
-Writes results_memory/tasks.csv, with one row per task, and continues from the
-tasks that are missing.
+    python -m benchmark.memory [--results DIR] [--out DIR] [--runs FIRST LAST]
+                               [--models M ...] [--workers N] [--stall-limit SECONDS]
+                               [--memory-limit GIGABYTES]
+The tasks and their hyperparameters come from the experiment in DIR, by default
+results_main. Writes OUT/tasks.csv, by default under results_memory, with one
+row per task, and continues from the tasks that are missing.
 """
 
 import os
@@ -46,12 +48,11 @@ import numpy as np
 import pandas as pd
 
 from benchmark import analysis
-from benchmark.datasets import load_stream
 from benchmark.evaluation import process, warm_up
 from benchmark.models import MODELS, build
 from benchmark.parallel import STALL_LIMIT, finished_tasks, run_tasks
+from benchmark.preprocessing import segments
 from benchmark.runner import COST_RUNS, stream_length, task_seeds
-from benchmark.tuning import split
 
 OUT = analysis.ROOT / "results_memory"
 TASK_COLUMNS = [
@@ -104,8 +105,7 @@ def measure_task(dataset: str, model: str, run: int, hyperparameters: str, facto
     row = {"dataset": dataset, "model": model, "run": run}
     try:
         _first_tracking()
-        X, y = load_stream(dataset, run, stream_length(dataset, factor))
-        _, (X_evaluation, _) = split(X, y)
+        _, (X_evaluation, _) = segments(dataset, run, stream_length(dataset, factor))
         _, model_seed = task_seeds(dataset, model, run)
         selected = json.loads(hyperparameters)
 
@@ -130,23 +130,30 @@ def measure_task(dataset: str, model: str, run: int, hyperparameters: str, facto
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser.add_argument("--results", type=Path, default=analysis.MAIN)
+    parser.add_argument("--out", type=Path, default=OUT)
     parser.add_argument("--runs", type=int, nargs=2, default=[0, COST_RUNS - 1])
     parser.add_argument(
         "--models", nargs="+", default=list(MODELS), choices=list(MODELS)
     )
     parser.add_argument("--workers", type=int, default=os.cpu_count())
     parser.add_argument("--stall-limit", type=int, default=STALL_LIMIT)
+    parser.add_argument(
+        "--memory-limit",
+        type=float,
+        help="gigabytes of memory per worker; a task that needs more fails",
+    )
     arguments = parser.parse_args()
 
-    factor = analysis.length_factor(analysis.MAIN)
-    selected = pd.read_csv(analysis.MAIN / "tasks.csv")
+    factor = analysis.length_factor(arguments.results)
+    selected = pd.read_csv(arguments.results / "tasks.csv")
     selected = selected[
         (selected.status == "OK")
         & selected.model.isin(arguments.models)
         & selected.run.between(*arguments.runs)
     ].sort_values(["run", "dataset", "model"])
-    OUT.mkdir(exist_ok=True)
-    tasks_file = OUT / "tasks.csv"
+    arguments.out.mkdir(exist_ok=True)
+    tasks_file = arguments.out / "tasks.csv"
     finished = finished_tasks(tasks_file)
     tasks = [
         (task.dataset, task.model, task.run, task.hyperparameters, factor)
@@ -164,6 +171,11 @@ def main():
         arguments.workers,
         arguments.stall_limit,
         tasks_per_process=1,
+        memory_limit=(
+            None
+            if arguments.memory_limit is None
+            else int(arguments.memory_limit * 2**30)
+        ),
     )
 
 

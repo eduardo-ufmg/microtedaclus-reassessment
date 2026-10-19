@@ -31,6 +31,7 @@ MODEL_NAMES = {
     "BIRCH": "BIRCH",
     "MiniBatchKMeans": "Mini-batch k-means",
     "BICO": "BICO",
+    "MicroTEDAClusPlusFinal": "MicroTEDAClus+",
 }
 MODEL_COLORS = {
     "MicroTEDAClusPlus": "xkcd:red",
@@ -39,6 +40,7 @@ MODEL_COLORS = {
     "BIRCH": "xkcd:purple",
     "MiniBatchKMeans": "xkcd:brown",
     "BICO": "xkcd:green",
+    "MicroTEDAClusPlusFinal": "xkcd:red",
 }
 
 

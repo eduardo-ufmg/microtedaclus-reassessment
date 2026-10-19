@@ -5,7 +5,7 @@
 # Arguments go to the two first parts, e.g. --workers 16 --length-factor 5.
 set -e
 cd "$(dirname "$0")"
-.venv/bin/python -m benchmark.runner results_main "$@"
+.venv/bin/python -m benchmark.runner results_main --models MicroTEDAClusPlus DenStream DBSTREAM BIRCH MiniBatchKMeans BICO "$@"
 .venv/bin/python -m benchmark.runner results_previous_protocol "$@" \
     --protocol previous --models MicroTEDAClusPlus
 .venv/bin/python -m benchmark.timing

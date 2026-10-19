@@ -152,7 +152,7 @@ def against(control: pd.DataFrame, variant: pd.DataFrame, metric: str) -> pd.Dat
 
 
 def search_ranges(out: Path, runs: tuple, datasets=tuple(DATASETS)) -> pd.DataFrame:
-    """Search range of every hyperparameter of every model, in every dataset and run.
+    """Search range of every hyperparameter of the models of OUT, in every dataset and run.
 
     The ranges come from the streams again, by the rules of the protocol of
     OUT, which takes long for the longest streams, so they are kept in
@@ -164,6 +164,7 @@ def search_ranges(out: Path, runs: tuple, datasets=tuple(DATASETS)) -> pd.DataFr
         if set(runs) <= set(ranges.run):
             return ranges[ranges.run.isin(runs)]
     rules = RULES[configuration(out)["protocol"]]
+    models = set(pd.read_csv(out / "tasks.csv").model)
     rows = []
     for dataset in datasets:
         for run in runs:
@@ -172,6 +173,8 @@ def search_ranges(out: Path, runs: tuple, datasets=tuple(DATASETS)) -> pd.DataFr
             )
             of_category = rules(X_tuning, y_tuning)
             for model, model_class in MODELS.items():
+                if model not in models:
+                    continue
                 for name, category in model_class.HYPERPARAMETERS.items():
                     rows.append(
                         {

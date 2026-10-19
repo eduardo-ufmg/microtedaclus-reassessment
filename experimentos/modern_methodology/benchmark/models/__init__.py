@@ -8,6 +8,7 @@ category of every hyperparameter it exposes, and whether it takes a seed.
 
 from benchmark.models.bico import Bico
 from benchmark.models.microtedaclus_plus import MicroTEDAClusPlus
+from benchmark.models.microtedaclus_plus_final import MicroTEDAClusPlusFinal
 from benchmark.models.river import DBSTREAM, DenStream
 from benchmark.models.scikit import Birch, MiniBatchKMeans
 
@@ -18,6 +19,7 @@ MODELS = {
     "BIRCH": Birch,
     "MiniBatchKMeans": MiniBatchKMeans,
     "BICO": Bico,
+    "MicroTEDAClusPlusFinal": MicroTEDAClusPlusFinal,
 }
 
 

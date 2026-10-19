@@ -8,9 +8,12 @@ it loads or creates on first use is in place, and a new model of the task is
 then timed over the evaluation segment once.
 
 Usage (from experimentos/modern_methodology), on a machine that does nothing else:
-    python -m benchmark.timing [--runs FIRST LAST] [--models M ...]
-Writes results_timing/batches/DATASET/MODEL/RUN.csv, with the columns of the
-experiment, and continues from the tasks that are missing.
+    python -m benchmark.timing [--results DIR] [--out DIR] [--runs FIRST LAST]
+                               [--models M ...]
+The tasks and their hyperparameters come from the experiment in DIR, by default
+results_main. Writes OUT/batches/DATASET/MODEL/RUN.csv, by default under
+results_timing, with the columns of the experiment, and continues from the
+tasks that are missing.
 """
 
 import os
@@ -27,21 +30,23 @@ import argparse
 import json
 import time
 import warnings
+from pathlib import Path
 
 import pandas as pd
 
 from benchmark import analysis
-from benchmark.datasets import load_stream
 from benchmark.evaluation import prequential, warm_up
 from benchmark.models import MODELS, build
+from benchmark.preprocessing import segments
 from benchmark.runner import COST_RUNS, batches_file, stream_length, task_seeds
-from benchmark.tuning import split
 
 OUT = analysis.ROOT / "results_timing"
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser.add_argument("--results", type=Path, default=analysis.MAIN)
+    parser.add_argument("--out", type=Path, default=OUT)
     parser.add_argument("--runs", type=int, nargs=2, default=[0, COST_RUNS - 1])
     parser.add_argument(
         "--models", nargs="+", default=list(MODELS), choices=list(MODELS)
@@ -49,8 +54,8 @@ def main():
     arguments = parser.parse_args()
     warnings.simplefilter("ignore")
 
-    factor = analysis.length_factor(analysis.MAIN)
-    tasks = pd.read_csv(analysis.MAIN / "tasks.csv")
+    factor = analysis.length_factor(arguments.results)
+    tasks = pd.read_csv(arguments.results / "tasks.csv")
     tasks = tasks[
         (tasks.status == "OK")
         & tasks.model.isin(arguments.models)
@@ -59,7 +64,7 @@ def main():
     missing = [
         task
         for task in tasks.itertuples()
-        if not batches_file(OUT, task.dataset, task.model, task.run).exists()
+        if not batches_file(arguments.out, task.dataset, task.model, task.run).exists()
     ]
     print(
         f"{len(missing)} tasks to time, {len(tasks) - len(missing)} already finished",
@@ -67,8 +72,9 @@ def main():
     )
     started = time.perf_counter()
     for done, task in enumerate(missing, start=1):
-        X, y = load_stream(task.dataset, task.run, stream_length(task.dataset, factor))
-        _, (X_evaluation, y_evaluation) = split(X, y)
+        _, (X_evaluation, y_evaluation) = segments(
+            task.dataset, task.run, stream_length(task.dataset, factor)
+        )
         _, model_seed = task_seeds(task.dataset, task.model, task.run)
         hyperparameters = json.loads(task.hyperparameters)
 
@@ -77,7 +83,7 @@ def main():
 
         warm_up(make_model, X_evaluation)
         results = prequential(make_model(), X_evaluation, y_evaluation, measure=True)
-        target = batches_file(OUT, task.dataset, task.model, task.run)
+        target = batches_file(arguments.out, task.dataset, task.model, task.run)
         target.parent.mkdir(parents=True, exist_ok=True)
         partial = target.with_suffix(".partial")
         results.to_csv(partial, index=False)
