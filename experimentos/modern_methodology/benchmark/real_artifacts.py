@@ -139,12 +139,12 @@ def single_class(labels) -> np.ndarray:
     return np.array([len(np.unique(batch)) == 1 for batch in batches])
 
 
-def single_class_shares() -> pd.DataFrame:
+def single_class_shares(datasets=DATASETS, runs=RUNS) -> pd.DataFrame:
     """Per dataset: the share of single-class batches in the recorded order and in the
     evaluated streams, and the share of runs whose penultimate batch holds one class."""
     rows = {}
-    for dataset in DATASETS:
-        evaluated = [single_class(load_stream(dataset, run)[1]) for run in RUNS]
+    for dataset in datasets:
+        evaluated = [single_class(load_stream(dataset, run)[1]) for run in runs]
         rows[dataset] = {
             "recorded": single_class(recorded_labels(dataset)).mean(),
             "evaluated": np.mean([batches.mean() for batches in evaluated]),
@@ -200,7 +200,7 @@ def dataset_table(out):
     )
 
 
-def quality_table(results, models, runs, excluded, out):
+def quality_table(results, models, runs, excluded, path, label):
     """The single-batch metrics are left out of the datasets in `excluded`."""
     panels = []
     for metric in analysis.QUALITY_METRICS:
@@ -211,12 +211,12 @@ def quality_table(results, models, runs, excluded, out):
         ]
         panels += tier_panels(results, (metric,), models, datasets)
     panel_table(
-        out / "quality.tex",
+        path,
         f"Quality of the models on the real datasets: medians over {run_text(runs)}. {GROUPS} "
         "A dash marks a value left out: the Steady-State ARI and the maximum ARI drop, which "
         "read the penultimate batch, of the streams in which that batch holds a single class, "
         "and the values of a model that failed in more than half of the runs of a dataset.",
-        "tab:real_quality",
+        label,
         columns(DATASETS),
         panels,
     )
@@ -261,7 +261,14 @@ def main():
     excluded = set(shares.index[shares["penultimate"] > 0])
     print("single-batch metrics left out of:", sorted(excluded))
     failure_table(tasks, models, arguments.out)
-    quality_table(complete, models, runs, excluded, arguments.out)
+    quality_table(
+        complete,
+        models,
+        runs,
+        excluded,
+        arguments.out / "quality.tex",
+        "tab:real_quality",
+    )
     abrupt = complete[complete.dataset == "insects_abrupt"]
     insects_abrupt_figure(
         arguments.results,

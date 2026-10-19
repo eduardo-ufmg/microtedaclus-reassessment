@@ -73,10 +73,10 @@ def run_level(out: Path) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def timing_level() -> pd.DataFrame:
+def timing_level(out: Path = TIMING) -> pd.DataFrame:
     """One row per task of the timing pass: its time metrics."""
     rows = []
-    for file in sorted((TIMING / "batches").glob("*/*/*.csv")):
+    for file in sorted((out / "batches").glob("*/*/*.csv")):
         dataset, model = file.parts[-3:-1]
         batches = add_time_columns(pd.read_csv(file))
         rows.append(
@@ -90,9 +90,9 @@ def timing_level() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def memory_level() -> pd.DataFrame:
+def memory_level(out: Path = MEMORY) -> pd.DataFrame:
     """One row per task of the memory pass: its memory metrics."""
-    tasks = pd.read_csv(MEMORY / "tasks.csv")
+    tasks = pd.read_csv(out / "tasks.csv")
     return tasks[tasks.status == "OK"].drop(columns="status")
 
 
