@@ -18,7 +18,7 @@ The second criterion excludes datasets of stream classification whose label is a
 
 \input{RealData/artifacts/datasets.tex}
 
-The three INSECTS datasets record flying insects with an optical sensor, labelled by species and sex \cite{souza2020challenges}. Their authors varied the temperature of the recording, which changes the flight of the insects and therefore the features of each class, and ordered the samples so that the temperature changes abruptly, incrementally, or incrementally and back again. \GasDrift records an array of chemical sensors exposed to six gases over three years, in ten batches across which the sensors drift \cite{vergara2012chemical}. \KDDCup records network connections, labelled by the attack to which they belong \cite{kddcup1999}. It is a frequent dataset of stream clustering \cite{aggarwal2003framework,cao2006density} and a criticised one, for its redundant records among other reasons \cite{tavallaee2009detailed}. \Covertype describes forest cells by cartographic variables, labelled by their cover type \cite{blackard1999comparative}, \Pendigits describes handwritten digits by points of their trajectory \cite{alpaydin1996pen}, and \Shuttle records the sensors of a space shuttle, labelled by one of seven conditions \cite{statlog_shuttle}.
+The three INSECTS datasets record flying insects with an optical sensor, labelled by species and sex \cite{souza2020challenges}. Their authors varied the temperature of the recording, which changes the flight of the insects and therefore the features of each class, and ordered the samples so that the temperature changes abruptly, incrementally, or incrementally and back again. \GasDrift records an array of chemical sensors exposed to six gases over three years, in ten recording periods across which the sensors drift \cite{vergara2012chemical}. \KDDCup records network connections, labelled by the attack to which they belong \cite{kddcup1999}. It is a frequent dataset of stream clustering \cite{aggarwal2003framework,cao2006density} and a criticised one, for its redundant records among other reasons \cite{tavallaee2009detailed}. \Covertype describes forest cells by cartographic variables, labelled by their cover type \cite{blackard1999comparative}, \Pendigits describes handwritten digits by points of their trajectory \cite{alpaydin1996pen}, and \Shuttle records the sensors of a space shuttle, labelled by one of seven conditions \cite{statlog_shuttle}.
 
 \subsection{Features}
 \label{subsec:real_features}
@@ -30,7 +30,7 @@ The features of a real dataset come in units of their own, so they are standardi
 \subsection{Order}
 \label{subsec:real_order}
 
-The INSECTS datasets and \Covertype keep the order of their files. The drifts of the INSECTS datasets are in that order, and the order of \Covertype follows the location of its cells \cite{souza2020challenges}. \Pendigits and \Shuttle record no meaningful order, so their streams are shuffled in every run, as are the static streams of \cref{subsec:mod_streams}. \GasDrift keeps the order of its ten batches, which carries the drift of its sensors, and each batch is shuffled in every run, since the order of the samples within a batch is not recorded.
+The INSECTS datasets and \Covertype keep the order of their files. The drifts of the INSECTS datasets are in that order, and the order of \Covertype follows the location of its cells \cite{souza2020challenges}. \Pendigits and \Shuttle record no meaningful order, so their streams are shuffled in every run, as are the static streams of \cref{subsec:mod_streams}. \GasDrift keeps the order of its ten recording periods, which carries the drift of its sensors, and each period is shuffled in every run, since the order of the samples within a period is not recorded.
 
 \input{RealData/artifacts/single_class.tex}
 
@@ -65,7 +65,7 @@ The tuning segment is the first fifth of the stream, up to 10000 samples, the lo
 
 No model may keep a summary of more structures than a quarter of the tuning segment, the upper end of the rule of the summary size. A model with a fine configuration can keep one structure per sample, and a search over such configurations is not affordable either. A configuration whose summary exceeds the limit fails, as one that raises an error does. A selected model whose summary exceeds it during the evaluation fails its task.
 
-Each dataset is evaluated over 32 runs instead of the 94 of \cref{subsec:multi_run_statistics}, because the cost of 94 runs over the complete real datasets is not affordable. The experiment measures the quality and the size of the summaries, and not the time or the memory.
+Each dataset is evaluated over 32 runs instead of the 94 of \cref{subsec:multi_run_statistics}, because the cost of 94 runs over the complete real datasets is not affordable. The experiment measures the quality only, and not the time or the memory.
 
 A dataset is analysed over the runs that every model finished on it. A model that failed in more than half of the runs of a dataset is left out of that dataset, and the others are compared over the runs that all of them finished.
 
@@ -94,13 +94,6 @@ In the Overall ARI, \MicroTEDAClusPlus is indistinguishable from the worst model
 \end{figure}
 
 \Cref{fig:real_insects_abrupt} follows the models along \InsectsAbrupt. \MicroTEDAClusPlus stays near zero along the whole stream, where the other models keep a low but steady score. In three stretches the median ARI of every model is zero. They are batches of a single class, \cref{tab:real_single_class}, whose ARI is one for a model that placed the whole batch in one cluster and zero otherwise, \cref{subsec:real_order}. In \Covertype every model scores low, and the best median is lower than in any other dataset. In \KDDCup, \DenStream is the only model indistinguishable from the best.
-
-\subsection{Size of the Summaries}
-\label{subsec:real_summary}
-
-\input{RealData/artifacts/summary_size.tex}
-
-\MiniBatchKMeans and \DenStream keep the smallest summaries, \cref{tab:real_summary_size}. The largest summary of \MiniBatchKMeans is indistinguishable from the smallest in every dataset, as its number of clusters is its whole summary. \BICO keeps among the largest in most datasets. \MicroTEDAClusPlus keeps among the largest summaries in \InsectsAbrupt, \Covertype and \Shuttle, and among the largest steady-state summaries in \GasDrift and \Shuttle.
 
 \section{Summary}
 \label{sec:real_summary}
