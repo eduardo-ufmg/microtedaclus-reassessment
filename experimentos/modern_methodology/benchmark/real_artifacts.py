@@ -49,7 +49,7 @@ DESCRIPTION = {
     "gas_drift": (
         r"\GasDrift",
         "vergara2012chemical",
-        "batches in order, each shuffled",
+        "periods in order, each shuffled",
     ),
     "kddcup99": (r"\KDDCup", "kddcup1999", "shuffled"),
     "covertype": (r"\Covertype", "blackard1999comparative", "as recorded"),
@@ -222,17 +222,6 @@ def quality_table(results, models, runs, excluded, out):
     )
 
 
-def summary_table(results, models, runs, out):
-    panel_table(
-        out / "summary_size.tex",
-        "Number of structures in the summary that each model keeps of the stream, on the real "
-        f"datasets: medians over {run_text(runs)}. {GROUPS}",
-        "tab:real_summary_size",
-        columns(DATASETS),
-        tier_panels(results, analysis.SUMMARY_METRICS, models, DATASETS),
-    )
-
-
 def insects_abrupt_figure(results_dir, models, runs, out):
     """Batch ARI along the abrupt INSECTS stream, with its change points."""
     fig, ax = plt.subplots(figsize=(12, 4))
@@ -273,7 +262,6 @@ def main():
     print("single-batch metrics left out of:", sorted(excluded))
     failure_table(tasks, models, arguments.out)
     quality_table(complete, models, runs, excluded, arguments.out)
-    summary_table(complete, models, runs, arguments.out)
     abrupt = complete[complete.dataset == "insects_abrupt"]
     insects_abrupt_figure(
         arguments.results,
