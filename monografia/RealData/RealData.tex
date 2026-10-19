@@ -1,0 +1,108 @@
+\chapter{Real Data Datasets}
+\label{chap:real_data}
+
+The datasets of the previous chapters are synthetic: their clusters, drifts and noise are known by construction. This chapter evaluates the models of \cref{chap:modernization} on datasets of real data, recorded from physical processes and systems. Their classes are not drawn from chosen distributions, their drifts come from the conditions of the recording, and their dimension reaches the hundreds. The models, the evaluation and the statistical analysis are those of \cref{chap:modernization}, and the protocol changes only where these datasets require it.
+
+\section{Datasets}
+\label{sec:real_datasets}
+
+The datasets are chosen by three criteria:
+
+\begin{enumerate}
+    \item They are public and documented, so that their streams can be traced to their sources;
+    \item Their classes are groups of samples of the same origin, such as a species, a gas or a digit, and not the values of a variable to be predicted;
+    \item Their features are numeric.
+\end{enumerate}
+
+The second criterion excludes datasets of stream classification whose label is a quantity to anticipate, such as the direction of a price. Eight datasets are retained, listed in \cref{tab:real_datasets}, which also gives the abbreviations of the tables of this chapter.
+
+\input{RealData/artifacts/datasets.tex}
+
+The three INSECTS datasets record flying insects with an optical sensor, labelled by species and sex \cite{souza2020challenges}. Their authors varied the temperature of the recording, which changes the flight of the insects and therefore the features of each class, and ordered the samples so that the temperature changes abruptly, incrementally, or incrementally and back again. \GasDrift records an array of chemical sensors exposed to six gases over three years, in ten batches across which the sensors drift \cite{vergara2012chemical}. \KDDCup records network connections, labelled by the attack to which they belong \cite{kddcup1999}. It is a frequent dataset of stream clustering \cite{aggarwal2003framework,cao2006density} and a criticised one, for its redundant records among other reasons \cite{tavallaee2009detailed}. \Covertype describes forest cells by cartographic variables, labelled by their cover type \cite{blackard1999comparative}, \Pendigits describes handwritten digits by points of their trajectory \cite{alpaydin1996pen}, and \Shuttle records the sensors of a space shuttle, labelled by one of seven conditions \cite{statlog_shuttle}.
+
+\subsection{Features}
+\label{subsec:real_features}
+
+Each dataset contributes the features that its documentation describes as measurements. Symbolic features, binary indicators and the time of a record are left out: \KDDCup keeps its continuous features, \Covertype its quantitative ones, and \Shuttle every attribute but the first, which is time. No dataset has a missing value.
+
+The features of a real dataset come in units of their own, so they are standardized, by the mean and the standard deviation that each feature has in the tuning segment of the stream. A feature that is constant in the tuning segment cannot be scaled by it and is left out. \Cref{subsubsec:scaling} explains that scaling is expected in any application of the model, and that it leaks information when it is computed over the whole dataset. The tuning segment is what a deployment has before the stream continues, so nothing of the evaluation segment enters the transformation. The datasets of the previous chapters are not standardized.
+
+\subsection{Order}
+\label{subsec:real_order}
+
+The INSECTS datasets and \Covertype keep the order of their files. The drifts of the INSECTS datasets are in that order, and the order of \Covertype follows the location of its cells \cite{souza2020challenges}. \Pendigits and \Shuttle record no meaningful order, so their streams are shuffled in every run, as are the static streams of \cref{subsec:mod_streams}. \GasDrift keeps the order of its ten batches, which carries the drift of its sensors, and each batch is shuffled in every run, since the order of the samples within a batch is not recorded.
+
+\input{RealData/artifacts/single_class.tex}
+
+\KDDCup is shuffled as well. In its recorded order, nearly every batch of its evaluation segment holds a single class, \cref{tab:real_single_class}. The ARI of a batch of a single class only tells whether the model placed the whole batch in one cluster, which is the flaw that \cref{sec:datasets} found in the ordered streams of the original work. Shuffled, no batch of it holds a single class.
+
+Three of the streams evaluated still hold some batches of a single class, and in all of their runs the penultimate batch is one of them, \cref{tab:real_single_class}. The Steady-State ARI and the maximum ARI drop both read the penultimate batch, \cref{sec:evaluation_metrics}, so they are not reported for these three datasets.
+
+\section{Protocol}
+\label{sec:real_protocol}
+
+The protocol is that of \cref{chap:modernization}, with some changes. The search ranges are widened as \cref{tab:real_rules} gives. The minimum points start at one, the weight of a single sample, and the ratios are searched on the logit scale, which gives every decade towards zero and towards one the same room in the search.
+
+\begin{table}[htbp]
+\centering
+\caption{Widened rules of the categories of hyperparameter that change, for a tuning segment of $n$ samples with $k$ labelled clusters; the summary size and the multiplier keep the rules of \cref{tab:mod_rules}. The median distance between two samples is measured on a million pairs of samples drawn at random.}
+\begin{tabular}{p{0.2\textwidth} p{0.27\textwidth} p{0.27\textwidth} l}
+\toprule
+Category & Lower end & Upper end & Scale \\
+\midrule
+Distance & a tenth of the median distance from a sample to its nearest neighbour & ten times the median distance between two samples & logarithmic \\
+Relative variance & square of the median distance from a sample to its nearest neighbour, as a fraction of the total variance & ten times the square of the median distance between two samples, as a fraction of the total variance & logarithmic \\
+Horizon & $n/1000$ samples & $n$ samples & logarithmic \\
+Minimum points & $1$ & $\sqrt{n}$ & logarithmic \\
+Ratio & $0.001$ & $0.999$ & logit \\
+Clusters & $2$ & $4k$ & linear \\
+\bottomrule
+\end{tabular}
+\label{tab:real_rules}
+\end{table}
+
+The tuning segment is the first fifth of the stream, up to 10000 samples, the longest tuning segment of \cref{chap:modernization}, because a search over the whole first fifth of the longest of these streams is not affordable. The evaluation segment is the rest of the stream.
+
+No model may keep a summary of more structures than a quarter of the tuning segment, the upper end of the rule of the summary size. A model with a fine configuration can keep one structure per sample, and a search over such configurations is not affordable either. A configuration whose summary exceeds the limit fails, as one that raises an error does. A selected model whose summary exceeds it during the evaluation fails its task.
+
+Each dataset is evaluated over 32 runs instead of the 94 of \cref{subsec:multi_run_statistics}, because the cost of 94 runs over the complete real datasets is not affordable. The experiment measures the quality and the size of the summaries, and not the time or the memory.
+
+A dataset is analysed over the runs that every model finished on it. A model that failed in more than half of the runs of a dataset is left out of that dataset, and the others are compared over the runs that all of them finished.
+
+\section{Results}
+\label{sec:real_results}
+
+\subsection{Failures}
+\label{subsec:real_failures}
+
+\input{RealData/artifacts/failures.tex}
+
+\BIRCH is the only model that fails often, \cref{tab:real_failures}. It fails in most runs of \InsectsAbrupt, \InsectsIncremental and \GasDrift, which leaves it out of them, and in about half of the runs of \KDDCup and a third of those of \InsectsReoccurring, which leaves their comparisons with fewer runs. Every failure is a summary that exceeded the limit. The tree of cluster features of \BIRCH does not fade, unlike the microclusters of \DenStream and \DBSTREAM, \cref{sec:mod_models}, and it already held over a thousand subclusters in the scalability streams of \cref{chap:modernization}, \cref{tab:mod_summary_size_scalability}. \MicroTEDAClusPlus fails in a single run.
+
+\subsection{Clustering Quality}
+\label{subsec:real_quality}
+
+\input{RealData/artifacts/quality.tex}
+
+In the Overall ARI, \MicroTEDAClusPlus is indistinguishable from the worst model in six of the eight datasets, \cref{tab:real_quality}: the three INSECTS datasets, \GasDrift, \Covertype and \Pendigits. It is indistinguishable from the best model in \Shuttle only. \DenStream and \MiniBatchKMeans are indistinguishable from the best model in six datasets each. The ARI at the fifth batch shows a similar position: \MicroTEDAClusPlus is indistinguishable from the worst model in six datasets.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{RealData/artifacts/plots/insects_abrupt.png}
+    \caption{Batch ARI along the evaluation segment of \InsectsAbrupt: medians and interquartile bands over the runs, with the change points of the stream as dashed lines. \BIRCH is left out of this dataset.}
+    \label{fig:real_insects_abrupt}
+\end{figure}
+
+\Cref{fig:real_insects_abrupt} follows the models along \InsectsAbrupt. \MicroTEDAClusPlus stays near zero along the whole stream, where the other models keep a low but steady score. In three stretches the median ARI of every model is zero. They are batches of a single class, \cref{tab:real_single_class}, whose ARI is one for a model that placed the whole batch in one cluster and zero otherwise, \cref{subsec:real_order}. In \Covertype every model scores low, and the best median is lower than in any other dataset. In \KDDCup, \DenStream is the only model indistinguishable from the best.
+
+\subsection{Size of the Summaries}
+\label{subsec:real_summary}
+
+\input{RealData/artifacts/summary_size.tex}
+
+\MiniBatchKMeans and \DenStream keep the smallest summaries, \cref{tab:real_summary_size}. The largest summary of \MiniBatchKMeans is indistinguishable from the smallest in every dataset, as its number of clusters is its whole summary. \BICO keeps among the largest in most datasets. \MicroTEDAClusPlus keeps among the largest summaries in \InsectsAbrupt, \Covertype and \Shuttle, and among the largest steady-state summaries in \GasDrift and \Shuttle.
+
+\section{Summary}
+\label{sec:real_summary}
+
+The real datasets add drifts that come from the conditions of the recording, classes that are not drawn from chosen distributions, and up to 128 dimensions. Evaluating on them required standardizing the features by the tuning segment, an order for each stream, wider search ranges, a limit on the tuning segment and on the size of the summaries, and fewer runs. On them, \MicroTEDAClusPlus is indistinguishable from the worst model in most datasets, \cref{tab:real_quality}, and \DenStream and \MiniBatchKMeans are among the best most often. \BIRCH exceeds the limit on the summary in most runs of three datasets, \cref{tab:real_failures}.
