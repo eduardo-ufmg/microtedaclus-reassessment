@@ -1,0 +1,44 @@
+\begin{table}[htbp]
+\centering
+\caption{Quality of the models on the real datasets: medians over 32 runs, except 31 in INS-A, 21 in INS-R, 17 in KDD, 27 in COV, 28 in PEN. A value in bold is statistically indistinguishable from the best model of its dataset, and a value in red from the worst. A dash marks a value left out: the Steady-State ARI and the maximum ARI drop, which read the penultimate batch, of the streams in which that batch holds a single class, and the values of a model that failed in more than half of the runs of a dataset.}
+\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\begin{tabular}{l c c c c c c c c }
+\toprule
+Model & INS-A & INS-I & INS-R & GAS & KDD & COV & PEN & SHU \\
+\midrule
+\multicolumn{9}{l}{\textit{Overall ARI}} \\
+\modelname{MicroTEDAClus+} & \textcolor{red}{0.138} & 0.136 & 0.121 & \textcolor{red}{0.181} & 0.663 & \textcolor{red}{0.058} & 0.497 & \textbf{0.461} \\
+\modelname{DenStream} & \textbf{0.176} & \textbf{0.179} & \textbf{0.153} & 0.192 & \textbf{0.947} & \textcolor{red}{0.055} & 0.514 & 0.374 \\
+\modelname{DBSTREAM} & \textcolor{red}{0.156} & \textcolor{red}{0.092} & 0.084 & \textcolor{red}{0.152} & 0.917 & 0.067 & 0.550 & 0.374 \\
+\modelname{BIRCH} & - & - & \textcolor{red}{0.059} & - & \textcolor{red}{0.093} & \textbf{0.067} & 0.517 & \textcolor{red}{0.000} \\
+\modelname{Mini-batch k-means} & \textbf{0.199} & \textbf{0.170} & 0.113 & \textbf{0.207} & 0.918 & \textbf{0.073} & 0.526 & 0.446 \\
+\modelname{BICO} & \textbf{0.182} & 0.151 & 0.126 & \textcolor{red}{0.172} & 0.562 & \textbf{0.072} & 0.545 & 0.361 \\
+\midrule
+\multicolumn{9}{l}{\textit{Steady-State ARI}} \\
+\modelname{MicroTEDAClus+} & - & \textcolor{red}{0.150} & - & \textbf{0.143} & 0.500 & - & 0.491 & \textbf{0.364} \\
+\modelname{DenStream} & - & \textbf{0.262} & - & 0.132 & \textbf{0.929} & - & 0.501 & \textbf{0.361} \\
+\modelname{DBSTREAM} & - & \textcolor{red}{0.144} & - & 0.118 & \textbf{0.890} & - & 0.532 & \textbf{0.306} \\
+\modelname{BIRCH} & - & - & - & - & \textcolor{red}{0.022} & - & 0.516 & \textcolor{red}{0.000} \\
+\modelname{Mini-batch k-means} & - & \textbf{0.245} & - & \textbf{0.133} & \textbf{0.894} & - & 0.518 & \textbf{0.358} \\
+\modelname{BICO} & - & 0.211 & - & \textcolor{red}{0.116} & 0.501 & - & 0.536 & \textbf{0.297} \\
+\midrule
+\multicolumn{9}{l}{\textit{ARI at the fifth batch}} \\
+\modelname{MicroTEDAClus+} & \textcolor{red}{0.000} & \textcolor{red}{0.068} & \textcolor{red}{0.022} & \textbf{0.301} & \textcolor{red}{0.742} & 0.000 & 0.464 & \textbf{0.432} \\
+\modelname{DenStream} & 0.122 & \textcolor{red}{0.044} & 0.081 & \textcolor{red}{0.000} & \textcolor{red}{0.600} & \textcolor{red}{-0.002} & \textcolor{red}{0.378} & \textcolor{red}{0.000} \\
+\modelname{DBSTREAM} & 0.043 & \textcolor{red}{0.077} & \textcolor{red}{0.047} & \textbf{0.309} & \textbf{0.924} & \textcolor{red}{0.000} & \textbf{0.518} & \textbf{0.438} \\
+\modelname{BIRCH} & - & - & \textbf{0.133} & - & \textcolor{red}{0.436} & \textcolor{red}{-0.001} & \textbf{0.524} & \textbf{0.319} \\
+\modelname{Mini-batch k-means} & \textbf{0.194} & \textbf{0.205} & \textbf{0.206} & \textbf{0.317} & \textbf{0.896} & \textbf{0.026} & \textbf{0.500} & \textbf{0.375} \\
+\modelname{BICO} & \textbf{0.185} & 0.166 & \textbf{0.205} & \textbf{0.331} & \textbf{0.925} & \textbf{0.018} & \textbf{0.514} & \textbf{0.406} \\
+\midrule
+\multicolumn{9}{l}{\textit{Maximum ARI drop}} \\
+\modelname{MicroTEDAClus+} & - & \textcolor{red}{0.143} & - & 0.534 & 0.463 & - & \textcolor{red}{0.274} & \textcolor{red}{0.476} \\
+\modelname{DenStream} & - & \textbf{0.092} & - & 0.433 & \textbf{0.071} & - & \textbf{0.152} & \textbf{0.304} \\
+\modelname{DBSTREAM} & - & \textcolor{red}{0.139} & - & 0.490 & \textbf{0.101} & - & \textbf{0.192} & 0.384 \\
+\modelname{BIRCH} & - & - & - & - & \textcolor{red}{0.925} & - & \textbf{0.175} & \textcolor{red}{0.678} \\
+\modelname{Mini-batch k-means} & - & 0.117 & - & 0.473 & \textbf{0.091} & - & \textbf{0.157} & \textbf{0.344} \\
+\modelname{BICO} & - & \textcolor{red}{0.158} & - & 0.520 & 0.499 & - & \textbf{0.182} & 0.460 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:ri_quality}
+\end{table}

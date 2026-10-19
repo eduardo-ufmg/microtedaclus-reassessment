@@ -11,6 +11,7 @@ only when they exist:
   the replay of its selected configurations (results_real/diagnosis);
 - confirmation.tex: the chain on the runs of the real-data experiment
   (results_confirmation, with MicroTEDAClus+ from results_real);
+- runs.tex: the final version in the confirmation and in its own experiment;
 - quality.tex, failures.tex and cost.tex: the final version of MicroTEDAClus+,
   tuned and evaluated as every model of the real-data experiment
   (results_final_model, results_timing_real, results_memory_real), against the
@@ -109,7 +110,7 @@ def _median(values: pd.Series, metric: str) -> str:
 
 
 def chain_table(steps, failed, datasets, excluded, runs, caption, label, path):
-    """Each step against the step above it, over the runs that both finished.
+    """Each row against the row above it, over the runs that both finished.
 
     `steps` maps the label of each step, in order, to its run-level results, and
     `failed` maps it to its number of failed tasks per dataset; `runs` is the
@@ -162,9 +163,9 @@ def chain_table(steps, failed, datasets, excluded, runs, caption, label, path):
     )
     panel_table(
         path,
-        f"{caption}: medians over the {runs} runs less the failed ones. Each step is compared "
-        "with the step above it over the runs that both finished: a value in bold is "
-        "significantly better than that of the step above it, and a value in red "
+        f"{caption}: medians over the {runs} runs less the failed ones. Each row is compared "
+        "with the row above it over the runs that both finished: a value in bold is "
+        "significantly better than that of the row above it, and a value in red "
         "significantly worse; a smaller summary is better. A dash marks the Steady-State ARI "
         "of the streams whose penultimate batch holds a single class. Every failure is a "
         "summary that exceeded a quarter of the tuning segment.",
@@ -221,6 +222,32 @@ def confirmation_chain(excluded):
         "real-data experiment",
         "tab:ri_confirmation",
         OUT / "confirmation.tex",
+    )
+
+
+def runs_table(excluded):
+    """The final version in the confirmation and in its own experiment, on the same streams:
+    the experimental implementation with the seeds of MicroTEDAClus+ of Chapter 3, and the
+    implementation on its own with its own seeds."""
+    final = r"\modelname{MicroTEDAClus+}"
+    chain_table(
+        {
+            CHAIN["no_noise_link"]: analysis.run_level(CONFIRMATION / "no_noise_link"),
+            final: analysis.run_level(FINAL_EXPERIMENT),
+        },
+        {
+            CHAIN["no_noise_link"]: failed_tasks(CONFIRMATION / "no_noise_link"),
+            final: failed_tasks(FINAL_EXPERIMENT),
+        },
+        DATASETS,
+        excluded,
+        len(CONFIRMATION_RUNS),
+        r"The final version of \MicroTEDAClusPlus{} in the last step of the confirmation, with "
+        r"the experimental implementation and the seeds of \MicroTEDAClusPlus{} of "
+        r"\cref{chap:ModelImprovement}, and in its own experiment, implemented on its own and "
+        "with its own seeds, on the same streams",
+        "tab:ri_runs",
+        OUT / "runs.tex",
     )
 
 
@@ -505,7 +532,7 @@ def partitions_table():
     fewest = pd.concat(runs.values(), axis=1).min(axis=1).to_dict()
     panel_table(
         OUT / "partitions.tex",
-        "The partitions of the two versions of MicroTEDAClus+ on the real datasets, replayed "
+        r"The partitions of the two versions of \MicroTEDAClusPlus{} on the real datasets, replayed "
         "with the hyperparameters selected for each: medians over the batches of a stream, "
         f"then medians over the runs, at least {run_text(fewest)}. Homogeneity and "
         "completeness compare the clusters predicted for a batch with its classes, over the "
@@ -534,6 +561,7 @@ def main():
     if (analysis.REAL / "diagnosis" / "MicroTEDAClusPlus.csv").exists():
         diagnosis_table()
     if (FINAL_EXPERIMENT / "tasks.csv").exists():
+        runs_table(excluded)
         comparison_tables(excluded)
         if (FINAL_EXPERIMENT / "diagnosis" / f"{FINAL}.csv").exists():
             partitions_table()
