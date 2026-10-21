@@ -1,0 +1,162 @@
+\chapter{Model Improvement on Real Data}
+\label{chap:real_improvement}
+
+\MicroTEDAClusPlus is indistinguishable from the worst model in six of the eight real datasets of \cref{chap:real_data}, \cref{tab:real_quality}. This chapter repeats on these datasets the effort of \cref{chap:ModelImprovement}: it examines what the model does on them, evaluates changes to it, keeps three, and confirms them on new runs and on datasets that took no part in their choice. The result is the final version of \MicroTEDAClusPlus, which is then compared with the benchmark models by the protocol of \cref{chap:real_data}, in quality and in cost. Where the two versions appear together, the model of \cref{chap:ModelImprovement} is called ``\MicroTEDAClusPlus of \cref{chap:ModelImprovement}'', and \modelname{MicroTEDAClus+ (Ch.~3)} in the tables.
+
+The diagnosis and the development of the changes use six of the eight real datasets. \KDDCup and \Covertype are left out of them: they are the two longest streams, \cref{tab:real_datasets}, too costly for the many evaluations of the development, and in \Covertype the best model scores lower than in any other dataset, \cref{tab:real_quality}, which leaves little to separate the candidates. The two return in the confirmation, where they show whether the changes hold on data that took no part in their choice.
+
+\section{Diagnosis}
+\label{sec:ri_diagnosis}
+
+\input{RealImprovement/artifacts/diagnosis.tex}
+
+\Cref{tab:ri_diagnosis} gives the state of \cref{chap:ModelImprovement}'s implementation \MicroTEDAClusPlus at every batch of the evaluation segments of the runs of \cref{chap:real_data}, on the six datasets of the development. In the INSECTS datasets and in \Pendigits, most of its microclusters never reach three samples, so few of them mature and fewer are active: the activation, the macroclusters and the prediction rest on a small share of the microclusters. In \GasDrift and \Shuttle, most microclusters mature. In \InsectsAbrupt the model labels nearly half of the samples as noise, and in \InsectsAbrupt and \InsectsReoccurring it predicts fewer clusters than there are classes, a single one in \InsectsReoccurring.
+
+\section{Experimental Design}
+\label{sec:ri_design}
+
+The design is that of \cref{sec:mi_design}, with the changes that this section describes. Every candidate is tuned and evaluated by the protocol of \cref{sec:real_protocol}.
+
+\subsection{Runs}
+\label{subsec:ri_runs}
+
+The runs of \cref{chap:real_data} are the runs 0 to 31. The development uses the 32 runs that follow them, and every candidate uses, in each task, the seeds of the previous \MicroTEDAClusPlus version in that task, so that two candidates differ only by their changes. The confirmation evaluates the kept changes on the runs 0 to 31 of the eight datasets, on which no candidate ran during the development.
+
+\subsection{Decision Rule}
+\label{subsec:ri_decision_rule}
+
+A candidate is compared with its control as in \cref{subsec:mi_decision_rule}, on the Overall ARI of the six datasets and on the Steady-State ARI of the four whose penultimate batch does not hold a single class, \cref{tab:real_single_class}. Unlike in \cref{chap:ModelImprovement}, a candidate does not need to improve its control to be kept. A candidate is kept if
+
+\begin{itemize}
+    \item it improves its control;
+    \item it is indistinguishable from its control, its change is analytically preferred, and its summary is not clearly larger;
+    \item it is mixed, its gains outnumber its losses, and no loss comes from a defect of the change, as the losses are examined before the decision.
+\end{itemize}
+
+A kept candidate becomes the control of the candidates that follow it. The size of the summary is the cost that the development reports. The development did not measure time, since its tasks ran in parallel.
+
+\section{Kept Changes}
+\label{sec:ri_kept}
+
+Three changes are kept, each applied to the model that results from the previous ones. \Cref{tab:ri_chain} compares every step of the chain with the step before it.
+
+\input{RealImprovement/artifacts/chain.tex}
+
+\subsection{Variance Limit}
+\label{subsec:ri_low_variance}
+
+\modelname{low-variance} searches the variance limit from a tenth of the lower end of the range of the relative variance, \cref{tab:real_rules}. With the range of \cref{chap:real_data}, the selected limit lies at the lower end of its range in most runs of \InsectsAbrupt, \InsectsIncremental and \Pendigits, \cref{tab:ri_variance}, so the search would select smaller limits if it could. With the extended range, it lies at the lower end in no run.
+
+\input{RealImprovement/artifacts/variance.tex}
+
+The change widens the search of \MicroTEDAClusPlus and of no other model. The ranges of \cref{chap:real_data} come from the tuning segment by rule, so a wider range does not suit one scale only. That chapter extended the lower end of the distances of the benchmark models to a tenth of the median distance from a sample to its nearest neighbour, \cref{tab:real_rules}, and left the lower end of the relative variance at the square of that distance.
+
+\modelname{low-variance} improves \MicroTEDAClusPlus of \cref{chap:ModelImprovement} in the Overall ARI of the three INSECTS datasets and of \Pendigits, and in the Steady-State ARI of \Pendigits, \cref{tab:ri_chain}. Its steady-state summary is larger where it improves.
+
+\subsection{Noise Label}
+\label{subsec:ri_no_noise}
+
+\modelname{no-noise} removes the noise label of \MicroTEDAClusPlus, \cref{eq:mi_final_prediction}: every sample is assigned to the macrocluster of its nearest active microcluster, and the noise distance is no longer a hyperparameter. The classes of the real datasets cover every sample, \cref{sec:real_datasets}, so a sample labelled as noise is always an error of the partition, and the previous version of \MicroTEDAClusPlus labels nearly half of the samples of \InsectsAbrupt as noise, \cref{tab:ri_diagnosis}.
+
+\modelname{low-variance + no-noise} improves \modelname{low-variance} in the Overall ARI of \InsectsReoccurring, and loses in no dataset, \cref{tab:ri_chain}. It fails in more runs, and its summary is larger in \InsectsReoccurring.
+
+\subsection{Link Factor}
+\label{subsec:ri_link}
+
+\modelname{link-factor} is the candidate of \cref{subsec:mi_improvement_candidates} that searches the factor $\ell$ of the intersection condition, \cref{eq:microcluster_intersection_condition}, in $[0.5, 4]$. Applied to \modelname{low-variance}, it improves it with a single gain, while its median Overall ARI is lower in four of the six datasets, \cref{tab:ri_candidates}. Since \modelname{no-noise} was kept against the same control, the two changes are evaluated together: \modelname{link-factor} is kept if \modelname{low-variance + no-noise + link-factor} is kept against \modelname{low-variance + no-noise}.
+
+The combination is mixed, \cref{tab:ri_chain}: it gains in the Overall ARI of \GasDrift and \Pendigits and in the Steady-State ARI of \GasDrift, and loses in the Overall ARI of \InsectsIncremental and \InsectsReoccurring. The search selects factors close to the fixed factor of two in the INSECTS datasets and different factors in the others, \cref{tab:ri_link}.
+
+\input{RealImprovement/artifacts/link.tex}
+
+ Where the selected factor is that of the control, the model is nearly the control, found by a search with one more hyperparameter and the same number of trials, which \cref{subsec:mi_m_function} already found to cost quality. The losses come from the search and not from the change, and the gains outnumber them, so the combination is kept.
+
+\section{Rejected Candidates}
+\label{sec:ri_rejected}
+
+\Cref{tab:ri_candidates} gives the outcome of every other candidate against its control. Its last rows are \modelname{link-factor} applied alone to \modelname{low-variance}, before the combination test of \cref{subsec:ri_link}, and \modelname{wide-link} against its control and against the last step of the chain.
+
+\input{RealImprovement/artifacts/candidates.tex}
+
+\paragraph{Sensitivity function.} \modelname{m-constant} and \modelname{m-reparam} are the candidates of \cref{subsec:mi_m_function}, and three more change the function $m$ of \cref{eq:m_function}: \modelname{m-fixed} sets $m = 3$ from the third sample on, \modelname{m-sigmoid} searches the two constants of the sigmoid, and \modelname{m-rate} keeps the asymptote of three and searches how fast $m$ approaches it. All five regress, and the original function is retained, as in \cref{chap:ModelImprovement}.
+
+\paragraph{Geometry.} \modelname{diagonal-variance} gives a microcluster one variance per feature, and \modelname{covariance} is the candidate of \cref{subsec:mi_covariance} with the directional link. Both regress. \modelname{covariance} was evaluated first on eight runs of \InsectsIncremental, \Pendigits and \Shuttle, three datasets with fewer features than \GasDrift, because each of its microclusters carries a matrix of the square of the dimension and a full development would have taken several hours, most of them in \GasDrift. Its probe already lost in two cells, and \modelname{diagonal-variance}, which also standardizes the distance feature by feature, had regressed in five, so the full development was not run. The scalar variance is retained.
+
+\paragraph{Density.} \modelname{volume-density} is the density of \cref{sec:mi_corrections}, and \modelname{log-density} is the logarithm of the number of samples per volume of the microcluster. \modelname{volume-density} is mixed with one gain and one loss, which the rule does not keep, and \modelname{log-density} regresses. \modelname{diagonal-variance + log-density} was not run, since both of its changes regress alone and the pair would have to undo both regressions to be kept.
+
+\paragraph{Activation and pruning.} Two candidates of \cref{subsec:mi_improvement_candidates}, \modelname{no-activation} and \modelname{recency}, are mixed, with more losses than gains. \modelname{mature-mean}, the correction of \cref{sec:mi_corrections}, is indistinguishable from its control and analytically preferred, but its summary is larger in one dataset, so it is not kept.
+
+\paragraph{Membership.} \modelname{norm-typicality} and \modelname{local-weights} are the memberships of \cref{sec:mi_corrections}. Both regress, and the nearest membership is retained.
+
+\paragraph{Dimensionality penalty.} \modelname{dimensionality-penalty} restores the factor $2/d$ that \MicroTEDAClusPlus removed in \cref{chap:ModelImprovement}. It is mixed, with more losses than gains, and its summary is smaller than that of its control in every dataset.
+
+\paragraph{Departures from the rule.} Two candidates that the rule would keep were not kept. \modelname{chi-threshold}, the candidate of \cref{subsec:mi_improvement_candidates} that tests the outliers against the dispersion of a Gaussian cluster in $d$ dimensions, improves \modelname{low-variance} with a single gain, \cref{tab:ri_candidates}, while its median Overall ARI is lower in five of the six datasets. \modelname{wide-link}, the link factor searched in $[0.05, 4]$ on a logarithmic scale, is mixed against its control, \modelname{low-variance + no-noise}, with one gain and one loss, but in the direct comparison planned between it and \modelname{low-variance + no-noise + link-factor} it improves the latter with two gains, while its median Overall ARI is lower in five of the six datasets. In both cases a single favourable dataset was judged to weigh less than a consistent lean in the others, and the model without the candidate was kept. A comparison of the medians of the two link factors with those of the benchmark models in \cref{tab:real_quality} also favoured the narrower range, without being part of the rule. The link factor was itself kept only provisionally, although it improved its control, because its median Overall ARI was also lower in most datasets; what distinguished it from \modelname{chi-threshold} was the size of its gain, which the rule does not consider. The combination test of \cref{subsec:ri_link} then kept it by the rule. Finally, \modelname{covariance} and \modelname{diagonal-variance + log-density} were not evaluated in full, for the reasons given with them above.
+
+\section{Confirmation}
+\label{sec:ri_confirmation}
+
+\input{RealImprovement/artifacts/confirmation.tex}
+
+\Cref{tab:ri_confirmation} repeats the chain on the runs 0 to 31 of the eight datasets. \modelname{low-variance} improves the previous \MicroTEDAClusPlus version in the Overall ARI of the three INSECTS datasets and of \Pendigits and in the Steady-State ARI of \Pendigits, the same gains as in the development, \cref{tab:ri_chain}, and its summary is again larger where it improves. The removal of the noise label improves \modelname{low-variance} in \InsectsReoccurring, as in the development. The link factor gains in \Pendigits and loses in \InsectsReoccurring, as in the development, and also gains in \Covertype; its gain in \GasDrift and its loss in \InsectsIncremental are not significant on these runs.
+
+No step loses where the development found it to gain, and no step loses in the two datasets that took no part in the development. In \KDDCup no step changes the model significantly. In \Covertype the steps fail in many runs, all by the limit on the summary of \cref{sec:real_protocol}, \cref{tab:ri_confirmation}.
+
+\section{The Final Version of \MicroTEDAClusPlus}
+\label{sec:ri_final}
+
+The final version of \MicroTEDAClusPlus differs from the version of \cref{chap:ModelImprovement} in the three points of \cref{tab:ri_differences}. Its hyperparameters are the relative variance limit $r$, the decay and the link factor $\ell$.
+
+\begin{table}[htbp]
+\centering
+\caption{Differences between the final version of \MicroTEDAClusPlus and the version of \cref{chap:ModelImprovement}.}
+\begin{tabular}{l p{0.36\textwidth} p{0.36\textwidth}}
+\toprule
+ & Version of \cref{chap:ModelImprovement} & Final version \\
+\midrule
+Noise & a sample farther than $n_\sigma$ standard deviations from every active microcluster is noise & every sample is assigned to the macrocluster of its nearest active microcluster \\
+Intersection & $\lVert \mu_i - \mu_j \rVert \le 2\,(\sigma_i + \sigma_j)$ & $\lVert \mu_i - \mu_j \rVert \le \ell\,(\sigma_i + \sigma_j)$, with $\ell$ searched in $[0.5, 4]$ \\
+Variance limit & searched from the square of the median distance from a sample to its nearest neighbour, as a fraction of the total variance & searched from a tenth of that lower end \\
+\bottomrule
+\end{tabular}
+\label{tab:ri_differences}
+\end{table}
+
+The final version is tuned and evaluated by the protocol of \cref{chap:real_data} on its runs 0 to 31, as every model of that chapter, and its time and memory, and those of the benchmark models, are measured by the procedure of \cref{sec:mod_measurements} on the runs 0 to 9. Its search uses seeds of its own, as that of every model of \cref{chap:real_data}, where the confirmation used those of \MicroTEDAClusPlus of \cref{chap:ModelImprovement} to pair the steps, so its medians differ somewhat from those of the last step of \cref{tab:ri_confirmation}.
+
+\input{RealImprovement/artifacts/partitions.tex}
+
+\Cref{tab:ri_partitions} compares the partitions that the two versions predict. The final version labels no sample as noise, and in every dataset but \KDDCup it predicts more clusters than there are classes, several times more in \InsectsAbrupt and \Covertype. Its homogeneity is higher than that of the version of \cref{chap:ModelImprovement} in five datasets and its completeness is lower in most: the final version splits the classes over more clusters, where the version of \cref{chap:ModelImprovement} merged them or labelled their samples as noise. Where the version of \cref{chap:ModelImprovement} predicts a single cluster, in \InsectsReoccurring, \KDDCup and \Covertype, its completeness is one by construction.
+
+\section{Comparison with the Benchmark Models}
+\label{sec:ri_comparison}
+
+\subsection{Clustering Quality}
+\label{subsec:ri_quality}
+
+\input{RealImprovement/artifacts/quality.tex}
+\input{RealImprovement/artifacts/failures.tex}
+
+In the Overall ARI, \cref{tab:ri_quality}, the final version of \MicroTEDAClusPlus is indistinguishable from the best model in \Shuttle, where no other model is, and from the worst in \InsectsAbrupt, \GasDrift and \Covertype; in \InsectsAbrupt its median is the lowest of the models compared. In the four other datasets it is in neither group. In the same comparison, \MicroTEDAClusPlus of \cref{chap:ModelImprovement} was indistinguishable from the worst model in six datasets, \cref{tab:real_quality}. In \KDDCup the median of the final version is about that of the version of \cref{chap:ModelImprovement}.
+
+At the penultimate batch, the final version is indistinguishable from the best model in \GasDrift and \Shuttle and from the worst in \InsectsIncremental. At the fifth batch it is indistinguishable from the worst in the three INSECTS datasets and in \KDDCup, so it still starts slowly, and its maximum ARI drop is among the largest in \InsectsIncremental, \Pendigits and \Shuttle. It fails in nine runs, most of them in \Covertype, all by the limit on the summary, \cref{tab:ri_failures}.
+
+\subsection{Cost}
+\label{subsec:ri_cost}
+
+\input{RealImprovement/artifacts/cost.tex}
+
+The final version is indistinguishable from the fastest model in the prediction stage in five datasets, and from the slowest in none, \cref{tab:ri_cost}. In the learning stage it is indistinguishable from the slowest in \InsectsAbrupt, \GasDrift and \Shuttle and from the fastest in none; the models indistinguishable from the fastest in that stage are \MiniBatchKMeans and \BICO. The memory it holds at the end of the stream is among the largest in \InsectsAbrupt and \Shuttle, and its peak during the evaluation is among the highest in five datasets. \MiniBatchKMeans holds the least memory in five datasets. These comparisons rest on ten runs, and on fewer where a model failed.
+
+\subsection{Remaining Limits}
+\label{subsec:ri_limits}
+
+Three limits of the final version remain. It splits the classes of the INSECTS datasets over many clusters, \cref{tab:ri_partitions}, while its search selects there a link factor close to the fixed factor of the version of \cref{chap:ModelImprovement}, \cref{tab:ri_link}, although a larger factor would join more microclusters. It starts slowly, \cref{tab:ri_quality}. And its summary exceeds the limit in some runs of \Covertype, \cref{tab:ri_failures}, and the peak of its memory is among the highest, \cref{tab:ri_cost}.
+
+The final version was evaluated on the real datasets only, and not on the synthetic datasets of \cref{chap:modernization}. Its removal of the noise label suits data whose classes cover every sample, while on the synthetic datasets with noise \cref{sec:mi_improvements} found the noise label to improve the model.
+
+\section{Summary}
+\label{sec:ri_summary}
+
+On the real datasets of \cref{chap:real_data}, \MicroTEDAClusPlus of \cref{chap:ModelImprovement} is indistinguishable from the worst model in most datasets. Replayed on them, most of its microclusters never mature in the INSECTS datasets and in \Pendigits, and it labels as noise samples of classes that cover the whole stream, \cref{tab:ri_diagnosis}. Of the candidates evaluated on six of the datasets, three changes were kept: the variance limit searched one decade lower, the removal of the noise label and a searched link factor, \cref{tab:ri_chain}. The alternatives to the function $m$, to the isotropic variance, to the density, to the activation and to the membership did not improve the model, \cref{tab:ri_candidates}, as in \cref{chap:ModelImprovement}. The chain held on new runs and on the two datasets left out of the development, \cref{tab:ri_confirmation}.
+
+Tuned and evaluated as every model of \cref{chap:real_data}, the final version of \MicroTEDAClusPlus is indistinguishable from the worst model in three datasets instead of six, and from the best in \Shuttle, \cref{tab:ri_quality}. It still starts slowly and splits the classes of the INSECTS datasets over many clusters, \cref{tab:ri_partitions}. It is among the fastest models in the prediction stage, and among those of the highest peak of memory, \cref{tab:ri_cost}.
