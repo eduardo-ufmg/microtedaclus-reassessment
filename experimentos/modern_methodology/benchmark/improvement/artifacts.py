@@ -63,7 +63,7 @@ BENCHMARKS = ["DenStream", "DBSTREAM", "BIRCH", "MiniBatchKMeans", "BICO"]
 FINAL = "MicroTEDAClusPlusFinal"
 
 # the steps of the chain, by their names in the improvement experiments and in the chapter
-EARLIER = r"\modelname{MicroTEDAClus+ (Ch.~3)}"
+EARLIER = r"\modelname{MicroTEDAClus+ (Ch.~\ref{chap:ModelImprovement})}"
 CHAIN = {
     "control": EARLIER,
     "low_variance": r"\modelname{low-variance}",
