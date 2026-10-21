@@ -20,7 +20,7 @@ import pandas as pd
 
 from benchmark import analysis
 from benchmark.improvement.compare import DECIDING, MARK, NO_STEADY_STATE
-from benchmark.real_artifacts import DATASETS, complete_by_dataset
+from benchmark.real_artifacts import DATASETS, RUNS, complete_by_dataset
 from pfc_shared.statistics import paired_comparisons
 
 FINAL = "no_noise_link"
@@ -42,7 +42,9 @@ SINGLE_CLASS_END = NO_STEADY_STATE | {"covertype"}
 
 def load(results_dir: Path):
     real_tasks = pd.read_csv(analysis.REAL / "tasks.csv")
+    real_tasks = real_tasks[real_tasks.run.isin(RUNS)]
     real = analysis.run_level(analysis.REAL)
+    real = real[real.run.isin(RUNS)]
     parts, tasks = [real], [real_tasks]
     for name in CHAIN[1:]:
         out = results_dir / name

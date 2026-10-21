@@ -32,7 +32,7 @@ from benchmark.tuning import TUNING_LIMIT, split
 from pfc_shared.latex import panel_table, write_table
 
 DATASETS = list(REAL_DATASETS)
-RUNS = range(32)
+RUNS = range(32)  # the runs of the experiment; later runs serve the final comparison
 # Name macro of the thesis, reference and order of every dataset
 DESCRIPTION = {
     "insects_abrupt": (r"\InsectsAbrupt", "souza2020challenges", "as recorded"),
@@ -249,7 +249,9 @@ def main():
     arguments = parser.parse_args()
 
     results = analysis.run_level(arguments.results)
+    results = results[results.run.isin(RUNS)]
     tasks = pd.read_csv(arguments.results / "tasks.csv")
+    tasks = tasks[tasks.run.isin(RUNS)]
     models = [m for m in MODELS if m in set(tasks.model)]
     complete, runs = complete_by_dataset(results, tasks, models)
     print(f"{len(models)} models; complete runs by dataset: {runs}")
