@@ -1,12 +1,12 @@
 \chapter{Real Data Datasets}
 \label{chap:real_data}
 
-The datasets of the previous chapters are synthetic: their clusters, drifts and noise are known by construction. This chapter evaluates the models of \cref{chap:modernization} on datasets of real data, recorded from physical processes and systems. Their classes are not drawn from chosen distributions, their drifts come from the conditions of the recording, and their dimension reaches the hundreds. The models, the evaluation and the statistical analysis are those of \cref{chap:modernization}, and the protocol changes only where these datasets require it.
+The datasets of the previous chapters are synthetic: their clusters, drifts and noise are known by construction. In this chapter, we evaluate the models of \cref{chap:modernization} on datasets of real data, recorded from physical processes and systems. Their classes are not drawn from chosen distributions, their drifts come from the conditions of the recording, and their dimension reaches the hundreds. The models, the evaluation and the statistical analysis are those of \cref{chap:modernization}, and we change the protocol only where these datasets require it.
 
 \section{Datasets}
 \label{sec:real_datasets}
 
-The datasets are chosen by three criteria:
+We choose the datasets by three criteria:
 
 \begin{enumerate}
     \item They are public and documented, so that their streams can be traced to their sources;
@@ -14,7 +14,7 @@ The datasets are chosen by three criteria:
     \item Their features are numeric.
 \end{enumerate}
 
-The second criterion excludes datasets of stream classification whose label is a quantity to anticipate, such as the direction of a price. Eight datasets are retained, listed in \cref{tab:real_datasets}, which also gives the abbreviations of the tables of this chapter.
+The second criterion excludes datasets of stream classification whose label is a quantity to anticipate, such as the direction of a price. We retain eight datasets, listed in \cref{tab:real_datasets}, which also gives the abbreviations of the tables of this chapter.
 
 \input{RealData/artifacts/datasets.tex}
 
@@ -23,29 +23,29 @@ The three INSECTS datasets record flying insects with an optical sensor, labelle
 \subsection{Features}
 \label{subsec:real_features}
 
-Each dataset contributes the features that its documentation describes as measurements. Symbolic features, binary indicators and the time of a record are left out: \KDDCup keeps its continuous features, \Covertype its quantitative ones, and \Shuttle every attribute but the first, which is time. No dataset has a missing value.
+Each dataset contributes the features that its documentation describes as measurements. We leave out symbolic features, binary indicators and the time of a record: \KDDCup keeps its continuous features, \Covertype its quantitative ones, and \Shuttle every attribute but the first, which is time. No dataset has a missing value.
 
-The features of a real dataset come in units of their own, so they are standardized, by the mean and the standard deviation that each feature has in the tuning segment of the stream. A feature that is constant in the tuning segment cannot be scaled by it and is left out. \Cref{subsubsec:scaling} explains that scaling is expected in any application of the model, and that it leaks information when it is computed over the whole dataset. The tuning segment is what a deployment has before the stream continues, so nothing of the evaluation segment enters the transformation. The datasets of the previous chapters are not standardized.
+The features of a real dataset come in units of their own, so we standardize them by the mean and the standard deviation that each feature has in the tuning segment of the stream. A feature that is constant in the tuning segment cannot be scaled by it, and we leave it out. \Cref{subsubsec:scaling} explains that scaling is expected in any application of the model, and that it leaks information when it is computed over the whole dataset. The tuning segment is what a deployment has before the stream continues, so nothing of the evaluation segment enters the transformation. We do not standardize the datasets of the previous chapters.
 
 \subsection{Order}
 \label{subsec:real_order}
 
-The INSECTS datasets and \Covertype keep the order of their files. The drifts of the INSECTS datasets are in that order, and the order of \Covertype follows the location of its cells \cite{souza2020challenges}. \Pendigits and \Shuttle record no meaningful order, so their streams are shuffled in every run, as are the static streams of \cref{subsec:mod_streams}. \GasDrift keeps the order of its ten recording periods, which carries the drift of its sensors, and each period is shuffled in every run, since the order of the samples within a period is not recorded.
+The INSECTS datasets and \Covertype keep the order of their files. The drifts of the INSECTS datasets are in that order, and the order of \Covertype follows the location of its cells \cite{souza2020challenges}. \Pendigits and \Shuttle record no meaningful order, so we shuffle their streams in every run, as we do the static streams of \cref{subsec:mod_streams}. \GasDrift keeps the order of its ten recording periods, which carries the drift of its sensors, and we shuffle each period in every run, since the order of the samples within a period is not recorded.
 
 \input{RealData/artifacts/single_class.tex}
 
-\KDDCup is shuffled as well. In its recorded order, nearly every batch of its evaluation segment holds a single class, \cref{tab:real_single_class}. The ARI of a batch of a single class only tells whether the model placed the whole batch in one cluster, which is the flaw that \cref{sec:datasets} found in the ordered streams of the original work. Shuffled, no batch of it holds a single class.
+We shuffle \KDDCup as well. In its recorded order, nearly every batch of its evaluation segment holds a single class, \cref{tab:real_single_class}. The ARI of a batch of a single class only tells whether the model placed the whole batch in one cluster, which is the flaw that we found in the ordered streams of the original work, \cref{sec:datasets}. Shuffled, no batch of it holds a single class.
 
-Three of the streams evaluated still hold some batches of a single class, and in all of their runs the penultimate batch is one of them, \cref{tab:real_single_class}. The Steady-State ARI and the maximum ARI drop both read the penultimate batch, \cref{sec:evaluation_metrics}, so they are not reported for these three datasets.
+Three of the streams evaluated still hold some batches of a single class, and in all of their runs the penultimate batch is one of them, \cref{tab:real_single_class}. The Steady-State ARI and the maximum ARI drop both read the penultimate batch, \cref{sec:evaluation_metrics}, so we do not report them for these three datasets.
 
 \section{Protocol}
 \label{sec:real_protocol}
 
-The protocol is that of \cref{chap:modernization}, with some changes. The search ranges are widened as \cref{tab:real_rules} gives. The minimum points start at one, the weight of a single sample, and the ratios are searched on the logit scale, which gives every decade towards zero and towards one the same room in the search.
+The protocol is that of \cref{chap:modernization}, with some changes. We widen the search ranges as \cref{tab:real_rules} gives. The minimum points start at one, the weight of a single sample, and we search the ratios on the logit scale, which gives every decade towards zero and towards one the same room in the search.
 
 \begin{table}[htbp]
 \centering
-\caption{Widened rules of the categories of hyperparameter that change, for a tuning segment of $n$ samples with $k$ labelled clusters; the summary size and the multiplier keep the rules of \cref{tab:mod_rules}. The median distance between two samples is measured on a million pairs of samples drawn at random.}
+\caption{Widened rules of the categories of hyperparameter that change, for a tuning segment of $n$ samples with $k$ labelled clusters; the summary size and the multiplier keep the rules of \cref{tab:mod_rules}. We measure the median distance between two samples on a million pairs of samples drawn at random.}
 \begin{tabular}{p{0.2\textwidth} p{0.27\textwidth} p{0.27\textwidth} l}
 \toprule
 Category & Lower end & Upper end & Scale \\
@@ -65,9 +65,9 @@ The tuning segment is the first fifth of the stream, up to 10000 samples, the lo
 
 No model may keep a summary of more structures than a quarter of the tuning segment, the upper end of the rule of the summary size. A model with a fine configuration can keep one structure per sample, and a search over such configurations is not affordable either. A configuration whose summary exceeds the limit fails, as one that raises an error does. A selected model whose summary exceeds it during the evaluation fails its task.
 
-Each dataset is evaluated over 32 runs instead of the 94 of \cref{subsec:multi_run_statistics}, because the cost of 94 runs over the complete real datasets is not affordable. The experiment measures the quality only, and not the time or the memory.
+We evaluate each dataset over 32 runs instead of the 94 of \cref{subsec:multi_run_statistics}, because the cost of 94 runs over the complete real datasets is not affordable. In this experiment, we measure the quality only, and not the time or the memory.
 
-A dataset is analysed over the runs that every model finished on it. A model that failed in more than half of the runs of a dataset is left out of that dataset, and the others are compared over the runs that all of them finished.
+We analyse a dataset over the runs that every model finished on it. We leave out of a dataset any model that failed in more than half of its runs, and compare the others over the runs that all of them finished.
 
 \section{Results}
 \label{sec:real_results}

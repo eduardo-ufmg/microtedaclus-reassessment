@@ -207,7 +207,7 @@ However, because \codename{streamMOA} is a wrapper for the Java-based MOA framew
 \begin{figure}[thpb]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/benchmark_java_bridge.png}
-    \caption{Benchmarking experiment results showing the impact of interface overhead on the execution time and memory footprint of the benchmark models. The left bar chart shows the execution wall clock time of each model, while the right bar chart shows the memory footprint of each model. The models are executed both through the \codename{rpy2} bridge and directly in \codename{Java}.}
+    \caption{Benchmarking experiment results showing the impact of interface overhead on the execution time and memory footprint of the benchmark models. The left bar chart shows the execution wall clock time of each model, while the right bar chart shows the memory footprint of each model. We execute the models both through the \codename{rpy2} bridge and directly in \codename{Java}.}
     \label{fig:benchmark_java_bridge}
 \end{figure}
 
@@ -273,7 +273,7 @@ Since the \codename{rpy2} bridge accesses the \codename{streamMOA} package, both
     \label{tab:paramsmoa_streamkmpp}
 \end{table}
 
-Because \codename{river} is a different implementation of the same models, a best-effort approach was used to set parameters that ensure a fair comparison. The parameters used for the \codename{river} implementations are shown on tables \cref{tab:paramsriver_clustream,tab:paramsriver_denstream,tab:paramsriver_streamkmpp}.
+Because \codename{river} is a different implementation of the same models, we used a best-effort approach to set parameters that ensure a fair comparison. The parameters used for the \codename{river} implementations are shown on tables \cref{tab:paramsriver_clustream,tab:paramsriver_denstream,tab:paramsriver_streamkmpp}.
 
 \begin{table}
     \centering
@@ -643,11 +643,11 @@ The original work handles this lack of information with plots of the evolution o
 
 \subsubsection{Penultimate batch's ARI}
 
-For each run, we compute the penultimate evaluation batch's ARI. Such score is expected to quantitatively answer the second of the previous questions. It represents the model's performance after it has processed many samples and the concept drift, if any, has occurred. A model that is able to adapt to concept drift is expected to achieve a high ARI in the final batches, while a model that adapts poorly is not. The penultimate batch is selected instead of the last batch to avoid the need to handle the case in which the last batch is not a full batch, which would require additional decisions regarding how to handle it.
+For each run, we compute the penultimate evaluation batch's ARI. Such score is expected to quantitatively answer the second of the previous questions. It represents the model's performance after it has processed many samples and the concept drift, if any, has occurred. A model that is able to adapt to concept drift is expected to achieve a high ARI in the final batches, while a model that adapts poorly is not. We select the penultimate batch instead of the last batch to avoid the need to handle the case in which the last batch is not a full batch, which would require additional decisions regarding how to handle it.
 
 \subsubsection{Fifth batch's ARI}
 
-For each run, the fifth evaluation batch's ARI is computed. Such score is expected to quantitatively answer the first of the previous questions. It represents the model's performance after it has processed a small number of samples and before any concept drift has occurred. A model that is able to learn quickly is expected to achieve a high ARI in the initial batchs, while slower model is not. The fifth batch is arbitrarily selected.
+For each run, we compute the fifth evaluation batch's ARI. Such score is expected to quantitatively answer the first of the previous questions. It represents the model's performance after it has processed a small number of samples and before any concept drift has occurred. A model that is able to learn quickly is expected to achieve a high ARI in the initial batchs, while slower model is not. The fifth batch is arbitrarily selected.
 
 \subsubsection{Difference between the highest ARI and the ARI of the penultimate batch}
 
@@ -657,7 +657,7 @@ For each run, we compute the difference between the highest ARI and the ARI of t
 
 \input{MethodologyReassessment/artifacts/standalone/complementary_scores_on_the_hypotheticals.tex}
 
-Thus, for the datasets that are not scalability-oriented, we report the overall ARI, the penultimate batch's ARI, the fifth batch's ARI, and the difference between the highest ARI and the ARI of the penultimate batch. For the scalability-oriented datasets, tables are not reported. Instead, ARI is reported and analyzed through plots of the evolution of the ARI over the evaluation batches, as in the original work.
+Thus, for the datasets that are not scalability-oriented, we report the overall ARI, the penultimate batch's ARI, the fifth batch's ARI, and the difference between the highest ARI and the ARI of the penultimate batch. For the scalability-oriented datasets, tables are not reported. Instead, we report and analyze the ARI through plots of its evolution over the evaluation batches, as in the original work.
 
 \subsection{Complete Runtime} \label{subsec:complete_runtime}
 
@@ -670,7 +670,7 @@ In \cite{maia2020evolvclus}, execution time is only assessed for the scalability
         \item Execution time versus the number of samples, for each of two fixed feature dimensions (2 and 64).
         \item Cumulative execution time for each stage versus the feature dimension.
     \end{itemize}
-    This report strategy's goal is to further investigate how the feature dimension impacts on the sample-scalability of the evaluated models, and how the number of samples impacts on the feature-scalability of the evaluated models. Median and quartiles are selected because preeliminary experiments show that a logarithmic scale is more suitable for this metric -- since the models differ by orders of magnitude -- and the high variability of the execution time increase the risk of negative bounds when defined as $\mu - \sigma$. Because \codename{Matplotlib}'s logarithmic scale does not support negative values, the quartile-pair is preferred to avoid artificially clipping the lower bound of the variability region to zero, since the quartiles are guaranteed to be bounded by the values actually observed in the experiments.
+    This report strategy's goal is to further investigate how the feature dimension impacts on the sample-scalability of the evaluated models, and how the number of samples impacts on the feature-scalability of the evaluated models. We select the median and quartiles because preliminary experiments show that a logarithmic scale is more suitable for this metric -- since the models differ by orders of magnitude -- and the high variability of the execution time increase the risk of negative bounds when defined as $\mu - \sigma$. Because \codename{Matplotlib}'s logarithmic scale does not support negative values, the quartile-pair is preferred to avoid artificially clipping the lower bound of the variability region to zero, since the quartiles are guaranteed to be bounded by the values actually observed in the experiments.
 \end{itemize}
 
 \subsection{Memory Usage}
@@ -684,7 +684,7 @@ The original work reports memory consumption only through a plot of memory usage
         \item Memory usage versus the number of samples, for each of two fixed feature dimensions (2 and 64).
         \item Maximum and steady-state memory usage versus the feature dimension.
     \end{itemize}
-    Median and quartiles are selected for the same reasons discussed in \cref{subsec:complete_runtime}.
+    We select the median and quartiles for the same reasons discussed in \cref{subsec:complete_runtime}.
 \end{itemize}
 
 \subsection{MicroCluster Count}
@@ -783,7 +783,7 @@ The second hint that the original work does not implement prequential evaluation
 
 It is worth noting that, for the performed sequential evaluation, the optimal model is the one that simply memorizes the label for the sample in each coordinate \cite{aliferis2024overfitting,bayat2025pitfalls}. Such overfitted model, however, is shown to poorly generalize to unseen samples, and is not suitable for real-world applications.
 
-Our reassessment's only protocol, applied throughout all experiments, is prequential evaluation. For each 100-sample batch, the samples' labels are predicted before the model is trained on them. The predicted labels are then compared to the ground truth labels to compute the ARI, and the execution time and memory usage are measured for both the prediction and training stages.
+Our reassessment's only protocol, applied throughout all experiments, is prequential evaluation. For each 100-sample batch, the samples' labels are predicted before the model is trained on them. We then compare the predicted labels to the ground truth labels to compute the ARI, and measure the execution time and memory usage for both the prediction and training stages.
 
 \section{Statistical Significance Tests} \label{sec:statistical_significance}
 

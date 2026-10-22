@@ -1,9 +1,9 @@
 \chapter{Results}
 \label{chap:results}
 
-This chapter places \MicroTEDAClusPlus, the model defined in \cref{sec:mi_final_model}, among the benchmark models. It repeats the analysis of the complete model set of \cref{sec:reassessment_results} with \MicroTEDAClusPlus in the place of \MicroTEDAClus: the six other models of that section, whose results are those already reported, and \MicroTEDAClusPlus. The two versions of the model are compared with each other in \cref{sec:mi_main_experiment}.
+In this chapter, we place \MicroTEDAClusPlus, the model that we defined in \cref{sec:mi_final_model}, among the benchmark models. We repeat the analysis of the complete model set of \cref{sec:reassessment_results} with \MicroTEDAClusPlus in the place of \MicroTEDAClus: the six other models of that section, whose results are those already reported, and \MicroTEDAClusPlus. We compare the two versions of the model with each other in \cref{sec:mi_main_experiment}.
 
-The statistical analysis is that of \cref{sec:statistical_significance}, applied to these seven models. Since the best and the worst model of a dataset can change when the set of models changes, the groups of the tables of this chapter are not necessarily those of the corresponding tables of \cref{sec:reassessment_results}. As there, a value in bold is statistically indistinguishable from the best model for that metric and dataset, and a value in red is statistically indistinguishable from the worst. Each table uses the runs that are valid for all of its models, which are 93 of the 94 in \BenchmarkOne, \BenchmarkTwo and \RandomRBFGeneratorEvents, so some of its medians differ in the last digit from those of \cref{sec:mi_main_experiment}.
+We apply the statistical analysis of \cref{sec:statistical_significance} to these seven models. Since the best and the worst model of a dataset can change when the set of models changes, the groups of the tables of this chapter are not necessarily those of the corresponding tables of \cref{sec:reassessment_results}. As there, a value in bold is statistically indistinguishable from the best model for that metric and dataset, and a value in red is statistically indistinguishable from the worst. Each table uses the runs that are valid for all of its models, which are 93 of the 94 in \BenchmarkOne, \BenchmarkTwo and \RandomRBFGeneratorEvents, so some of its medians differ in the last digit from those of \cref{sec:mi_main_experiment}.
 
 \section{Clustering Quality}
 \label{sec:results_quality}
@@ -55,7 +55,7 @@ In the scalability streams, \cref{fig:results_ari_sample_scalability,fig:results
 
 \Cref{fig:results_time_feature_scalability} shows the same in the scalability streams. The median fitting time of \MicroTEDAClusPlus stays below that of every other model at every dimension.
 
-The execution time measures an implementation and not only an algorithm. The benchmark models are executed through the implementations described in \cref{chap:methodology_reassessment}, and \MicroTEDAClusPlus through the implementation of \cref{sec:mi_optimization}, which runs its sequential part in compiled code. \Cref{subsec:mi_optimization_time} measures what the implementation alone contributes in the case of \MicroTEDAClus.
+The execution time measures an implementation and not only an algorithm. We execute the benchmark models through the implementations described in \cref{chap:methodology_reassessment}, and \MicroTEDAClusPlus through the implementation of \cref{sec:mi_optimization}, which runs its sequential part in compiled code. \Cref{subsec:mi_optimization_time} measures what the implementation alone contributes in the case of \MicroTEDAClus.
 
 \section{Memory Usage}
 \label{sec:results_memory}
@@ -94,7 +94,7 @@ In the scalability streams, \cref{fig:results_mem_feature_scalability}, the foot
 
 The first concerns the variance limit. The median of the limit selected for \MicroTEDAClus spans four orders of magnitude across the datasets, from $\approx 10^{-3}$ in \RandomRBFGeneratorEvents to $\approx 10$ in \ChameleonDSFour, because it is an absolute variance and the datasets have different scales. The median of the relative limit of \MicroTEDAClusPlus spans little more than one and is nearly the same in the three datasets of static shapes, whose coordinates differ in scale by two orders of magnitude. As \cref{sec:parameter_variability} reports for \MicroTEDAClus, its dispersion is larger in the three datasets with concept drift than in the three without it.
 
-The second concerns the new hyperparameter. The noise distance has a low dispersion in every dataset. The decay shows no relation with the concept drift. In the Chameleon datasets every run processes the same stream, as set in \cref{subsec:mi_runs}, so the dispersion of their rows is that of the hyperparameter search alone.
+The second concerns the new hyperparameter. The noise distance has a low dispersion in every dataset. The decay shows no relation with the concept drift. In the Chameleon datasets every run processes the same stream, as we set in \cref{subsec:mi_runs}, so the dispersion of their rows is that of the hyperparameter search alone.
 
 \section{Chapter Summary}
 \label{sec:results_summary}
@@ -107,6 +107,6 @@ Among the seven models and under the protocol of the main experiment, \MicroTEDA
     \item \textbf{Memory and microclusters.} It is not among the most economical models. \CEDAS and \TEDACloud use less memory and keep fewer microclusters, and \MicroTEDAClusPlus is in the intermediate range, well below \CluStream.
 \end{itemize}
 
-\Cref{sec:reassessment_results} found \MicroTEDAClus to be outperformed by these benchmark models in several metrics: it was among the worst models in the Overall ARI of \BenchmarkOne and among the slowest in the fitting stage. \MicroTEDAClusPlus is the best model of that dataset and the fastest of the seven. The weakness that remains is the clustering of static shapes, which \cref{sec:mi_selection} relates to the configurations that the hyperparameter search selects.
+In \cref{sec:reassessment_results}, we found \MicroTEDAClus to be outperformed by these benchmark models in several metrics: it was among the worst models in the Overall ARI of \BenchmarkOne and among the slowest in the fitting stage. \MicroTEDAClusPlus is the best model of that dataset and the fastest of the seven. The weakness that remains is the clustering of static shapes, which we relate in \cref{sec:mi_selection} to the configurations that the hyperparameter search selects.
 
 \clearpage

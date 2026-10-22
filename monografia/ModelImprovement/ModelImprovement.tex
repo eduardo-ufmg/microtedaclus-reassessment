@@ -1,18 +1,18 @@
 \chapter{Model Improvement}
 \label{chap:ModelImprovement}
 
-The previous chapters identify issues in the formulation of \MicroTEDAClus, from \cref{subsubsec:order_dependent_characteristics,subsubsec:incorrect_condition_logic,subsubsec:dimensionality_penalty}, and undocumented behaviours of its reference implementation, in \cref{sec:model_implementation}. This chapter acts on them in three stages. Although our initial plan was to address the algorithmic formulation first, the excessive runtime that results from the inefficient implementation makes the iterative experimentation unaffordable. Thus, we first optimize the implementation for speed. The second stage evaluates corrections of the identified flaws. Then, we evaluate modifications that go beyond the original formulation and define the model that results from them, \MicroTEDAClusPlus. The chapter closes with the evaluation of that model against \MicroTEDAClus in the main experiment, \cref{sec:mi_main_experiment}. \Cref{sec:mi_design} describes how the experiments are run and how their outcomes are judged.
+The previous chapters identify issues in the formulation of \MicroTEDAClus, from \cref{subsubsec:order_dependent_characteristics,subsubsec:incorrect_condition_logic,subsubsec:dimensionality_penalty}, and undocumented behaviours of its reference implementation, in \cref{sec:model_implementation}. In this chapter, we act on them in three stages. Although our initial plan was to address the algorithmic formulation first, the excessive runtime that results from the inefficient implementation makes the iterative experimentation unaffordable. Thus, we first optimize the implementation for speed. In the second stage, we evaluate corrections of the identified flaws. Then, we evaluate modifications that go beyond the original formulation and define the model that results from them, \MicroTEDAClusPlus. We close the chapter with the evaluation of that model against \MicroTEDAClus in the main experiment, \cref{sec:mi_main_experiment}. In \cref{sec:mi_design}, we describe how we run the experiments and how we judge their outcomes.
 
 \section{Experimental Design}
 \label{sec:mi_design}
 
 \subsection{Variants and Controls}
 
-An experiment compares a \emph{variant} of the model with its \emph{control}. The variant differs from the control by a stated combination of changes, so any difference between their results is attributable to those changes. To make this exact, every variant is a configuration of a single implementation, in which each design choice under study is a switch. With every switch in its default position, that implementation executes the original algorithm.
+An experiment compares a \emph{variant} of the model with its \emph{control}. The variant differs from the control by a stated combination of changes, so any difference between their results is attributable to those changes. To make this exact, we implement every variant as a configuration of a single implementation, in which each design choice under study is a switch. With every switch in its default position, that implementation executes the original algorithm.
 
 \subsection{Protocol and Datasets}
 
-Every variant is tuned and evaluated by the protocol of the main experiment. The metrics are those of \cref{sec:evaluation_metrics}, computed by the code that computes them for the main experiment. The experiments use eight streams: the six datasets that are not scalability-oriented, and the two scalability streams of highest dimensionality, \datasetname{SCL-32} and \datasetname{SCL-64}. The latter are included because the former are all two-dimensional, and several properties of the model only manifest in higher dimensions. The datasets are those of \cref{sec:datasets}, and the tables of this chapter refer to them by the abbreviations of \cref{tab:mi_dataset_abbreviations}.
+We tune and evaluate every variant by the protocol of the main experiment. The metrics are those of \cref{sec:evaluation_metrics}, computed by the code that computes them for the main experiment. We use eight streams: the six datasets that are not scalability-oriented, and the two scalability streams of highest dimensionality, \datasetname{SCL-32} and \datasetname{SCL-64}. We include the latter because the former are all two-dimensional, and several properties of the model only manifest in higher dimensions. The datasets are those of \cref{sec:datasets}, and the tables of this chapter refer to them by the abbreviations of \cref{tab:mi_dataset_abbreviations}.
 
 \begin{table}[htbp]
 \centering
@@ -31,19 +31,19 @@ CSN & \Cassini & S64 & \datasetname{SCL-64} \\
 \subsection{Development and Validation Runs}
 \label{subsec:mi_runs}
 
-A run is identified by an index, which determines the seed of the stream generator and of the hyperparameter search. The main experiment uses the runs 0 to 93. The experiments of this chapter use the runs that follow them, so the streams of the main experiment take no part in the development of the model:
+A run is identified by an index, which determines the seed of the stream generator and of the hyperparameter search. The main experiment uses the runs 0 to 93. In this chapter, we use the runs that follow them, so the streams of the main experiment take no part in the development of the model:
 
 \begin{itemize}
-    \item \textbf{Development runs} (94 to 125, 32 runs): every experiment that compares variants is executed on these runs, and every design choice of this chapter was made from their results.
-    \item \textbf{Validation runs} (126 to 219, 94 runs): the models accepted during development, and only those, are evaluated again on these runs.
+    \item \textbf{Development runs} (94 to 125, 32 runs): we execute every experiment that compares variants on these runs, and we made every design choice of this chapter from their results.
+    \item \textbf{Validation runs} (126 to 219, 94 runs): we evaluate again on these runs the models accepted during development, and only those.
 \end{itemize}
 
-The separation exists because a model that is chosen for scoring best on a set of runs is expected to score somewhat worse on other runs. The streams of the validation runs come from seeds that no development run uses, and the validation runs are executed once, after the accepted models are fixed, so their streams take no part in the choice of the models they measure. Their number is the one that \cref{subsec:multi_run_statistics} establishes for the main experiment. The two Chameleon datasets are an exception: they are fixed files, so every run processes the same stream and their runs differ only in the seed of the hyperparameter search. For them, the validation repeats the search and not the stream.
+The separation exists because a model that is chosen for scoring best on a set of runs is expected to score somewhat worse on other runs. The streams of the validation runs come from seeds that no development run uses, and we execute the validation runs once, after we fix the accepted models, so their streams take no part in the choice of the models they measure. Their number is the one that \cref{subsec:multi_run_statistics} establishes for the main experiment. The two Chameleon datasets are an exception: they are fixed files, so every run processes the same stream and their runs differ only in the seed of the hyperparameter search. For them, the validation repeats the search and not the stream.
 
 \subsection{Comparisons and Decision Rule}
 \label{subsec:mi_decision_rule}
 
-A variant and its control are compared per dataset and per metric, over the runs they share, with the ingredients of \cref{sec:statistical_significance}. The Friedman test is not applied, since each comparison involves two models. The outcome of a comparison is decided on two metrics, the Overall ARI and the Steady-State ARI. A variant
+We compare a variant and its control per dataset and per metric, over the runs they share, with the ingredients of \cref{sec:statistical_significance}. We do not apply the Friedman test, since each comparison involves two models, and we decide the outcome of a comparison on two metrics, the Overall ARI and the Steady-State ARI. A variant
 
 \begin{itemize}
     \item \textbf{improves} its control ($+$) if it is significantly better in at least one dataset and significantly worse in none;
@@ -51,7 +51,7 @@ A variant and its control are compared per dataset and per metric, over the runs
     \item is \textbf{mixed} ($\pm$) if both happen, and \textbf{indistinguishable} ($=$) if neither does.
 \end{itemize}
 
-Only a variant that improves its control can replace it. The ARI at the fifth batch and the maximum ARI drop are reported, but do not take part in the decision. The microcluster count and the memory footprint are also reported, in \cref{app:mi_tables}, and never decide an outcome. A value in bold is significantly better than the value of its control, and a value in red is significantly worse.
+Only a variant that improves its control can replace it. We report the ARI at the fifth batch and the maximum ARI drop, but they do not take part in the decision. We also report the microcluster count and the memory footprint, in \cref{app:mi_tables}, and they never decide an outcome. A value in bold is significantly better than the value of its control, and a value in red is significantly worse.
 
 \section{Implementation Optimization}
 \label{sec:mi_optimization}
@@ -78,9 +78,9 @@ The optimization therefore preserves the clustering quality of the reference imp
 \subsection{Execution Time}
 \label{subsec:mi_optimization_time}
 
-The durations of \cref{tab:mi_optimization_trials} do not measure the optimization alone. They are taken while other tasks run on the same machine, and the two models are tuned independently, so a difference between them mixes the implementation, the load of the machine and the hyperparameters that each search selected. The speedup is therefore measured separately.
+The durations of \cref{tab:mi_optimization_trials} do not measure the optimization alone. They are taken while other tasks run on the same machine, and the two models are tuned independently, so a difference between them mixes the implementation, the load of the machine and the hyperparameters that each search selected. We therefore measure the speedup separately.
 
-Each implementation replays the evaluation segment of every development run with the same hyperparameters: those tuned for the \modelname{original} model in that run and, in a second measurement, those tuned for the \modelname{vectorized} model. Each task is executed alone, on identical processor cores, and the compiled kernel is executed once before being timed. The whole set of tasks is executed three times, and the time of a task is the minimum of its three executions.
+Each implementation replays the evaluation segment of every development run with the same hyperparameters: those tuned for the \modelname{original} model in that run and, in a second measurement, those tuned for the \modelname{vectorized} model. We execute each task alone, on identical processor cores, and run the compiled kernel once before timing it. We execute the whole set of tasks three times, and the time of a task is the minimum of its three executions.
 
 \input{ModelImprovement/artifacts/optimization/speedup.tex}
 
@@ -100,7 +100,7 @@ The reduction is what makes the remaining stages affordable: the experiments of 
 \section{Corrections}
 \label{sec:mi_corrections}
 
-The candidate corrections come from the issues raised in the previous chapters and from two behaviours of the reference implementation noticed while it was reimplemented. The incorrect condition for microclusters with two samples, \cref{subsubsec:incorrect_condition_logic}, is not among them, because the reference implementation already applies \cref{eq:corrected_condition_logic_for_outliers}.
+The candidate corrections come from the issues raised in the previous chapters and from two behaviours of the reference implementation that we noticed while reimplementing it. The incorrect condition for microclusters with two samples, \cref{subsubsec:incorrect_condition_logic}, is not among them, because the reference implementation already applies \cref{eq:corrected_condition_logic_for_outliers}.
 
 \subsection{Candidate Corrections}
 \label{subsec:mi_correction_candidates}
@@ -119,7 +119,7 @@ The standardized squared distance is divided by the number of samples, so the mo
     \label{eq:mi_standardized_distance}
 \end{equation}
 
-which is also the quantity that the outlier condition thresholds, since \cref{eq:outlier_condition} is equivalent to $q(x) > m^2$. Five alternatives to the implemented membership are evaluated:
+which is also the quantity that the outlier condition thresholds, since \cref{eq:outlier_condition} is equivalent to $q(x) > m^2$. We evaluate five alternatives to the implemented membership:
 
 \begin{itemize}
     \item \modelname{norm-typicality}: the implemented weights with the normalized typicality $t^l(x)$, as in \cref{eq:macrocluster_typicality}.
@@ -129,7 +129,7 @@ which is also the quantity that the outlier condition thresholds, since \cref{eq
     \item \modelname{nearest}: the smallest standardized distance, $\min_l q^l(x)$. The sample is assigned to the macrocluster of the active microcluster it is closest to in standard deviations.
 \end{itemize}
 
-\paragraph{Density.} \Cref{subsubsec:order_dependent_characteristics} shows that the density kept by each microcluster is the density of the last sample it absorbed. Two densities that are properties of the microcluster are evaluated. The first, \modelname{peak-density}, is the density of the formulation evaluated at the mean of the microcluster: since $\xi(\mu) = 1/S$,
+\paragraph{Density.} \Cref{subsubsec:order_dependent_characteristics} shows that the density kept by each microcluster is the density of the last sample it absorbed. We evaluate two densities that are properties of the microcluster. The first, \modelname{peak-density}, is the density of the formulation evaluated at the mean of the microcluster: since $\xi(\mu) = 1/S$,
 
 \begin{equation}
     D = \frac{1}{\zeta(\mu)} = 2S
@@ -192,7 +192,7 @@ A second limitation concerns the hyperparameter search. \Cref{tab:mi_search_rang
 \input{ModelImprovement/artifacts/search_range/quality.tex}
 \input{ModelImprovement/artifacts/search_range/selection.tex}
 
-By the decision rule the wider range improves the corrected model, in \ChameleonDSThree and \ChameleonDSFour. \Cref{tab:mi_search_range_selection} shows that the limits selected for these two datasets are far above the original bound, and several orders of magnitude above those selected for the other two-dimensional datasets: the variance limit depends on the scale of the data. The wider range is nevertheless not adopted. It changes the search and not the model, no fixed range suits every scale, and it has a cost that the same tables show: with limits of that size, more than half of the runs of \ChameleonDSFour end with a single predicted cluster, and the maximum ARI drop of that dataset becomes significantly larger. One of the candidates of this section removes the dependence on the scale in the model instead.
+By the decision rule the wider range improves the corrected model, in \ChameleonDSThree and \ChameleonDSFour. \Cref{tab:mi_search_range_selection} shows that the limits selected for these two datasets are far above the original bound, and several orders of magnitude above those selected for the other two-dimensional datasets: the variance limit depends on the scale of the data. We nevertheless do not adopt the wider range. It changes the search and not the model, no fixed range suits every scale, and it has a cost that the same tables show: with limits of that size, more than half of the runs of \ChameleonDSFour end with a single predicted cluster, and the maximum ARI drop of that dataset becomes significantly larger. One of the candidates of this section removes the dependence on the scale in the model instead.
 
 \subsection{Candidate Improvements}
 \label{subsec:mi_improvement_candidates}
@@ -258,21 +258,21 @@ The remaining candidates do not help. \modelname{forgetting} and \modelname{sing
 
 \input{ModelImprovement/artifacts/m_function/quality.tex}
 
-None of the reparameterizations of $m$ improves the corrected model, as \cref{tab:mi_m_function_quality} shows. \modelname{m-reparam} and \modelname{m-asymptote} regress, and \modelname{m-constant} gains in \BenchmarkOne and \BenchmarkTwo at the cost of five of the remaining six datasets. Each of these variants adds one or two hyperparameters to a search with a fixed budget of trials, and \cref{tab:mi_m_function_tuned} shows that the values selected for them vary widely between the datasets. The original function is retained.
+None of the reparameterizations of $m$ improves the corrected model, as \cref{tab:mi_m_function_quality} shows. \modelname{m-reparam} and \modelname{m-asymptote} regress, and \modelname{m-constant} gains in \BenchmarkOne and \BenchmarkTwo at the cost of five of the remaining six datasets. Each of these variants adds one or two hyperparameters to a search with a fixed budget of trials, and \cref{tab:mi_m_function_tuned} shows that the values selected for them vary widely between the datasets. We retain the original function.
 
 \input{ModelImprovement/artifacts/m_function/tuned.tex}
 
 \subsection{Combined Improvements}
 \label{subsec:mi_improvements_combined}
 
-The four changes that helped in isolation are evaluated in every combination of two, three and four of them. In the names of the combinations, \modelname{single}, \modelname{cap}, \modelname{noise} and \modelname{relative} stand for \modelname{single-assign}, \modelname{variance-cap}, \modelname{noise-label} and \modelname{relative-limit}.
+We evaluate the four changes that helped in isolation in every combination of two, three and four of them. In the names of the combinations, \modelname{single}, \modelname{cap}, \modelname{noise} and \modelname{relative} stand for \modelname{single-assign}, \modelname{variance-cap}, \modelname{noise-label} and \modelname{relative-limit}.
 
 \input{ModelImprovement/artifacts/improvements_combined/quality.tex}
 \input{ModelImprovement/artifacts/improvements_combined/quality_other.tex}
 
 \Cref{tab:mi_improvements_combined_quality} shows that nine of the eleven combinations improve the corrected model, and the two that do not, \modelname{single + cap} and \modelname{cap + noise}, each lose in one dataset, \Cassini and \ChameleonDSThree respectively. The two losses explained in the previous subsection disappear as predicted: \modelname{noise + relative} gains in \ChameleonDSThree, where \modelname{noise-label} alone lost, and \modelname{cap + relative} gains in \ChameleonDSFour, where \modelname{relative-limit} alone lost. \Cref{tab:mi_improvements_combined_quality_other} gives the two ARI metrics that do not decide.
 
-Since several combinations improve the control, the decision rule does not single one out. The combination that becomes the improved model is chosen in two steps: it must not be improved upon by any other combination in a direct comparison, and, among those that satisfy this, it must have the largest number of significant gains over the corrected model. \modelname{single + relative} and \modelname{single + noise + relative} have the most gains, twelve each over the two metrics and eight datasets. \Cref{tab:mi_improvements_selection_quality} gives the direct comparisons that decide between the leading combinations.
+Since several combinations improve the control, the decision rule does not single one out. We choose the combination that becomes the improved model in two steps: it must not be improved upon by any other combination in a direct comparison, and, among those that satisfy this, it must have the largest number of significant gains over the corrected model. \modelname{single + relative} and \modelname{single + noise + relative} have the most gains, twelve each over the two metrics and eight datasets. \Cref{tab:mi_improvements_selection_quality} gives the direct comparisons that decide between the leading combinations.
 
 \input{ModelImprovement/artifacts/improvements_selection/quality.tex}
 
@@ -283,7 +283,7 @@ The improved model is therefore the corrected model with \modelname{single-assig
 \subsection{Refinements of the Improved Model}
 \label{subsec:mi_refinements}
 
-Four further changes are evaluated on the improved model. Two of them, \modelname{forgetting} and \modelname{recency}, did not help the corrected model, but they target the tracking of moving clusters, which the improved model now does better, so they are given a second chance. The third is the removal of the dimensionality penalty, which improved the \modelname{vectorized} model, was rejected in \cref{sec:mi_corrections} because the penalty accidentally separated part of the noise, and can be reconsidered now that the noise is labelled explicitly. The fourth, \modelname{persistent-labels}, makes each macrocluster keep the label of the macrocluster with which it shares most of its mass across updates, instead of being renumbered at every update. It does not change the partition predicted for a batch, but the objective of the hyperparameter search computes the ARI over the predictions of all batches together, see \cref{subsec:hyperparameter_tuning}, where a renumbering counts as a disagreement.
+We evaluate four further changes on the improved model. Two of them, \modelname{forgetting} and \modelname{recency}, did not help the corrected model, but they target the tracking of moving clusters, which the improved model now does better, so we give them a second chance. The third is the removal of the dimensionality penalty, which improved the \modelname{vectorized} model; we rejected it in \cref{sec:mi_corrections} because the penalty accidentally separated part of the noise, and reconsider it now that the noise is labelled explicitly. The fourth, \modelname{persistent-labels}, makes each macrocluster keep the label of the macrocluster with which it shares most of its mass across updates, instead of being renumbered at every update. It does not change the partition predicted for a batch, but the objective of the hyperparameter search computes the ARI over the predictions of all batches together, see \cref{subsec:hyperparameter_tuning}, where a renumbering counts as a disagreement.
 
 \input{ModelImprovement/artifacts/refinements/quality.tex}
 
@@ -322,29 +322,29 @@ First, the covariance of a microcluster with few samples is singular. The matrix
 
 Second, the TEDA statistics include the sample under test, and with a full covariance this hides the sample from the test. For a covariance computed with the sample, $(x - \mu)^T \Sigma^{-1} (x - \mu) \le S - 1$, so $q(x) \le (S - 1)/d$, and the outlier condition $q(x) > m^2$ cannot hold before the microcluster has $S > 1 + m^2 d$ samples: more than 65 samples in \datasetname{SCL-64}, even with $m = 1$. With the scalar variance the same bound is $q(x) \le S - 1$, which does not involve the dimension. The distance is therefore measured against the covariance before the sample is absorbed, $q_0$, and converted by the identity that relates the two distances in the scalar recursion, $q = c\,q_0 / (1 + c\,q_0/(S - 1))$ with $c = (S - 1)/S$, which keeps the test identical to the isotropic one whenever the covariance is isotropic.
 
-The intersection condition is generalized in two ways. In \modelname{covariance, directional link}, the standard deviation of each microcluster in \cref{eq:microcluster_intersection_condition} is taken along the line that joins the two means, $s_i^2 = e^T \tilde{\Sigma}_i\, e$ with $e$ the unit vector of that line, and the condition becomes $\lVert \mu_i - \mu_j \rVert \le 2 \sqrt{d}\,(s_i + s_j)$. In \modelname{covariance, Bhattacharyya link}, two microclusters intersect when the Bhattacharyya distance between the Gaussian distributions with their means and covariances is at most $2d$. Both reduce to \cref{eq:microcluster_intersection_condition} for two microclusters with the same isotropic covariance. The Bhattacharyya distance requires a determinant and a linear solve per pair of microclusters, so it is applied for $d \le 16$, and the directional condition is used above that. The prediction uses the nearest microcluster by \cref{eq:mi_mahalanobis_distance}.
+The intersection condition is generalized in two ways. In \modelname{covariance, directional link}, the standard deviation of each microcluster in \cref{eq:microcluster_intersection_condition} is taken along the line that joins the two means, $s_i^2 = e^T \tilde{\Sigma}_i\, e$ with $e$ the unit vector of that line, and the condition becomes $\lVert \mu_i - \mu_j \rVert \le 2 \sqrt{d}\,(s_i + s_j)$. In \modelname{covariance, Bhattacharyya link}, two microclusters intersect when the Bhattacharyya distance between the Gaussian distributions with their means and covariances is at most $2d$. Both reduce to \cref{eq:microcluster_intersection_condition} for two microclusters with the same isotropic covariance. The Bhattacharyya distance requires a determinant and a linear solve per pair of microclusters, so we apply it for $d \le 16$ and use the directional condition above that. The prediction uses the nearest microcluster by \cref{eq:mi_mahalanobis_distance}.
 
 \input{ModelImprovement/artifacts/geometry/quality.tex}
 
-Both variants are applied to \MicroTEDAClusPlus, and both regress in \cref{tab:mi_geometry_quality}. \modelname{covariance, directional link} loses in \BenchmarkTwo on the two decision metrics, and \modelname{covariance, Bhattacharyya link} loses in its Overall ARI. Neither gains significantly in any dataset. In the static shapes of \Cassini, \ChameleonDSThree and \ChameleonDSFour, where anisotropic microclusters could be expected to follow elongated clusters, no difference is significant, and in \datasetname{SCL-32} and \datasetname{SCL-64} \MicroTEDAClusPlus already has a median of $1.000$, which leaves no room for a gain.
+We apply both variants to \MicroTEDAClusPlus, and both regress in \cref{tab:mi_geometry_quality}. \modelname{covariance, directional link} loses in \BenchmarkTwo on the two decision metrics, and \modelname{covariance, Bhattacharyya link} loses in its Overall ARI. Neither gains significantly in any dataset. In the static shapes of \Cassini, \ChameleonDSThree and \ChameleonDSFour, where anisotropic microclusters could be expected to follow elongated clusters, no difference is significant, and in \datasetname{SCL-32} and \datasetname{SCL-64} \MicroTEDAClusPlus already has a median of $1.000$, which leaves no room for a gain.
 
 \Cref{tab:mi_geometry_cost} shows that the covariance is also costly. A microcluster stores $d^2$ values instead of one, which multiplies the steady-state memory footprint of \datasetname{SCL-32} and \datasetname{SCL-64} by one to two orders of magnitude.
 
-The experiment does not identify why the covariance fails to help. Two explanations are compatible with its results, and neither was tested. The tuned models describe each cluster with many microclusters, so the shape of a cluster may already be expressed by the arrangement of its microclusters and not need to be expressed by the shape of each one. And a covariance matrix has $d(d+1)/2$ values to be estimated from the samples that, in the original model, estimate a single variance. The scalar variance is retained.
+The experiment does not identify why the covariance fails to help. Two explanations are compatible with its results, and we tested neither. The tuned models describe each cluster with many microclusters, so the shape of a cluster may already be expressed by the arrangement of its microclusters and not need to be expressed by the shape of each one. And a covariance matrix has $d(d+1)/2$ values to be estimated from the samples that, in the original model, estimate a single variance. We retain the scalar variance.
 
 \subsection{Order-Independent Densities in \MicroTEDAClusPlus}
 \label{subsec:mi_density_revisited}
 
-The corrections of \cref{sec:mi_corrections} rejected the two order-independent densities when the density still weighted the membership. In \MicroTEDAClusPlus the density only decides which microclusters are active, so the two densities are evaluated once more, on it.
+The corrections of \cref{sec:mi_corrections} rejected the two order-independent densities when the density still weighted the membership. In \MicroTEDAClusPlus the density only decides which microclusters are active, so we evaluate the two densities once more, on it.
 
 \input{ModelImprovement/artifacts/density_revisited/quality.tex}
 
-Both regress in \cref{tab:mi_density_revisited_quality}. \modelname{peak-density} loses in \ChameleonDSThree, where its Steady-State ARI falls to zero, and \modelname{volume-density} loses in five datasets. The density of the last absorbed sample is retained.
+Both regress in \cref{tab:mi_density_revisited_quality}. \modelname{peak-density} loses in \ChameleonDSThree, where its Steady-State ARI falls to zero, and \modelname{volume-density} loses in five datasets. We retain the density of the last absorbed sample.
 
 \section{Validation}
 \label{sec:mi_validation}
 
-The four models of the chain, \modelname{vectorized}, \modelname{corrected}, \modelname{improved} and \modelname{final}, were tuned and evaluated again on the 94 validation runs, which took no part in any of the choices above, as set by \cref{subsec:mi_runs}. Two experiments of \cref{sec:mi_improvements}, those of \cref{subsec:mi_covariance,subsec:mi_density_revisited}, were executed after these runs. Both rejected their candidates, so no model was changed after the validation runs were seen.
+We tuned and evaluated the four models of the chain, \modelname{vectorized}, \modelname{corrected}, \modelname{improved} and \MicroTEDAClusPlus, again on the 94 validation runs, which took no part in any of the choices above, as we set in \cref{subsec:mi_runs}. We executed two experiments of \cref{sec:mi_improvements}, those of \cref{subsec:mi_covariance,subsec:mi_density_revisited}, after these runs. Both rejected their candidates, so we changed no model after we saw the validation runs.
 
 \subsection{Clustering Quality}
 \label{subsec:mi_validation_quality}
@@ -378,13 +378,13 @@ The two metrics that do not take part in the decision, in the same tables, agree
 \subsection{Cost}
 \label{subsec:mi_validation_cost}
 
-The execution times of the validation runs, like those of every experiment of this chapter, are measured under parallel load. \Cref{tab:mi_validation_serial_cost} gives the cost of the accepted models and of the reference implementation measured by the procedure of \cref{subsec:mi_optimization_time}: each model replays the evaluation segment of each of the 32 development runs with the hyperparameters that were tuned for it in that run. The times therefore include the effect of the hyperparameters that each model leads the search to select, which is the cost of the model as it is used.
+We measure the execution times of the validation runs, like those of every experiment of this chapter, under parallel load. \Cref{tab:mi_validation_serial_cost} gives the cost of the accepted models and of the reference implementation measured by the procedure of \cref{subsec:mi_optimization_time}: each model replays the evaluation segment of each of the 32 development runs with the hyperparameters that were tuned for it in that run. The times therefore include the effect of the hyperparameters that each model leads the search to select, which is the cost of the model as it is used.
 
 \input{ModelImprovement/artifacts/validation/serial_cost.tex}
 
 The corrected model costs the same as the \modelname{vectorized} one: the median of the ratio between their total times, computed per run, is near one in seven datasets. The exception is \datasetname{SCL-64}, where the corrected model keeps more microclusters than the \modelname{vectorized} model. \MicroTEDAClusPlus takes about six tenths of the time of the \modelname{vectorized} model in \ChameleonDSThree and \ChameleonDSFour, almost the same in \BenchmarkTwo, \Cassini, \datasetname{SCL-32} and \datasetname{SCL-64}, and more in \RandomRBFGeneratorEvents and in \BenchmarkOne.
 
-These differences follow the number of microclusters that the tuned models keep, and not the cost of the changes themselves. In \ChameleonDSThree and \ChameleonDSFour \MicroTEDAClusPlus keeps tens of microclusters where the \modelname{vectorized} model keeps hundreds, and in \BenchmarkOne it keeps much more than \modelname{vectorized}. Even in \BenchmarkOne, where it is slowest relative to the \modelname{vectorized} model, \MicroTEDAClusPlus fits the evaluation segment in a lower median than the reference implementation. The removal of the dimensionality penalty has no cost of its own: the improved model and \MicroTEDAClusPlus have nearly the same times in \datasetname{SCL-32} and \datasetname{SCL-64}, and in the two-dimensional datasets, where they are the same algorithm, they differ only as far as their two hyperparameter searches do. The prediction time changes little along the chain.
+These differences follow the number of microclusters that the tuned models keep, and not the cost of the changes themselves. \MicroTEDAClusPlus keeps tens of microclusters in \ChameleonDSThree and \ChameleonDSFour, where the \modelname{vectorized} model keeps hundreds, and many more than that model in \BenchmarkOne. Even in \BenchmarkOne, where it is slowest relative to the \modelname{vectorized} model, \MicroTEDAClusPlus fits the evaluation segment in a lower median than the reference implementation. The removal of the dimensionality penalty has no cost of its own: the improved model and \MicroTEDAClusPlus have nearly the same times in \datasetname{SCL-32} and \datasetname{SCL-64}, and in the two-dimensional datasets, where they are the same algorithm, they differ only as far as their two hyperparameter searches do. The prediction time changes little along the chain.
 
 The quartiles of \cref{tab:mi_validation_serial_cost} are wide. This dispersion does not come from the measurement, since the three executions of a task agree closely, as the caption of the table states. It comes from the hyperparameter search, which in a quarter of the runs of \ChameleonDSFour selects configurations that keep hundreds of microclusters or more, against a median in the tens.
 
@@ -393,14 +393,14 @@ The memory footprint and the microcluster count of the 94 validation runs repeat
 \section{Limits of the Hyperparameter Selection}
 \label{sec:mi_selection}
 
-\MicroTEDAClusPlus stays below an Overall ARI of $0.5$ in the three datasets of static shapes, \Cassini, \ChameleonDSThree and \ChameleonDSFour, as \cref{tab:mi_validation_quality} shows. Every result of this chapter measures a model as the protocol tunes it, so a low score has two possible origins: the model is not able to do better, or it is, with hyperparameters that the search does not select. This section separates the two for \MicroTEDAClusPlus.
+\MicroTEDAClusPlus stays below an Overall ARI of $0.5$ in the three datasets of static shapes, \Cassini, \ChameleonDSThree and \ChameleonDSFour, as \cref{tab:mi_validation_quality} shows. Every result of this chapter measures a model as the protocol tunes it, so a low score has two possible origins: the model is not able to do better, or it is, with hyperparameters that the search does not select. In this section, we separate the two for \MicroTEDAClusPlus.
 
 \subsection{Reachability Probe}
 \label{subsec:mi_probe}
 
 The probe draws 400 configurations at random from a search space, with the distributions that the search itself samples from, and scores each of them twice on a stream. The first score is the objective of the hyperparameter search, computed on the first 20\% of the stream by \cref{alg:hyperparameter_tuning_objective_function}: it is what the search sees. The second is the set of evaluation metrics, computed on the remaining 80\%: it is what the search is meant to maximize.
 
-Two spaces are probed. The first is the search space of \MicroTEDAClusPlus, with its three hyperparameters. The second, the \emph{extended} space, adds to them six design choices studied in this chapter, as categorical hyperparameters: \modelname{single-assign} and \modelname{variance-cap}, each on or off; the density of the last absorbed sample or \modelname{peak-density}; the original pruning rule, \modelname{recency} or \modelname{recency-inactive}; the activation factor $f \in \{0, 0.25, 0.5, 0.75, 1\}$; and the link factor $\ell \in \{1, 1.5, 2\}$. In \Cassini, each configuration is scored on the streams of the first four development runs, and its scores are averaged. \ChameleonDSThree and \ChameleonDSFour are the fixed files presented in \cref{subsec:mi_runs} and offer a single stream each.
+We probe two spaces. The first is the search space of \MicroTEDAClusPlus, with its three hyperparameters. The second, the \emph{extended} space, adds to them six design choices studied in this chapter, as categorical hyperparameters: \modelname{single-assign} and \modelname{variance-cap}, each on or off; the density of the last absorbed sample or \modelname{peak-density}; the original pruning rule, \modelname{recency} or \modelname{recency-inactive}; the activation factor $f \in \{0, 0.25, 0.5, 0.75, 1\}$; and the link factor $\ell \in \{1, 1.5, 2\}$. In \Cassini, we score each configuration on the streams of the first four development runs and average its scores. \ChameleonDSThree and \ChameleonDSFour are the fixed files presented in \cref{subsec:mi_runs} and offer a single stream each.
 
 \input{ModelImprovement/artifacts/selection/probe.tex}
 
@@ -430,7 +430,7 @@ Three consequences follow.
 
 First, the modest scores of \MicroTEDAClusPlus in the static shapes are, at least in part, a limitation of the selection of its hyperparameters and not of the algorithm. With a fine-grained configuration the model separates the three shapes of \Cassini almost completely, on four different streams, and roughly doubles its Overall ARI in \ChameleonDSThree and \ChameleonDSFour. The figures of \ChameleonDSThree and \ChameleonDSFour are optimistic, since the best of 400 configurations is chosen on the stream on which it is scored and there is no second stream to confirm it.
 
-Second, every comparison of this chapter is conditional on the protocol. A candidate was accepted if it improved its control when both are tuned by the protocol, so a candidate whose benefit requires a configuration that the objective does not select was rejected. The same holds for the baseline and benchmark models of the main experiment, which are tuned by the same protocol. The protocol was kept unchanged throughout this chapter for that reason: it is what places \MicroTEDAClusPlus and the benchmark models on equal terms.
+Second, every comparison of this chapter is conditional on the protocol. We accepted a candidate if it improved its control when both are tuned by the protocol, so we rejected a candidate whose benefit requires a configuration that the objective does not select. The same holds for the baseline and benchmark models of the main experiment, which are tuned by the same protocol. We kept the protocol unchanged throughout this chapter for that reason: it is what places \MicroTEDAClusPlus and the benchmark models on equal terms.
 
 Third, the search is itself a source of variation. Two searches of one same algorithm with the same seeds produce medians that differ in the Overall ARI and in the Steady-State ARI (\cref{subsec:mi_refinements}). In \ChameleonDSThree and \ChameleonDSFour, where every run processes the same stream, the dispersion of the results across runs is entirely that of the search.
 
@@ -524,18 +524,18 @@ Before the first batch is learned there is no active microcluster, and every sam
 
 \subsection{What Remains of the Original Model}
 
-The function $m$, the density, the activation criterion, the two-pass construction of the macroclusters and the vitality mechanism are those of the reference implementation. Each of them was challenged in this chapter by at least one alternative and none of the alternatives improved the model. In particular, the density of a microcluster is still the density of the last sample it absorbed, the order dependence identified in \cref{subsubsec:order_dependent_characteristics}: in \MicroTEDAClusPlus it only decides which microclusters are active, and \cref{subsec:mi_density_revisited} verifies whether an order-independent density can replace it there.
+The function $m$, the density, the activation criterion, the two-pass construction of the macroclusters and the vitality mechanism are those of the reference implementation. We challenged each of them in this chapter with at least one alternative and none of the alternatives improved the model. In particular, the density of a microcluster is still the density of the last sample it absorbed, the order dependence identified in \cref{subsubsec:order_dependent_characteristics}: in \MicroTEDAClusPlus it only decides which microclusters are active, and \cref{subsec:mi_density_revisited} verifies whether an order-independent density can replace it there.
 
-The hyperparameters are searched in $r \in [10^{-6}, 1]$ and $\text{decay} \in [10, 10^4]$, both on a logarithmic scale, and $n_\sigma \in [1, 10]$.
+We search the hyperparameters in $r \in [10^{-6}, 1]$ and $\text{decay} \in [10, 10^4]$, both on a logarithmic scale, and $n_\sigma \in [1, 10]$.
 
-The experiments of this chapter execute \MicroTEDAClusPlus as a configuration of the implementation of \cref{sec:mi_optimization}. For the main experiment, the model is implemented on its own, with its three hyperparameters and without the options of the experimental implementation. The two implementations were verified to produce the same predictions and the same number of microclusters, batch by batch, on scalability streams with 2, 8 and 32 dimensions.
+In the experiments of this chapter, we execute \MicroTEDAClusPlus as a configuration of the implementation of \cref{sec:mi_optimization}. For the main experiment, we implement the model on its own, with its three hyperparameters and without the options of the experimental implementation, and we verified that the two implementations produce the same predictions and the same number of microclusters, batch by batch, on scalability streams with 2, 8 and 32 dimensions.
 
 \section[\MicroTEDAClusPlus in the Main Experiment]{\MicroTEDAClusPlus and \MicroTEDAClus in the Main Experiment}
 \label{sec:mi_main_experiment}
 
-The experiments above compare models that share one implementation, on runs reserved for the development of the model. This section returns to the main experiment of \cref{chap:methodology_reassessment}. \MicroTEDAClusPlus is tuned and evaluated on its 94 runs and 13 datasets, by the same code and on the same machine as the benchmark models, and is compared with the \MicroTEDAClus of \cref{sec:reassessment_results}, the reference implementation. The comparison with the remaining benchmark models is the subject of \cref{chap:results}.
+The experiments above compare models that share one implementation, on runs reserved for the development of the model. In this section, we return to the main experiment of \cref{chap:methodology_reassessment}. We tune and evaluate \MicroTEDAClusPlus on its 94 runs and 13 datasets, by the same code and on the same machine as the benchmark models, and compare it with the \MicroTEDAClus of \cref{sec:reassessment_results}, the reference implementation. The comparison with the remaining benchmark models is the subject of \cref{chap:results}.
 
-The streams of these runs took no part in the development of the model, as required by \cref{subsec:mi_runs}, with one exception: \ChameleonDSThree and \ChameleonDSFour are fixed files, so their streams are the same in every run. The results of the two models are compared by the analysis of the main experiment, \cref{sec:statistical_significance}, in which the Friedman test is skipped because only two models are involved. In the tables of this section, a value in bold is significantly better than that of the other model, a value in red is significantly worse, and two values without emphasis are not significantly different.
+The streams of these runs took no part in the development of the model, as required by \cref{subsec:mi_runs}, with one exception: \ChameleonDSThree and \ChameleonDSFour are fixed files, so their streams are the same in every run. We compare the results of the two models by the analysis of the main experiment, \cref{sec:statistical_significance}, without the Friedman test, because only two models are involved. In the tables of this section, a value in bold is significantly better than that of the other model, a value in red is significantly worse, and two values without emphasis are not significantly different.
 
 \subsection{Clustering Quality}
 
@@ -588,7 +588,7 @@ In the scalability streams, the median fitting time of \MicroTEDAClusPlus stays 
 \input{ModelImprovement/artifacts/plus-vs-baseline/tables/memory_max_bytes.tex}
 \input{ModelImprovement/artifacts/plus-vs-baseline/tables/memory_steadystate_bytes.tex}
 
-\Cref{tab:plus-vs-baseline_memory_max_bytes,tab:plus-vs-baseline_memory_steadystate_bytes} show that the memory footprint of \MicroTEDAClusPlus is significantly smaller in the six datasets, at its maximum and at the steady state. The model stores the microclusters in arrays that always have room for one new microcluster per sample of the next batch, and that are enlarged to twice the required size when that room runs out. The footprint that is measured is that of the allocated capacity, which is the same for every run that never keeps more than 100 microclusters.
+\Cref{tab:plus-vs-baseline_memory_max_bytes,tab:plus-vs-baseline_memory_steadystate_bytes} show that the memory footprint of \MicroTEDAClusPlus is significantly smaller in the six datasets, at its maximum and at the steady state. The model stores the microclusters in arrays that always have room for one new microcluster per sample of the next batch, and that are enlarged to twice the required size when that room runs out. The footprint that we measure is that of the allocated capacity, which is the same for every run that never keeps more than 100 microclusters.
 
 In the scalability streams, \cref{fig:mi_main_cost_scalability} shows that the median maximum footprint of \MicroTEDAClusPlus grows linearly with the dimension, since each microcluster stores one mean.
 
