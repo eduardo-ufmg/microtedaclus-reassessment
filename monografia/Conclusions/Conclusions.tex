@@ -1,13 +1,30 @@
 \chapter{Conclusions}
+\label{chap:conclusions}
 
-Write here the conclusions of your thesis. This is one of the most important sections of your thesis, as it will be read by many people who will not read the entire text. Therefore, it should be clear, concise, and convincing.
+This work set out to reassess \MicroTEDAClus, an evolving clustering algorithm for data streams built on the eccentricity and typicality of the TEDA framework, and to propose an improved model from that reassessment. It then modernized the experiment, evaluated the improved model on real data and improved it again where that evaluation showed weaknesses.
 
 \section{Final Remarks}
+\label{sec:final_remarks}
 
-Reiterate what was most important, what was the initial objective and what was the result obtained. If there were requirements or project specifications, discuss whether they were met. If the results were inconclusive or contradicted what was expected, be honest and state it explicitly. Try to explain the failures with solid and plausible arguments.
+The formulation of \MicroTEDAClus has issues of its own, an order-dependent density, an outlier condition that cannot hold for microclusters with two samples and an unjustified scaling by the dimension, \cref{subsubsec:order_dependent_characteristics,subsubsec:incorrect_condition_logic,subsubsec:dimensionality_penalty}, and the implementation that produced the published results departs from it, \cref{sec:model_implementation}. The methodology of the original experiments leaks information about the streams, makes most batches trivial to cluster and evaluates each batch after learning it, \cref{chap:methodology_reassessment}. Under a methodology without these flaws, the original model is outperformed by the benchmark models in several metrics, and its claimed adaptability to concept drift is not supported in full, \cref{sec:disc_claims}.
+
+\MicroTEDAClusPlus, defined by controlled experiments on separate development and validation runs, differs from \MicroTEDAClus in the five points of \cref{tab:mi_final_differences}. On the synthetic datasets it improves on the original model in clustering quality, execution time and memory, and it is among the best benchmark models in the datasets with concept drift and the fastest of them, \cref{chap:results}. The modernized experiment, which runs in a single environment with benchmark models from maintained libraries, search ranges by rule and the cost measured with each task alone, keeps it indistinguishable from the best model in most datasets, and shows that the protocol itself moves its results, \cref{chap:modernization}.
+
+On real datasets, the same model is indistinguishable from the worst model in most datasets, \cref{chap:real_data}. Its microclusters seldom mature there and its noise label marks samples of classes that cover the stream, \cref{sec:ri_diagnosis}. A second effort of controlled experiments kept three changes, a lower range of the variance limit, the removal of the noise label and a searched link factor, and rejected every structural alternative, \cref{chap:real_improvement}. The final version of \MicroTEDAClusPlus is a large step over the version of \cref{chap:ModelImprovement} on real data: it is indistinguishable from the worst model in three real datasets instead of six and is the only model indistinguishable from the best in one, \cref{tab:ri_quality}. It is not yet a match for the best benchmark models on the real streams with concept drift, it starts slowly, and it splits the classes of some datasets over many clusters, \cref{subsec:ri_limits}.
+
+The objectives of \cref{sec:objectives} were met. The reassessment identified the issues of the formulation, of the implementation and of the methodology, and replaced the latter by a methodology that evaluates every model alike. The improved model overcomes most weaknesses of the original one on synthetic data, and keeps its standing in the modernized experiment. On real data, the final version brings the model from the bottom of the comparison to its middle, within the limits stated in \cref{sec:disc_limits}.
 
 \section{Future Work}
+\label{sec:future_work}
 
-If there are unresolved questions or unsatisfactory results, point out directions for continuation.
+The results point to the following directions.
+
+\begin{itemize}
+    \item \textbf{Hyperparameter selection.} The search selects configurations worse than those its space holds, \cref{sec:mi_selection}, its outcome varies with its seed, \cref{sec:disc_protocol}, and on the real data it does not select the link factors that would join the microclusters of the INSECTS datasets, \cref{subsec:ri_limits}. An objective that observes a longer segment of the stream, more trials, or repeated searches would reduce these effects, applied to every model of a comparison alike.
+    \item \textbf{One model for both kinds of data.} The noise label helps on data with noise and costs on data whose classes cover every sample, \cref{sec:disc_data}. Searching whether to label noise, as one more hyperparameter, would let a single model serve both, and the final version should be evaluated on the synthetic datasets.
+    \item \textbf{The real streams with concept drift.} They are where the final version stays behind the best benchmark models, starts slowly and splits the classes over many clusters, \cref{tab:ri_quality,tab:ri_partitions}, and they are the main case to understand.
+    \item \textbf{Size of the summary.} The summary of the final version exceeds the limit in some runs of \Covertype, and its peak of memory is among the highest, \cref{tab:ri_failures,tab:ri_cost}. A bound on the number of microclusters that the model enforces itself would make its cost predictable.
+    \item \textbf{Explore its strengths.} The final version has the fastest prediction time of all models. We may explore applications in which such characteristic is crucial.
+\end{itemize}
 
 \clearpage

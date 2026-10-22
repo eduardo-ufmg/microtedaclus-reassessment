@@ -1,7 +1,7 @@
 \chapter{Model Improvement on Real Data}
 \label{chap:real_improvement}
 
-\MicroTEDAClusPlus is indistinguishable from the worst model in six of the eight real datasets of \cref{chap:real_data}, \cref{tab:real_quality}. This chapter repeats on these datasets the effort of \cref{chap:ModelImprovement}: it examines what the model does on them, evaluates changes to it, keeps three, and confirms them on new runs and on datasets that took no part in their choice. The result is the final version of \MicroTEDAClusPlus, which is then compared with the benchmark models by the protocol of \cref{chap:real_data}, in quality and in cost. Where the two versions appear together, the model of \cref{chap:ModelImprovement} is called ``\MicroTEDAClusPlus of \cref{chap:ModelImprovement}'', and \modelname{MicroTEDAClus+ (Ch.~3)} in the tables.
+\MicroTEDAClusPlus is indistinguishable from the worst model in six of the eight real datasets of \cref{chap:real_data}, \cref{tab:real_quality}. This chapter repeats on these datasets the effort of \cref{chap:ModelImprovement}: it examines what the model does on them, evaluates changes to it, keeps three, and confirms them on new runs and on datasets that took no part in their choice. The result is the final version of \MicroTEDAClusPlus, which is then compared with the benchmark models by the protocol of \cref{chap:real_data}, in quality and in cost. Where the two versions appear together, the model of \cref{chap:ModelImprovement} is called ``\MicroTEDAClusPlus of \cref{chap:ModelImprovement}'', and \modelname{MicroTEDAClus+ (Ch.~\ref{chap:ModelImprovement})} in the tables.
 
 The diagnosis and the development of the changes use six of the eight real datasets. \KDDCup and \Covertype are left out of them: they are the two longest streams, \cref{tab:real_datasets}, too costly for the many evaluations of the development, and in \Covertype the best model scores lower than in any other dataset, \cref{tab:real_quality}, which leaves little to separate the candidates. The two return in the confirmation, where they show whether the changes hold on data that took no part in their choice.
 
@@ -20,7 +20,7 @@ The design is that of \cref{sec:mi_design}, with the changes that this section d
 \subsection{Runs}
 \label{subsec:ri_runs}
 
-The runs of \cref{chap:real_data} are the runs 0 to 31. The development uses the 32 runs that follow them, and every candidate uses, in each task, the seeds of the previous \MicroTEDAClusPlus version in that task, so that two candidates differ only by their changes. The confirmation evaluates the kept changes on the runs 0 to 31 of the eight datasets, on which no candidate ran during the development.
+The runs of \cref{chap:real_data} are the runs 0 to 31. The development uses the 32 runs that follow them, and every candidate uses, in each task, the seeds of the previous \MicroTEDAClusPlus version in that task, so that two candidates differ only by their changes. The confirmation evaluates the kept changes on the runs 0 to 31 of the eight datasets, on which no candidate ran during the development. The INSECTS datasets and \Covertype keep the order of their files, \cref{subsec:real_order}, so every run of them processes the same stream, and their runs differ only in the seeds of the search.
 
 \subsection{Decision Rule}
 \label{subsec:ri_decision_rule}
