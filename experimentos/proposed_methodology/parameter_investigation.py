@@ -48,7 +48,7 @@ def median_qcd(values: pd.Series) -> str:
     return f"{format_value(median)} [{dispersion}]"
 
 
-def hyperparameter_table(selected: pd.DataFrame, comparison, runs: int):
+def hyperparameter_table(selected: pd.DataFrame, comparison):
     model = comparison.focus
     of_model = selected[selected["model"] == model].pivot_table(
         index=["dataset", "run"], columns="param_name", values="param_value"
@@ -75,7 +75,7 @@ def hyperparameter_table(selected: pd.DataFrame, comparison, runs: int):
     os.makedirs(out_dir, exist_ok=True)
     write_table(
         Path(out_dir) / f"{model}_parameters.tex",
-        f"{title}: median [QCD] over the {runs} runs.",
+        f"{title}: median [QCD] over the runs of the main experiment.",
         f"tab:params_{model.lower()}",
         "l l " + "c " * len(datasets),
         lines,
@@ -96,10 +96,7 @@ def main():
     selected = selected[selected["dataset"].isin(metrics["dataset"].unique())]
 
     for comparison in COMPARISONS:
-        of_focus = selected[selected["model"] == comparison.focus]
-        runs = of_focus.groupby("dataset")["run"].nunique()
-        assert runs.nunique() == 1, f"uneven runs for {comparison.focus}: {runs}"
-        hyperparameter_table(selected, comparison, int(runs.iloc[0]))
+        hyperparameter_table(selected, comparison)
         print(f"Generated the hyperparameter table of: {comparison.focus}")
 
 

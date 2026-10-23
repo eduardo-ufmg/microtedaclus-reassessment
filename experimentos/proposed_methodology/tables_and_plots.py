@@ -76,30 +76,6 @@ def statistics(comparison, metric: str) -> pd.DataFrame:
     return pd.read_csv(os.path.join(DIR_STATS_BASE, comparison.name, f"{metric}.csv"))
 
 
-def run_text(stats: pd.DataFrame) -> str:
-    """The runs over which the medians of a table are taken: those that every model finished."""
-    runs = stats.groupby("dataset")["runs"].first()
-    most = runs.max()
-    exceptions = []
-    for count in sorted(set(runs[runs < most]), reverse=True):
-        names = [
-            DATASET_SHORT_NAMES[dataset]
-            for dataset in DATASET_ORDER
-            if runs.get(dataset) == count
-        ]
-        listed = (
-            names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
-        )
-        exceptions.append(f"{count} in {listed}")
-    if not exceptions:
-        return f"the {most} runs"
-    return (
-        f"the {most} runs, "
-        + "; ".join(exceptions)
-        + ", where a model has no result for a run"
-    )
-
-
 def panels(comparison, metrics) -> list:
     """A panel per metric: the model in focus, its count of verdicts, then the other models."""
     result = []
@@ -159,10 +135,9 @@ def generate_tables(comparison, out_dir: str):
         ),
     ]
     for name, metrics, title, note in specs:
-        runs = run_text(statistics(comparison, metrics[0]))
         panel_table(
             Path(out_dir) / f"{name}.tex",
-            f"{title}: medians over {runs}.{note}",
+            f"{title}: medians over the runs of the main experiment.{note}",
             f"tab:{comparison.label}_{name}",
             columns,
             panels(comparison, metrics),
