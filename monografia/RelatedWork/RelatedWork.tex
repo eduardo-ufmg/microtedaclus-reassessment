@@ -1,365 +1,321 @@
 \chapter{Background and Related Work}
 \label{chap:background_relatedwork}
 
-The TEDA framework is introduced by Angelov in \textit{Outside the Box: An Alternative Data Analytics Framework} as an alternative to probability theory for handling data in non-deterministic scenarios \cite{angelov2014outside}. In the first part of this section, we present the \textbf{eccentricity} and \textbf{typicality} metrics and their recursive expressions, which form the basis of the TEDA mathematical formulation.
-
-In the original presentation of the \MicroTEDAClus model, \textit{Evolving Clustering Algorithm Based on Mixture of Typicalities for Stream Data Mining}, the author applies these metrics to determine if a sample is an outlier to a microcluster, if microclusters are suitable candidates to form a macrocluster, and to which macrocluster a sample belongs \cite{maia2020evolvclus}. In the second part, we present the original \MicroTEDAClus formulation, alongside a detailed review of some issues in its mathematical and logical formulation.
-
-Then, while evaluating the performance of the previous model in the last-mile problem, the authors of \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} refactor the decay logic and variance computation \cite{galindo2021lastmile}. The corresponding subsection describes the changes made relative to the original \MicroTEDAClus and highlights new issues arising from these modifications.
-
-Finally, \textit{Implementação do algoritmo MicroTEDAclus para classificação de dados} reimplements the original model in \codename{C} to reduce its execution time, and proposes a new intersection condition for the microclusters \cite{cardoso2022microtedaclus}. The last section describes this work and the issues of its evaluation.
+This chapter presents the eccentricity and the typicality of the TEDA framework (\cref{sec:teda}), the formulation of \MicroTEDAClus by Maia et al.\ (\cref{sec:original_formulation}), its update by Galindo (\cref{sec:updated_formulation}), and the reimplementation of the model in \codename{C} by Cardoso (\cref{sec:c_implementation}). After each formulation, we discuss its issues, and we point to where the following chapters examine them.
 
 \section{Typicality and Eccentricity-Based Data Analytics}
+\label{sec:teda}
 
-
-The paper \textit{Outside the Box: An Alternative Data Analytics Frame-Work}, by Plamen Angelov, introduces the mathematical formulation for the metrics \textbf{Eccentricity} and \textbf{Typicality} \cite{angelov2014outside}.
-
-Let
+Angelov~\cite{angelov2014outside} introduces the TEDA framework as an alternative to probability theory for data in non-deterministic settings, built on two metrics, the eccentricity and the typicality. Let
 
 \begin{equation}
     C = \{ \sum_{i=1}^{k} \pi^k_i > 0,\quad j > 1,\quad k > 2 \}
 \end{equation}
 
-be a set of conditions for a sample $j$ to be considered for the computation of eccentricity and typicality in a moment $k$.
-
-Eccentricity, a measure of how much a sample deviates from a cluster, is defined as \cref{eq:eccentricity_definition}:
+be the conditions under which the metrics of a sample $j$ are computed at moment $k$, where $\pi^k_j$ is the sum of the distances from sample $j$ to all the samples seen up to $k$. The eccentricity, which measures how much a sample deviates from the others, and the typicality, which measures how well it fits among them, are
 
 \begin{equation}
     \xi^k_j = \frac{2\pi^k_j}{\sum_{i=1}^{k} \pi^k_i}, \quad C
     \label{eq:eccentricity_definition}
 \end{equation}
 
-Where $\pi^k_j$ is the sum of distances from the sample $j$ to all samples in the moment $k$.
-
-Typicality, a measure of how well a sample fits within a cluster, is defined as \cref{eq:typicality_definition}:
-
 \begin{equation}
     \tau^k_j = 1 - \xi^k_j, \quad C
     \label{eq:typicality_definition}
 \end{equation}
 
-Both are, by definition, bounded: $0 < \xi^k_j < 1$ and $0 < \tau^k_j < 1$. The normalized eccentricity and typicality are presented as \cref{eq:normalized_eccentricity} and \cref{eq:normalized_typicality}, respectively:
+Both are bounded, $0 < \xi^k_j < 1$ and $0 < \tau^k_j < 1$, and their normalized forms are
 
 \begin{equation}
-    \zeta^k_j = \frac{\xi^k_j}{2}, \quad \sum_{i=1}^{k} \zeta^k_i = 1\quad 0 < \zeta^k_j < \frac{1}{2}\quad C
+    \zeta^k_j = \frac{\xi^k_j}{2}, \quad \sum_{i=1}^{k} \zeta^k_i = 1, \quad 0 < \zeta^k_j < \frac{1}{2}, \quad C
     \label{eq:normalized_eccentricity}
 \end{equation}
 
 \begin{equation}
-    t^k_j = \frac{\tau^k_j}{k - 2}, \quad \sum_{i=1}^{k} t^k_i = 1\quad 0 < t^k_j < \frac{1}{k - 2}\quad C
+    t^k_j = \frac{\tau^k_j}{k - 2}, \quad \sum_{i=1}^{k} t^k_i = 1, \quad 0 < t^k_j < \frac{1}{k - 2}, \quad C
     \label{eq:normalized_typicality}
 \end{equation}
 
-The paper states that samples for which the normalized eccentricity $\zeta^k_j > 1/k$ are considered anomalous, and those for which the normalized typicality $t^k_j > 1/k$ are considered typical.
-
-Furthermore, it provides recursive, or incremental, formulas for updating $\sum_{i=1}^{k} \pi^k_i$ in the squared Euclidean distance, as in \cref{eq:recursive_sum_pi}:
-
-The mean and the scalar product of the samples in the moment $k$ are
+A sample is anomalous if $\zeta^k_j > 1/k$ and typical if $t^k_j > 1/k$. For the squared Euclidean distance, the sum of the distances can be updated recursively from the mean and the mean squared norm of the samples,
 
 \begin{equation}
 \begin{gathered}
-    \mu^k = \frac{k - 1}{k} \mu^{k-1} + \frac{1}{k} x_k \\
-    X^k = \frac{k - 1}{k} X^{k-1} + \frac{1}{k} \lVert x_k \rVert^2
+    \mu^k = \frac{k - 1}{k} \mu^{k-1} + \frac{1}{k} x_k, \qquad
+    X^k = \frac{k - 1}{k} X^{k-1} + \frac{1}{k} \lVert x_k \rVert^2,
 \end{gathered} \label{eq:recursive_mu_X}
 \end{equation}
 
-From those,
+since
 
 \begin{equation}
-    \pi^k_j = k (\lVert x_j - \mu^k \rVert^2 + X^k - \lVert \mu^k \rVert^2)
-\end{equation}
-
-and
-
-\begin{equation}
-    \sum_{i=1}^{k} \pi^k_i = \sum_{i=1}^{k-1} \pi^{k-1}_i + 2 \pi^k_k \\
+    \pi^k_j = k \left(\lVert x_j - \mu^k \rVert^2 + X^k - \lVert \mu^k \rVert^2\right), \qquad
+    \sum_{i=1}^{k} \pi^k_i = \sum_{i=1}^{k-1} \pi^{k-1}_i + 2 \pi^k_k.
     \label{eq:recursive_sum_pi}
 \end{equation}
 
-Finally, Angelov states that \labeltext[Angelov's statement about the use of other proximity functions]{those metrics suit various proximity functions, among which are the cosine similarity and the Mahalanobis distance}{info:mahalanobis_as_teda_metric} \cite{mahalanobis1936generalized}.
+Angelov also states that \labeltext[Angelov's statement about the use of other proximity functions]{the metrics suit other proximity functions, among them the cosine similarity and the Mahalanobis distance}{info:mahalanobis_as_teda_metric}~\cite{mahalanobis1936generalized}.
 
-\section{Original \MicroTEDAClus}
+\section{Original MicroTEDAClus}
+\label{sec:original_formulation}
 
-
-\textit{Evolving Clustering Algorithm Based on Mixture of Typicalities for Stream Data Mining}, by Maia et al., employs the typicality and eccentricity metrics over the euclidean distance to instantiate and update microclusters from the detection of outliers and typical samples, as well as to decide when to merge microclusters into macroclusters \cite{maia2020evolvclus}.
-
-It redefines the eccentricity expression into a recursive form, (see \cref{eq:recursive_eccentricity}).
+Maia et al.~\cite{maia2020evolvclus} use the eccentricity and the typicality over the Euclidean distance to create and update microclusters, by detecting outliers and typical samples, and to merge the microclusters into macroclusters. They write the eccentricity in the recursive form
 
 \begin{equation}
-    \xi(x_k) = \frac{1}{k} + \frac{\left( \mu_k - x_k \right)^T \left( \mu_k - x_k \right)}{k \sigma^2_k} \label{eq:recursive_eccentricity}
+    \xi(x_k) = \frac{1}{k} + \frac{\left( \mu_k - x_k \right)^T \left( \mu_k - x_k \right)}{k \sigma^2_k}, \label{eq:recursive_eccentricity}
 \end{equation}
 
-where
+with
 
 \begin{gather}
-    \mu_k = \frac{k - 1}{k} \mu_{k-1} + \frac{x_k}{k} \\
-    \sigma^2_k = \frac{k - 1}{k} \sigma^2_{k-1} + \frac{1}{k - 1} \lVert x_k - \mu_k \rVert^2
+    \mu_k = \frac{k - 1}{k} \mu_{k-1} + \frac{x_k}{k}, \qquad
+    \sigma^2_k = \frac{k - 1}{k} \sigma^2_{k-1} + \frac{1}{k - 1} \lVert x_k - \mu_k \rVert^2,
 \end{gather}
 
-Another change is in the criteria regarding the typicality and eccentricity thresholds. \MicroTEDAClus considers a sample $x_k$ to be an outlier if
+and consider a sample an outlier if
 
 \begin{equation}
-    \zeta(x_k) > \frac{m^2 + 1}{2k}, \quad m > 0 \label{eq:angelovs_outlier}
+    \zeta(x_k) > \frac{m^2 + 1}{2k}, \quad m > 0, \label{eq:angelovs_outlier}
 \end{equation}
 
-In this model, $m$ is an arbitrary function of the number of samples in the data (see \cref{eq:m_function}).
+where $m$ is a function of the number of samples chosen by the authors,
 
 \begin{equation}
-    m(k) = \frac{3}{1 + e^{-0.007(k - 100)}}
+    m(k) = \frac{3}{1 + e^{-0.007(k - 100)}}.
     \label{eq:m_function}
 \end{equation}
 
-Microclusters are dynamically characterized by the following parameters:
+A microcluster $i$ at moment $k$ is described by:
 
 \begin{itemize}
-    \item $S^i_k$: the number of samples in the microcluster $i$ at moment $k$.
-    \item $\mu^i_k$: the mean of the samples in the microcluster $i$ at moment $k$.
-    \item $\sigma^2_k$: the variance of the samples in the microcluster $i$ at moment $k$.
-    \item $\xi^i(x_k)$, $\zeta^i(x_k)$: the eccentricity and normalized eccentricity of the sample $x_k$ to the microcluster $i$ at moment $k$.
-    \item $\tau^i(x_k)$, $t^i(x_k)$: the typicality and normalized typicality of the sample $x_k$ to the microcluster $i$ at moment $k$.
-    \item $D^i_k = 1 / \zeta^i(x_k)$: \labeltext[order-dependent parameter handled as a characteristic of the microcluster]{the density of the microcluster $i$ at moment $k$.}{critique:density_as_microcluster_characteristic}
-    \item $m^i_k(S^i_k)$: the dynamic threshold function for the microcluster $i$ at moment $k$.
-\end{itemize} \label{list:microcluster_parameters}
+    \item $S^i_k$, its number of samples;
+    \item $\mu^i_k$ and $(\sigma^i_k)^2$, the mean and the variance of its samples;
+    \item $\xi^i(x_k)$ and $\zeta^i(x_k)$, the eccentricity and the normalized eccentricity of sample $x_k$ to it;
+    \item $\tau^i(x_k)$ and $t^i(x_k)$, the typicality and the normalized typicality of $x_k$ to it;
+    \item $D^i_k = 1 / \zeta^i(x_k)$, \labeltext[order-dependent parameter handled as a characteristic of the microcluster]{its density}{critique:density_as_microcluster_characteristic};
+    \item $m^i_k(S^i_k)$, its threshold function.
+\end{itemize}
 
-All the metrics and conditions yet defined for the entire data may be applied to each microcluster. Thus, for $S^i_k > 2$, a sample $x_k$ is considered an outlier to the microcluster $i$ if
+The metrics apply to each microcluster as to the whole data. For $S^i_k > 2$, a sample $x_k$ is an outlier to microcluster $i$ if
 
 \begin{equation}
-    \zeta^i(x_k) > \frac{m^i_k(S^i_k)^2 + 1}{2S^i_k} \label{eq:outlier_condition}
+    \zeta^i(x_k) > \frac{m^i_k(S^i_k)^2 + 1}{2S^i_k}, \label{eq:outlier_condition}
 \end{equation}
 
 and, for $S^i_k = 2$, if
 
 \begin{equation}
-    \left( \zeta^i(x_k) > \frac{m^i_k(2)^2 + 1}{4} \right) \land \left( \left( \sigma^i_2 \right)^2 < r_0 \right) \label{critique:incorrect_condition_logic}
+    \left( \zeta^i(x_k) > \frac{m^i_k(2)^2 + 1}{4} \right) \land \left( \left( \sigma^i_k \right)^2 < r_0 \right), \label{critique:incorrect_condition_logic}
 \end{equation}
 
-where $r_0$ is a hyperparameter of the model.
-
-$x_k$ is checked against all microclusters, which are updated if $x_k$ is not an outlier to them, as in \cref{critique:dimensionality_penalty}.
+where $r_0$ is a hyperparameter, the variance limit. Every microcluster to which $x_k$ is not an outlier is updated by
 
 \begin{equation}
 \begin{gathered}
-    S^i_k = S^i_{k-1} + 1 \\
-    \mu^i_k = \frac{S^i_k - 1}{S^i_k} \mu^i_{S^i_{k}-1} + \frac{x_k}{S^i_k} \\
-    \left(\sigma^i_k\right)^2 = \frac{S^i_k - 1}{S^i_k} \left(\sigma^i_{k-1}\right)^2 + \frac{1}{S^i_k - 1} \left( \frac{2\lVert x_k - u^i_k \rVert }{d} \right)^2 \\
-    \xi^i(x_k) = \frac{1}{S^i_k} + \frac{2\left( \mu^i_k - x_k \right)^T \left( \mu^i_k - x_k \right)}{S^i_k \left( \sigma^i_k \right)^2d}
+    S^i_k = S^i_{k-1} + 1, \qquad
+    \mu^i_k = \frac{S^i_k - 1}{S^i_k} \mu^i_{k-1} + \frac{x_k}{S^i_k}, \\
+    \left(\sigma^i_k\right)^2 = \frac{S^i_k - 1}{S^i_k} \left(\sigma^i_{k-1}\right)^2 + \frac{1}{S^i_k - 1} \left( \frac{2\lVert x_k - \mu^i_k \rVert }{d} \right)^2, \\
+    \xi^i(x_k) = \frac{1}{S^i_k} + \frac{2\left( \mu^i_k - x_k \right)^T \left( \mu^i_k - x_k \right)}{S^i_k \left( \sigma^i_k \right)^2d},
 \end{gathered} \label{critique:dimensionality_penalty}
 \end{equation}
 
-Let
+where $d$ is the dimension of the data, and a sample that is an outlier to every microcluster creates a new one with
 
 \begin{equation}
-    S^i_k = 1, \quad \mu^i_k = x_k, \quad \sigma^2_k = 0 \label{eq:initial_microcluster_parameters}
+    S^i_k = 1, \quad \mu^i_k = x_k, \quad (\sigma^i_k)^2 = 0, \label{eq:initial_microcluster_parameters}
 \end{equation}
 
-be the initial parameters of a microcluster created with the sample $x_k$.
-
-The microcluster update procedure is described, in the original paper, by \cref{alg:microcluster_update}.
+as \cref{alg:microcluster_update} describes.
 
 \begin{algorithm}[htbp]
-\caption{Microcluster update}
+\caption{Update of the microclusters in the original formulation}
 \label{alg:microcluster_update}
 \begin{algorithmic}[1]
 \Require $x_k$, $r_0$
 \Ensure $m_i$, $i = 1, 2, \dots, n$
-\While{new samples available}
-    \If{$k == 1$}
-        \State Set $m_1$ parameters with \cref{eq:initial_microcluster_parameters}
+\While{new samples are available}
+    \If{$k = 1$}
+        \State Create $m_1$ by \cref{eq:initial_microcluster_parameters}
     \Else
         \State $\text{flag} \gets \text{true}$
         \For{$i = 1$ to $n$}
             \If{$S^i_k = 2$}
-                \State $\text{outlier} \gets \text{condition in \cref{critique:incorrect_condition_logic}}$
+                \State Decide whether $x_k$ is an outlier to $m_i$ by \cref{critique:incorrect_condition_logic}
             \Else
-                \State $\text{outlier} \gets \text{condition in \cref{eq:outlier_condition}}$
+                \State Decide whether $x_k$ is an outlier to $m_i$ by \cref{eq:outlier_condition}
             \EndIf
-            \If{not $\text{outlier}$}
-                \State Update $m_i$ parameters with \cref{critique:dimensionality_penalty}
+            \If{$x_k$ is not an outlier to $m_i$}
+                \State Update $m_i$ by \cref{critique:dimensionality_penalty}
                 \State $\text{flag} \gets \text{false}$
             \EndIf
         \EndFor
         \If{$\text{flag}$}
-            \State Create new microcluster $m_{n+1}$ with \cref{eq:initial_microcluster_parameters}
+            \State Create $m_{n+1}$ by \cref{eq:initial_microcluster_parameters}
         \EndIf
     \EndIf
 \EndWhile
 \end{algorithmic}
 \end{algorithm}
 
-Macroclusters are the disjoint sets of connected microclusters in a graph where the vertices are the microclusters and the edges are defined by the condition
+The macroclusters are the connected components of the graph whose vertices are the microclusters and whose edges join the microclusters that satisfy
 
 \begin{equation}
-    \text{dist}(\mu^i_k, \mu^j_k) < 2 \left( \sigma^i_k + \sigma^j_k \right), \quad i \neq j \label{eq:microcluster_intersection_condition}
+    \text{dist}(\mu^i_k, \mu^j_k) < 2 \left( \sigma^i_k + \sigma^j_k \right), \quad i \neq j. \label{eq:microcluster_intersection_condition}
 \end{equation}
 
-\labeltext[criterion to prevent microcluster colapse]{To prevent the collapse of all microclusters into a single macrocluster under overlap, a microcluster $m^j_l$ is part of the macrocluster's calculations only if}{info:microcluster_activation_criterion}
+\labeltext[criterion to prevent microcluster collapse]{To keep overlapping microclusters from collapsing into a single macrocluster, a microcluster $m^j_l$ takes part in the macrocluster $\mathcal{M}_j = \{ m^j_1, \dots, m^j_{N_j} \}$ only if it is active, that is, if}{info:microcluster_activation_criterion}
 
 \begin{equation}
-    D^l_k \ge \text{mean}\left(D^l_k\right), \quad l = 1,\dots,\left|\mathcal{M}_j\right| \label{critique:use_of_unstable_density}
+    D^l_k \ge \text{mean}\left(D^l_k\right), \quad l = 1,\dots,N_j. \label{critique:use_of_unstable_density}
 \end{equation}
 
-where $\mathcal{M}_j = \left\{ m^j_1, m^j_2, \cdots, m^j_l \right\}, \quad l = 1, 2, \cdots, N_j$ is the jth macrocluster composed of a set of $N_j$ connected microclusters $m^j_l$.
-
-The density of a macrocluster is the sum of the normalized typicalities of its active microclusters, as in \cref{eq:macrocluster_density}.
+Each active microcluster weighs in its macrocluster by its share of the density of the active microclusters,
 
 \begin{equation}
-    w^l_k = \frac{D^l_k}{\sum_{l\in\mathcal{M}_j} D^l_k}
+    w^l_k = \frac{D^l_k}{\sum_{l\in\mathcal{M}_j} D^l_k},
     \label{eq:macrocluster_density}
 \end{equation}
 
-Furthermore, the typicality of a sample $x_k$ to a macrocluster $\mathcal{M}_j$ is the weighted sum of the typicalities of $x_k$ to the microclusters in $\mathcal{M}_j$, expressed by \cref{eq:macrocluster_typicality}.
+the typicality of a sample $x_k$ to a macrocluster is the weighted sum of its typicalities to the active microclusters,
 
 \begin{equation}
-    \mathcal{T}_j(x_k) = \sum_{l\in\mathcal{M}_j} w^l_k t^l_k(x_k) \label{eq:macrocluster_typicality}
+    \mathcal{T}_j(x_k) = \sum_{l\in\mathcal{M}_j} w^l_k t^l_k(x_k), \label{eq:macrocluster_typicality}
 \end{equation}
 
-A sample's predicted label $j$ is the index of the macrocluster $\mathcal{M}_j$ to which it has the highest typicality, according to \cref{eq:macrocluster_prediction}.
+and the sample is assigned to the macrocluster of highest typicality,
 
 \begin{equation}
-    j = \arg\max_j \mathcal{T}_j(x_k)
+    j = \arg\max_j \mathcal{T}_j(x_k),
     \label{eq:macrocluster_prediction}
 \end{equation}
 
-The macrocluster identification process is described, in the original paper, by \cref{alg:macrocluster_update}.
+as \cref{alg:macrocluster_update} describes. The formulation defines no decay of the microclusters, although the public implementation has one (\cref{sec:model_implementation}).
 
 \begin{algorithm}[htbp]
-\caption{Macrocluster update}
+\caption{Update of the macroclusters in the original formulation}
 \label{alg:macrocluster_update}
 \begin{algorithmic}[1]
 \Require $x_k$, $m_i$, $i = 1, 2, \dots, n$
-\Ensure membership of $x_k$ to macroclusters
-\While{new samples available}
-    \State $\mathcal{M} \gets \text{Group the microclusters that intersect with each other according to \cref{eq:microcluster_intersection_condition}}$
-    \State Find the set of active microclusters for each macrocluster $\mathcal{M}_j$ according to \cref{critique:use_of_unstable_density}
-    \State Compute the typicality of $x_k$ to each macrocluster $\mathcal{M}_j$ with \cref{eq:macrocluster_typicality}
-    \State Assign $x_k$ to the macrocluster $\mathcal{M}_j$ with the highest typicality
+\Ensure the macrocluster of $x_k$
+\While{new samples are available}
+    \State Group the microclusters that satisfy \cref{eq:microcluster_intersection_condition} into macroclusters $\mathcal{M}_j$
+    \State Find the active microclusters of each macrocluster by \cref{critique:use_of_unstable_density}
+    \State Compute the typicality of $x_k$ to each macrocluster by \cref{eq:macrocluster_typicality}
+    \State Assign $x_k$ to the macrocluster of highest typicality
 \EndWhile
 \end{algorithmic}
 \end{algorithm}
 
-No explicit decay logic is defined for microclusters.
+\subsection{Issues of the Original Formulation}
 
-\subsection{Open Questions and Issues in the Original \MicroTEDAClus Formulation}
+\paragraph{Order-dependent density.}
+\label{subsubsec:order_dependent_characteristics}
+The eccentricity and the typicality relate a sample to a microcluster, so the density $D^i_k = 1 / \zeta^i(x_k)$ relates them too, and should not be treated as a property of the microcluster. A microcluster with a small variance is dense for any standard clustering algorithm~\cite{ester1996density,aggarwal2003framework,cao2006density}, but if the current sample is far from its mean, $\zeta^i(x_k)$ is large and $D^i_k$ small, and the microcluster is less likely to be activated. Conversely, a microcluster with a large variance and a sample close to its mean has a large $D^i_k$ and is more likely to be activated, even if it is not dense at all. \Cref{sec:mi_corrections} tests two densities that do not depend on the current sample, and \cref{sec:ri_rejected} tests one of them again on real data.
 
-\subsubsection{Order-Dependent Density as a Microcluster Characteristic} \label{subsubsec:order_dependent_characteristics}
-
-Because \textbf{eccentricity} and \textbf{typicality} are metrics between a sample and a microcluster, the density $D^i_k = 1 / \zeta^i(x_k)$ is also a metric between a sample and a microcluster. So, it should not be treated as a characteristic of the microcluster itself. Consider a microcluster $i$ at moment $k$ with $\sigma^i_k = \sigma_\text{small}$, or for which the radius that contains most of its samples is $r_\text{small}$. For any of the standard clustering algorithms, such a microcluster would be considered dense \cite{ester1996density, aggarwal2003framework, cao2006density}, even if the sample $x_k$ is far from its mean $\mu^i_k$. \MicroTEDAClus, however, would compute $\zeta^i(x_k)$ as a large value, and therefore $D^i_k$ as a small value, which would make the microcluster $i$ less likely to be activated in the macrocluster formation process. On the other hand, if $\sigma^i_k = \sigma_\text{large}$, or if the radius that contains most of its samples is $r_\text{large}$, a sample $x_k$ that is close to $\mu^i_k$ would have a small $\zeta^i(x_k)$ and therefore a large $D^i_k$. This would make the microcluster $i$ more likely to be activated, even if it is not dense at all.
-
-\subsubsection{Incorrect Condition Logic for Outlier Detection in Microclusters with Two Samples} \label{subsubsec:incorrect_condition_logic}
-
-For $S^i_k = 2$,
+\paragraph{Outlier condition for microclusters with two samples.}
+\label{subsubsec:incorrect_condition_logic}
+For $S^i_k = 2$, the expressions of \cref{sec:teda} give
 
 \begin{gather}
-    \mu_2 = \frac{1}{2} \left( x_1 + x_2 \right) \\
-    \sigma^2_2 = \frac{\left(x_1 - x_2\right)^2}{4} \\
-    d(x_2, \mu_2) = 1 \\
-    \zeta(x_2) = 0.5
+    \mu_2 = \frac{1}{2} \left( x_1 + x_2 \right), \qquad
+    \sigma^2_2 = \lVert x_2 - \mu_2 \rVert^2, \qquad
+    \xi(x_2) = 1, \qquad
+    \zeta(x_2) = 0.5,
 \end{gather}
 
-Because $m \ge 1$,
+and, because $m \ge 1$,
 
 \begin{equation}
-    \frac{m^i_k(2)^2 + 1}{4} \ge 0.5
+    \frac{m^i_k(2)^2 + 1}{4} \ge 0.5.
 \end{equation}
 
-Thus, the condition $\zeta^i(x_k) > \frac{m^i_k(2)^2 + 1}{4}$ is never satisfied for $S^i_k = 2$, which ensures that any conjunction with it is also never satisfied, and no sample can be considered an outlier to a microcluster with two samples. The simple change of the condition logic from a conjunction to a disjunction would simplify the expression to \cref{eq:corrected_condition_logic}.
+The first term of \cref{critique:incorrect_condition_logic} is therefore never satisfied, and neither is the conjunction: no sample can be an outlier to a microcluster with two samples. With the scaled expressions of \cref{critique:dimensionality_penalty}, the normalized eccentricity of the second sample becomes $1/4 + d/8$, so the first term is never satisfied with one or two dimensions and always satisfied with three or more, where the condition reduces to $\left( \sigma^i_k \right)^2 < r_0$, which holds for the samples close to the mean. Either way, the condition does not detect outliers. Replacing it by
 
 \begin{equation}
-    \left( \sigma^i_2 \right)^2 < r_0
+    \left( \sigma^i_k \right)^2 < r_0
     \label{eq:corrected_condition_logic}
 \end{equation}
 
-which would be true for the samples that are closer to the mean $\mu^i_2$. Because the goal is to detect outliers, however, this yields the opposite of the intended behavior, so the condition logic should be changed to \cref{eq:corrected_condition_logic_for_outliers}.
+would keep the inversion, so the condition should be
 
 \begin{equation}
-    \left( \sigma^i_2 \right)^2 > r_0
+    \left( \sigma^i_k \right)^2 > r_0.
     \label{eq:corrected_condition_logic_for_outliers}
 \end{equation}
 
-\cite{cardoso2022microtedaclus} had reached the same conclusion earlier: it proves that the eccentricity of the second sample of a microcluster is always one, so that its normalized eccentricity is one half, and it detects the outliers of microclusters with fewer than three samples by \cref{eq:corrected_condition_logic_for_outliers} alone.
+Cardoso~\cite{cardoso2022microtedaclus} reached the same conclusion earlier, proving that the eccentricity of the second sample is always one, and detects the outliers of microclusters with fewer than three samples by \cref{eq:corrected_condition_logic_for_outliers} alone, as the public implementation does (\cref{sec:model_implementation}).
 
-\subsubsection{Anomalous Dimensionality Penalty} \label{subsubsec:dimensionality_penalty}
+\paragraph{Dimensionality penalty.}
+\label{subsubsec:dimensionality_penalty}
+\Cref{critique:dimensionality_penalty} scales the variance and the eccentricity of a microcluster by the dimension $d$. No paper that introduces the TEDA metrics suggests such a scaling~\cite{angelov2014outside,angelov2014anomaly}, the original work does not justify it, and it lets the normalized eccentricity exceed its bound of one half. \Cref{sec:reassessment_results} traces the collapse of \MicroTEDAClus in high dimensions to it, and \cref{sec:mi_corrections} tests its removal.
 
-The set of expressions in \cref{critique:dimensionality_penalty} explicitly penalizes the variance and eccentricity of a microcluster by the dimensionality of the data $d$. This is not standard, suggested by any of the papers that introduce the TEDA metrics \cite{angelov2014outside, angelov2014anomaly}, or justified by any theoretical or empirical evidence.
-
-\section[\MicroTEDAClus Updates]{\MicroTEDAClus Updates in the \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística} PHD Thesis}
+\section{Updated MicroTEDAClus}
 \label{sec:updated_formulation}
 
-From the model addressed by \cite{galindo2021lastmile}, we describe only the changes from the original \MicroTEDAClus in this section.
-
-In it, the condition for outlier detection in microclusters with two samples is changed to \cref{eq:updated_condition_logic_for_two_samples}.
+In the PhD thesis \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística}, Galindo~\cite{galindo2021lastmile} updates \MicroTEDAClus to apply it to the last-mile problem in logistics; we describe only the changes. The condition for microclusters with two samples becomes
 
 \begin{equation}
-    \left( \zeta^i_2(x_2)  > \frac{m^i(2)^2+1}{4} \right) \land \left( \left( \sigma^i_2 \right)^2 > r_0 \right)
+    \left( \zeta^i_2(x_2)  > \frac{m^i(2)^2+1}{4} \right) \land \left( \left( \sigma^i_k \right)^2 > r_0 \right),
     \label{eq:updated_condition_logic_for_two_samples}
 \end{equation}
 
-which solves the contradiction of the $r_0$ usage, but retains the issue of the incorrectly used conjunction.
+which corrects the direction of the comparison with $r_0$ but keeps the conjunction.
 
-An explicit decay logic is introduced. Microclusters have a new parameter $v^i_k$, initialized as $v^i_k = 1$ when the microcluster is created, and updated as \cref{eq:decay_logic}
+An explicit decay is introduced. Each microcluster has a vitality $v^i_k$, set to one when it is created and lowered by
 
 \begin{equation}
     v^i_k = v^i_{k-1} - \rho
     \label{eq:decay_logic}
 \end{equation}
 
-when the sample $x_k$ is an outlier to the microcluster $i$, where $\rho = \frac{1}{\text{decay}}$ and \textit{decay} is a hyperparameter of the model. A microcluster is removed if $v^i_k \le 0$.
+whenever the sample $x_k$ is an outlier to it, where $\rho = 1/\text{decay}$ and \textit{decay} is a hyperparameter. A microcluster is removed when $v^i_k \le 0$. \Cref{sec:mi_improvements} tests this rule as the candidate \variant{recency}.
 
-To adequate the algorithm to the problem's data projection, the euclidean distance is replaced by the cosine similarity, which \cite{angelov2014outside} states to be a valid proximity function for the TEDA metrics. The outlier condition is changed to \cref{critique:imports_euclidean_condition_from_angelov}.
+To suit the data of the problem, the Euclidean distance is replaced by the cosine similarity, which Angelov~\cite{angelov2014outside} accepts for the TEDA metrics. The outlier condition becomes
 
 \begin{equation}
-    \left(x_k - \mu^i_k\right)^2 > \left(m^i_k\right)^2\sigma^i_2 \label{critique:imports_euclidean_condition_from_angelov}
+    \left(x_k - \mu^i_k\right)^2 > \left(m^i_k\right)^2\left(\sigma^i_k\right)^2, \label{critique:imports_euclidean_condition_from_angelov}
 \end{equation}
 
-And the microcluster-update expressions are changed to
+and the update of a microcluster becomes
 
 \begin{equation}
 \begin{gathered}
-    S^i_k = S^i_{k-1} + 1 \\
-    \mu^i_k = \frac{S^i_k - 1}{S^i_k} \mu^i_{S^i_{k}-1} + \frac{1}{S^i_k} \frac{x_k}{\lVert x_k \rVert}, \quad \lVert x_k \rVert \neq 0 \\
-    \left(\sigma^i_k\right)^2 = \frac{S^i_k - 1}{S^i_k} \left(\sigma^i_{k-1}\right)^2 + \frac{1}{S^i_k - 1} \left( \frac{2\lVert x_k - \mu^i_k \rVert}{d} \right)^2 \label{critique:euclidean_variance} \\
-    \xi^i(x_k) = \frac{1 - \mu^i_k\frac{x_k}{\lVert x_k \rVert}}{1 + k\left(\mu^i_k\right)^2}, \quad \lVert x_k \rVert \neq 0
+    S^i_k = S^i_{k-1} + 1, \qquad
+    \mu^i_k = \frac{S^i_k - 1}{S^i_k} \mu^i_{k-1} + \frac{1}{S^i_k} \frac{x_k}{\lVert x_k \rVert}, \quad \lVert x_k \rVert \neq 0, \\
+    \left(\sigma^i_k\right)^2 = \frac{S^i_k - 1}{S^i_k} \left(\sigma^i_{k-1}\right)^2 + \frac{1}{S^i_k - 1} \left( \frac{2\lVert x_k - \mu^i_k \rVert}{d} \right)^2, \label{critique:euclidean_variance} \\
+    \xi^i(x_k) = \frac{1 - \mu^i_k\frac{x_k}{\lVert x_k \rVert}}{1 + k\left(\mu^i_k\right)^2}, \quad \lVert x_k \rVert \neq 0.
 \end{gathered}
 \end{equation}
 
-The remainder of the algorithm, including the macrocluster formation process, is unchanged.
+The rest of the algorithm, including the formation of the macroclusters, is unchanged.
 
-\subsection{Open Questions and Issues in the Updated \MicroTEDAClus Formulation}
+\subsection{Issues of the Updated Formulation}
 
-\subsubsection{Issues not Addressed by the Updates}
+\paragraph{Issues that remain.} The order-dependent density and the dimensionality penalty remain, and the condition for microclusters with two samples keeps its conjunction.
 
-The issues in \cref{subsubsec:order_dependent_characteristics,subsubsec:dimensionality_penalty} are completely ignored in the updated model, and the issue \cref{subsubsec:incorrect_condition_logic} is only partially solved, as the conjunction is still present in the condition for outlier detection in microclusters with two samples.
+\paragraph{An outlier condition derived for another distance.} Angelov~\cite{angelov2014anomaly} derives \cref{eq:angelovs_outlier} from \cref{critique:imports_euclidean_condition_from_angelov} for the Euclidean distance, and states that a similar condition can be derived for the cosine similarity without deriving it. The updated model uses the Euclidean condition with the cosine similarity without justification.
 
-\subsubsection{Import of an Incompatible Outlier Condition from Angelov's Paper}
+\paragraph{A Euclidean variance with the cosine similarity.} The eccentricity is adapted to the cosine similarity, but the variance of \cref{critique:euclidean_variance} is still the Euclidean one, and nothing shows that it is compatible with the cosine similarity.
 
-\cite{angelov2014anomaly} derives \cref{eq:angelovs_outlier} from \cref{critique:imports_euclidean_condition_from_angelov} explicitly for the euclidean distance, and states that a similar condition can be derived for the cosine similarity, but does not provide any such condition. The employment of such an incompatible condition in the updated model is not justified by any theoretical or empirical evidence..
-
-\subsubsection{Usage of Euclidean Variance with Cosine Similarity}
-
-Although it updates the eccentricity formula to be compatible with the cosine similarity, the updated model retains the original variance computation through \cref{critique:euclidean_variance}, which is explicitly derived for the euclidean distance. There is no theoretical or empirical evidence that this variance computation is compatible with the cosine similarity.
-
-\section[A \texttt{C} Implementation of \MicroTEDAClus]{A \texttt{C} Implementation of \MicroTEDAClus in the \textit{Implementação do algoritmo MicroTEDAclus para classificação de dados} Undergraduate Thesis}
+\section{A \texttt{C} Implementation of MicroTEDAClus}
 \label{sec:c_implementation}
 
-\cite{cardoso2022microtedaclus} reimplements the original \MicroTEDAClus in \codename{C}, a language chosen for its speed and for its use in embedded platforms. Along the reimplementation, it documents the TEDA expressions that the model uses, with proofs and unit tests, and finds that the recursive eccentricity of \cref{eq:recursive_eccentricity} corresponds to the eccentricity computed over the squared euclidean distance, as the recursive expressions of \cref{eq:recursive_sum_pi} assume. It also distinguishes two modes of operation: in the online mode, the model updates its macroclusters along the stream and labels each sample as it arrives; in the offline mode, it learns the whole dataset, builds its macroclusters once and then labels every sample.
+In the undergraduate thesis \textit{Implementação do algoritmo MicroTEDAclus para classificação de dados}, Cardoso~\cite{cardoso2022microtedaclus} reimplements the original \MicroTEDAClus in \codename{C}, a language chosen for its speed and for its use in embedded platforms. Along the way, the thesis documents the TEDA expressions that the model uses, with proofs and unit tests, and finds that the recursive eccentricity of \cref{eq:recursive_eccentricity} corresponds to the eccentricity computed over the squared Euclidean distance, as the recursive expressions of \cref{eq:recursive_sum_pi} assume. It also distinguishes two modes of operation: in the online mode, the model updates its macroclusters along the stream and labels each sample as it arrives; in the offline mode, it learns the whole dataset, builds its macroclusters once and then labels every sample.
 
-It proposes an alternative to the intersection condition of \cref{eq:microcluster_intersection_condition}. It takes $m^i_k(S^i_k)\,\sigma^i_k$ as the radius of a microcluster, the distance from its mean beyond which a sample is an outlier to it, and compares the distance between the means of two microclusters with the sum of their radii, scaled by a factor $\phi$ that loosens the condition relative to that sum, as in \cref{eq:cardoso_intersection_condition}.
+Cardoso proposes an alternative to the intersection condition of \cref{eq:microcluster_intersection_condition}. The alternative takes $m^i_k(S^i_k)\,\sigma^i_k$ as the radius of a microcluster, the distance from its mean beyond which a sample is an outlier to it, and compares the distance between the means of two microclusters with the sum of their radii, scaled by a factor $\phi$ that loosens the condition relative to that sum:
 
 \begin{equation}
-    \text{dist}(\mu^i_k, \mu^j_k) < \phi \left( m^i_k(S^i_k)\,\sigma^i_k + m^j_k(S^j_k)\,\sigma^j_k \right), \quad \phi \ge 1, \quad i \neq j
+    \text{dist}(\mu^i_k, \mu^j_k) < \phi \left( m^i_k(S^i_k)\,\sigma^i_k + m^j_k(S^j_k)\,\sigma^j_k \right), \quad \phi \ge 1, \quad i \neq j.
     \label{eq:cardoso_intersection_condition}
 \end{equation}
 
-Its experiments evaluate the clustering quality by the adjusted rand index on seven static datasets of two dimensions, two of them taken from the original work. For each dataset and intersection condition, the model runs in the offline mode with random orders of the samples and with hyperparameters taken from a grid, and the thesis reports the lowest and the highest index and the highest mean index over the configurations \cite[Section 4.3]{cardoso2022microtedaclus}. From them, it concludes that the quality depends strongly on $r_0$ and $\phi$ and weakly on the decay of \cref{eq:decay_logic}, and that \cref{eq:cardoso_intersection_condition} is comparable to \cref{eq:microcluster_intersection_condition}, with a higher index in one dataset.
+\Cref{subsec:mi_improvement_candidates} tests a factor of its own on the condition of \cref{eq:microcluster_intersection_condition}, which \cref{subsec:ri_link} keeps on real data.
 
-The thesis also compares the execution time of the reimplementation with that of the \codename{Python} implementation of the original work. It measures each whole program, including the reading of the data, with the \codename{time} command of the operating system on a single machine, and reports no repetitions \cite[Section 4.4]{cardoso2022microtedaclus}. It reports that the reimplementation runs much faster than the original one, and that its execution time grows steeply with the number of samples, which it attributes to the construction of the macroclusters, quadratic in the number of microclusters \cite[Sections 4.4 and 4.5]{cardoso2022microtedaclus}.
+The experiments of the thesis evaluate the clustering quality by the adjusted Rand index on seven static datasets of two dimensions, two of them taken from the original work. For each dataset and intersection condition, the model runs in the offline mode with random orders of the samples and with hyperparameters taken from a grid, and the thesis reports the lowest and the highest index and the highest mean index over the configurations~\cite[Section 4.3]{cardoso2022microtedaclus}. It concludes that the quality depends strongly on $r_0$ and $\phi$ and weakly on the decay of \cref{eq:decay_logic}, and that \cref{eq:cardoso_intersection_condition} is comparable to \cref{eq:microcluster_intersection_condition}, with a higher index in one dataset.
 
-\subsection{Open Questions and Issues in the Evaluation of the \texttt{C} Implementation}
+The thesis also compares the execution time of the reimplementation with that of the \codename{Python} implementation of the original work. It measures each whole program, including the reading of the data, with the \codename{time} command of the operating system on a single machine, and reports no repetitions~\cite[Section 4.4]{cardoso2022microtedaclus}. It reports that the reimplementation runs much faster than the original one, and that its execution time grows steeply with the number of samples, which it attributes to the construction of the macroclusters, quadratic in the number of microclusters~\cite[Sections 4.4 and 4.5]{cardoso2022microtedaclus}.
 
-\subsubsection{Hyperparameters Selected with the Labels of the Evaluated Data}
+\subsection{Issues of the Evaluation of the C Implementation}
 
-The highest index and the highest mean index belong to the configurations of the grid that best fit the labels of the evaluated data, and are therefore optimistic estimates of the quality that the model reaches when its hyperparameters are chosen without those labels. The lowest index is no better than chance in every dataset \cite[Tables 4.1 and 4.2]{cardoso2022microtedaclus}, so the quality reported depends on a choice that the evaluation makes with the labels. The comparison between the two intersection conditions rests on these best cases, without a statistical test.
+\paragraph{Hyperparameters selected with the labels of the evaluated data.} The highest index and the highest mean index belong to the configurations of the grid that best fit the labels of the evaluated data, and are therefore optimistic estimates of the quality that the model reaches when its hyperparameters are chosen without those labels. The lowest index is no better than chance in every dataset~\cite[Tables 4.1 and 4.2]{cardoso2022microtedaclus}, so the quality reported depends on a choice made with the labels. The comparison between the two intersection conditions rests on these best cases, without a statistical test.
 
-\subsubsection{Scope of the Comparison}
-
-The model is compared with no benchmark model, and none of the datasets has concept drift, which the thesis leaves out of its scope and expects the model to handle because the original work reports that it does \cite[Section 4.2]{cardoso2022microtedaclus}. Its results therefore leave untested the claims of the original work about the benchmark models and about concept drift.
+\paragraph{Scope of the comparison.} The model is compared with no benchmark model, and none of the datasets has concept drift, which the thesis leaves out of its scope and expects the model to handle because the original work reports that it does~\cite[Section 4.2]{cardoso2022microtedaclus}. The claims of the original work about the benchmark models and about concept drift therefore remain untested.
