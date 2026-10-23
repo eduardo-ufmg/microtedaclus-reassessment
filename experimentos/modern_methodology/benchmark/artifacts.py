@@ -105,60 +105,50 @@ def quality_tables(results, models, runs):
 
 
 def summary_table(results, models, runs):
-    """Size of the summaries, in the six datasets and along the dimension of the data."""
-    for name, label, datasets, scope in (
-        ("summary_size", "tab:mod_summary_size", MAIN_DATASETS, ""),
-        (
-            "summary_size_scalability",
-            "tab:mod_summary_size_scalability",
-            SCALABILITY_DATASETS,
-            " in the scalability streams",
-        ),
-    ):
-        title = f"Summary size of {SUBJECT}{scope}"
-        panel_table(
-            ARTIFACT_DIR / f"{name}.tex",
-            f"{title}: medians over {runs} runs.",
-            label,
-            columns(datasets),
-            focus_panels(results, analysis.SUMMARY_METRICS, models, datasets),
-            short=title,
-        )
+    """Size of the summaries in the six datasets; the scalability streams have a figure."""
+    title = f"Summary size of {SUBJECT}"
+    panel_table(
+        ARTIFACT_DIR / "summary_size.tex",
+        f"{title}: medians over {runs} runs.",
+        "tab:mod_summary_size",
+        columns(MAIN_DATASETS),
+        focus_panels(results, analysis.SUMMARY_METRICS, models, MAIN_DATASETS),
+        short=title,
+    )
 
 
-def cost_tables(models):
-    """Time and memory of the models, from the passes that measure them."""
+def cost_levels(models):
+    """Time and memory of the models, from the passes that measure them, over the runs that
+    both passes completed; None if a pass is missing."""
     if (
         not (analysis.TIMING / "batches").exists()
         or not (analysis.MEMORY / "tasks.csv").exists()
     ):
-        return
+        return None
     timing = analysis.timing_level()
     memory = analysis.memory_level()
     runs = analysis.complete_runs(timing, models)
     if analysis.complete_runs(memory, models) != runs:
         raise ValueError("The time and memory passes completed different runs")
-    timing = analysis.on_complete_runs(timing, models)
-    memory = analysis.on_complete_runs(memory, models)
-    for name, label, datasets, scope in (
-        ("cost", "tab:mod_cost", MAIN_DATASETS, ""),
-        (
-            "cost_scalability",
-            "tab:mod_cost_scalability",
-            SCALABILITY_DATASETS,
-            " in the scalability streams",
-        ),
-    ):
-        title = f"Execution time and memory of {SUBJECT}{scope}"
-        panel_table(
-            ARTIFACT_DIR / f"{name}.tex",
-            f"{title}: medians over {len(runs)} runs.",
-            label,
-            columns(datasets),
-            focus_panels(timing, analysis.TIME_METRICS, models, datasets, _in_ms)
-            + focus_panels(memory, analysis.MEMORY_METRICS, models, datasets, _in_kib),
-            short=title,
-        )
+    return (
+        analysis.on_complete_runs(timing, models),
+        analysis.on_complete_runs(memory, models),
+        len(runs),
+    )
+
+
+def cost_table(timing, memory, models, runs):
+    """Time and memory in the six datasets; the scalability streams have a figure."""
+    title = f"Execution time and memory of {SUBJECT}"
+    panel_table(
+        ARTIFACT_DIR / "cost.tex",
+        f"{title}: medians over {runs} runs.",
+        "tab:mod_cost",
+        columns(MAIN_DATASETS),
+        focus_panels(timing, analysis.TIME_METRICS, models, MAIN_DATASETS, _in_ms)
+        + focus_panels(memory, analysis.MEMORY_METRICS, models, MAIN_DATASETS, _in_kib),
+        short=title,
+    )
 
 
 def protocol_table(rules, previous):
@@ -387,6 +377,35 @@ def dimension_figure(results, models):
     _save(fig, axes, "dimension_scalability.png")
 
 
+def cost_figure(timing, memory, results, models):
+    """Time, memory and summary size against the dimension of the data."""
+    panels = [
+        (timing, "time_fit_cum_ms", 1.0),
+        (timing, "time_predict_cum_ms", 1.0),
+        (memory, "memory_retained_bytes", 1024.0),
+        (memory, "memory_peak_bytes", 1024.0),
+        (results, "mc_max", 1.0),
+        (results, "mc_steadystate", 1.0),
+    ]
+    fig, axes = plt.subplots(3, 2, figsize=(12, 10))
+    for ax, (frame, metric, scale) in zip(np.ravel(axes), panels):
+        for model in models:
+            of_model = frame[frame.model == model]
+            values = np.column_stack(
+                [
+                    of_model[of_model.dataset == dataset].sort_values("run")[metric]
+                    for dataset in SCALABILITY_DATASETS
+                ]
+            )
+            _bands(ax, SCALABILITY_DIMENSIONS, values / scale, model, models[0])
+        ax.set_xscale("log", base=2)
+        ax.set_xticks(SCALABILITY_DIMENSIONS, [str(d) for d in SCALABILITY_DIMENSIONS])
+        ax.set_yscale("log")
+        ax.set_xlabel("Dimension")
+        ax.set_ylabel(TITLES[metric])
+    _save(fig, axes, "cost_scalability.png")
+
+
 def stream_figure(out, models, runs):
     """ARI along the stream in the lowest and the highest dimensions of the data."""
     datasets = ("SCL-2", "SCL-64")
@@ -430,7 +449,11 @@ def main():
     dimension_figure(complete, models)
     stream_figure(analysis.MAIN, models, runs)
 
-    cost_tables(models)
+    levels = cost_levels(models)
+    if levels is not None:
+        timing, memory, cost_runs = levels
+        cost_table(timing, memory, models, cost_runs)
+        cost_figure(timing, memory, complete, models)
 
     if (analysis.PREVIOUS_PROTOCOL / "tasks.csv").exists():
         previous = analysis.run_level(analysis.PREVIOUS_PROTOCOL)
