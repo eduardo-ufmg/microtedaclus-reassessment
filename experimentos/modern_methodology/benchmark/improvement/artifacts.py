@@ -380,7 +380,7 @@ def diagnosis_table():
     runs = replay.groupby("dataset").size().to_dict()
     share, count = "{:.2f}".format, "{:.1f}".format
     rows = [
-        ("Share of the samples labelled as noise", "noise", share),
+        ("Share of the samples labeled as noise", "noise", share),
         ("Predicted clusters", "predicted_clusters", count),
         ("Classes", "classes", count),
         ("Microclusters", "microclusters", count),
@@ -539,7 +539,7 @@ def partitions_table():
             ],
         ),
         (
-            "Share of the samples labelled as noise",
+            "Share of the samples labeled as noise",
             [(label, m["noise"].to_dict(), share) for label, m in medians.items()],
         ),
         (

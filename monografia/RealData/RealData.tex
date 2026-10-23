@@ -18,7 +18,7 @@ The second criterion excludes datasets of stream classification whose label is a
 
 \input{RealData/artifacts/datasets.tex}
 
-The three INSECTS datasets record flying insects with an optical sensor, labelled by species and sex \cite{souza2020challenges}. Their authors varied the temperature of the recording, which changes the flight of the insects and therefore the features of each class, and ordered the samples so that the temperature changes abruptly, incrementally, or incrementally and back again. \GasDrift records an array of chemical sensors exposed to six gases over three years, in ten recording periods across which the sensors drift \cite{vergara2012chemical}. \KDDCup records network connections, labelled by the attack to which they belong \cite{kddcup1999}. It is a frequent dataset of stream clustering \cite{aggarwal2003framework,cao2006density} and a criticised one, for its redundant records among other reasons \cite{tavallaee2009detailed}. \Covertype describes forest cells by cartographic variables, labelled by their cover type \cite{blackard1999comparative}, \Pendigits describes handwritten digits by points of their trajectory \cite{alpaydin1996pen}, and \Shuttle records the sensors of a space shuttle, labelled by one of seven conditions \cite{statlog_shuttle}.
+The three INSECTS datasets record flying insects with an optical sensor, labeled by species and sex \cite{souza2020challenges}. Their authors varied the temperature of the recording, which changes the flight of the insects and therefore the features of each class, and ordered the samples so that the temperature changes abruptly, incrementally, or incrementally and back again. \GasDrift records an array of chemical sensors exposed to six gases over three years, in ten recording periods across which the sensors drift \cite{vergara2012chemical}. \KDDCup records network connections, labeled by the attack to which they belong \cite{kddcup1999}. It is a frequent dataset of stream clustering \cite{aggarwal2003framework,cao2006density} and a criticized one, for its redundant records among other reasons \cite{tavallaee2009detailed}. \Covertype describes forest cells by cartographic variables, labeled by their cover type \cite{blackard1999comparative}, \Pendigits describes handwritten digits by points of their trajectory \cite{alpaydin1996pen}, and \Shuttle records the sensors of a space shuttle, labeled by one of seven conditions \cite{statlog_shuttle}.
 
 \subsection{Features}
 \label{subsec:real_features}
@@ -45,13 +45,13 @@ The protocol is that of \cref{chap:modernization}, with some changes. We widen t
 
 \begin{table}[htbp]
 \centering
-\caption{Widened rules of the categories of hyperparameter that change, for a tuning segment of $n$ samples with $k$ labelled clusters; the summary size and the multiplier keep the rules of \cref{tab:mod_rules}. We measure the median distance between two samples on a million pairs of samples drawn at random.}
+\caption[Widened rules of the search ranges for the real datasets]{Widened rules of the categories of hyperparameter that change, for a tuning segment of $n$ samples with $k$ labeled clusters; the summary size and the multiplier keep the rules of \cref{tab:mod_rules}. We measure the median distance between two samples on a million pairs of samples drawn at random.}
 \begin{tabular}{p{0.2\textwidth} p{0.27\textwidth} p{0.27\textwidth} l}
 \toprule
 Category & Lower end & Upper end & Scale \\
 \midrule
-Distance & a tenth of the median distance from a sample to its nearest neighbour & ten times the median distance between two samples & logarithmic \\
-Relative variance & square of the median distance from a sample to its nearest neighbour, as a fraction of the total variance & ten times the square of the median distance between two samples, as a fraction of the total variance & logarithmic \\
+Distance & a tenth of the median distance from a sample to its nearest neighbor & ten times the median distance between two samples & logarithmic \\
+Relative variance & square of the median distance from a sample to its nearest neighbor, as a fraction of the total variance & ten times the square of the median distance between two samples, as a fraction of the total variance & logarithmic \\
 Horizon & $n/1000$ samples & $n$ samples & logarithmic \\
 Minimum points & $1$ & $\sqrt{n}$ & logarithmic \\
 Ratio & $0.001$ & $0.999$ & logit \\

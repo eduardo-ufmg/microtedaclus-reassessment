@@ -485,7 +485,7 @@ def noise_label_table(runs=DEVELOPMENT_RUNS):
             ],
         ),
         (
-            r"Samples labelled as noise [\%]",
+            r"Samples labeled as noise [\%]",
             [
                 ("true noise", noise, "{:.1f}".format),
                 (

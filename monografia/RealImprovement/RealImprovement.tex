@@ -49,14 +49,14 @@ We keep three changes, each applied to the model that results from the previous 
 
 \input{RealImprovement/artifacts/variance.tex}
 
-The change widens the search of \MicroTEDAClusPlus and of no other model. The ranges of \cref{chap:real_data} come from the tuning segment by rule, so a wider range does not suit one scale only. In that chapter, we extended the lower end of the distances of the benchmark models to a tenth of the median distance from a sample to its nearest neighbour (\cref{tab:real_rules}), and left the lower end of the relative variance at the square of that distance.
+The change widens the search of \MicroTEDAClusPlus and of no other model. The ranges of \cref{chap:real_data} come from the tuning segment by rule, so a wider range does not suit one scale only. In that chapter, we extended the lower end of the distances of the benchmark models to a tenth of the median distance from a sample to its nearest neighbor (\cref{tab:real_rules}), and left the lower end of the relative variance at the square of that distance.
 
 \variant{low-variance} improves \MicroTEDAClusPlus of \cref{chap:ModelImprovement} in the Overall ARI of the three INSECTS datasets and of \Pendigits, and in the Steady-State ARI of \Pendigits (\cref{tab:ri_chain}). Its steady-state summary is larger where it improves.
 
 \subsection{Noise Label}
 \label{subsec:ri_no_noise}
 
-\variant{no-noise} removes the noise label of \MicroTEDAClusPlus (\cref{eq:mi_final_prediction}): the model assigns every sample to the macrocluster of its nearest active microcluster, and the noise distance is no longer a hyperparameter. The classes of the real datasets cover every sample (\cref{sec:real_datasets}), so a sample labelled as noise is always an error of the partition, and the previous version of \MicroTEDAClusPlus labels nearly half of the samples of \InsectsAbrupt as noise (\cref{tab:ri_diagnosis}).
+\variant{no-noise} removes the noise label of \MicroTEDAClusPlus (\cref{eq:mi_final_prediction}): the model assigns every sample to the macrocluster of its nearest active microcluster, and the noise distance is no longer a hyperparameter. The classes of the real datasets cover every sample (\cref{sec:real_datasets}), so a sample labeled as noise is always an error of the partition, and the previous version of \MicroTEDAClusPlus labels nearly half of the samples of \InsectsAbrupt as noise (\cref{tab:ri_diagnosis}).
 
 \variant{low-variance + no-noise} improves \variant{low-variance} in the Overall ARI of \InsectsReoccurring, and loses in no dataset (\cref{tab:ri_chain}). It fails in more runs, and its summary is larger in \InsectsReoccurring.
 
@@ -90,7 +90,7 @@ Where the selected factor is that of the control, the model is nearly the contro
 
 \paragraph{Dimensionality penalty.} \variant{dimensionality-penalty} restores the factor $2/d$ that we removed from \MicroTEDAClusPlus in \cref{chap:ModelImprovement}. It is mixed, with more losses than gains, and its summary is smaller than that of its control in every dataset.
 
-\paragraph{Departures from the rule.} We did not keep two candidates that the rule would keep. \variant{chi-threshold}, the candidate of \cref{subsec:mi_improvement_candidates} that tests the outliers against the dispersion of a Gaussian cluster in $d$ dimensions, improves \variant{low-variance} with a single gain while its median Overall ARI is lower in five of the six datasets (\cref{tab:ri_candidates}). \variant{wide-link}, the link factor searched in $[0.05, 4]$ on a logarithmic scale, is mixed against its control, \variant{low-variance + no-noise}, and in the planned direct comparison it improves \variant{low-variance + no-noise + link-factor} with two gains, while its median Overall ARI is lower in five of the six datasets. In both cases we judged a single favourable dataset to weigh less than a consistent lean in the others. We also compared the medians of the two link factors with those of the benchmark models in \cref{tab:real_quality}, outside the rule, and that comparison favoured the narrower range. The link factor itself, whose median Overall ARI was also lower in most datasets, was kept by the combination test of \cref{subsec:ri_link}; before that test, what distinguished it from \variant{chi-threshold} was only the size of its gain, which the rule does not consider.
+\paragraph{Departures from the rule.} We did not keep two candidates that the rule would keep. \variant{chi-threshold}, the candidate of \cref{subsec:mi_improvement_candidates} that tests the outliers against the dispersion of a Gaussian cluster in $d$ dimensions, improves \variant{low-variance} with a single gain while its median Overall ARI is lower in five of the six datasets (\cref{tab:ri_candidates}). \variant{wide-link}, the link factor searched in $[0.05, 4]$ on a logarithmic scale, is mixed against its control, \variant{low-variance + no-noise}, and in the planned direct comparison it improves \variant{low-variance + no-noise + link-factor} with two gains, while its median Overall ARI is lower in five of the six datasets. In both cases we judged a single favorable dataset to weigh less than a consistent lean in the others. We also compared the medians of the two link factors with those of the benchmark models in \cref{tab:real_quality}, outside the rule, and that comparison favored the narrower range. The link factor itself, whose median Overall ARI was also lower in most datasets, was kept by the combination test of \cref{subsec:ri_link}; before that test, what distinguished it from \variant{chi-threshold} was only the size of its gain, which the rule does not consider.
 
 \section{Confirmation}
 \label{sec:ri_confirmation}
@@ -108,14 +108,14 @@ The final version of \MicroTEDAClusPlus differs from the version of \cref{chap:M
 
 \begin{table}[htbp]
 \centering
-\caption{Differences between the final version of \MicroTEDAClusPlus and the version of \cref{chap:ModelImprovement}.}
+\caption[Differences between the two versions of \MicroTEDAClusPlus]{Differences between the final version of \MicroTEDAClusPlus and the version of \cref{chap:ModelImprovement}.}
 \begin{tabular}{l p{0.36\textwidth} p{0.36\textwidth}}
 \toprule
  & Version of \cref{chap:ModelImprovement} & Final version \\
 \midrule
 Noise & a sample farther than $n_\sigma$ standard deviations from every active microcluster is noise & every sample is assigned to the macrocluster of its nearest active microcluster \\
 Intersection & $\lVert \mu_i - \mu_j \rVert \le 2\,(\sigma_i + \sigma_j)$ & $\lVert \mu_i - \mu_j \rVert \le \ell\,(\sigma_i + \sigma_j)$, with $\ell$ searched in $[0.5, 4]$ \\
-Variance limit & searched from the square of the median distance from a sample to its nearest neighbour, as a fraction of the total variance & searched from a tenth of that lower end \\
+Variance limit & searched from the square of the median distance from a sample to its nearest neighbor, as a fraction of the total variance & searched from a tenth of that lower end \\
 \bottomrule
 \end{tabular}
 \label{tab:ri_differences}
@@ -125,7 +125,7 @@ We tune and evaluate the final version by the protocol of \cref{chap:real_data},
 
 \input{RealImprovement/artifacts/partitions.tex}
 
-\Cref{tab:ri_partitions} compares the partitions that the two versions predict. The final version labels no sample as noise, and in every dataset but \KDDCup it predicts more clusters than there are classes, several times more in \InsectsAbrupt and \Covertype. Its homogeneity is higher than that of the version of \cref{chap:ModelImprovement} in five datasets and its completeness is lower in most: the final version splits the classes over more clusters, where the version of \cref{chap:ModelImprovement} merged them or labelled their samples as noise. Where the version of \cref{chap:ModelImprovement} predicts a single cluster, in \InsectsReoccurring, \KDDCup and \Covertype, its completeness is one by construction.
+\Cref{tab:ri_partitions} compares the partitions that the two versions predict. The final version labels no sample as noise, and in every dataset but \KDDCup it predicts more clusters than there are classes, several times more in \InsectsAbrupt and \Covertype. Its homogeneity is higher than that of the version of \cref{chap:ModelImprovement} in five datasets and its completeness is lower in most: the final version splits the classes over more clusters, where the version of \cref{chap:ModelImprovement} merged them or labeled their samples as noise. Where the version of \cref{chap:ModelImprovement} predicts a single cluster, in \InsectsReoccurring, \KDDCup and \Covertype, its completeness is one by construction.
 
 \section{Comparison with the Benchmark Models}
 \label{sec:ri_comparison}

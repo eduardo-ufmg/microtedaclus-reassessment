@@ -30,6 +30,13 @@
 \usepackage{enumerate}
 \usepackage{xspace}
 \usepackage{seqsplit}
+\usepackage[section]{placeins} % Floats stay within their section
+\makeatletter
+% Room for two-digit float numbers, and ragged right entries in the lists
+\renewcommand*\l@figure{\@dottedtocline{1}{1.5em}{2.8em}}
+\let\l@table\l@figure
+\renewcommand\@tocrmarg{2.55em plus1fil}
+\makeatother
 
 \usepackage{labeltext}
 

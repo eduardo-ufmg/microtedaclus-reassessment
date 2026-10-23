@@ -3,7 +3,7 @@
 Each finished task of a model in an experiment is replayed with the
 hyperparameters that its search selected, on the same evaluation segment, and at
 every batch the prediction and the state of the model are recorded: the share
-of the samples labelled as noise, the numbers of predicted clusters and of
+of the samples labeled as noise, the numbers of predicted clusters and of
 classes, the homogeneity and completeness of the prediction against the classes
 over the samples that it clusters, and, for the models with microclusters, the
 numbers of microclusters, of mature ones (three samples or more) and of active

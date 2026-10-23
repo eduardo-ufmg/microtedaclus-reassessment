@@ -19,7 +19,7 @@ We check each port against the streams that \codename{R} generated for the previ
 
 \input{Modernization/artifacts/generators/behaviour.tex}
 
-The interface through which the previous experiment generated \RandomRBFGeneratorEvents gives the noise the class value of the first cluster that the generator creates after the initial ones, so the samples of that cluster are labelled as noise. The port labels the noise apart from every cluster, and in the comparison above we apply the labelling of the reference to both sources. \Cref{tab:mod_generators_rbf_noise} shows the share of samples labelled as noise along the stream under each labelling.
+The interface through which the previous experiment generated \RandomRBFGeneratorEvents gives the noise the class value of the first cluster that the generator creates after the initial ones, so the samples of that cluster are labeled as noise. The port labels the noise apart from every cluster, and in the comparison above we apply the labeling of the reference to both sources. \Cref{tab:mod_generators_rbf_noise} shows the share of samples labeled as noise along the stream under each labeling.
 
 \input{Modernization/artifacts/generators/rbf_noise.tex}
 
@@ -53,16 +53,16 @@ The search remains the Bayesian optimization of \cref{subsec:hyperparameter_tuni
 \subsection{Ranges by Rule}
 \label{subsec:mod_ranges}
 
-Each hyperparameter belongs to a category, given in \cref{tab:mod_hyperparameters}, and each category has one rule that computes its range from the tuning segment, given in \cref{tab:mod_rules}. A rule uses only what a deployment of the model also has before the stream continues: the samples of the segment and their labels. Below the median distance from a sample to its nearest neighbour, a structure of that radius holds a single sample, and above the median distance between two samples it holds half of the segment, so the distances of the rules span the scales at which a structure can summarize the data. The longest horizon is the length of the segment, the longest that the segment can tell apart from not forgetting at all. The rules replace ranges set by hand, which \cref{tab:mi_search_range_selection} showed to depend on the scale of the data. \Cref{tab:mod_ranges} gives the ranges that they produce in each dataset, and \cref{sec:real_protocol} widens the rules for the real datasets.
+Each hyperparameter belongs to a category, given in \cref{tab:mod_hyperparameters}, and each category has one rule that computes its range from the tuning segment, given in \cref{tab:mod_rules}. A rule uses only what a deployment of the model also has before the stream continues: the samples of the segment and their labels. Below the median distance from a sample to its nearest neighbor, a structure of that radius holds a single sample, and above the median distance between two samples it holds half of the segment, so the distances of the rules span the scales at which a structure can summarize the data. The longest horizon is the length of the segment, the longest that the segment can tell apart from not forgetting at all. The rules replace ranges set by hand, which \cref{tab:mi_search_range_selection} showed to depend on the scale of the data. \Cref{tab:mod_ranges} gives the ranges that they produce in each dataset, and \cref{sec:real_protocol} widens the rules for the real datasets.
 
 \begin{table}[htbp]
 \centering
-\caption{Rule of each category of hyperparameter, for a tuning segment of $n$ samples with $k$ labelled clusters. Horizons, summary sizes, minimum points and numbers of clusters are integers.}
+\caption[Rule of each category of hyperparameter]{Rule of each category of hyperparameter, for a tuning segment of $n$ samples with $k$ labeled clusters. Horizons, summary sizes, minimum points and numbers of clusters are integers.}
 \begin{tabular}{p{0.16\textwidth} p{0.29\textwidth} p{0.29\textwidth} l}
 \toprule
 Category & Lower end & Upper end & Scale \\
 \midrule
-Distance & median distance from a sample to its nearest neighbour & median distance between two samples & logarithmic \\
+Distance & median distance from a sample to its nearest neighbor & median distance between two samples & logarithmic \\
 Relative variance & square of the lower distance, as a fraction of the total variance & square of the upper distance, as a fraction of the total variance & logarithmic \\
 Horizon & $n/100$ samples & $n$ samples & logarithmic \\
 Summary size & $2k$ & $n/4$ & logarithmic \\

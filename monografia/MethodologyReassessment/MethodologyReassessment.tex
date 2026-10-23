@@ -131,14 +131,14 @@ To quantify them, we timed each model and measured its memory on a stream of the
     \centering
     \includegraphics[width=0.85\textwidth]{MethodologyReassessment/figures/benchmark_java_bridge.png}
     \includegraphics[width=0.85\textwidth]{MethodologyReassessment/figures/benchmark_river.png}
-    \caption{Execution time, at left, and memory, at right, of the benchmark models of the original work through the \codename{rpy2} bridge and directly in \codename{Java}, at top, and in \codename{River}, at bottom.}
+    \caption[Execution time and memory of the benchmark models of the original work through each interface]{Execution time, at left, and memory, at right, of the benchmark models of the original work through the \codename{rpy2} bridge and directly in \codename{Java}, at top, and in \codename{River}, at bottom.}
     \label{fig:benchmark_java_bridge}
 \end{figure}
 
 \begin{table}[htbp]
     \centering
     \small
-    \caption{Settings of the benchmark models of the original work in the experiment on the interfaces.}
+    \caption[Settings of the benchmark models in the experiment on the interfaces]{Settings of the benchmark models of the original work in the experiment on the interfaces.}
     \begin{tabular}{l l l r}
         \toprule
         Model & Package & Parameter & Value \\
@@ -180,7 +180,7 @@ The original work evaluates the models on static datasets, on streams with conce
 \begin{table}[htbp]
     \centering
     \small
-    \caption{The datasets of the main experiment and their abbreviations.}
+    \caption[The datasets of the main experiment]{The datasets of the main experiment and their abbreviations.}
     \begin{tabular}{l l l}
         \toprule
         Dataset & Abbreviation & Kind \\
@@ -208,14 +208,14 @@ According to the original work, its static datasets \datasetname{ST-D1} and \dat
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/figures/noise_removed_ds3.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/figures/downsampled_ds3.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/figures/scaled_ds3.png}
-    \caption{\ChameleonDSThree raw, without its noise, downsampled to half of its samples, and scaled to $[0, 1]$, from left to right and top to bottom. Noise samples are black.}
+    \caption[\ChameleonDSThree through the preprocessing of the original work]{\ChameleonDSThree raw, without its noise, downsampled to half of its samples, and scaled to $[0, 1]$, from left to right and top to bottom. Noise samples are black.}
     \label{fig:mr_preprocessing_scatter}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/artifacts/preprocessing/stages.png}
-    \caption{ARI and execution time per batch of \MicroTEDAClus on \ChameleonDSThree after each preprocessing step, with the hyperparameters selected for it: medians and interquartile bands over 94 runs.}
+    \caption[ARI and execution time of \MicroTEDAClus on \ChameleonDSThree after each preprocessing step]{ARI and execution time per batch of \MicroTEDAClus on \ChameleonDSThree after each preprocessing step, with the hyperparameters selected for it: medians and interquartile bands over 94 runs.}
     \label{fig:mr_preprocessing_stages}
 \end{figure}
 
@@ -231,7 +231,7 @@ According to the original work, its static datasets \datasetname{ST-D1} and \dat
     \centering
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/figures/unordered_batches.png}
     \includegraphics[width=0.48\textwidth]{MethodologyReassessment/figures/ordered_batches.png}
-    \caption{Batches 0, 10, 20 and 30 of the downsampled \ChameleonDSThree, in the order of its file, at left, and ordered by label, at right.}
+    \caption[Batches of \ChameleonDSThree in the order of its file and ordered by label]{Batches 0, 10, 20 and 30 of the downsampled \ChameleonDSThree, in the order of its file, at left, and ordered by label, at right.}
     \label{fig:mr_batches}
 \end{figure}
 
@@ -240,7 +240,7 @@ The experiments of the original work on \datasetname{ST-D1} and \datasetname{ST-
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/cassini_batches.png}
-    \caption{\Cassini in full, at left, and its batch 2 in the order of the package, at middle, and shuffled, at right.}
+    \caption[\Cassini and one of its batches]{\Cassini in full, at left, and its batch 2 in the order of the package, at middle, and shuffled, at right.}
     \label{fig:cassini_batches}
 \end{figure}
 
@@ -251,7 +251,7 @@ The streams with concept drift of the original work, \BenchmarkOne, \BenchmarkTw
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/concept_drift_noise_handling.png}
-    \caption{The streams with concept drift without their noise samples, at left, and with them, labeled $-1$, at right.}
+    \caption[The streams with concept drift]{The streams with concept drift without their noise samples, at left, and with them, labeled $-1$, at right.}
     \label{fig:concept_drift_noise_handling}
 \end{figure}
 
@@ -262,7 +262,7 @@ The scalability experiments of the original work, which profile memory and time 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/scalability_noise_comparison.png}
-    \caption{The scalability stream of two dimensions without noise, at left, and with noise, at right.}
+    \caption[The scalability stream of two dimensions]{The scalability stream of two dimensions without noise, at left, and with noise, at right.}
     \label{fig:scalability_noise_comparison}
 \end{figure}
 
@@ -295,7 +295,7 @@ The published curves confirm it without the code. Under prequential evaluation, 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/original_curves.png}
-    \caption{ARI per batch reported in the original work: the streams with concept drift \BenchmarkOne, \BenchmarkTwo and \RandomRBFGeneratorEvents, and, at bottom right, the memory scalability experiment.}
+    \caption[ARI per batch reported in the original work]{ARI per batch reported in the original work: the streams with concept drift \BenchmarkOne, \BenchmarkTwo and \RandomRBFGeneratorEvents, and, at bottom right, the memory scalability experiment.}
     \label{fig:original_curves}
 \end{figure}
 
@@ -314,7 +314,7 @@ The original work evaluates clustering quality by the adjusted Rand index (ARI)~
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/similar_stats_different_shapes.png}
-    \caption{Three hypothetical evolutions of the ARI over the batches, with the same mean and standard deviation: a slow improvement, a peak followed by degradation, and a random curve.}
+    \caption[Three hypothetical evolutions of the ARI over the batches]{Three hypothetical evolutions of the ARI over the batches, with the same mean and standard deviation: a slow improvement, a peak followed by degradation, and a random curve.}
     \label{fig:similar_stats_different_shapes}
 \end{figure}
 
@@ -406,7 +406,7 @@ where $\mathcal{D}_c = \{x_{c,i}\}_{i=1}^{N}$ holds the value of the metric of c
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/figures/medianiqr_convergence_with_k.png}
-    \caption{Maximum normalized mean absolute error of the median, at left, and of the interquartile range, at right, against the number of runs $k$. The dashed line marks $k^*$.}
+    \caption[Error of the median and of the interquartile range against the number of runs]{Maximum normalized mean absolute error of the median, at left, and of the interquartile range, at right, against the number of runs $k$. The dashed line marks $k^*$.}
     \label{fig:medianiqr_convergence_with_k}
 \end{figure}
 
@@ -453,7 +453,7 @@ The results do not support the claims of the original work (\cref{tab:mr_quality
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/artifacts/reassessment/plots/scalability_quality.png}
-    \caption{ARI of \MicroTEDAClus and the benchmark models in the scalability streams: along the stream with 2 and 64 dimensions, and the Overall and Steady-State ARI against the dimension. Medians, with the interquartile band of \MicroTEDAClus, over 94 runs.}
+    \caption[ARI of \MicroTEDAClus and the benchmark models in the scalability streams]{ARI of \MicroTEDAClus and the benchmark models in the scalability streams: along the stream with 2 and 64 dimensions, and the Overall and Steady-State ARI against the dimension. Medians, with the interquartile band of \MicroTEDAClus, over 94 runs.}
     \label{fig:mr_scalability_quality}
 \end{figure}
 
@@ -468,7 +468,7 @@ In the scalability streams, the Overall ARI of \MicroTEDAClus stays high at ever
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{MethodologyReassessment/artifacts/reassessment/plots/scalability_cost.png}
-    \caption{Execution time, memory footprint and microcluster count of \MicroTEDAClus and the benchmark models in the scalability streams, against the dimension. Medians, with the interquartile band of \MicroTEDAClus, over 94 runs.}
+    \caption[Execution time, memory footprint and microcluster count of \MicroTEDAClus and the benchmark models in the scalability streams]{Execution time, memory footprint and microcluster count of \MicroTEDAClus and the benchmark models in the scalability streams, against the dimension. Medians, with the interquartile band of \MicroTEDAClus, over 94 runs.}
     \label{fig:mr_scalability_cost}
 \end{figure}
 
