@@ -1,7 +1,7 @@
 \chapter{Model Improvement}
 \label{chap:ModelImprovement}
 
-The previous chapters identify issues in the formulation of \MicroTEDAClus, from \cref{subsubsec:order_dependent_characteristics,subsubsec:incorrect_condition_logic,subsubsec:dimensionality_penalty}, and undocumented behaviours of its reference implementation, in \cref{sec:model_implementation}. In this chapter, we act on them in three stages. Although our initial plan was to address the algorithmic formulation first, the excessive runtime that results from the inefficient implementation makes the iterative experimentation unaffordable. Thus, we first optimize the implementation for speed. In the second stage, we evaluate corrections of the identified flaws. Then, we evaluate modifications that go beyond the original formulation and define the model that results from them, \MicroTEDAClusPlus. We close the chapter with the evaluation of that model against \MicroTEDAClus in the main experiment, \cref{sec:mi_main_experiment}. In \cref{sec:mi_design}, we describe how we run the experiments and how we judge their outcomes.
+\Cref{chap:background_relatedwork,chap:methodology_reassessment} identify issues in the formulation of \MicroTEDAClus (\cref{subsubsec:order_dependent_characteristics,subsubsec:incorrect_condition_logic,subsubsec:dimensionality_penalty}) and undocumented behaviors of its public implementation (\cref{sec:model_implementation}). In this chapter, we act on them in three stages. We first optimize the implementation, whose execution time made iterative experimentation unaffordable. We then evaluate corrections of the flaws, and finally modifications beyond the original formulation, which define \MicroTEDAClusPlus. We close the chapter by comparing \MicroTEDAClusPlus with \MicroTEDAClus and the benchmark models in the main experiment (\cref{sec:mi_main_experiment}). \Cref{sec:mi_design} describes how we run the experiments and judge their outcomes.
 
 \section{Experimental Design}
 \label{sec:mi_design}
@@ -12,21 +12,7 @@ An experiment compares a \emph{variant} of the model with its \emph{control}. Th
 
 \subsection{Protocol and Datasets}
 
-We tune and evaluate every variant by the protocol of the main experiment. The metrics are those of \cref{sec:evaluation_metrics}, computed by the code that computes them for the main experiment. We use eight streams: the six datasets that are not scalability-oriented, and the two scalability streams of highest dimensionality, \datasetname{SCL-32} and \datasetname{SCL-64}. We include the latter because the former are all two-dimensional, and several properties of the model only manifest in higher dimensions. The datasets are those of \cref{sec:datasets}, and the tables of this chapter refer to them by the abbreviations of \cref{tab:mi_dataset_abbreviations}.
-
-\begin{table}[htbp]
-\centering
-\caption{Abbreviations of the dataset names in the tables of this chapter.}
-\begin{tabular}{l l l l}
-\toprule
-B1 & \BenchmarkOne & DS3 & \ChameleonDSThree \\
-B2 & \BenchmarkTwo & DS4 & \ChameleonDSFour \\
-RBF & \RandomRBFGeneratorEvents & S32 & \datasetname{SCL-32} \\
-CSN & \Cassini & S64 & \datasetname{SCL-64} \\
-\bottomrule
-\end{tabular}
-\label{tab:mi_dataset_abbreviations}
-\end{table}
+We tune and evaluate every variant by the protocol of the main experiment, with the metrics of \cref{sec:evaluation_metrics}. We use eight streams: the six datasets of the main experiment and its two scalability streams of highest dimension, \datasetname{SCL-32} and \datasetname{SCL-64}, because the six datasets are two-dimensional and several properties of the model only show in higher dimensions. The tables use the abbreviations of \cref{tab:synthetic_datasets}.
 
 \subsection{Development and Validation Runs}
 \label{subsec:mi_runs}
@@ -43,57 +29,57 @@ The separation exists because a model that is chosen for scoring best on a set o
 \subsection{Comparisons and Decision Rule}
 \label{subsec:mi_decision_rule}
 
-We compare a variant and its control per dataset and per metric, over the runs they share, with the ingredients of \cref{sec:statistical_significance}. We do not apply the Friedman test, since each comparison involves two models, and we decide the outcome of a comparison on two metrics, the Overall ARI and the Steady-State ARI. A variant
+We compare a variant with its control in each dataset and metric, over the runs they share, by the test of \cref{sec:statistical_significance}, whose conventions the tables follow, and decide the outcome on two metrics, the Overall and the Steady-State ARI. A variant
 
 \begin{itemize}
-    \item \textbf{improves} its control ($+$) if it is significantly better in at least one dataset and significantly worse in none;
-    \item \textbf{regresses} ($-$) if it is significantly worse in at least one dataset and significantly better in none;
-    \item is \textbf{mixed} ($\pm$) if both happen, and \textbf{indistinguishable} ($=$) if neither does.
+    \item \textbf{improves} its control if it is significantly better in at least one dataset and significantly worse in none;
+    \item \textbf{regresses} if it is significantly worse in at least one dataset and significantly better in none;
+    \item is \textbf{mixed} if both happen, and \textbf{indistinguishable} if neither does.
 \end{itemize}
 
-Only a variant that improves its control can replace it. We report the ARI at the fifth batch and the maximum ARI drop, but they do not take part in the decision. We also report the microcluster count and the memory footprint, in \cref{app:mi_tables}, and they never decide an outcome. A value in bold is significantly better than the value of its control, and a value in red is significantly worse.
+Only a variant that improves its control can replace it. The microcluster count and the memory footprint never decide an outcome; \cref{app:mi_tables} gives them for the experiments whose cost this chapter discusses.
 
 \section{Implementation Optimization}
 \label{sec:mi_optimization}
 
 The reference implementation stores each microcluster as a dictionary in a Python list. For every sample, it iterates over that list and updates one microcluster at a time; it maintains the intersection graph edge by edge in a graph library, and it computes the membership of each sample to each macrocluster in nested loops. Its execution time is dominated by the interpreter, not by the arithmetic of the algorithm. The reimplementation of \cref{sec:c_implementation} reduces it by changing the language. We keep \codename{Python}, the language of the benchmark models, and change how the algorithm is computed.
 
-The optimized implementation, hereafter the \modelname{vectorized} model, stores the population of microclusters as a structure of arrays, with one array per attribute. The algorithm has a part that depends on the order of arrival of the samples: the recursive update of the microclusters, the outlier test, the vitality update and the pruning. This part cannot be vectorized across samples, so it runs in a single compiled kernel that iterates over the samples of a batch and, for each of them, over the arrays. Everything else is expressed as array operations. At each macrocluster update, the intersection graph is rebuilt from the matrix of pairwise distances between the microcluster means, its connected components are extracted by a sparse graph routine, and the membership of a whole batch is obtained from one distance matrix.
+The optimized implementation, hereafter the \variant{vectorized} model, stores the population of microclusters as a structure of arrays, with one array per attribute. The algorithm has a part that depends on the order of arrival of the samples: the recursive update of the microclusters, the outlier test, the vitality update and the pruning. This part cannot be vectorized across samples, so it runs in a single compiled kernel that iterates over the samples of a batch and, for each of them, over the arrays. Everything else is expressed as array operations. At each macrocluster update, the intersection graph is rebuilt from the matrix of pairwise distances between the microcluster means, its connected components are extracted by a sparse graph routine, and the membership of a whole batch is obtained from one distance matrix.
 
-The \modelname{vectorized} model executes the algorithm of the reference implementation, but does not reproduce its output exactly. Besides the order of the floating-point operations, one behaviour differs. The pruning routine of the reference implementation, shown in \cref{snippet:maia_implementation_prune_microclusters}, removes elements from the list it is iterating over, so the microcluster that follows a removed one is not visited in that pass. The \modelname{vectorized} model visits every microcluster. The same implementation serves as the engine of the experiments of this chapter: each design choice studied in the remainder of this chapter is an option of it, and its default options are the \modelname{vectorized} model.
+The \variant{vectorized} model executes the algorithm of the reference implementation, but does not reproduce its output exactly. Besides the order of the floating-point operations, one behaviour differs. The pruning routine of the reference implementation, shown in \cref{snippet:maia_implementation_prune_microclusters}, removes elements from the list it is iterating over, so the microcluster that follows a removed one is not visited in that pass. The \variant{vectorized} model visits every microcluster. The same implementation serves as the engine of the experiments of this chapter: each design choice studied in the remainder of this chapter is an option of it, and its default options are the \variant{vectorized} model.
 
 \subsection{Clustering Quality}
 \label{subsec:mi_optimization_quality}
 
 \input{ModelImprovement/artifacts/optimization/quality.tex}
 
-\Cref{tab:mi_optimization_quality} compares the \modelname{vectorized} model with the reference implementation, the \modelname{original} model of the tables of this chapter, each tuned and evaluated by the protocol on the development runs. By the decision rule, the \modelname{vectorized} model improves the \modelname{original} one: its Overall ARI is significantly higher in \ChameleonDSThree, and it is not significantly lower in any dataset on either metric. The remaining medians differ slightly, and neither the ARI at the fifth batch nor the maximum ARI drop differs significantly in any dataset. The memory footprint, in \cref{tab:mi_optimization_cost}, is significantly smaller in the four datasets in which the models keep the most microclusters.
+\Cref{tab:mi_optimization_quality} compares the \variant{vectorized} model with the reference implementation, the \variant{original} model of the tables of this chapter, each tuned and evaluated by the protocol on the development runs. By the decision rule, the \variant{vectorized} model improves the \variant{original} one: its Overall ARI is significantly higher in \ChameleonDSThree, and it is not significantly lower in any dataset on either metric. The remaining medians differ slightly. The memory footprint, in \cref{tab:mi_optimization_cost}, is significantly smaller in the four datasets in which the models keep the most microclusters.
 
 \input{ModelImprovement/artifacts/optimization/trials.tex}
 
-The two models do not receive the same search. The search ends at 100 trials or at 300 seconds, whichever comes first, and \cref{tab:mi_optimization_trials} shows that the reference implementation exhausts the time before the trials in \RandomRBFGeneratorEvents, \ChameleonDSThree and \ChameleonDSFour, the datasets in which it is slowest. In \ChameleonDSThree, where it gains, the \modelname{vectorized} model is tuned with several times the trials of the reference implementation. The gain is consistent with this difference of budget, which the experiment does not separate from the difference of pruning behaviour described above. The speed of an implementation is thus also a search budget.
+The two models do not receive the same search. The search ends at 100 trials or at 300 seconds, whichever comes first, and \cref{tab:mi_optimization_trials} shows that the reference implementation exhausts the time before the trials in \RandomRBFGeneratorEvents, \ChameleonDSThree and \ChameleonDSFour, the datasets in which it is slowest. In \ChameleonDSThree, where it gains, the \variant{vectorized} model is tuned with several times the trials of the reference implementation. The gain is consistent with this difference of budget, which the experiment does not separate from the difference of pruning behaviour described above. The speed of an implementation is thus also a search budget.
 
-The optimization therefore preserves the clustering quality of the reference implementation, and the \modelname{vectorized} model replaces it as the reference of the remaining experiments.
+The optimization therefore preserves the clustering quality of the reference implementation, and the \variant{vectorized} model replaces it as the reference of the remaining experiments.
 
 \subsection{Execution Time}
 \label{subsec:mi_optimization_time}
 
 The durations of \cref{tab:mi_optimization_trials} do not measure the optimization alone. They are taken while other tasks run on the same machine, and the two models are tuned independently, so a difference between them mixes the implementation, the load of the machine and the hyperparameters that each search selected. We therefore measure the speedup separately.
 
-Each implementation replays the evaluation segment of every development run with the same hyperparameters: those tuned for the \modelname{original} model in that run and, in a second measurement, those tuned for the \modelname{vectorized} model. We execute each task alone, on identical processor cores, and run the compiled kernel once before timing it. We execute the whole set of tasks three times, and the time of a task is the minimum of its three executions.
+Each implementation replays the evaluation segment of every development run with the same hyperparameters: those tuned for the \variant{original} model in that run and, in a second measurement, those tuned for the \variant{vectorized} model. We execute each task alone, on identical processor cores, and run the compiled kernel once before timing it. We execute the whole set of tasks three times, and the time of a task is the minimum of its three executions.
 
 \input{ModelImprovement/artifacts/optimization/speedup.tex}
 
-The speedup is verified in both measurements, so it does not depend on which model selected the configuration. Furthermore, \modelname{vectorized} is at least twice as fast as \modelname{original} in every run.
+\Cref{tab:mi_optimization_speedup} verifies the speedup in both measurements, so it does not depend on which model selected the configuration, and the \variant{vectorized} model is at least twice as fast as the \variant{original} one in every run.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{ModelImprovement/artifacts/optimization/plots/speedup.png}
-    \caption{Speedup of the \modelname{vectorized} implementation in each development run against the number of microclusters that the configuration of the run keeps.}
+    \caption{Speedup of the \variant{vectorized} implementation in each development run against the number of microclusters that the configuration of the run keeps.}
     \label{fig:mi_optimization_speedup}
 \end{figure}
 
-The speedup grows with the number of microclusters, as \cref{fig:mi_optimization_speedup} shows, and levels off when they pass about a hundred. It is therefore largest in \RandomRBFGeneratorEvents, \ChameleonDSThree and \ChameleonDSFour, whose tuned configurations keep the most microclusters, and smallest in \BenchmarkOne, \datasetname{SCL-32} and \datasetname{SCL-64}, whose configurations keep the fewest. This is the behaviour expected from the two implementations as described above: the cost of the reference implementation is that of interpreted code executed for every microcluster and every sample, while the \modelname{vectorized} implementation has a cost per batch that does not depend on the number of microclusters and dominates when they are few.
+The speedup grows with the number of microclusters, as \cref{fig:mi_optimization_speedup} shows, and levels off when they pass about a hundred. It is therefore largest in \RandomRBFGeneratorEvents, \ChameleonDSThree and \ChameleonDSFour, whose tuned configurations keep the most microclusters, and smallest in \BenchmarkOne, \datasetname{SCL-32} and \datasetname{SCL-64}, whose configurations keep the fewest. This is the behaviour expected from the two implementations as described above: the cost of the reference implementation is that of interpreted code executed for every microcluster and every sample, while the \variant{vectorized} implementation has a cost per batch that does not depend on the number of microclusters and dominates when they are few.
 
 The reduction is what makes the remaining stages affordable: the experiments of this chapter execute more than sixteen thousand tuning and evaluation tasks, each with up to 100 trials.
 
@@ -119,17 +105,17 @@ The standardized squared distance is divided by the number of samples, so the mo
     \label{eq:mi_standardized_distance}
 \end{equation}
 
-which is also the quantity that the outlier condition thresholds, since \cref{eq:outlier_condition} is equivalent to $q(x) > m^2$. We evaluate five alternatives to the implemented membership:
+which the outlier condition also thresholds, since \cref{eq:outlier_condition} is equivalent to $q(x) > m^2$. We evaluate five alternatives to the membership of the implementation:
 
 \begin{itemize}
-    \item \modelname{norm-typicality}: the implemented weights with the normalized typicality $t^l(x)$, as in \cref{eq:macrocluster_typicality}.
-    \item \modelname{local-weights}: \cref{eq:macrocluster_typicality} with the density of each microcluster evaluated at the sample being classified, $D^l(x) = 1/\zeta^l(x)$, which is how the formulation defines the density in \cref{subsubsec:order_dependent_characteristics}.
-    \item \modelname{density-sum}: the sum of the densities at the sample, $\sum_l D^l(x)$, with $D^l(x) = 2S^l / (1 + q^l(x))$.
-    \item \modelname{density-max}: the largest density at the sample, $\max_l D^l(x)$.
-    \item \modelname{nearest}: the smallest standardized distance, $\min_l q^l(x)$. The sample is assigned to the macrocluster of the active microcluster it is closest to in standard deviations.
+    \item \variant{norm-typicality}: the implemented weights with the normalized typicality $t^l(x)$, as in \cref{eq:macrocluster_typicality}.
+    \item \variant{local-weights}: \cref{eq:macrocluster_typicality} with the density of each microcluster evaluated at the sample being classified, $D^l(x) = 1/\zeta^l(x)$, which is how the formulation defines the density in \cref{subsubsec:order_dependent_characteristics}.
+    \item \variant{density-sum}: the sum of the densities at the sample, $\sum_l D^l(x)$, with $D^l(x) = 2S^l / (1 + q^l(x))$.
+    \item \variant{density-max}: the largest density at the sample, $\max_l D^l(x)$.
+    \item \variant{nearest}: the smallest standardized distance, $\min_l q^l(x)$. The sample is assigned to the macrocluster of the active microcluster it is closest to in standard deviations.
 \end{itemize}
 
-\paragraph{Density.} \Cref{subsubsec:order_dependent_characteristics} shows that the density kept by each microcluster is the density of the last sample it absorbed. We evaluate two densities that are properties of the microcluster. The first, \modelname{peak-density}, is the density of the formulation evaluated at the mean of the microcluster: since $\xi(\mu) = 1/S$,
+\paragraph{Density.} \Cref{subsubsec:order_dependent_characteristics} shows that the density kept by each microcluster is the density of the last sample it absorbed. We evaluate two densities that are properties of the microcluster. The first, \variant{peak-density}, is the density of the formulation evaluated at the mean of the microcluster: since $\xi(\mu) = 1/S$,
 
 \begin{equation}
     D = \frac{1}{\zeta(\mu)} = 2S
@@ -143,40 +129,39 @@ It is the largest value the density of the formulation can take, and it depends 
     \label{eq:mi_mean_eccentricity}
 \end{equation}
 
-whatever its dispersion. The second, \modelname{volume-density}, divides the number of samples by the variance, $D = S/(\sigma^2 + \epsilon)$, so that dispersion counts. In both, a microcluster with fewer than three samples has no density.
+whatever its dispersion. The second, \variant{volume-density}, divides the number of samples by the variance, $D = S/(\sigma^2 + \epsilon)$, so that dispersion counts. In both, a microcluster with fewer than three samples has no density.
 
-\paragraph{Activation mean.} The reference implementation activates a microcluster whose density is not below the mean density of its component of the intersection graph, and computes that mean over all the microclusters of the component, including those with fewer than three samples, which can never be active. \modelname{mature-mean} computes it over the microclusters with at least three samples.
+\paragraph{Activation mean.} The reference implementation activates a microcluster whose density is not below the mean density of its component of the intersection graph, and computes that mean over all the microclusters of the component, including those with fewer than three samples, which can never be active. \variant{mature-mean} computes it over the microclusters with at least three samples.
 
-\paragraph{Initial state.} The reference implementation creates a microcluster flagged as active. Since only inactive microclusters lose vitality, a new microcluster is exempt from the decay until the next macrocluster update. \modelname{born-inactive} creates it inactive.
+\paragraph{Initial state.} The reference implementation creates a microcluster flagged as active. Since only inactive microclusters lose vitality, a new microcluster is exempt from the decay until the next macrocluster update. \variant{born-inactive} creates it inactive.
 
-\paragraph{Dimensionality penalty.} \modelname{no-penalty} removes the factor $2/d$ of \cref{critique:dimensionality_penalty}. The factor cancels in the eccentricity, where it multiplies both the distance and the variance. It acts on the variance that is compared with $r_0$, on the standard deviations of the intersection condition, \cref{eq:microcluster_intersection_condition}, and on the radius of the vitality update of the reference implementation.
+\paragraph{Dimensionality penalty.} \variant{no-penalty} removes the factor $2/d$ of \cref{critique:dimensionality_penalty}. The factor cancels in the eccentricity, where it multiplies both the distance and the variance. It acts on the variance that is compared with $r_0$, on the standard deviations of the intersection condition, \cref{eq:microcluster_intersection_condition}, and on the radius of the vitality update of the reference implementation.
 
 \subsection{Corrections One at a Time}
 
 \input{ModelImprovement/artifacts/corrections_single/quality.tex}
-\input{ModelImprovement/artifacts/corrections_single/quality_other.tex}
 
-\Cref{tab:mi_corrections_single_quality} compares each candidate with the \modelname{vectorized} model. Two candidates improve it: \modelname{nearest}, in the Overall ARI of \RandomRBFGeneratorEvents and \datasetname{SCL-32} and in the Steady-State ARI of \RandomRBFGeneratorEvents, \Cassini, \datasetname{SCL-32} and \datasetname{SCL-64}, and \modelname{no-penalty}, in the Steady-State ARI of \datasetname{SCL-32} and \datasetname{SCL-64}. \Cref{tab:mi_corrections_single_quality_other} gives the two ARI metrics that do not decide.
+\Cref{tab:mi_corrections_single_quality} compares each candidate with the \variant{vectorized} model. Two candidates improve it: \variant{nearest}, in the Overall ARI of \RandomRBFGeneratorEvents and \datasetname{SCL-32} and in the Steady-State ARI of \RandomRBFGeneratorEvents, \Cassini, \datasetname{SCL-32} and \datasetname{SCL-64}, and \variant{no-penalty}, in the Steady-State ARI of \datasetname{SCL-32} and \datasetname{SCL-64}.
 
-Among the memberships, only the count-free distance helps. \modelname{density-max} is indistinguishable from the implemented membership and \modelname{density-sum} is worse. The two memberships built on the normalized typicality of the formulation, \modelname{norm-typicality} and \modelname{local-weights}, gain in the Steady-State ARI of \ChameleonDSFour and \datasetname{SCL-64} and lose in the Overall ARI of \ChameleonDSThree, so the formulation is not preferable to its implementation in this respect.
+Among the memberships, only the count-free distance helps. \variant{density-max} is indistinguishable from the implemented membership and \variant{density-sum} is worse. The two memberships built on the normalized typicality of the formulation, \variant{norm-typicality} and \variant{local-weights}, gain in the Steady-State ARI of \ChameleonDSFour and \datasetname{SCL-64} and lose in the Overall ARI of \ChameleonDSThree, so the formulation is not preferable to its implementation in this respect.
 
-Neither order-independent density improves the model. \modelname{peak-density} is worse in \ChameleonDSThree on both metrics, and \modelname{volume-density} trades a gain in the Steady-State ARI of \RandomRBFGeneratorEvents for a loss in the Overall ARI of \Cassini. The order dependence is real, but in this algorithm the density only decides which microclusters are active and how they are weighted, and for those purposes the alternatives are not better. \modelname{mature-mean} and \modelname{born-inactive} also regress, in \ChameleonDSThree and \ChameleonDSFour respectively.
+Neither order-independent density improves the model. \variant{peak-density} is worse in \ChameleonDSThree on both metrics, and \variant{volume-density} trades a gain in the Steady-State ARI of \RandomRBFGeneratorEvents for a loss in the Overall ARI of \Cassini. The order dependence is real, but in this algorithm the density only decides which microclusters are active and how they are weighted, and for those purposes the alternatives are not better. \variant{mature-mean} and \variant{born-inactive} also regress, in \ChameleonDSThree and \ChameleonDSFour respectively.
 
 \input{ModelImprovement/artifacts/corrections_single/degenerate.tex}
 
-The zeros of \cref{tab:mi_corrections_single_quality} come from degenerate partitions, which \cref{tab:mi_corrections_single_degenerate} counts. In \BenchmarkOne, the \modelname{vectorized} model predicts a single cluster in more than half of the batches of a typical run, and the Overall ARI is the median over the batches. In \RandomRBFGeneratorEvents, \datasetname{SCL-32} and \datasetname{SCL-64}, it ends more than half of the runs with a single predicted cluster, which gives a Steady-State ARI of zero. \modelname{no-penalty} and \modelname{nearest} end none of their runs in that state in the two scalability streams, and \modelname{nearest} also ends fewer runs so in \RandomRBFGeneratorEvents.
+The zeros of \cref{tab:mi_corrections_single_quality} come from degenerate partitions, which \cref{tab:mi_corrections_single_degenerate} counts. In \BenchmarkOne, the \variant{vectorized} model predicts a single cluster in more than half of the batches of a typical run, and the Overall ARI is the median over the batches. In \RandomRBFGeneratorEvents, \datasetname{SCL-32} and \datasetname{SCL-64}, it ends more than half of the runs with a single predicted cluster, which gives a Steady-State ARI of zero. \variant{no-penalty} and \variant{nearest} end none of their runs in that state in the two scalability streams, and \variant{nearest} also ends fewer runs so in \RandomRBFGeneratorEvents.
 
 \subsection{Combined Corrections}
 
 \input{ModelImprovement/artifacts/corrections_combined/quality.tex}
 
-With \modelname{nearest} as the new control, \cref{tab:mi_corrections_combined_quality} evaluates whether a second correction improves it. None does. Adding \modelname{peak-density} repeats the loss in \ChameleonDSThree. Adding \modelname{no-penalty}, which improved the \modelname{vectorized} model on its own, lowers the Overall ARI of \datasetname{SCL-32}. The combinations of three and four corrections inherit these losses.
+With \variant{nearest} as the new control, \cref{tab:mi_corrections_combined_quality} evaluates whether a second correction improves it. None does. Adding \variant{peak-density} repeats the loss in \ChameleonDSThree. Adding \variant{no-penalty}, which improved the \variant{vectorized} model on its own, lowers the Overall ARI of \datasetname{SCL-32}. The combinations of three and four corrections inherit these losses.
 
 \input{ModelImprovement/artifacts/corrections_combined/partitions.tex}
 
-\Cref{tab:mi_corrections_combined_partitions} shows what \modelname{no-penalty} loses in \datasetname{SCL-32}, through the partitions that the two models predict. It reports their homogeneity, which is one when every predicted cluster contains samples of a single true class, and their completeness, which is one when every true class is contained in a single predicted cluster \cite{rosenberg2007vmeasure}. The stream has three clusters and noise, which counts as a fourth class. With the penalty, the model predicts more clusters than that, with a high homogeneity: part of the noise forms macroclusters of its own. Without the penalty it predicts about three clusters and its homogeneity falls, because the noise is absorbed by the clusters. The ARI rewards the first behaviour, but the benefit is accidental, since the penalty is not a treatment of noise.
+\Cref{tab:mi_corrections_combined_partitions} shows what \variant{no-penalty} loses in \datasetname{SCL-32}, through the partitions that the two models predict. It reports their homogeneity, which is one when every predicted cluster contains samples of a single true class, and their completeness, which is one when every true class is contained in a single predicted cluster \cite{rosenberg2007vmeasure}. The stream has three clusters and noise, which counts as a fourth class. With the penalty, the model predicts more clusters than that, with a high homogeneity: part of the noise forms macroclusters of its own. Without the penalty it predicts about three clusters and its homogeneity falls, because the noise is absorbed by the clusters. The ARI rewards the first behaviour, but the benefit is accidental, since the penalty is not a treatment of noise.
 
-The corrected model is therefore the \modelname{vectorized} model with the \modelname{nearest} membership, and it is the control of the experiments that follow. The order-dependent density and the dimensionality penalty remain in it: the experiments do not support replacing the former, and removing the latter costs the accidental separation of the noise.
+The corrected model is therefore the \variant{vectorized} model with the \variant{nearest} membership, and it is the control of the experiments that follow. The order-dependent density and the dimensionality penalty remain in it: the experiments do not support replacing the former, and removing the latter costs the accidental separation of the noise.
 
 \section{Improvements}
 \label{sec:mi_improvements}
@@ -187,109 +172,109 @@ The candidates of this section modify the algorithm beyond what its formulation 
 
 Three patterns stand out. In the static shapes of \ChameleonDSThree and \ChameleonDSFour, the model predicts more than twice the true number of clusters, with high homogeneity and low completeness: the clusters it finds are pure, but each true cluster is split into several. In \BenchmarkOne, it predicts fewer clusters than there are, with low homogeneity: the two moving clusters are merged. Finally, the model never recognizes noise. Six of the eight datasets contain noise, and every noise sample is assigned to a cluster: the noise that the table reports as predicted comes from the first batch alone, which is predicted before any sample is learned.
 
-A second limitation concerns the hyperparameter search. \Cref{tab:mi_search_range_quality} compares the corrected model with \modelname{wide-range}, the same model with the upper bound of the search range of the variance limit extended from $10^2$ to $10^4$.
+A second limitation concerns the hyperparameter search. \Cref{tab:mi_search_range_quality} compares the corrected model with \variant{wide-range}, the same model with the upper bound of the search range of the variance limit extended from $10^2$ to $10^4$.
 
 \input{ModelImprovement/artifacts/search_range/quality.tex}
 \input{ModelImprovement/artifacts/search_range/selection.tex}
 
-By the decision rule the wider range improves the corrected model, in \ChameleonDSThree and \ChameleonDSFour. \Cref{tab:mi_search_range_selection} shows that the limits selected for these two datasets are far above the original bound, and several orders of magnitude above those selected for the other two-dimensional datasets: the variance limit depends on the scale of the data. We nevertheless do not adopt the wider range. It changes the search and not the model, no fixed range suits every scale, and it has a cost that the same tables show: with limits of that size, more than half of the runs of \ChameleonDSFour end with a single predicted cluster, and the maximum ARI drop of that dataset becomes significantly larger. One of the candidates of this section removes the dependence on the scale in the model instead.
+By the decision rule the wider range improves the corrected model, in \ChameleonDSThree and \ChameleonDSFour. \Cref{tab:mi_search_range_selection} shows that the limits selected for these two datasets are far above the original bound, and several orders of magnitude above those selected for the other two-dimensional datasets: the variance limit depends on the scale of the data. We nevertheless do not adopt the wider range. It changes the search and not the model, no fixed range suits every scale, and it has a cost that the same tables show: with limits of that size, more than half of the runs of \ChameleonDSFour end with a single predicted cluster. One of the candidates of this section removes the dependence on the scale in the model instead.
 
 \subsection{Candidate Improvements}
 \label{subsec:mi_improvement_candidates}
 
 \paragraph{Formation of the microclusters.}
 \begin{itemize}
-    \item \modelname{variance-cap}: the variance limit $r_0$ only constrains a microcluster with two samples; from the third sample on, a microcluster grows for as long as the samples pass the eccentricity test. This variant also treats as an outlier any sample that would raise the variance of a microcluster above $r_0$, whatever its size, which bounds every microcluster.
-    \item \modelname{relative-limit}: $r_0$ becomes a fraction of the variance of the stream, estimated recursively from the samples seen so far, and is searched in $[10^{-6}, 1]$. The hyperparameter no longer depends on the scale of the data, the limitation that \cref{tab:mi_search_range_selection} exposes.
-    \item \modelname{single-assign}: a sample updates every microcluster that accepts it, so overlapping microclusters absorb the same samples. This variant updates only the accepting microcluster whose mean is nearest.
-    \item \modelname{forgetting}: the sample count used by the recursive mean and variance is capped at $S_{\max}$, searched in $[10, 10^4]$, which makes them exponentially weighted estimates able to follow a moving cluster.
-    \item \modelname{chi-threshold}: for a Gaussian cluster in $d$ dimensions, the standardized distance $q$ of \cref{eq:mi_standardized_distance} has mean $1$ and standard deviation $\sqrt{2/d}$. This variant replaces the outlier condition $q > m^2$ by $q > 1 + m\sqrt{2/d}$ and removes the dimensionality penalty, as a principled treatment of the dimension.
+    \item \variant{variance-cap}: the variance limit $r_0$ only constrains a microcluster with two samples; from the third sample on, a microcluster grows for as long as the samples pass the eccentricity test. This variant also treats as an outlier any sample that would raise the variance of a microcluster above $r_0$, whatever its size, which bounds every microcluster.
+    \item \variant{relative-limit}: $r_0$ becomes a fraction of the variance of the stream, estimated recursively from the samples seen so far, and is searched in $[10^{-6}, 1]$. The hyperparameter no longer depends on the scale of the data, the limitation that \cref{tab:mi_search_range_selection} exposes.
+    \item \variant{single-assign}: a sample updates every microcluster that accepts it, so overlapping microclusters absorb the same samples. This variant updates only the accepting microcluster whose mean is nearest.
+    \item \variant{forgetting}: the sample count used by the recursive mean and variance is capped at $S_{\max}$, searched in $[10, 10^4]$, which makes them exponentially weighted estimates able to follow a moving cluster.
+    \item \variant{chi-threshold}: for a Gaussian cluster in $d$ dimensions, the standardized distance $q$ of \cref{eq:mi_standardized_distance} has mean $1$ and standard deviation $\sqrt{2/d}$. This variant replaces the outlier condition $q > m^2$ by $q > 1 + m\sqrt{2/d}$ and removes the dimensionality penalty, as a principled treatment of the dimension.
 \end{itemize}
 
 \paragraph{Pruning.}
 \begin{itemize}
-    \item \modelname{recency}: the rule of \cite{galindo2021lastmile}, \cref{eq:decay_logic}: every microcluster that the current sample does not update loses vitality, and a microcluster that absorbs a sample recovers it in full.
-    \item \modelname{recency-inactive}: the same rule restricted to the inactive microclusters.
+    \item \variant{recency}: the rule of Galindo~\cite{galindo2021lastmile}, \cref{eq:decay_logic}: every microcluster that the current sample does not update loses vitality, and a microcluster that absorbs a sample recovers it in full.
+    \item \variant{recency-inactive}: the same rule restricted to the inactive microclusters.
 \end{itemize}
 
 \paragraph{Formation of the macroclusters.}
 \begin{itemize}
-    \item \modelname{soft-activation}: a microcluster is active if its density is at least $f$ times the mean density of its component, with $f$ searched in $[0, 1.5]$. The original criterion is $f = 1$.
-    \item \modelname{no-activation}: every microcluster with at least three samples is active.
-    \item \modelname{single-graph}: the macroclusters are the components of the intersection graph $\mathbb{G}_0$ that contain active microclusters, instead of the components of the active graph $\mathbb{G}_1$ of \cref{alg:microcluster_activation_criterion_pseudocode}.
-    \item \modelname{link-factor}: the factor $2$ of the intersection condition, \cref{eq:microcluster_intersection_condition}, becomes a hyperparameter $\ell$, searched in $[0.5, 4]$. \cite{cardoso2022microtedaclus} proposes an earlier condition with a factor, \cref{eq:cardoso_intersection_condition}, which scales the sum of the radii $m\sigma$ of the two microclusters instead of the sum of their standard deviations.
+    \item \variant{soft-activation}: a microcluster is active if its density is at least $f$ times the mean density of its component, with $f$ searched in $[0, 1.5]$. The original criterion is $f = 1$.
+    \item \variant{no-activation}: every microcluster with at least three samples is active.
+    \item \variant{single-graph}: the macroclusters are the components of the intersection graph $\mathbb{G}_0$ that contain active microclusters, instead of the components of the active graph $\mathbb{G}_1$ of \cref{alg:microcluster_activation_criterion_pseudocode}.
+    \item \variant{link-factor}: the factor $2$ of the intersection condition, \cref{eq:microcluster_intersection_condition}, becomes a hyperparameter $\ell$, searched in $[0.5, 4]$. Cardoso~\cite{cardoso2022microtedaclus} proposes an earlier condition with a factor, \cref{eq:cardoso_intersection_condition}, which scales the sum of the radii $m\sigma$ of the two microclusters instead of the sum of their standard deviations.
 \end{itemize}
 
 \paragraph{Prediction.}
 \begin{itemize}
-    \item \modelname{noise-label}: a sample whose standardized distance to every active microcluster exceeds $n_\sigma^2$ is labelled as noise, with $n_\sigma$ searched in $[1, 10]$.
+    \item \variant{noise-label}: a sample whose standardized distance to every active microcluster exceeds $n_\sigma^2$ is labelled as noise, with $n_\sigma$ searched in $[1, 10]$.
 \end{itemize}
 
-\paragraph{Sensitivity function.} Three reparameterizations of the function $m$ of \cref{eq:m_function}, each replacing its fixed constants by hyperparameters:
+\paragraph{Sensitivity function.} Three variants replace the fixed constants of the function $m$ of \cref{eq:m_function} by hyperparameters:
 \begin{itemize}
-    \item \modelname{m-reparam}: the function
+    \item \variant{m-reparam}: the function
     \begin{equation}
         m(S) = m_{\max} \left( 1 + (m_{\max} - 1) \left( 19 (m_{\max} - 1) \right)^{-(S - 3)/(S_{95} - 3)} \right)^{-1}
         \label{eq:mi_m_reparam}
     \end{equation}
     which starts at $m(3) = 1$ and reaches $0.95\,m_{\max}$ at $S = S_{95}$, with $m_{\max} \in [1.05, 10]$ and $S_{95} \in [5, 5000]$.
-    \item \modelname{m-constant}: a constant $m$, searched in $[1, 5]$.
-    \item \modelname{m-asymptote}: the original sigmoid with its asymptote, $3$, searched in $[1.05, 10]$.
+    \item \variant{m-constant}: a constant $m$, searched in $[1, 5]$.
+    \item \variant{m-asymptote}: the original sigmoid with its asymptote, $3$, searched in $[1.05, 10]$.
 \end{itemize}
+
+\Cref{sec:ri_rejected} tests several of these candidates again on real data.
 
 \subsection{Improvements One at a Time}
 
 \input{ModelImprovement/artifacts/improvements_single/quality.tex}
-\input{ModelImprovement/artifacts/improvements_single/quality_other.tex}
 
-\Cref{tab:mi_improvements_single_quality} compares each candidate with the corrected model. Two candidates improve it. \modelname{single-assign} gains in the Overall ARI of \BenchmarkTwo, \datasetname{SCL-32} and \datasetname{SCL-64} and in the Steady-State ARI of \BenchmarkOne, \BenchmarkTwo, \datasetname{SCL-32} and \datasetname{SCL-64}, and \modelname{variance-cap} gains in the Steady-State ARI of \RandomRBFGeneratorEvents. \Cref{tab:mi_improvements_single_quality_other} gives the two ARI metrics that do not decide.
+\Cref{tab:mi_improvements_single_quality} compares each candidate with the corrected model. Two candidates improve it. \variant{single-assign} gains in the Overall ARI of \BenchmarkTwo, \datasetname{SCL-32} and \datasetname{SCL-64} and in the Steady-State ARI of \BenchmarkOne, \BenchmarkTwo, \datasetname{SCL-32} and \datasetname{SCL-64}, and \variant{variance-cap} gains in the Steady-State ARI of \RandomRBFGeneratorEvents.
 
-Two other candidates produce the largest gains of the table together with a loss, so the rule classifies them as mixed. \modelname{noise-label} raises the Overall ARI of \BenchmarkOne and that of \datasetname{SCL-64}, and loses in \ChameleonDSThree. \modelname{relative-limit} gains in \BenchmarkOne, \BenchmarkTwo and \ChameleonDSThree, and loses in the Steady-State ARI of \ChameleonDSFour.
+Two other candidates produce the largest gains of the table together with a loss, so the rule classifies them as mixed. \variant{noise-label} raises the Overall ARI of \BenchmarkOne and that of \datasetname{SCL-64}, and loses in \ChameleonDSThree. \variant{relative-limit} gains in \BenchmarkOne, \BenchmarkTwo and \ChameleonDSThree, and loses in the Steady-State ARI of \ChameleonDSFour.
 
 \input{ModelImprovement/artifacts/improvements_single/noise_label.tex}
 \input{ModelImprovement/artifacts/improvements_single/degenerate.tex}
 
-Both losses have identifiable causes. \Cref{tab:mi_improvements_single_noise_label} shows that, in the two Chameleon datasets, the search selects for \modelname{noise-label} a variance limit and a noise distance at the upper end of their ranges, and that the model still labels as noise more than twice the share of true noise. Its microclusters are too small for the scale of these datasets, the limitation of the search range seen above, which \modelname{relative-limit} removes. \Cref{tab:mi_improvements_single_degenerate} shows that \modelname{relative-limit} ends about a third of the runs of \ChameleonDSFour with a single predicted cluster, as \modelname{wide-range} does: without a bound, a variance limit that suits the first samples lets the microclusters grow until they merge the dataset, the growth that \modelname{variance-cap} prevents. The four changes are therefore evaluated in combination in \cref{subsec:mi_improvements_combined}.
+Both losses have identifiable causes. \Cref{tab:mi_improvements_single_noise_label} shows that, in the two Chameleon datasets, the search selects for \variant{noise-label} a variance limit and a noise distance at the upper end of their ranges, and that the model still labels as noise more than twice the share of true noise. Its microclusters are too small for the scale of these datasets, the limitation of the search range seen above, which \variant{relative-limit} removes. \Cref{tab:mi_improvements_single_degenerate} shows that \variant{relative-limit} ends about a third of the runs of \ChameleonDSFour with a single predicted cluster, as \variant{wide-range} does: without a bound, a variance limit that suits the first samples lets the microclusters grow until they merge the dataset, the growth that \variant{variance-cap} prevents. The four changes are therefore evaluated in combination in \cref{subsec:mi_improvements_combined}.
 
-The remaining candidates do not help. \modelname{forgetting} and \modelname{single-graph} are indistinguishable from the control. \modelname{recency} gains in \ChameleonDSFour and loses in \BenchmarkTwo and \Cassini, and \modelname{link-factor} gains in \ChameleonDSFour and loses in \Cassini. \modelname{soft-activation}, \modelname{no-activation} and \modelname{recency-inactive} regress. Every relaxation of the activation criterion is thus neutral or harmful: the two-pass construction of the macroclusters, which \cref{sec:model_implementation} describes as a deviation of the reference implementation, is not a defect to be removed. \modelname{chi-threshold} collapses in every two-dimensional dataset, where \cref{tab:mi_improvements_single_degenerate} shows that it predicts a single cluster in practically every batch. For $d = 2$ its limit is $q \le 1 + m$, which for the values of $m$ close to one that \cref{eq:m_function} gives to young microclusters is twice as permissive as $q \le m^2$, and the microclusters grow until they form a single macrocluster.
+The remaining candidates do not help. \variant{forgetting} and \variant{single-graph} are indistinguishable from the control. \variant{recency} gains in \ChameleonDSFour and loses in \BenchmarkTwo and \Cassini, and \variant{link-factor} gains in \ChameleonDSFour and loses in \Cassini. \variant{soft-activation}, \variant{no-activation} and \variant{recency-inactive} regress. Every relaxation of the activation criterion is thus neutral or harmful: the two-pass construction of the macroclusters, which \cref{sec:model_implementation} describes as a deviation of the reference implementation, is not a defect to be removed. \variant{chi-threshold} collapses in every two-dimensional dataset, where \cref{tab:mi_improvements_single_degenerate} shows that it predicts a single cluster in practically every batch. For $d = 2$ its limit is $q \le 1 + m$, which for the values of $m$ close to one that \cref{eq:m_function} gives to young microclusters is twice as permissive as $q \le m^2$, and the microclusters grow until they form a single macrocluster.
 
 \subsection{Sensitivity Function}
 \label{subsec:mi_m_function}
 
 \input{ModelImprovement/artifacts/m_function/quality.tex}
 
-None of the reparameterizations of $m$ improves the corrected model, as \cref{tab:mi_m_function_quality} shows. \modelname{m-reparam} and \modelname{m-asymptote} regress, and \modelname{m-constant} gains in \BenchmarkOne and \BenchmarkTwo at the cost of five of the remaining six datasets. Each of these variants adds one or two hyperparameters to a search with a fixed budget of trials, and \cref{tab:mi_m_function_tuned} shows that the values selected for them vary widely between the datasets. We retain the original function.
+None of the reparameterizations of $m$ improves the corrected model, as \cref{tab:mi_m_function_quality} shows. \variant{m-reparam} and \variant{m-asymptote} regress, and \variant{m-constant} gains in \BenchmarkOne and \BenchmarkTwo at the cost of five of the remaining six datasets. Each of these variants adds one or two hyperparameters to a search with a fixed budget of trials, and \cref{tab:mi_m_function_tuned} shows that the values selected for them vary widely between the datasets. We retain the original function.
 
 \input{ModelImprovement/artifacts/m_function/tuned.tex}
 
 \subsection{Combined Improvements}
 \label{subsec:mi_improvements_combined}
 
-We evaluate the four changes that helped in isolation in every combination of two, three and four of them. In the names of the combinations, \modelname{single}, \modelname{cap}, \modelname{noise} and \modelname{relative} stand for \modelname{single-assign}, \modelname{variance-cap}, \modelname{noise-label} and \modelname{relative-limit}.
+We evaluate the four changes that helped in isolation in every combination of two, three and four of them. In the names of the combinations, \variant{single}, \variant{cap}, \variant{noise} and \variant{relative} stand for \variant{single-assign}, \variant{variance-cap}, \variant{noise-label} and \variant{relative-limit}.
 
 \input{ModelImprovement/artifacts/improvements_combined/quality.tex}
-\input{ModelImprovement/artifacts/improvements_combined/quality_other.tex}
 
-\Cref{tab:mi_improvements_combined_quality} shows that nine of the eleven combinations improve the corrected model, and the two that do not, \modelname{single + cap} and \modelname{cap + noise}, each lose in one dataset, \Cassini and \ChameleonDSThree respectively. The two losses explained in the previous subsection disappear as predicted: \modelname{noise + relative} gains in \ChameleonDSThree, where \modelname{noise-label} alone lost, and \modelname{cap + relative} gains in \ChameleonDSFour, where \modelname{relative-limit} alone lost. \Cref{tab:mi_improvements_combined_quality_other} gives the two ARI metrics that do not decide.
+\Cref{tab:mi_improvements_combined_quality} shows that nine of the eleven combinations improve the corrected model, and the two that do not, \variant{single + cap} and \variant{cap + noise}, each lose in one dataset, \Cassini and \ChameleonDSThree respectively. The two losses explained in the previous subsection disappear as predicted: \variant{noise + relative} gains in \ChameleonDSThree, where \variant{noise-label} alone lost, and \variant{cap + relative} gains in \ChameleonDSFour, where \variant{relative-limit} alone lost.
 
-Since several combinations improve the control, the decision rule does not single one out. We choose the combination that becomes the improved model in two steps: it must not be improved upon by any other combination in a direct comparison, and, among those that satisfy this, it must have the largest number of significant gains over the corrected model. \modelname{single + relative} and \modelname{single + noise + relative} have the most gains, twelve each over the two metrics and eight datasets. \Cref{tab:mi_improvements_selection_quality} gives the direct comparisons that decide between the leading combinations.
+Since several combinations improve the control, the decision rule does not single one out. We choose the combination that becomes the improved model in two steps: it must not be improved upon by any other combination in a direct comparison, and, among those that satisfy this, it must have the largest number of significant gains over the corrected model. \variant{single + relative} and \variant{single + noise + relative} have the most gains, twelve each over the two metrics and eight datasets. \Cref{tab:mi_improvements_selection_quality} gives the direct comparisons that decide between the leading combinations.
 
 \input{ModelImprovement/artifacts/improvements_selection/quality.tex}
 
-\modelname{single + noise + relative} improves \modelname{single + relative}, in \BenchmarkOne, and no combination improves it. Its comparison with \modelname{noise + relative} is mixed, with gains in the Steady-State ARI of \BenchmarkOne and \ChameleonDSFour and a loss in that of \datasetname{SCL-64}. Adding \modelname{variance-cap} to it regresses in \ChameleonDSThree. The only other combination that no other improves is \modelname{cap + noise + relative}, which has seven gains over the corrected model. The two differ by a trade-off that the rule does not resolve: \modelname{single + noise + relative} is better in \BenchmarkOne and \modelname{cap + noise + relative} is better in \ChameleonDSFour.
+\variant{single + noise + relative} improves \variant{single + relative}, in \BenchmarkOne, and no combination improves it. Its comparison with \variant{noise + relative} is mixed, with gains in the Steady-State ARI of \BenchmarkOne and \ChameleonDSFour and a loss in that of \datasetname{SCL-64}. Adding \variant{variance-cap} to it regresses in \ChameleonDSThree. The only other combination that no other improves is \variant{cap + noise + relative}, which has seven gains over the corrected model. The two differ by a trade-off that the rule does not resolve: \variant{single + noise + relative} is better in \BenchmarkOne and \variant{cap + noise + relative} is better in \ChameleonDSFour.
 
-The improved model is therefore the corrected model with \modelname{single-assign}, \modelname{noise-label} and \modelname{relative-limit}. Compared with the corrected model, it gains in the Overall ARI of \BenchmarkOne, \BenchmarkTwo, \ChameleonDSThree, \datasetname{SCL-32} and \datasetname{SCL-64} and in the Steady-State ARI of every dataset except \Cassini, where its medians are lower without the difference being significant.
+The improved model is therefore the corrected model with \variant{single-assign}, \variant{noise-label} and \variant{relative-limit}. Compared with the corrected model, it gains in the Overall ARI of \BenchmarkOne, \BenchmarkTwo, \ChameleonDSThree, \datasetname{SCL-32} and \datasetname{SCL-64} and in the Steady-State ARI of every dataset except \Cassini, where its medians are lower without the difference being significant.
 
 \subsection{Refinements of the Improved Model}
 \label{subsec:mi_refinements}
 
-We evaluate four further changes on the improved model. Two of them, \modelname{forgetting} and \modelname{recency}, did not help the corrected model, but they target the tracking of moving clusters, which the improved model now does better, so we give them a second chance. The third is the removal of the dimensionality penalty, which improved the \modelname{vectorized} model; we rejected it in \cref{sec:mi_corrections} because the penalty accidentally separated part of the noise, and reconsider it now that the noise is labelled explicitly. The fourth, \modelname{persistent-labels}, makes each macrocluster keep the label of the macrocluster with which it shares most of its mass across updates, instead of being renumbered at every update. It does not change the partition predicted for a batch, but the objective of the hyperparameter search computes the ARI over the predictions of all batches together, see \cref{subsec:hyperparameter_tuning}, where a renumbering counts as a disagreement.
+We evaluate four further changes on the improved model. Two of them, \variant{forgetting} and \variant{recency}, did not help the corrected model, but they target the tracking of moving clusters, which the improved model now does better, so we give them a second chance. The third is the removal of the dimensionality penalty, which improved the \variant{vectorized} model; we rejected it in \cref{sec:mi_corrections} because the penalty accidentally separated part of the noise, and reconsider it now that the noise is labelled explicitly. The fourth, \variant{persistent-labels}, makes each macrocluster keep the label of the macrocluster with which it shares most of its mass across updates, instead of being renumbered at every update. It does not change the partition predicted for a batch, but the objective of the hyperparameter search computes the ARI over the predictions of all batches together, see \cref{subsec:hyperparameter_tuning}, where a renumbering counts as a disagreement.
 
 \input{ModelImprovement/artifacts/refinements/quality.tex}
 
-Only the removal of the penalty improves the improved model in \cref{tab:mi_refinements_quality}: it takes the Overall and Steady-State ARI of \datasetname{SCL-32} and \datasetname{SCL-64} to $1.000$. \modelname{persistent-labels} and \modelname{forgetting} are indistinguishable from the control, and \modelname{recency} regresses in \ChameleonDSThree and \ChameleonDSFour.
+Only the removal of the penalty improves the improved model in \cref{tab:mi_refinements_quality}: it takes the Overall and Steady-State ARI of \datasetname{SCL-32} and \datasetname{SCL-64} to $1.000$. \variant{persistent-labels} and \variant{forgetting} are indistinguishable from the control, and \variant{recency} regresses in \ChameleonDSThree and \ChameleonDSFour.
 
-The first two rows of each panel also give a measure of the noise of the protocol. In the six two-dimensional datasets the factor $2/d$ is one, so \modelname{improved} and \modelname{improved + no-penalty} are the same algorithm, tuned twice with the same seeds. Their medians still differ, most of all in \BenchmarkOne and \BenchmarkTwo, and none of these differences is significant.
+The first two rows of each panel also give a measure of the noise of the protocol. In the six two-dimensional datasets the factor $2/d$ is one, so \variant{improved} and \variant{improved + no-penalty} are the same algorithm, tuned twice with the same seeds. Their medians still differ, most of all in \BenchmarkOne and \BenchmarkTwo, and none of these differences is significant.
 
 \input{ModelImprovement/artifacts/refinements/tuning_noise.tex}
 
@@ -300,37 +285,27 @@ The model that results, \MicroTEDAClusPlus, is therefore the improved model with
 \subsection{Covariance of the Microclusters}
 \label{subsec:mi_covariance}
 
-Every model evaluated so far describes a microcluster by a scalar variance, which assumes the same dispersion in all directions. This experiment replaces the variance by a covariance matrix and the Euclidean distance by the Mahalanobis distance, which \cref{info:mahalanobis_as_teda_metric} lists among the proximity functions suited to the TEDA metrics.
-
-The covariance follows the recursion of the variance,
+Every model so far describes a microcluster by a scalar variance, which assumes the same dispersion in every direction. This experiment replaces it by a covariance matrix, and the Euclidean distance by the Mahalanobis distance, which \cref{info:mahalanobis_as_teda_metric} lists among the proximity functions suited to the TEDA metrics. The covariance follows the recursion of the variance,
 
 \begin{equation}
-    \Sigma_S = \frac{S - 1}{S} \Sigma_{S-1} + \frac{1}{S - 1} (x - \mu_S)(x - \mu_S)^T
+    \Sigma_S = \frac{S - 1}{S} \Sigma_{S-1} + \frac{1}{S - 1} (x - \mu_S)(x - \mu_S)^T,
     \label{eq:mi_covariance_recursion}
 \end{equation}
 
 whose trace is the scalar variance, and the standardized distance of \cref{eq:mi_standardized_distance} becomes the Mahalanobis distance divided by the dimension,
 
 \begin{equation}
-    q(x) = \frac{1}{d} (x - \mu)^T \Sigma^{-1} (x - \mu)
+    q(x) = \frac{1}{d} (x - \mu)^T \Sigma^{-1} (x - \mu),
     \label{eq:mi_mahalanobis_distance}
 \end{equation}
 
-which coincides with it when the covariance is isotropic. Two properties of the covariance require care.
+which coincides with it for an isotropic covariance. Two adjustments keep the outlier test sound. The covariance of a microcluster with few samples is singular, so the inverted matrix is shrunk towards the isotropic matrix of the same trace, $\tilde{\Sigma} = (1 - \alpha)\,\Sigma + \alpha\,\frac{\operatorname{tr}\Sigma}{d}\,I$ with $\alpha = d/(d + S - 1)$, and a young microcluster behaves as an isotropic one. And because the TEDA statistics include the sample under test, a full covariance bounds its distance by $(S - 1)/d$, so the test could not hold before the microcluster has more than $1 + m^2 d$ samples, more than 65 with 64 dimensions. The distance is therefore measured against the covariance before the sample is absorbed, $q_0$, and converted by the identity of the scalar recursion, $q = c\,q_0 / (1 + c\,q_0/(S - 1))$ with $c = (S - 1)/S$.
 
-First, the covariance of a microcluster with few samples is singular. The matrix that is inverted is therefore shrunk towards the isotropic matrix with the same trace, $\tilde{\Sigma} = (1 - \alpha)\,\Sigma + \alpha\,\frac{\operatorname{tr}\Sigma}{d}\,I$, with $\alpha = d/(d + S - 1)$. A young microcluster behaves as an isotropic one and becomes anisotropic as it accumulates samples.
-
-Second, the TEDA statistics include the sample under test, and with a full covariance this hides the sample from the test. For a covariance computed with the sample, $(x - \mu)^T \Sigma^{-1} (x - \mu) \le S - 1$, so $q(x) \le (S - 1)/d$, and the outlier condition $q(x) > m^2$ cannot hold before the microcluster has $S > 1 + m^2 d$ samples: more than 65 samples in \datasetname{SCL-64}, even with $m = 1$. With the scalar variance the same bound is $q(x) \le S - 1$, which does not involve the dimension. The distance is therefore measured against the covariance before the sample is absorbed, $q_0$, and converted by the identity that relates the two distances in the scalar recursion, $q = c\,q_0 / (1 + c\,q_0/(S - 1))$ with $c = (S - 1)/S$, which keeps the test identical to the isotropic one whenever the covariance is isotropic.
-
-The intersection condition is generalized in two ways. In \modelname{covariance, directional link}, the standard deviation of each microcluster in \cref{eq:microcluster_intersection_condition} is taken along the line that joins the two means, $s_i^2 = e^T \tilde{\Sigma}_i\, e$ with $e$ the unit vector of that line, and the condition becomes $\lVert \mu_i - \mu_j \rVert \le 2 \sqrt{d}\,(s_i + s_j)$. In \modelname{covariance, Bhattacharyya link}, two microclusters intersect when the Bhattacharyya distance between the Gaussian distributions with their means and covariances is at most $2d$. Both reduce to \cref{eq:microcluster_intersection_condition} for two microclusters with the same isotropic covariance. The Bhattacharyya distance requires a determinant and a linear solve per pair of microclusters, so we apply it for $d \le 16$ and use the directional condition above that. The prediction uses the nearest microcluster by \cref{eq:mi_mahalanobis_distance}.
+Two variants generalize the intersection condition. \variant{covariance, directional link} takes the standard deviation of each microcluster along the line that joins the two means, $s_i^2 = e^T \tilde{\Sigma}_i\, e$, and requires $\lVert \mu_i - \mu_j \rVert \le 2 \sqrt{d}\,(s_i + s_j)$. \variant{covariance, Bhattacharyya link} requires a Bhattacharyya distance of at most $2d$ between the Gaussian distributions of the two microclusters, up to 16 dimensions, and the directional condition above. Both reduce to \cref{eq:microcluster_intersection_condition} for two microclusters with the same isotropic covariance, and both predict by the nearest microcluster under \cref{eq:mi_mahalanobis_distance}.
 
 \input{ModelImprovement/artifacts/geometry/quality.tex}
 
-We apply both variants to \MicroTEDAClusPlus, and both regress in \cref{tab:mi_geometry_quality}. \modelname{covariance, directional link} loses in \BenchmarkTwo on the two decision metrics, and \modelname{covariance, Bhattacharyya link} loses in its Overall ARI. Neither gains significantly in any dataset. In the static shapes of \Cassini, \ChameleonDSThree and \ChameleonDSFour, where anisotropic microclusters could be expected to follow elongated clusters, no difference is significant, and in \datasetname{SCL-32} and \datasetname{SCL-64} \MicroTEDAClusPlus already has a median of $1.000$, which leaves no room for a gain.
-
-\Cref{tab:mi_geometry_cost} shows that the covariance is also costly. A microcluster stores $d^2$ values instead of one, which multiplies the steady-state memory footprint of \datasetname{SCL-32} and \datasetname{SCL-64} by one to two orders of magnitude.
-
-The experiment does not identify why the covariance fails to help. Two explanations are compatible with its results, and we tested neither. The tuned models describe each cluster with many microclusters, so the shape of a cluster may already be expressed by the arrangement of its microclusters and not need to be expressed by the shape of each one. And a covariance matrix has $d(d+1)/2$ values to be estimated from the samples that, in the original model, estimate a single variance. We retain the scalar variance.
+Applied to \MicroTEDAClusPlus, both regress (\cref{tab:mi_geometry_quality}): \variant{covariance, directional link} loses in both decision metrics of \BenchmarkTwo and \variant{covariance, Bhattacharyya link} in its Overall ARI, and neither gains in any dataset, not even in the elongated static shapes. The covariance is also costly: a microcluster stores $d^2$ values instead of one, which multiplies the steady-state memory footprint of \datasetname{SCL-32} and \datasetname{SCL-64} by one to two orders of magnitude (\cref{tab:mi_geometry_cost}). We did not test why it fails to help. Two explanations fit the results: the tuned models describe each cluster by many microclusters, whose arrangement may already express its shape, and a covariance has $d(d+1)/2$ values to estimate from the samples that estimate a single variance in the original model. We retain the scalar variance.
 
 \subsection{Order-Independent Densities in \MicroTEDAClusPlus}
 \label{subsec:mi_density_revisited}
@@ -339,17 +314,17 @@ The corrections of \cref{sec:mi_corrections} rejected the two order-independent 
 
 \input{ModelImprovement/artifacts/density_revisited/quality.tex}
 
-Both regress in \cref{tab:mi_density_revisited_quality}. \modelname{peak-density} loses in \ChameleonDSThree, where its Steady-State ARI falls to zero, and \modelname{volume-density} loses in five datasets. We retain the density of the last absorbed sample.
+Both regress in \cref{tab:mi_density_revisited_quality}. \variant{peak-density} loses in \ChameleonDSThree, where its Steady-State ARI falls to zero, and \variant{volume-density} loses in five datasets. We retain the density of the last absorbed sample.
 
 \section{Validation}
 \label{sec:mi_validation}
 
-We tuned and evaluated the four models of the chain, \modelname{vectorized}, \modelname{corrected}, \modelname{improved} and \MicroTEDAClusPlus, again on the 94 validation runs, which took no part in any of the choices above, as we set in \cref{subsec:mi_runs}. We executed two experiments of \cref{sec:mi_improvements}, those of \cref{subsec:mi_covariance,subsec:mi_density_revisited}, after these runs. Both rejected their candidates, so we changed no model after we saw the validation runs.
+We tuned and evaluated the four models of the chain, \variant{vectorized}, \variant{corrected}, \variant{improved} and \MicroTEDAClusPlus, again on the 94 validation runs, which took no part in any of the choices above, as we set in \cref{subsec:mi_runs}. We executed two experiments of \cref{sec:mi_improvements}, those of \cref{subsec:mi_covariance,subsec:mi_density_revisited}, after these runs. Both rejected their candidates, so we changed no model after we saw the validation runs.
 
 \subsection{Clustering Quality}
 \label{subsec:mi_validation_quality}
 
-\Cref{tab:mi_validation_quality} compares each model with its predecessor, and \cref{tab:mi_validation_final_vs_vectorized} compares \MicroTEDAClusPlus with the \modelname{vectorized} model directly.
+\Cref{tab:mi_validation_quality} compares each model with its predecessor, and \cref{tab:mi_validation_final_vs_vectorized} compares \MicroTEDAClusPlus with the \variant{vectorized} model directly.
 
 \input{ModelImprovement/artifacts/validation/quality.tex}
 \input{ModelImprovement/artifacts/validation/final_vs_vectorized.tex}
@@ -357,14 +332,12 @@ We tuned and evaluated the four models of the chain, \modelname{vectorized}, \mo
 Every step of the chain is confirmed: each model improves its predecessor and none regresses on the two metrics of the decision rule.
 
 \begin{itemize}
-    \item The corrected model improves the \modelname{vectorized} one in \BenchmarkTwo, \ChameleonDSThree, \datasetname{SCL-32} and \datasetname{SCL-64}, on both metrics.
+    \item The corrected model improves the \variant{vectorized} one in \BenchmarkTwo, \ChameleonDSThree, \datasetname{SCL-32} and \datasetname{SCL-64}, on both metrics.
     \item The improved model improves the corrected one in the Overall ARI of every dataset except \Cassini, and in the Steady-State ARI of \BenchmarkOne, \RandomRBFGeneratorEvents, \ChameleonDSThree, \ChameleonDSFour, \datasetname{SCL-32} and \datasetname{SCL-64}.
     \item \MicroTEDAClusPlus improves the improved model in \datasetname{SCL-32}, on both metrics.
 \end{itemize}
 
-From the \modelname{vectorized} model to \MicroTEDAClusPlus, the Overall ARI improves in every dataset except \Cassini and the Steady-State ARI improves in all eight. The largest changes are in the streams with noise and movement. The gains in the static shapes are significant but modest: in \Cassini, \ChameleonDSThree and \ChameleonDSFour \MicroTEDAClusPlus stays below $0.5$.
-
-The two metrics that do not take part in the decision, in the same tables, agree with it, with two exceptions. \MicroTEDAClusPlus is better than the \modelname{vectorized} model at the fifth batch in \BenchmarkOne, \ChameleonDSThree, \ChameleonDSFour, \datasetname{SCL-32} and \datasetname{SCL-64}, and has a smaller maximum ARI drop in every dataset except \Cassini. The exceptions belong to the corrected model, whose ARI at the fifth batch is lower than that of the \modelname{vectorized} model in \datasetname{SCL-64} and whose maximum ARI drop is larger in \ChameleonDSThree; the improved model removes both losses.
+From the \variant{vectorized} model to \MicroTEDAClusPlus, the Overall ARI improves in every dataset except \Cassini and the Steady-State ARI improves in all eight. The largest changes are in the streams with noise and movement. The gains in the static shapes are significant but modest: in \Cassini, \ChameleonDSThree and \ChameleonDSFour \MicroTEDAClusPlus stays below $0.5$.
 
 \begin{figure}[htbp]
     \centering
@@ -373,7 +346,7 @@ The two metrics that do not take part in the decision, in the same tables, agree
     \label{fig:mi_validation_trajectories}
 \end{figure}
 
-\Cref{fig:mi_validation_trajectories} shows where the gains come from. In \BenchmarkOne, the \modelname{vectorized} and corrected models lose the two clusters when they cross and do not recover, while the improved model and \MicroTEDAClusPlus separate them again. In \RandomRBFGeneratorEvents, the first two models degrade along the stream and the last two hold their level. In \datasetname{SCL-32} and \datasetname{SCL-64}, the \modelname{vectorized} model degrades along the stream, the corrected model stabilizes below one because it assigns the noise to the clusters, and the models with the noise label reach one.
+\Cref{fig:mi_validation_trajectories} shows where the gains come from. In \BenchmarkOne, the \variant{vectorized} and corrected models lose the two clusters when they cross and do not recover, while the improved model and \MicroTEDAClusPlus separate them again. In \RandomRBFGeneratorEvents, the first two models degrade along the stream and the last two hold their level. In \datasetname{SCL-32} and \datasetname{SCL-64}, the \variant{vectorized} model degrades along the stream, the corrected model stabilizes below one because it assigns the noise to the clusters, and the models with the noise label reach one.
 
 \subsection{Cost}
 \label{subsec:mi_validation_cost}
@@ -382,13 +355,13 @@ We measure the execution times of the validation runs, like those of every exper
 
 \input{ModelImprovement/artifacts/validation/serial_cost.tex}
 
-The corrected model costs the same as the \modelname{vectorized} one: the median of the ratio between their total times, computed per run, is near one in seven datasets. The exception is \datasetname{SCL-64}, where the corrected model keeps more microclusters than the \modelname{vectorized} model. \MicroTEDAClusPlus takes about six tenths of the time of the \modelname{vectorized} model in \ChameleonDSThree and \ChameleonDSFour, almost the same in \BenchmarkTwo, \Cassini, \datasetname{SCL-32} and \datasetname{SCL-64}, and more in \RandomRBFGeneratorEvents and in \BenchmarkOne.
+The corrected model costs the same as the \variant{vectorized} one: the median of the ratio between their total times, computed per run, is near one in seven datasets. The exception is \datasetname{SCL-64}, where the corrected model keeps more microclusters than the \variant{vectorized} model. \MicroTEDAClusPlus takes about six tenths of the time of the \variant{vectorized} model in \ChameleonDSThree and \ChameleonDSFour, almost the same in \BenchmarkTwo, \Cassini, \datasetname{SCL-32} and \datasetname{SCL-64}, and more in \RandomRBFGeneratorEvents and in \BenchmarkOne.
 
-These differences follow the number of microclusters that the tuned models keep, and not the cost of the changes themselves. \MicroTEDAClusPlus keeps tens of microclusters in \ChameleonDSThree and \ChameleonDSFour, where the \modelname{vectorized} model keeps hundreds, and many more than that model in \BenchmarkOne. Even in \BenchmarkOne, where it is slowest relative to the \modelname{vectorized} model, \MicroTEDAClusPlus fits the evaluation segment in a lower median than the reference implementation. The removal of the dimensionality penalty has no cost of its own: the improved model and \MicroTEDAClusPlus have nearly the same times in \datasetname{SCL-32} and \datasetname{SCL-64}, and in the two-dimensional datasets, where they are the same algorithm, they differ only as far as their two hyperparameter searches do. The prediction time changes little along the chain.
+These differences follow the number of microclusters that the tuned models keep, and not the cost of the changes themselves. \MicroTEDAClusPlus keeps tens of microclusters in \ChameleonDSThree and \ChameleonDSFour, where the \variant{vectorized} model keeps hundreds, and many more than that model in \BenchmarkOne. Even in \BenchmarkOne, where it is slowest relative to the \variant{vectorized} model, \MicroTEDAClusPlus fits the evaluation segment in a lower median than the reference implementation. The removal of the dimensionality penalty has no cost of its own: the improved model and \MicroTEDAClusPlus have nearly the same times in \datasetname{SCL-32} and \datasetname{SCL-64}, and in the two-dimensional datasets, where they are the same algorithm, they differ only as far as their two hyperparameter searches do. The prediction time changes little along the chain.
 
 The quartiles of \cref{tab:mi_validation_serial_cost} are wide. This dispersion does not come from the measurement, since the three executions of a task agree closely, as the caption of the table states. It comes from the hyperparameter search, which in a quarter of the runs of \ChameleonDSFour selects configurations that keep hundreds of microclusters or more, against a median in the tens.
 
-The memory footprint and the microcluster count of the 94 validation runs repeat the pattern in \cref{tab:mi_validation_cost}. At the steady state, \MicroTEDAClusPlus keeps fewer microclusters than the \modelname{vectorized} model in \ChameleonDSThree and \ChameleonDSFour, with medians in the tens against hundreds, and more in \BenchmarkOne and \RandomRBFGeneratorEvents. Its memory footprint is lower in \ChameleonDSThree and \ChameleonDSFour, and higher in \BenchmarkOne. The implementation reserves room in its arrays for the microclusters that the next batch can create and enlarges them in steps, so its footprint is that of the allocated capacity and changes in steps with the number of microclusters.
+The memory footprint and the microcluster count of the 94 validation runs repeat the pattern in \cref{tab:mi_validation_cost}. At the steady state, \MicroTEDAClusPlus keeps fewer microclusters than the \variant{vectorized} model in \ChameleonDSThree and \ChameleonDSFour, with medians in the tens against hundreds, and more in \BenchmarkOne and \RandomRBFGeneratorEvents. Its memory footprint is lower in \ChameleonDSThree and \ChameleonDSFour, and higher in \BenchmarkOne. The implementation reserves room in its arrays for the microclusters that the next batch can create and enlarges them in steps, so its footprint is that of the allocated capacity and changes in steps with the number of microclusters.
 
 \section{Limits of the Hyperparameter Selection}
 \label{sec:mi_selection}
@@ -400,7 +373,7 @@ The memory footprint and the microcluster count of the 94 validation runs repeat
 
 The probe draws 400 configurations at random from a search space, with the distributions that the search itself samples from, and scores each of them twice on a stream. The first score is the objective of the hyperparameter search, computed on the first 20\% of the stream by \cref{alg:hyperparameter_tuning_objective_function}: it is what the search sees. The second is the set of evaluation metrics, computed on the remaining 80\%: it is what the search is meant to maximize.
 
-We probe two spaces. The first is the search space of \MicroTEDAClusPlus, with its three hyperparameters. The second, the \emph{extended} space, adds to them six design choices studied in this chapter, as categorical hyperparameters: \modelname{single-assign} and \modelname{variance-cap}, each on or off; the density of the last absorbed sample or \modelname{peak-density}; the original pruning rule, \modelname{recency} or \modelname{recency-inactive}; the activation factor $f \in \{0, 0.25, 0.5, 0.75, 1\}$; and the link factor $\ell \in \{1, 1.5, 2\}$. In \Cassini, we score each configuration on the streams of the first four development runs and average its scores. \ChameleonDSThree and \ChameleonDSFour are the fixed files presented in \cref{subsec:mi_runs} and offer a single stream each.
+We probe two spaces. The first is the search space of \MicroTEDAClusPlus, with its three hyperparameters. The second, the \emph{extended} space, adds to them six design choices studied in this chapter, as categorical hyperparameters: \variant{single-assign} and \variant{variance-cap}, each on or off; the density of the last absorbed sample or \variant{peak-density}; the original pruning rule, \variant{recency} or \variant{recency-inactive}; the activation factor $f \in \{0, 0.25, 0.5, 0.75, 1\}$; and the link factor $\ell \in \{1, 1.5, 2\}$. In \Cassini, we score each configuration on the streams of the first four development runs and average its scores. \ChameleonDSThree and \ChameleonDSFour are the fixed files presented in \cref{subsec:mi_runs} and offer a single stream each.
 
 \input{ModelImprovement/artifacts/selection/probe.tex}
 
@@ -434,12 +407,12 @@ Second, every comparison of this chapter is conditional on the protocol. We acce
 
 Third, the search is itself a source of variation. Two searches of a single algorithm with the same seeds produce medians that differ in the Overall ARI and in the Steady-State ARI (\cref{subsec:mi_refinements}). In \ChameleonDSThree and \ChameleonDSFour, where every run processes the same stream, the dispersion of the results across runs is entirely that of the search.
 
-The probe does not change the model. It indicates that the most direct way of improving its results in static shapes is not a change of the algorithm but an objective that observes a longer segment of the stream.
+The probe does not change the model. It indicates that the most direct way of improving its results in static shapes is not a change of the algorithm but an objective that observes a longer segment of the stream. The modernized experiment of \cref{chap:modernization} lengthens the streams and their tuning segments and replaces the search ranges by rules (\cref{subsec:mod_ranges,subsec:mod_objective}).
 
 \section{\MicroTEDAClusPlus}
 \label{sec:mi_final_model}
 
-\MicroTEDAClusPlus keeps the structure of \MicroTEDAClus: microclusters updated recursively with the TEDA statistics, macroclusters as connected components of the graph of intersecting active microclusters, and pruning of the inactive microclusters by vitality. It differs from the algorithm of the reference implementation in the five points that the experiments accepted, listed in \cref{tab:mi_final_differences}. It has three hyperparameters: the relative variance limit $r$, the decay, with $\rho = 1/\text{decay}$, and the noise distance $n_\sigma$.
+\MicroTEDAClusPlus keeps the structure of \MicroTEDAClus: microclusters updated recursively with the TEDA statistics, macroclusters as connected components of the graph of intersecting active microclusters, and pruning of the inactive microclusters by vitality. It differs from the algorithm of the reference implementation in the five points that the experiments accepted, listed in \cref{tab:mi_final_differences}. It has three hyperparameters: the relative variance limit $r$, the decay, with $\rho = 1/\text{decay}$, and the noise distance $n_\sigma$. \Cref{chap:real_improvement} revises this model on real data. From that chapter on, the name \MicroTEDAClusPlus refers to the revised model, and the model defined here is called the \MicroTEDAClusPlus of \cref{chap:ModelImprovement}.
 
 \begin{table}[htbp]
 \centering
@@ -530,82 +503,72 @@ We search the hyperparameters in $r \in [10^{-6}, 1]$ and $\text{decay} \in [10,
 
 In the experiments of this chapter, we execute \MicroTEDAClusPlus as a configuration of the implementation of \cref{sec:mi_optimization}. For the main experiment, we implement the model on its own, with its three hyperparameters and without the options of the experimental implementation, and we verified that the two implementations produce the same predictions and the same number of microclusters, batch by batch, on scalability streams with 2, 8 and 32 dimensions.
 
-\section[\MicroTEDAClusPlus in the Main Experiment]{\MicroTEDAClusPlus and \MicroTEDAClus in the Main Experiment}
+\section{\MicroTEDAClusPlus in the Main Experiment}
 \label{sec:mi_main_experiment}
 
-The experiments above compare models that share one implementation, on runs reserved for the development of the model. In this section, we return to the main experiment of \cref{chap:methodology_reassessment}. We tune and evaluate \MicroTEDAClusPlus on its 94 runs and 13 datasets, by the same code and on the same machine as the benchmark models, and compare it with the \MicroTEDAClus of \cref{sec:reassessment_results}, the reference implementation. The comparison with the remaining benchmark models is the subject of \cref{chap:results}.
-
-The streams of these runs took no part in the development of the model, as required by \cref{subsec:mi_runs}, with one exception: \ChameleonDSThree and \ChameleonDSFour are fixed files, so their streams are the same in every run. We compare the results of the two models by the analysis of the main experiment, \cref{sec:statistical_significance}, without the Friedman test, because only two models are involved. In the tables of this section, a value in bold is significantly better than that of the other model, a value in red is significantly worse, and two values without emphasis are not significantly different.
+The experiments above compare models that share one implementation, on runs reserved for the development of the model. In this section, we return to the main experiment of \cref{chap:methodology_reassessment}. We tune and evaluate \MicroTEDAClusPlus on its 94 runs, six datasets and seven scalability streams, by the same code and on the same machine as the benchmark models, and compare it with \MicroTEDAClus and the six benchmark models as \cref{sec:reassessment_results} compares \MicroTEDAClus. The streams of these runs took no part in the development of the model, except those of \ChameleonDSThree and \ChameleonDSFour, which are the same in every run (\cref{subsec:mi_runs}).
 
 \subsection{Clustering Quality}
+\label{subsec:mi_main_quality}
 
-\input{ModelImprovement/artifacts/plus-vs-baseline/tables/ari_overall.tex}
-\input{ModelImprovement/artifacts/plus-vs-baseline/tables/ari_steadystate.tex}
-\input{ModelImprovement/artifacts/plus-vs-baseline/tables/ari_fifth.tex}
-\input{ModelImprovement/artifacts/plus-vs-baseline/tables/ari_diff.tex}
+\input{ModelImprovement/artifacts/comparison/quality.tex}
 
-\MicroTEDAClusPlus has a significantly higher Overall ARI than \MicroTEDAClus in five of the six datasets, and the two are not significantly different in \Cassini, as \cref{tab:plus-vs-baseline_ari_overall} shows. Its Steady-State ARI is significantly higher in all six, see \cref{tab:plus-vs-baseline_ari_steadystate}. The largest differences are in the three datasets with concept drift. In the two Chameleon datasets the gains are smaller in absolute terms.
+\MicroTEDAClusPlus is better than \MicroTEDAClus in the Overall ARI of five datasets and indistinguishable from it in \Cassini, and better in the Steady-State ARI of all six (\cref{tab:mi_comparison_quality}). Against the benchmark models, it reverses the position of \MicroTEDAClus in the streams with concept drift. Its Overall ARI is better than that of every other model in \BenchmarkOne and \BenchmarkTwo, and than all but \TEDACloud in \RandomRBFGeneratorEvents, and no model is better than it at the penultimate batch of these streams. In the static shapes, it is better than \MicroTEDAClus, \DenStream and the TEDA-based models, but worse than \CluStream and \StreamKM in \Cassini and \ChameleonDSThree, on both metrics, and worse than \CluStream in the Overall ARI of \ChameleonDSFour.
 
-At the fifth batch, in \cref{tab:plus-vs-baseline_ari_fifth}, \MicroTEDAClusPlus is significantly better in \BenchmarkOne, \RandomRBFGeneratorEvents, \ChameleonDSThree and \ChameleonDSFour, and not significantly different in \BenchmarkTwo and \Cassini. \Cref{tab:plus-vs-baseline_ari_diff} shows its maximum ARI drop is significantly smaller in all six datasets.
+In \RandomRBFGeneratorEvents, \ChameleonDSThree and \ChameleonDSFour, the comparison with \MicroTEDAClus also carries a difference of search budget, since the reference implementation exhausts the time of the search before its trials in these datasets (\cref{tab:mi_optimization_trials}). The validation of \cref{sec:mi_validation}, in which every model completes its trials, shows that the gains over the \variant{vectorized} model do not depend on that difference.
 
-In \RandomRBFGeneratorEvents, \ChameleonDSThree and \ChameleonDSFour, the comparison also carries a difference of search budget. \Cref{tab:mi_optimization_trials} shows, for the development runs, that the reference implementation completes a fraction of the trials of the search in these datasets. The validation of \cref{sec:mi_validation}, in which every model completes its trials, shows that the gains over the \modelname{vectorized} model do not depend on that difference.
-
-\input{ModelImprovement/artifacts/main_experiment/scalability_ari.tex}
-
-\Cref{tab:mi_main_scalability_ari} gives the ARI metrics of the seven scalability streams, compared per dimension by the test of \cref{subsec:mi_decision_rule}. From two dimensions on, \MicroTEDAClusPlus is significantly better on the four metrics. The Steady-State ARI of \MicroTEDAClus decreases with the dimension, the degradation along the stream that \cref{sec:reassessment_results} reports. \MicroTEDAClusPlus does not show it, as \cref{fig:mi_main_ari_scalability} illustrates.
+\input{ModelImprovement/artifacts/comparison/scalability.tex}
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{ModelImprovement/artifacts/plus-vs-baseline/plots/scalability/sample_scalability_ari_dim64.png}
-    \includegraphics[width=0.48\textwidth]{ModelImprovement/artifacts/plus-vs-baseline/plots/scalability/feature_scalability_ari_steadystate.png}
-    \caption{ARI along the stream with 64 dimensions, at left, and ARI at the penultimate batch as a function of the dimension, at right. Median and interquartile range over 94 runs.}
-    \label{fig:mi_main_ari_scalability}
+    \includegraphics[width=\textwidth]{ModelImprovement/artifacts/comparison/plots/scalability_quality.png}
+    \caption[ARI of \MicroTEDAClusPlus, \MicroTEDAClus and the benchmark models in the scalability streams]{ARI of \MicroTEDAClusPlus, \MicroTEDAClus and the benchmark models in the scalability streams: along the stream with 2 and 64 dimensions, and the Overall and Steady-State ARI against the dimension. Medians, with the interquartile band of \MicroTEDAClusPlus, over 94 runs.}
+    \label{fig:mi_main_scalability_quality}
 \end{figure}
 
-The stream with one dimension is the exception. The medians of \MicroTEDAClusPlus are lower than those of \MicroTEDAClus there in the Overall and in the Steady-State ARI, and none of the differences is significant. No one-dimensional stream took part in the development of the model, and this is the only stream of the main experiment in which the baseline has the higher median on these two metrics.
+In the scalability streams, \MicroTEDAClusPlus is better than every other model from two dimensions on, on both metrics, except \CEDAS, which reaches the same median of $1.000$ and is indistinguishable from it from four or eight dimensions on (\cref{tab:mi_comparison_scalability}). The collapse of \MicroTEDAClus along the streams of high dimension does not occur (\cref{fig:mi_main_scalability_quality}). The stream with one dimension is the exception: there, \MicroTEDAClusPlus is indistinguishable from \MicroTEDAClus, \CluStream and \StreamKM, with a lower median than \MicroTEDAClus. No one-dimensional stream took part in the development of the model.
 
-\subsection{Execution Time}
+\subsection{Cost}
+\label{subsec:mi_main_cost}
 
-\input{ModelImprovement/artifacts/plus-vs-baseline/tables/time_fit_cum_ms.tex}
-\input{ModelImprovement/artifacts/plus-vs-baseline/tables/time_predict_cum_ms.tex}
+\input{ModelImprovement/artifacts/comparison/cost.tex}
 
-\MicroTEDAClusPlus is significantly faster in the two stages and in the six datasets (\cref{tab:plus-vs-baseline_time_fit_cum_ms,tab:plus-vs-baseline_time_predict_cum_ms}). The analysis discretizes the execution times to 10 ms, a resolution suited to the benchmark models, and the times of \MicroTEDAClusPlus are at or below it, which is why its prediction time is printed as zero in five datasets.
+\MicroTEDAClusPlus is faster than every other model in the learning stage of every dataset, except \CEDAS in \BenchmarkOne and \RandomRBFGeneratorEvents, from which it is indistinguishable, and faster than every other model in the prediction stage of every dataset (\cref{tab:mi_comparison_cost}). Its times are at or below the resolution of 10 ms to which the analysis discretizes them, which is why most of its prediction times are printed as zero. Its learning time is one to two orders of magnitude below that of \MicroTEDAClus in four datasets and close to three in the Chameleon datasets. These ratios combine the optimization of \cref{sec:mi_optimization} with the number of microclusters that each tuned model keeps, an order of magnitude smaller for \MicroTEDAClusPlus in the Chameleon datasets (\cref{tab:mi_comparison_microclusters}). Like those of \cref{sec:reassessment_results}, these comparisons measure implementations as much as algorithms: \MicroTEDAClusPlus runs the sequential part of the algorithm in compiled code, and \cref{subsec:mi_optimization_time} measures what that implementation alone contributes for \MicroTEDAClus.
 
-The ratio between the median fitting times of the two models is in the tens in the \codename{R} datasets, and reaches the hundreds for the Chameleon datasets. These ratios combine two effects: the optimization of \cref{sec:mi_optimization}, and the number of microclusters that each tuned model keeps, which in the Chameleon datasets is an order of magnitude smaller for \MicroTEDAClusPlus (\cref{tab:plus-vs-baseline_mc_max}).
+Its memory footprint is smaller than those of \MicroTEDAClus and \CluStream in every dataset and larger than those of \CEDAS and \TEDACloud in every dataset. The model stores the microclusters in arrays that always have room for one new microcluster per sample of the next batch and that are enlarged to twice the required size when that room runs out, so the footprint we measure is that of the allocated capacity, the same for every run that never keeps more than 100 microclusters.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.48\textwidth]{ModelImprovement/artifacts/plus-vs-baseline/plots/scalability/feature_scalability_time_fit_ms_cumulative.png}
-    \includegraphics[width=0.48\textwidth]{ModelImprovement/artifacts/plus-vs-baseline/plots/scalability/feature_scalability_memory_bytes_max.png}
-    \caption{Cumulative fitting time, at left, and maximum memory footprint, at right, as a function of the dimension. Median and interquartile range over 94 runs.}
-    \label{fig:mi_main_cost_scalability}
+    \includegraphics[width=\textwidth]{ModelImprovement/artifacts/comparison/plots/scalability_cost.png}
+    \caption[Execution time, memory footprint and microcluster count of \MicroTEDAClusPlus, \MicroTEDAClus and the benchmark models in the scalability streams]{Execution time, memory footprint and microcluster count of \MicroTEDAClusPlus, \MicroTEDAClus and the benchmark models in the scalability streams, against the dimension. Medians, with the interquartile band of \MicroTEDAClusPlus, over 94 runs.}
+    \label{fig:mi_main_scalability_cost}
 \end{figure}
 
-In the scalability streams, the median fitting time of \MicroTEDAClusPlus stays just over 10 ms from 1 to 64 dimensions, against hundreds of milliseconds for \MicroTEDAClus, in \cref{fig:mi_main_cost_scalability}.
-
-\subsection{Memory Usage}
-
-\input{ModelImprovement/artifacts/plus-vs-baseline/tables/memory_max_bytes.tex}
-\input{ModelImprovement/artifacts/plus-vs-baseline/tables/memory_steadystate_bytes.tex}
-
-\Cref{tab:plus-vs-baseline_memory_max_bytes,tab:plus-vs-baseline_memory_steadystate_bytes} show that the memory footprint of \MicroTEDAClusPlus is significantly smaller in the six datasets, at its maximum and at the steady state. The model stores the microclusters in arrays that always have room for one new microcluster per sample of the next batch, and that are enlarged to twice the required size when that room runs out. The footprint that we measure is that of the allocated capacity, which is the same for every run that never keeps more than 100 microclusters.
-
-In the scalability streams, \cref{fig:mi_main_cost_scalability} shows that the median maximum footprint of \MicroTEDAClusPlus grows linearly with the dimension, since each microcluster stores one mean.
+In the scalability streams, the learning and prediction times of \MicroTEDAClusPlus hardly change with the dimension and stay below those of every other model (\cref{fig:mi_main_scalability_cost}). Its maximum memory footprint grows with the dimension, since each microcluster stores a mean, and stays below those of \MicroTEDAClus, \CluStream and \StreamKM at every dimension and above those of \DenStream, \CEDAS and \TEDACloud from eight dimensions on.
 
 \subsection{Microcluster Count}
+\label{subsec:mi_main_microclusters}
 
-\input{ModelImprovement/artifacts/plus-vs-baseline/tables/mc_max.tex}
-\input{ModelImprovement/artifacts/plus-vs-baseline/tables/mc_steadystate.tex}
+\input{ModelImprovement/artifacts/comparison/microclusters.tex}
 
-\Cref{tab:plus-vs-baseline_mc_max,tab:plus-vs-baseline_mc_steadystate} indicate that the number of microclusters does not change in a single direction. \MicroTEDAClusPlus keeps significantly fewer microclusters in the Chameleon datasets, significantly more in \BenchmarkOne, and a number that is not significantly different in \BenchmarkTwo, \RandomRBFGeneratorEvents and \Cassini. The small counts of the Chameleon datasets are those of the coarse configurations that the hyperparameter search selects in static shapes, as discussed in \cref{sec:mi_selection}.
+\MicroTEDAClusPlus keeps more microclusters than \DenStream, \CEDAS and \TEDACloud in every dataset (\cref{tab:mi_comparison_microclusters}). It keeps fewer than \MicroTEDAClus and \CluStream in the Chameleon datasets and more than both in \BenchmarkOne, where only \AutoCloud is not exceeded. The count reflects the granularity of the configuration that the hyperparameter search selects as much as the model: the small counts of the Chameleon datasets are those of the coarse configurations that \cref{sec:mi_selection} examines. In the scalability streams, its maximum count stays between those of \CEDAS and \CluStream at every dimension (\cref{fig:mi_main_scalability_cost}).
+
+\subsection{Hyperparameters of \MicroTEDAClusPlus}
+\label{subsec:mi_main_parameters}
+
+\input{ModelImprovement/artifacts/parameters/MicroTEDAClusPlus_parameters.tex}
+
+The relative variance limit selected for \MicroTEDAClusPlus spans about one order of magnitude across the datasets, against four for the absolute limit of \MicroTEDAClus (\cref{tab:params_microtedaclusplus,tab:params_microtedaclus}), and is nearly the same in the three static datasets, whose coordinates differ in scale by two orders of magnitude. The relative limit thus removes the dependence on the scale of the data that \cref{sec:parameter_variability} reports. Its dispersion is larger in the three streams with concept drift than in the static datasets. The median decay is also larger in the streams with concept drift, while its dispersion is high in almost every dataset. The noise distance has a low dispersion in every dataset. In the Chameleon datasets, every run processes the same stream, so the dispersion of their columns is that of the hyperparameter search alone.
 
 \subsection{Summary}
+\label{subsec:mi_main_summary}
 
-Under the protocol of the main experiment, \MicroTEDAClusPlus improves on \MicroTEDAClus in the following terms.
+In the main experiment, \MicroTEDAClusPlus improves on \MicroTEDAClus and changes its position among the benchmark models.
 
 \begin{itemize}
-    \item \textbf{Clustering quality.} The Overall ARI is significantly higher in five of the six non-scalability datasets and the Steady-State ARI in all six; the maximum ARI drop is significantly smaller in all six. In the scalability streams, the four ARI metrics are significantly better from two dimensions on, and the degradation of \MicroTEDAClus along high-dimensional streams does not occur.
-    \item \textbf{Cost.} The fitting and prediction times and the memory footprint are significantly smaller in every dataset.
+    \item \textbf{Clustering quality.} It is better than \MicroTEDAClus in the Overall ARI of five of the six datasets and in the Steady-State ARI of all six. No benchmark model is better than it in the streams with concept drift, where \MicroTEDAClus was worse than most of them, but \CluStream and \StreamKM remain better in the static shapes. In the scalability streams, it is better than every model but \CEDAS from two dimensions on, without the collapse of \MicroTEDAClus in high dimensions.
+    \item \textbf{Cost.} It is the fastest model in the learning and prediction stages of every dataset and at every dimension, tied with \CEDAS in the learning stage of two datasets. Its memory footprint is smaller than those of \MicroTEDAClus and \CluStream and larger than those of \CEDAS and \TEDACloud.
+    \item \textbf{Hyperparameters.} Its variance limit no longer depends on the scale of the data.
 \end{itemize}
 
-It does not improve on it everywhere. The Overall ARI of \Cassini and the four ARI metrics of the one-dimensional stream are not significantly different, the latter with lower medians. The scores in the three datasets of static shapes remain at or below $0.5$, for the reason examined in \cref{sec:mi_selection}. And in \BenchmarkOne the model keeps two to four times as many microclusters as the baseline.
+The weakness that remains is the clustering of static shapes, which \cref{sec:mi_selection} relates to the configurations that the hyperparameter search selects. \Cref{chap:modernization} repeats the experiment under a modernized protocol, and \cref{chap:real_data} on real data.
