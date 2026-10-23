@@ -1,7 +1,7 @@
-\chapter{Real Data Datasets}
+\chapter{Real Data}
 \label{chap:real_data}
 
-The datasets of the previous chapters are synthetic: their clusters, drifts and noise are known by construction. In this chapter, we evaluate the models of \cref{chap:modernization} on datasets of real data, recorded from physical processes and systems. Their classes are not drawn from chosen distributions, their drifts come from the conditions of the recording, and their dimension reaches the hundreds. The models, the evaluation and the statistical analysis are those of \cref{chap:modernization}, and we change the protocol only where these datasets require it.
+The datasets of the previous chapters are synthetic: their clusters, drifts and noise are known by construction. In this chapter, we evaluate \MicroTEDAClusPlus and the benchmark models of \cref{chap:modernization} on datasets of real data, recorded from physical processes and systems. Their classes are not drawn from chosen distributions, their drifts come from the conditions of the recording, and their dimension reaches the hundreds. The models, the evaluation and the statistical analysis are those of \cref{chap:modernization}, and we change the protocol only where these datasets require it.
 
 \section{Datasets}
 \label{sec:real_datasets}
@@ -34,9 +34,9 @@ The INSECTS datasets and \Covertype keep the order of their files. The drifts of
 
 \input{RealData/artifacts/single_class.tex}
 
-We shuffle \KDDCup as well. In its recorded order, nearly every batch of its evaluation segment holds a single class, \cref{tab:real_single_class}. The ARI of a batch of a single class only tells whether the model placed the whole batch in one cluster, which is the flaw that we found in the ordered streams of the original work, \cref{sec:datasets}. Shuffled, no batch of it holds a single class.
+We shuffle \KDDCup as well. In its recorded order, nearly every batch of its evaluation segment holds a single class (\cref{tab:real_single_class}). The ARI of a batch of a single class only tells whether the model placed the whole batch in one cluster, which is the flaw that we found in the ordered streams of the original work (\cref{sec:datasets}). Shuffled, no batch of it holds a single class.
 
-Three of the streams evaluated still hold some batches of a single class, and in all of their runs the penultimate batch is one of them, \cref{tab:real_single_class}. The Steady-State ARI and the maximum ARI drop both read the penultimate batch, \cref{sec:evaluation_metrics}, so we do not report them for these three datasets.
+Three of the streams evaluated still hold some batches of a single class, and in all of their runs the penultimate batch is one of them (\cref{tab:real_single_class}). The Steady-State ARI reads the penultimate batch (\cref{sec:evaluation_metrics}), so we do not report it for these three datasets.
 
 \section{Protocol}
 \label{sec:real_protocol}
@@ -67,7 +67,7 @@ No model may keep a summary of more structures than a quarter of the tuning segm
 
 We evaluate each dataset over 32 runs instead of the 94 of \cref{subsec:multi_run_statistics}, because the cost of 94 runs over the complete real datasets is not affordable. In this experiment, we measure the quality only, and not the time or the memory.
 
-We analyse a dataset over the runs that every model finished on it. We leave out of a dataset any model that failed in more than half of its runs, and compare the others over the runs that all of them finished.
+We compare \MicroTEDAClusPlus with each benchmark model by the test of \cref{sec:statistical_significance}, over the runs that every model finished on a dataset. We leave out of a dataset any model that failed in more than half of its runs, and compare the others over the runs that all of them finished.
 
 \section{Results}
 \label{sec:real_results}
@@ -77,25 +77,25 @@ We analyse a dataset over the runs that every model finished on it. We leave out
 
 \input{RealData/artifacts/failures.tex}
 
-\BIRCH is the only model that fails often, \cref{tab:real_failures}. It fails in most runs of \InsectsAbrupt, \InsectsIncremental and \GasDrift, which leaves it out of them, and in about half of the runs of \KDDCup and a third of those of \InsectsReoccurring, which leaves their comparisons with fewer runs. Every failure is a summary that exceeded the limit. The tree of cluster features of \BIRCH does not fade, unlike the microclusters of \DenStream and \DBSTREAM, \cref{sec:mod_models}, and it already held over a thousand subclusters in the scalability streams of \cref{chap:modernization} (\cref{fig:mod_scalability_cost}). \MicroTEDAClusPlus fails in a single run.
+\BIRCH is the only model that fails often (\cref{tab:real_failures}). It fails in most runs of \InsectsAbrupt, \InsectsIncremental and \GasDrift, which leaves it out of them, and in about half of the runs of \KDDCup and a third of those of \InsectsReoccurring, which leaves their comparisons with fewer runs. Every failure is a summary that exceeded the limit. The tree of cluster features of \BIRCH does not fade, unlike the microclusters of \DenStream and \DBSTREAM (\cref{sec:mod_models}), and it already held over a thousand subclusters in the scalability streams of \cref{chap:modernization} (\cref{fig:mod_scalability_cost}). \MicroTEDAClusPlus fails in a single run.
 
 \subsection{Clustering Quality}
 \label{subsec:real_quality}
 
 \input{RealData/artifacts/quality.tex}
 
-In the Overall ARI, \MicroTEDAClusPlus is indistinguishable from the worst model in six of the eight datasets, \cref{tab:real_quality}: the three INSECTS datasets, \GasDrift, \Covertype and \Pendigits. It is indistinguishable from the best model in \Shuttle only. \DenStream and \MiniBatchKMeans are indistinguishable from the best model in six datasets each. The ARI at the fifth batch shows a similar position: \MicroTEDAClusPlus is indistinguishable from the worst model in six datasets.
+\MicroTEDAClusPlus is worse than every benchmark model in the Overall ARI of four datasets, \InsectsAbrupt, \InsectsReoccurring, \Covertype and \Pendigits, and worse than all but one in \InsectsIncremental (\cref{tab:real_quality}). In \GasDrift it is worse than \MiniBatchKMeans and indistinguishable from the others, and in \KDDCup it is worse than three of the benchmark models and better than \BIRCH. \Shuttle is the only dataset in which it is better than most of them, with \MiniBatchKMeans indistinguishable. At the penultimate batch, where it is reported, it is worse than most benchmark models in \InsectsIncremental, \GasDrift, \KDDCup and \Pendigits, and in \Shuttle it is better than \BIRCH and indistinguishable from the others.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{RealData/artifacts/plots/insects_abrupt.png}
-    \caption{Batch ARI along the evaluation segment of \InsectsAbrupt: medians and interquartile bands over the runs, with the change points of the stream as dashed lines. \BIRCH is left out of this dataset.}
+    \caption[Batch ARI along the evaluation segment of \InsectsAbrupt]{Batch ARI of \MicroTEDAClusPlus and the benchmark models along the evaluation segment of \InsectsAbrupt, with the change points of the stream as dashed lines. Medians, with the interquartile band of \MicroTEDAClusPlus, over 32 runs.}
     \label{fig:real_insects_abrupt}
 \end{figure}
 
-\Cref{fig:real_insects_abrupt} follows the models along \InsectsAbrupt. \MicroTEDAClusPlus stays near zero along the whole stream, where the other models keep a low but steady score. In three stretches the median ARI of every model is zero. They are batches of a single class, \cref{tab:real_single_class}, whose ARI is one for a model that placed the whole batch in one cluster and zero otherwise, \cref{subsec:real_order}. In \Covertype every model scores low, and the best median is lower than in any other dataset. In \KDDCup, \DenStream is the only model indistinguishable from the best.
+\Cref{fig:real_insects_abrupt} follows the models along \InsectsAbrupt. \MicroTEDAClusPlus stays near zero along the whole stream, where the other models keep a low but steady score. In three stretches the median ARI of every model is zero. They are batches of a single class (\cref{tab:real_single_class}), whose ARI is one for a model that placed the whole batch in one cluster and zero otherwise (\cref{subsec:real_order}).
 
 \section{Summary}
 \label{sec:real_summary}
 
-The real datasets add drifts that come from the conditions of the recording, classes that are not drawn from chosen distributions, and up to 128 dimensions. Evaluating on them required standardizing the features by the tuning segment, an order for each stream, wider search ranges, a limit on the tuning segment and on the size of the summaries, and fewer runs. On them, \MicroTEDAClusPlus is indistinguishable from the worst model in most datasets, \cref{tab:real_quality}, and \DenStream and \MiniBatchKMeans are among the best most often. \BIRCH exceeds the limit on the summary in most runs of three datasets, \cref{tab:real_failures}.
+The real datasets add drifts that come from the conditions of the recording, classes that are not drawn from chosen distributions, and up to 128 dimensions. Evaluating on them required standardizing the features by the tuning segment, an order for each stream, wider search ranges, a limit on the tuning segment and on the size of the summaries, and fewer runs. On them, \MicroTEDAClusPlus is worse than most benchmark models in the Overall ARI of six of the eight datasets, and better than most only in \Shuttle (\cref{tab:real_quality}). \BIRCH exceeds the limit on the summary in most runs of three datasets (\cref{tab:real_failures}). \Cref{chap:real_improvement} diagnoses the results of \MicroTEDAClusPlus on these datasets and revises the model.
