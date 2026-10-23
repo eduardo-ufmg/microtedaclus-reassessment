@@ -30,7 +30,7 @@ DIR_METRICS_NON_SCL = os.path.join(SCRIPT_DIR, "metrics", "non_scalability")
 DIR_METRICS_SCL = os.path.join(SCRIPT_DIR, "metrics", "scalability")
 DIR_STATS_BASE = os.path.join(SCRIPT_DIR, "statistical_analysis")
 
-QUALITY_METRICS = ("ari_overall", "ari_steadystate", "ari_fifth", "ari_diff")
+QUALITY_METRICS = ("ari_overall", "ari_steadystate")
 COST_METRICS = (
     "time_fit_cum_ms",
     "time_predict_cum_ms",
@@ -41,8 +41,6 @@ SUMMARY_METRICS = ("mc_max", "mc_steadystate")
 TITLES = {
     "ari_overall": "Overall ARI",
     "ari_steadystate": "Steady-State ARI",
-    "ari_fifth": "ARI at the fifth batch",
-    "ari_diff": "Maximum ARI drop",
     "time_fit_cum_ms": "Learning time [ms]",
     "time_predict_cum_ms": "Prediction time [ms]",
     "memory_max_bytes": "Maximum memory footprint [KiB]",
@@ -163,6 +161,18 @@ def draw(ax, frame: pd.DataFrame, metric: str, x: str, comparison, scale=1.0):
         )
 
 
+def quantiles(per_run: pd.DataFrame, metric: str) -> pd.DataFrame:
+    """Median and quartiles of a metric over the runs, per model and dimension."""
+    grouped = per_run.groupby(["model", "dim"])[metric]
+    return pd.DataFrame(
+        {
+            f"{metric}_median": grouped.median(),
+            f"{metric}_q1": grouped.quantile(0.25),
+            f"{metric}_q3": grouped.quantile(0.75),
+        }
+    ).reset_index()
+
+
 def dimension_axis(ax, dimensions):
     ax.set_xscale("log", base=2)
     ax.set_xticks(dimensions)
@@ -180,16 +190,16 @@ def save(fig, axes, path: str):
 
 
 def scalability_figures(comparison, out_dir: str):
-    """ARI, then cost, of the models of a comparison in the scalability streams."""
+    """ARI, then cost, of the models of a comparison in the scalability streams.
+
+    The panels against the dimension show the metrics of the tables, per run.
+    """
     by_batch = pd.read_parquet(
         os.path.join(DIR_METRICS_SCL, "aggregated_by_batch.parquet")
     )
-    by_dimension = pd.read_parquet(
-        os.path.join(DIR_METRICS_SCL, "aggregated_by_dim.parquet")
-    )
     by_batch = by_batch.assign(samples=by_batch["batch"] * 100)
-    dimensions = sorted(by_dimension["dim"].unique())
-    penultimate = by_batch["batch"].max() - 1
+    per_run = pd.read_parquet(os.path.join(DIR_METRICS_SCL, "run_metrics.parquet"))
+    dimensions = sorted(per_run["dim"].unique())
     os.makedirs(os.path.join(out_dir, "plots"), exist_ok=True)
 
     fig, axes = plt.subplots(2, 2, figsize=(10, 7))
@@ -198,34 +208,19 @@ def scalability_figures(comparison, out_dir: str):
         ax.set_title(f"Along the stream, {dimension} dimensions")
         ax.set_xlabel("Samples")
         ax.set_ylabel("ARI")
-    for ax, (batch, title) in zip(
-        axes[1], ((4, "Fifth batch"), (penultimate, "Penultimate batch"))
-    ):
-        draw(ax, by_batch[by_batch["batch"] == batch], "ari", "dim", comparison)
-        ax.set_title(title)
+    for ax, metric in zip(axes[1], QUALITY_METRICS):
+        draw(ax, quantiles(per_run, metric), metric, "dim", comparison)
+        ax.set_title(TITLES[metric])
         ax.set_ylabel("ARI")
         dimension_axis(ax, dimensions)
     save(fig, axes, os.path.join(out_dir, "plots", "scalability_quality.png"))
 
-    at_penultimate = by_batch[by_batch["batch"] == penultimate]
-    specs = [
-        (by_dimension, "time_fit_cum_ms", 1.0, "Learning time [ms]"),
-        (by_dimension, "time_predict_cum_ms", 1.0, "Prediction time [ms]"),
-        (by_dimension, "memory_max_bytes", 1024.0, "Maximum memory footprint [KiB]"),
-        (
-            at_penultimate,
-            "memory_bytes",
-            1024.0,
-            "Steady-state memory footprint [KiB]",
-        ),
-        (by_dimension, "mc_max", 1.0, "Maximum microcluster count"),
-        (at_penultimate, "microcluster_count", 1.0, "Steady-state microcluster count"),
-    ]
     fig, axes = plt.subplots(3, 2, figsize=(10, 10))
-    for ax, (frame, metric, scale, ylabel) in zip(np.ravel(axes), specs):
-        draw(ax, frame, metric, "dim", comparison, scale)
+    for ax, metric in zip(np.ravel(axes), COST_METRICS + SUMMARY_METRICS):
+        scale = 1024.0 if metric.startswith("memory") else 1.0
+        draw(ax, quantiles(per_run, metric), metric, "dim", comparison, scale)
         ax.set_yscale("log")
-        ax.set_ylabel(ylabel)
+        ax.set_ylabel(TITLES[metric])
         dimension_axis(ax, dimensions)
     save(fig, axes, os.path.join(out_dir, "plots", "scalability_cost.png"))
 
