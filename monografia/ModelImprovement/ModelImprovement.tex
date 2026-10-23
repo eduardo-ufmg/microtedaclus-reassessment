@@ -217,7 +217,7 @@ By the decision rule the wider range improves the corrected model, in \Chameleon
     \item \modelname{soft-activation}: a microcluster is active if its density is at least $f$ times the mean density of its component, with $f$ searched in $[0, 1.5]$. The original criterion is $f = 1$.
     \item \modelname{no-activation}: every microcluster with at least three samples is active.
     \item \modelname{single-graph}: the macroclusters are the components of the intersection graph $\mathbb{G}_0$ that contain active microclusters, instead of the components of the active graph $\mathbb{G}_1$ of \cref{alg:microcluster_activation_criterion_pseudocode}.
-    \item \modelname{link-factor}: the factor $2$ of the intersection condition, \cref{eq:microcluster_intersection_condition}, becomes a hyperparameter $\ell$, searched in $[0.5, 4]$. The earlier condition of \cref{eq:cardoso_intersection_condition} also has a factor, but it scales the radii of the microclusters and can only loosen the condition.
+    \item \modelname{link-factor}: the factor $2$ of the intersection condition, \cref{eq:microcluster_intersection_condition}, becomes a hyperparameter $\ell$, searched in $[0.5, 4]$. \cite{cardoso2022microtedaclus} proposes an earlier condition with a factor, \cref{eq:cardoso_intersection_condition}, which scales the sum of the radii $m\sigma$ of the two microclusters instead of the sum of their standard deviations.
 \end{itemize}
 
 \paragraph{Prediction.}
@@ -432,7 +432,7 @@ First, the modest scores of \MicroTEDAClusPlus in the static shapes are, at leas
 
 Second, every comparison of this chapter is conditional on the protocol. We accepted a candidate if it improved its control when both are tuned by the protocol, so we rejected a candidate whose benefit requires a configuration that the objective does not select. The same holds for the baseline and benchmark models of the main experiment, which are tuned by the same protocol. We kept the protocol unchanged throughout this chapter for that reason: it is what places \MicroTEDAClusPlus and the benchmark models on equal terms.
 
-Third, the search is itself a source of variation. Two searches of one same algorithm with the same seeds produce medians that differ in the Overall ARI and in the Steady-State ARI (\cref{subsec:mi_refinements}). In \ChameleonDSThree and \ChameleonDSFour, where every run processes the same stream, the dispersion of the results across runs is entirely that of the search.
+Third, the search is itself a source of variation. Two searches of a single algorithm with the same seeds produce medians that differ in the Overall ARI and in the Steady-State ARI (\cref{subsec:mi_refinements}). In \ChameleonDSThree and \ChameleonDSFour, where every run processes the same stream, the dispersion of the results across runs is entirely that of the search.
 
 The probe does not change the model. It indicates that the most direct way of improving its results in static shapes is not a change of the algorithm but an objective that observes a longer segment of the stream.
 

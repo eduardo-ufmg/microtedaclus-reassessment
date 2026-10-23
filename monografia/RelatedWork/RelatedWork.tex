@@ -276,7 +276,7 @@ which would be true for the samples that are closer to the mean $\mu^i_2$. Becau
     \label{eq:corrected_condition_logic_for_outliers}
 \end{equation}
 
-\cite{cardoso2022microtedaclus} reaches the same conclusion: it proves that the eccentricity of the second sample of a microcluster is always one, so that its normalized eccentricity is one half, and it detects the outliers of microclusters with fewer than three samples by \cref{eq:corrected_condition_logic_for_outliers} alone.
+\cite{cardoso2022microtedaclus} had reached the same conclusion earlier: it proves that the eccentricity of the second sample of a microcluster is always one, so that its normalized eccentricity is one half, and it detects the outliers of microclusters with fewer than three samples by \cref{eq:corrected_condition_logic_for_outliers} alone.
 
 \subsubsection{Anomalous Dimensionality Penalty} \label{subsubsec:dimensionality_penalty}
 
@@ -343,29 +343,23 @@ Although it updates the eccentricity formula to be compatible with the cosine si
 
 \cite{cardoso2022microtedaclus} reimplements the original \MicroTEDAClus in \codename{C}, a language chosen for its speed and for its use in embedded platforms. Along the reimplementation, it documents the TEDA expressions that the model uses, with proofs and unit tests, and finds that the recursive eccentricity of \cref{eq:recursive_eccentricity} corresponds to the eccentricity computed over the squared euclidean distance, as the recursive expressions of \cref{eq:recursive_sum_pi} assume. It also distinguishes two modes of operation: in the online mode, the model updates its macroclusters along the stream and labels each sample as it arrives; in the offline mode, it learns the whole dataset, builds its macroclusters once and then labels every sample.
 
-It proposes an alternative to the intersection condition of \cref{eq:microcluster_intersection_condition}. It takes $m^i_k(S^i_k)\,\sigma^i_k$ as the radius of a microcluster, the distance from its mean beyond which a sample is an outlier to it, and compares the distance between the means of two microclusters with the sum of their radii, scaled by a factor $\phi$ that loosens the condition, as in \cref{eq:cardoso_intersection_condition}.
+It proposes an alternative to the intersection condition of \cref{eq:microcluster_intersection_condition}. It takes $m^i_k(S^i_k)\,\sigma^i_k$ as the radius of a microcluster, the distance from its mean beyond which a sample is an outlier to it, and compares the distance between the means of two microclusters with the sum of their radii, scaled by a factor $\phi$ that loosens the condition relative to that sum, as in \cref{eq:cardoso_intersection_condition}.
 
 \begin{equation}
     \text{dist}(\mu^i_k, \mu^j_k) < \phi \left( m^i_k(S^i_k)\,\sigma^i_k + m^j_k(S^j_k)\,\sigma^j_k \right), \quad \phi \ge 1, \quad i \neq j
     \label{eq:cardoso_intersection_condition}
 \end{equation}
 
-Its experiments evaluate the clustering quality by the adjusted rand index on seven static datasets of two dimensions, two of them taken from the original work, and compare the execution time of the reimplementation with that of the \codename{Python} implementation of the original work. For each dataset, the model runs in the offline mode over twenty random orders of the samples and a grid of hyperparameters, once with each intersection condition, and the thesis reports the lowest and the highest index over these runs and the highest mean index over the configurations of the grid \cite[Section 4.3]{cardoso2022microtedaclus}. From them, it concludes that the quality depends strongly on $r_0$ and $\phi$ and weakly on the decay of \cref{eq:decay_logic}, and that \cref{eq:cardoso_intersection_condition} is comparable to \cref{eq:microcluster_intersection_condition}, with a higher index in one dataset. The reimplementation runs much faster than the original one, and its execution time grows steeply with the number of samples, which the thesis attributes to the construction of the macroclusters, quadratic in the number of microclusters \cite[Sections 4.4 and 4.5]{cardoso2022microtedaclus}.
+Its experiments evaluate the clustering quality by the adjusted rand index on seven static datasets of two dimensions, two of them taken from the original work. For each dataset and intersection condition, the model runs in the offline mode with random orders of the samples and with hyperparameters taken from a grid, and the thesis reports the lowest and the highest index and the highest mean index over the configurations \cite[Section 4.3]{cardoso2022microtedaclus}. From them, it concludes that the quality depends strongly on $r_0$ and $\phi$ and weakly on the decay of \cref{eq:decay_logic}, and that \cref{eq:cardoso_intersection_condition} is comparable to \cref{eq:microcluster_intersection_condition}, with a higher index in one dataset.
+
+The thesis also compares the execution time of the reimplementation with that of the \codename{Python} implementation of the original work. It measures each whole program, including the reading of the data, with the \codename{time} command of the operating system on a single machine, and reports no repetitions \cite[Section 4.4]{cardoso2022microtedaclus}. It reports that the reimplementation runs much faster than the original one, and that its execution time grows steeply with the number of samples, which it attributes to the construction of the macroclusters, quadratic in the number of microclusters \cite[Sections 4.4 and 4.5]{cardoso2022microtedaclus}.
 
 \subsection{Open Questions and Issues in the Evaluation of the \texttt{C} Implementation}
 
-\subsubsection{Evaluation on Learned Data}
-
-The quality is evaluated in the offline mode \cite[Tables 4.1 and 4.2]{cardoso2022microtedaclus}, where every sample is labeled after the model has learned the whole dataset. The index thus measures how the model partitions data that it has already seen, not how it labels a stream before learning it, which is the task for which the model is proposed.
-
 \subsubsection{Hyperparameters Selected with the Labels of the Evaluated Data}
 
-The highest index and the highest mean index belong to the configurations of the grid that best fit the labels of the evaluated data, and are therefore optimistic estimates of the quality that the model reaches when its hyperparameters are chosen without those labels. The lowest index corresponds to a random partition in every dataset \cite[Tables 4.1 and 4.2]{cardoso2022microtedaclus}, so the quality reported depends on a choice that the evaluation makes with the labels. The comparison between the two intersection conditions rests on these best cases, without a statistical test.
+The highest index and the highest mean index belong to the configurations of the grid that best fit the labels of the evaluated data, and are therefore optimistic estimates of the quality that the model reaches when its hyperparameters are chosen without those labels. The lowest index is no better than chance in every dataset \cite[Tables 4.1 and 4.2]{cardoso2022microtedaclus}, so the quality reported depends on a choice that the evaluation makes with the labels. The comparison between the two intersection conditions rests on these best cases, without a statistical test.
 
 \subsubsection{Scope of the Comparison}
 
 The model is compared with no benchmark model, and none of the datasets has concept drift, which the thesis leaves out of its scope and expects the model to handle because the original work reports that it does \cite[Section 4.2]{cardoso2022microtedaclus}. Its results therefore leave untested the claims of the original work about the benchmark models and about concept drift.
-
-\subsubsection{Execution Time}
-
-The execution time is that of each whole program, including the reading of the data, as measured by the \codename{time} command of the operating system on a single machine, and the thesis reports one measurement for each dataset and implementation, without repetitions \cite[Section 4.4]{cardoso2022microtedaclus}.
