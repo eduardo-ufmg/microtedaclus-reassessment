@@ -56,7 +56,7 @@ Only a variant that improves its control can replace it. We report the ARI at th
 \section{Implementation Optimization}
 \label{sec:mi_optimization}
 
-The reference implementation stores each microcluster as a dictionary in a Python list. For every sample, it iterates over that list and updates one microcluster at a time; it maintains the intersection graph edge by edge in a graph library, and it computes the membership of each sample to each macrocluster in nested loops. Its execution time is dominated by the interpreter, not by the arithmetic of the algorithm.
+The reference implementation stores each microcluster as a dictionary in a Python list. For every sample, it iterates over that list and updates one microcluster at a time; it maintains the intersection graph edge by edge in a graph library, and it computes the membership of each sample to each macrocluster in nested loops. Its execution time is dominated by the interpreter, not by the arithmetic of the algorithm. The reimplementation of \cref{sec:c_implementation} reduces it by changing the language. We keep \codename{Python}, the language of the benchmark models, and change how the algorithm is computed.
 
 The optimized implementation, hereafter the \modelname{vectorized} model, stores the population of microclusters as a structure of arrays, with one array per attribute. The algorithm has a part that depends on the order of arrival of the samples: the recursive update of the microclusters, the outlier test, the vitality update and the pruning. This part cannot be vectorized across samples, so it runs in a single compiled kernel that iterates over the samples of a batch and, for each of them, over the arrays. Everything else is expressed as array operations. At each macrocluster update, the intersection graph is rebuilt from the matrix of pairwise distances between the microcluster means, its connected components are extracted by a sparse graph routine, and the membership of a whole batch is obtained from one distance matrix.
 
@@ -217,7 +217,7 @@ By the decision rule the wider range improves the corrected model, in \Chameleon
     \item \modelname{soft-activation}: a microcluster is active if its density is at least $f$ times the mean density of its component, with $f$ searched in $[0, 1.5]$. The original criterion is $f = 1$.
     \item \modelname{no-activation}: every microcluster with at least three samples is active.
     \item \modelname{single-graph}: the macroclusters are the components of the intersection graph $\mathbb{G}_0$ that contain active microclusters, instead of the components of the active graph $\mathbb{G}_1$ of \cref{alg:microcluster_activation_criterion_pseudocode}.
-    \item \modelname{link-factor}: the factor $2$ of the intersection condition, \cref{eq:microcluster_intersection_condition}, becomes a hyperparameter $\ell$, searched in $[0.5, 4]$.
+    \item \modelname{link-factor}: the factor $2$ of the intersection condition, \cref{eq:microcluster_intersection_condition}, becomes a hyperparameter $\ell$, searched in $[0.5, 4]$. The earlier condition of \cref{eq:cardoso_intersection_condition} also has a factor, but it scales the radii of the microclusters and can only loosen the condition.
 \end{itemize}
 
 \paragraph{Prediction.}
