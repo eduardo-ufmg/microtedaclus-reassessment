@@ -10,7 +10,10 @@ and, for each stage, produces one metric figure:
     {stage}_metrics.png   median line + IQR (Q1-Q3) band
 
 Tuned-hyperparameter summaries (median [Q1,Q3] for numeric, mode for
-categorical) are shown as text on the figure.
+categorical) are shown as text on the figure. It also writes the figure of the
+thesis, every stage in one figure, in the order of the preprocessing:
+
+    monografia/MethodologyReassessment/artifacts/preprocessing/stages.png
 """
 
 import glob
@@ -22,11 +25,31 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from pfc_shared.figures import FOCUS_COLOR
+
 RESULTS_DIR = "./results"
 PLOTS_DIR = "./plots/preprocessing_study"
 os.makedirs(PLOTS_DIR, exist_ok=True)
 
 STAGES = ["raw", "noise_removed", "downsampled", "ordered", "scaled"]
+# the stages in the order in which the preprocessing applies them, with their titles
+PIPELINE = [
+    ("raw", "Raw"),
+    ("noise_removed", "Noise removed"),
+    ("downsampled", "Downsampled"),
+    ("scaled", "Scaled"),
+    ("ordered", "Ordered by label"),
+]
+THESIS_FIGURE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "..",
+    "..",
+    "monografia",
+    "MethodologyReassessment",
+    "artifacts",
+    "preprocessing",
+    "stages.png",
+)
 
 
 # --------------------------------------------------------------------------
@@ -230,6 +253,60 @@ def plot_metrics(ari_runs, tp_runs, tf_runs, params_text, stage, out_dir):
     )
 
 
+def plot_pipeline(path=THESIS_FIGURE):
+    """Every stage in one figure: its ARI per batch, with the hyperparameters selected
+    for it, and its learning and prediction times per batch; medians and
+    interquartile bands over the runs."""
+    fig, axes = plt.subplots(len(PIPELINE), 2, figsize=(12, 15))
+    for (ax_ari, ax_time), (stage, title) in zip(axes, PIPELINE):
+        params_runs, ari_runs, tp_runs, tf_runs = load_stage(stage)
+        summary, n_valid = aggregate_params(params_runs)
+        batches = np.arange(len(ari_runs[0]))
+
+        median, q1, q3 = aggregate_curves_medianiqr(ari_runs)
+        ax_ari.plot(batches, median, color=FOCUS_COLOR, linewidth=1.8)
+        ax_ari.fill_between(batches, q1, q3, color=FOCUS_COLOR, alpha=0.25, linewidth=0)
+        ax_ari.set_ylim(-0.1, 1.05)
+        ax_ari.set_title(f"{title}: ARI", fontsize=10)
+        ax_ari.set_ylabel("ARI")
+        ax_ari.text(
+            0.98,
+            0.95,
+            format_params_text(summary, n_valid, len(params_runs)),
+            transform=ax_ari.transAxes,
+            ha="right",
+            va="top",
+            fontsize=8,
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="white", edgecolor="gray"),
+        )
+
+        for runs, label, style in (
+            (tf_runs, "learning", "-"),
+            (tp_runs, "prediction", "--"),
+        ):
+            median, q1, q3 = aggregate_curves_medianiqr(runs)
+            ax_time.plot(
+                batches,
+                median,
+                color=FOCUS_COLOR,
+                linestyle=style,
+                linewidth=1.5,
+                label=label,
+            )
+            ax_time.fill_between(
+                batches, q1, q3, color=FOCUS_COLOR, alpha=0.15, linewidth=0
+            )
+        ax_time.set_yscale("log")
+        ax_time.set_title(f"{title}: time per batch [ms]", fontsize=10)
+        ax_time.legend(fontsize=8, loc="upper right")
+    for ax in axes[-1]:
+        ax.set_xlabel("Batch")
+    plt.tight_layout()
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    fig.savefig(path, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+
+
 # --------------------------------------------------------------------------
 # Main
 # --------------------------------------------------------------------------
@@ -254,7 +331,8 @@ def main():
             f"[{stage}] {len(ari_runs)} runs loaded ({n_valid} valid) — plots written."
         )
 
-    print(f"Done. Analysis plots written to {PLOTS_DIR}/")
+    plot_pipeline()
+    print(f"Done. Analysis plots written to {PLOTS_DIR}/ and {THESIS_FIGURE}")
 
 
 if __name__ == "__main__":
