@@ -342,24 +342,45 @@ def _legend_entries(axes):
 
 def _save(fig, axes, name, columns_of_legend=4, directory=ARTIFACT_DIR):
     handles, labels = _legend_entries(axes)
+    plt.tight_layout()
     fig.legend(
         handles,
         labels,
-        loc="upper center",
+        loc="lower center",
         ncol=columns_of_legend,
-        bbox_to_anchor=(0.5, 1.12),
+        bbox_to_anchor=(0.5, 1.0),
     )
-    plt.tight_layout()
     out = directory / "plots" / name
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=300, bbox_inches="tight")
     plt.close(fig)
 
 
-def dimension_figure(results, models):
-    """Overall and Steady-State ARI against the dimension of the data."""
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4), sharey=True)
-    for ax, metric in zip(axes, analysis.QUALITY_METRICS):
+def quality_figure(results, out, models, runs):
+    """ARI along the stream in the lowest and the highest dimensions of the data,
+    and the Overall and Steady-State ARI against the dimension."""
+    fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+    for ax, dataset in zip(axes[0], ("SCL-2", "SCL-64")):
+        for model in models:
+            values = np.vstack(
+                [
+                    pd.read_csv(batches_file(out, dataset, model, run))[
+                        "ari"
+                    ].to_numpy()
+                    for run in runs
+                ]
+            )
+            _bands(
+                ax,
+                (np.arange(values.shape[1]) + 1) * BATCH_SIZE,
+                values,
+                model,
+                models[0],
+            )
+        ax.set_xlabel("Samples of the evaluation segment")
+        ax.set_ylabel("ARI")
+        ax.set_title(f"Along the stream, {dataset.split('-')[1]} dimensions")
+    for ax, metric in zip(axes[1], analysis.QUALITY_METRICS):
         for model in models:
             of_model = results[results.model == model]
             values = np.column_stack(
@@ -372,9 +393,9 @@ def dimension_figure(results, models):
         ax.set_xscale("log", base=2)
         ax.set_xticks(SCALABILITY_DIMENSIONS, [str(d) for d in SCALABILITY_DIMENSIONS])
         ax.set_xlabel("Dimension")
-        ax.set_title(TITLES[metric], fontsize=10)
-    axes[0].set_ylabel("ARI")
-    _save(fig, axes, "dimension_scalability.png")
+        ax.set_ylabel("ARI")
+        ax.set_title(TITLES[metric])
+    _save(fig, axes, "scalability_quality.png")
 
 
 def cost_figure(timing, memory, results, models):
@@ -406,33 +427,6 @@ def cost_figure(timing, memory, results, models):
     _save(fig, axes, "cost_scalability.png")
 
 
-def stream_figure(out, models, runs):
-    """ARI along the stream in the lowest and the highest dimensions of the data."""
-    datasets = ("SCL-2", "SCL-64")
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4), sharey=True)
-    for ax, dataset in zip(axes, datasets):
-        for model in models:
-            values = np.vstack(
-                [
-                    pd.read_csv(batches_file(out, dataset, model, run))[
-                        "ari"
-                    ].to_numpy()
-                    for run in runs
-                ]
-            )
-            _bands(
-                ax,
-                (np.arange(values.shape[1]) + 1) * BATCH_SIZE,
-                values,
-                model,
-                models[0],
-            )
-        ax.set_xlabel("Samples of the evaluation segment")
-        ax.set_title(f"Dimension {dataset.split('-')[1]}", fontsize=10)
-    axes[0].set_ylabel("ARI")
-    _save(fig, axes, "stream_scalability.png")
-
-
 def main():
     results = analysis.run_level(analysis.MAIN)
     models = sys.argv[1:] or [m for m in MODELS if m in set(results.model)]
@@ -446,8 +440,7 @@ def main():
     ranges = analysis.search_ranges(analysis.MAIN, tuple(runs))
     range_table(ranges, len(runs))
     ends_table(at_the_ends(complete, ranges), models, len(runs))
-    dimension_figure(complete, models)
-    stream_figure(analysis.MAIN, models, runs)
+    quality_figure(complete, analysis.MAIN, models, runs)
 
     levels = cost_levels(models)
     if levels is not None:

@@ -77,7 +77,7 @@ We analyse a dataset over the runs that every model finished on it. We leave out
 
 \input{RealData/artifacts/failures.tex}
 
-\BIRCH is the only model that fails often, \cref{tab:real_failures}. It fails in most runs of \InsectsAbrupt, \InsectsIncremental and \GasDrift, which leaves it out of them, and in about half of the runs of \KDDCup and a third of those of \InsectsReoccurring, which leaves their comparisons with fewer runs. Every failure is a summary that exceeded the limit. The tree of cluster features of \BIRCH does not fade, unlike the microclusters of \DenStream and \DBSTREAM, \cref{sec:mod_models}, and it already held over a thousand subclusters in the scalability streams of \cref{chap:modernization}, \cref{tab:mod_summary_size_scalability}. \MicroTEDAClusPlus fails in a single run.
+\BIRCH is the only model that fails often, \cref{tab:real_failures}. It fails in most runs of \InsectsAbrupt, \InsectsIncremental and \GasDrift, which leaves it out of them, and in about half of the runs of \KDDCup and a third of those of \InsectsReoccurring, which leaves their comparisons with fewer runs. Every failure is a summary that exceeded the limit. The tree of cluster features of \BIRCH does not fade, unlike the microclusters of \DenStream and \DBSTREAM, \cref{sec:mod_models}, and it already held over a thousand subclusters in the scalability streams of \cref{chap:modernization} (\cref{fig:mod_scalability_cost}). \MicroTEDAClusPlus fails in a single run.
 
 \subsection{Clustering Quality}
 \label{subsec:real_quality}
