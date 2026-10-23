@@ -538,7 +538,7 @@ def m_tuned_table(runs=DEVELOPMENT_RUNS):
 
 
 def tuning_noise_table(runs=DEVELOPMENT_RUNS):
-    """Two searches of one same algorithm: the improved and final models in two dimensions."""
+    """Two searches of a single algorithm: the improved and final models in two dimensions."""
     first = analysis.run_level(IMPROVED, runs).set_index(["dataset", "run"])
     second = analysis.run_level(FINAL, runs).set_index(["dataset", "run"])
     parameters = [c for c in first.columns if c.startswith("param:")]
@@ -554,7 +554,7 @@ def tuning_noise_table(runs=DEVELOPMENT_RUNS):
     panel_table(
         "refinements",
         "tuning_noise",
-        r"Two hyperparameter searches of one same algorithm with the same seeds, those of "
+        r"Two hyperparameter searches of a single algorithm with the same seeds, those of "
         r"\modelname{improved} and \modelname{improved + no-penalty} in the two-dimensional datasets: "
         f"number of runs, of {len(runs)}.",
         [
