@@ -1,12 +1,13 @@
 \begin{table}[htbp]
 \centering
-\caption{Cost of the original implementation and of the accepted models on the evaluation segment, each with the hyperparameters tuned for it: median and quartiles over the 32 development runs. Each task is executed alone, and its time is the minimum of three executions, which differ by 0.8\% in the median.}
-\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\small
+\caption[Cost of the original implementation and of the accepted models]{Cost of the original implementation and of the accepted models on the evaluation segment, each with its own tuned hyperparameters: median and quartiles over the 32 development runs. Each task runs alone, and its time is the smallest of three executions, which differ by 0.8\% in the median.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
 \begin{tabular}{l c c c c c }
 \toprule
-Dataset & \modelname{original} & \modelname{vectorized} & \modelname{corrected} & \modelname{improved} & \modelname{MicroTEDAClus+} \\
+Dataset & \variant{original} & \variant{vectorized} & \variant{corrected} & \variant{improved} & \modelname{MicroTEDAClus+} \\
 \midrule
-\multicolumn{6}{l}{\textit{Fitting time [ms]}} \\
+\multicolumn{6}{l}{\textit{Learning time [ms]}} \\
 B1 & 552 (271, 3404) & 38.0 (27.6, 65.3) & 29.1 (25.6, 66.3) & 144 (56.4, 233) & 152 (74.4, 221) \\
 B2 & 981 (160, 1426) & 36.8 (21.9, 41.0) & 34.6 (22.8, 40.2) & 34.3 (30.8, 38.7) & 32.5 (29.5, 37.1) \\
 RBF & 16002 (4426, 32407) & 243 (92.0, 502) & 420 (133, 679) & 441 (176, 797) & 500 (182, 798) \\
@@ -26,7 +27,7 @@ DS4 & 620 (409, 1092) & 12.4 (11.8, 13.9) & 12.9 (12.2, 14.2) & 13.1 (12.8, 27.4
 S32 & 105 (76.9, 339) & 6.3 (5.9, 8.3) & 6.4 (6.1, 7.3) & 7.8 (7.4, 8.1) & 6.4 (6.4, 6.8) \\
 S64 & 114 (86.5, 176) & 7.1 (6.5, 8.3) & 7.9 (6.9, 9.7) & 8.1 (7.5, 8.7) & 6.7 (6.6, 6.7) \\
 \midrule
-\multicolumn{6}{l}{\textit{Total time relative to the \modelname{vectorized} model, per run}} \\
+\multicolumn{6}{l}{\textit{Total time relative to the \variant{vectorized} model, per run}} \\
 B1 & 13.56 (8.32, 48.93) & 1.00 (1.00, 1.00) & 0.94 (0.70, 1.08) & 2.02 (1.24, 4.80) & 2.67 (1.33, 5.11) \\
 B2 & 25.43 (6.91, 32.56) & 1.00 (1.00, 1.00) & 0.98 (0.69, 1.43) & 1.04 (0.87, 1.34) & 0.95 (0.83, 1.34) \\
 RBF & 57.53 (32.46, 75.57) & 1.00 (1.00, 1.00) & 1.19 (0.85, 2.05) & 1.42 (0.59, 6.31) & 1.41 (0.60, 6.34) \\

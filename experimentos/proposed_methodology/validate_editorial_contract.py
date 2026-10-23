@@ -18,7 +18,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
 THESIS_DIR = os.path.join(REPOSITORY_ROOT, "monografia")
 
-EXPECTED_TABLES = ("quality", "cost", "microclusters")
+EXPECTED_TABLES = ("quality", "cost", "microclusters", "scalability")
 
 
 def fail(message: str) -> None:

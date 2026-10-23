@@ -1,12 +1,13 @@
 \begin{table}[htbp]
 \centering
-\caption{Microcluster count and memory footprint of the accepted models: median and quartiles over the 94 validation runs. Each model is compared with the model to its left.}
-\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\small
+\caption[Microcluster count and memory footprint of the accepted models]{Microcluster count and memory footprint of the accepted models: median and quartiles over the validation runs. Each model is compared with the model to its left.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
 \begin{tabular}{l c c c c }
 \toprule
-Dataset & \modelname{vectorized} & \modelname{corrected} & \modelname{improved} & \modelname{MicroTEDAClus+} \\
+Dataset & \variant{vectorized} & \variant{corrected} & \variant{improved} & \modelname{MicroTEDAClus+} \\
 \midrule
-\multicolumn{5}{l}{\textit{Maximum Microcluster Count}} \\
+\multicolumn{5}{l}{\textit{Maximum microcluster count}} \\
 B1 & 56 (18, 161) & 57 (19, 158) & \textcolor{red}{212 (60, 424)} & 241 (67, 528) \\
 B2 & 44 (15, 55) & 44 (23, 59) & 31 (21, 48) & 30 (21, 44) \\
 RBF & 226 (106, 620) & 178 (86, 493) & 206 (74, 368) & 210 (74, 378) \\
@@ -16,7 +17,7 @@ DS4 & 120 (112, 133) & 123 (115, 131) & \textbf{40 (38, 42)} & 40 (38, 42) \\
 S32 & 34 (20, 70) & 30 (19, 120) & \textbf{13 (10, 17)} & \textcolor{red}{26 (13, 56)} \\
 S64 & 27 (23, 40) & \textcolor{red}{56 (29, 112)} & \textbf{11 (9, 14)} & \textcolor{red}{18 (10, 26)} \\
 \midrule
-\multicolumn{5}{l}{\textit{Steady-State Microcluster Count}} \\
+\multicolumn{5}{l}{\textit{Steady-state microcluster count}} \\
 B1 & 18 (5, 106) & 20 (5, 87) & \textcolor{red}{210 (54, 414)} & 231 (63, 515) \\
 B2 & 28 (4, 50) & 28 (8, 50) & 26 (13, 42) & 25 (13, 38) \\
 RBF & 108 (26, 512) & 106 (14, 430) & 188 (60, 353) & 188 (60, 374) \\
@@ -26,7 +27,7 @@ DS4 & 120 (112, 133) & 123 (114, 131) & \textbf{30 (29, 34)} & 30 (29, 34) \\
 S32 & 7 (5, 25) & 8 (4, 113) & 12 (9, 15) & 11 (8, 18) \\
 S64 & 5 (4, 8) & \textcolor{red}{18 (6, 69)} & \textbf{9 (7, 12)} & 8 (6, 12) \\
 \midrule
-\multicolumn{5}{l}{\textit{Maximum Memory Footprint [kB]}} \\
+\multicolumn{5}{l}{\textit{Maximum memory footprint [KiB]}} \\
 B1 & 25 (23, 45) & 25 (23, 46) & \textcolor{red}{56 (24, 93)} & 54 (24, 94) \\
 B2 & 24 (23, 25) & 24 (23, 25) & 24 (23, 25) & 24 (23, 24) \\
 RBF & 55 (42, 122) & 52 (29, 102) & 54 (27, 94) & 58 (27, 95) \\
@@ -36,7 +37,7 @@ DS4 & 53 (49, 58) & 54 (50, 57) & \textbf{25 (24, 25)} & 24 (24, 25) \\
 S32 & 77 (75, 89) & 76 (74, 137) & \textbf{75 (73, 76)} & \textbf{72 (71, 73)} \\
 S64 & 134 (131, 137) & \textcolor{red}{146 (133, 244)} & \textbf{126 (124, 128)} & \textbf{123 (122, 123)} \\
 \midrule
-\multicolumn{5}{l}{\textit{Steady-State Memory Footprint [kB]}} \\
+\multicolumn{5}{l}{\textit{Steady-state memory footprint [KiB]}} \\
 B1 & 23 (23, 40) & 24 (23, 40) & \textcolor{red}{53 (24, 91)} & 54 (24, 93) \\
 B2 & 23 (23, 24) & 23 (23, 24) & 23 (23, 24) & 23 (23, 24) \\
 RBF & 48 (38, 109) & 44 (28, 79) & 54 (27, 84) & 56 (27, 90) \\

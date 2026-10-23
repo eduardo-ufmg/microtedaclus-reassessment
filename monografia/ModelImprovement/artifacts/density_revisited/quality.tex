@@ -1,30 +1,21 @@
 \begin{table}[htbp]
 \centering
-\caption{Order-independent densities in \MicroTEDAClusPlus{}: ARI metrics. The last column gives the outcome of the decision rule: improvement ($+$), regression ($-$), both ($\pm$) or neither ($=$).}
-\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\small
+\caption[Order-independent densities in \MicroTEDAClusPlus{}: clustering quality]{Order-independent densities in \MicroTEDAClusPlus{}: clustering quality, medians over the development runs.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
 \begin{tabular}{l c c c c c c c c c}
 \toprule
 Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 & Rule \\
 \midrule
 \multicolumn{10}{l}{\textit{Overall ARI}} \\
 \modelname{MicroTEDAClus+} & 0.864 & 0.696 & 0.508 & 0.454 & 0.304 & 0.255 & 1.000 & 1.000 &  \\
-\modelname{peak-density} & 0.852 & 0.625 & 0.508 & 0.577 & \textcolor{red}{0.208} & 0.359 & 1.000 & 1.000 & $-$ \\
-\modelname{volume-density} & \textcolor{red}{0.589} & \textcolor{red}{0.631} & 0.435 & \textcolor{red}{0.312} & \textcolor{red}{0.156} & 0.229 & 1.000 & 1.000 & $-$ \\
+\variant{peak-density} & 0.852 & 0.625 & 0.508 & 0.577 & \textcolor{red}{0.208} & 0.359 & 1.000 & 1.000 & $-$ \\
+\variant{volume-density} & \textcolor{red}{0.589} & \textcolor{red}{0.631} & 0.435 & \textcolor{red}{0.312} & \textcolor{red}{0.156} & 0.229 & 1.000 & 1.000 & $-$ \\
 \midrule
 \multicolumn{10}{l}{\textit{Steady-State ARI}} \\
 \modelname{MicroTEDAClus+} & 0.783 & 0.913 & 0.395 & 0.461 & 0.338 & 0.320 & 1.000 & 1.000 &  \\
-\modelname{peak-density} & 0.742 & 0.828 & 0.347 & 0.558 & \textcolor{red}{0.000} & 0.345 & 1.000 & 1.000 & $-$ \\
-\modelname{volume-density} & 0.592 & 0.716 & 0.333 & \textcolor{red}{0.326} & \textcolor{red}{0.120} & \textcolor{red}{0.195} & 1.000 & 1.000 & $-$ \\
-\midrule
-\multicolumn{10}{l}{\textit{ARI at the Fifth Batch}} \\
-\modelname{MicroTEDAClus+} & 0.976 & 0.585 & 0.629 & 0.436 & 0.296 & 0.231 & 1.000 & 1.000 &  \\
-\modelname{peak-density} & 0.980 & 0.603 & 0.625 & 0.514 & \textcolor{red}{0.115} & \textcolor{red}{0.181} & 1.000 & 1.000 &  \\
-\modelname{volume-density} & \textcolor{red}{0.855} & 0.579 & 0.574 & 0.398 & \textcolor{red}{0.136} & 0.255 & 1.000 & 1.000 &  \\
-\midrule
-\multicolumn{10}{l}{\textit{Maximum ARI Drop}} \\
-\modelname{MicroTEDAClus+} & 0.217 & 0.072 & 0.484 & 0.164 & 0.116 & 0.186 & 0.000 & 0.000 &  \\
-\modelname{peak-density} & 0.258 & 0.128 & 0.488 & 0.229 & \textcolor{red}{0.365} & 0.173 & 0.000 & 0.000 &  \\
-\modelname{volume-density} & 0.382 & 0.178 & 0.536 & 0.236 & \textcolor{red}{0.206} & 0.184 & 0.000 & 0.000 &  \\
+\variant{peak-density} & 0.742 & 0.828 & 0.347 & 0.558 & \textcolor{red}{0.000} & 0.345 & 1.000 & 1.000 & $-$ \\
+\variant{volume-density} & 0.592 & 0.716 & 0.333 & \textcolor{red}{0.326} & \textcolor{red}{0.120} & \textcolor{red}{0.195} & 1.000 & 1.000 & $-$ \\
 \bottomrule
 \end{tabular}
 }

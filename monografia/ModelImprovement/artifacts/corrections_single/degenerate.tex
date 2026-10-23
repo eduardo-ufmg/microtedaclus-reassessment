@@ -1,20 +1,21 @@
 \begin{table}[htbp]
 \centering
-\caption{Corrections, one at a time: batches of a run in which a single cluster is predicted, as the median over the runs of their share after the first batch, and runs, of 32, whose penultimate batch has a single predicted cluster.}
-\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\small
+\caption[Corrections, one at a time: predictions of a single cluster]{Corrections, one at a time: predictions of a single cluster. Median share of the batches after the first, and number of the 32 development runs whose penultimate batch holds a single cluster.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
 \begin{tabular}{l c c c c c c c c }
 \toprule
 Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
 \midrule
 \multicolumn{9}{l}{\textit{Batches with a single predicted cluster [\%]}} \\
-\modelname{vectorized} & 55 & 0 & 30 & 2 & 0 & 4 & 15 & 12 \\
-\modelname{no-penalty} & 55 & 0 & 30 & 2 & 0 & 5 & 0 & 0 \\
-\modelname{nearest} & 44 & 0 & 0 & 0 & 0 & 5 & 0 & 0 \\
+\variant{vectorized} & 55 & 0 & 30 & 2 & 0 & 4 & 15 & 12 \\
+\variant{no-penalty} & 55 & 0 & 30 & 2 & 0 & 5 & 0 & 0 \\
+\variant{nearest} & 44 & 0 & 0 & 0 & 0 & 5 & 0 & 0 \\
 \midrule
 \multicolumn{9}{l}{\textit{Runs that end with a single predicted cluster}} \\
-\modelname{vectorized} & 23 & 12 & 21 & 5 & 0 & 0 & 17 & 18 \\
-\modelname{no-penalty} & 24 & 9 & 22 & 5 & 0 & 0 & 0 & 0 \\
-\modelname{nearest} & 24 & 12 & 8 & 5 & 0 & 0 & 0 & 0 \\
+\variant{vectorized} & 23 & 12 & 21 & 5 & 0 & 0 & 17 & 18 \\
+\variant{no-penalty} & 24 & 9 & 22 & 5 & 0 & 0 & 0 & 0 \\
+\variant{nearest} & 24 & 12 & 8 & 5 & 0 & 0 & 0 & 0 \\
 \bottomrule
 \end{tabular}
 }

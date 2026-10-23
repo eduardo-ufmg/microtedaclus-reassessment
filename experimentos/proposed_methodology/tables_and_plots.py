@@ -70,15 +70,17 @@ def model_label(model: str) -> str:
     return f"\\modelname{{{model_display_name(model)}}}"
 
 
-def statistics(comparison, metric: str) -> pd.DataFrame:
-    return pd.read_csv(os.path.join(DIR_STATS_BASE, comparison.name, f"{metric}.csv"))
+def statistics(comparison, metric: str, prefix: str = "") -> pd.DataFrame:
+    return pd.read_csv(
+        os.path.join(DIR_STATS_BASE, comparison.name, f"{prefix}{metric}.csv")
+    )
 
 
-def panels(comparison, metrics) -> list:
+def panels(comparison, metrics, prefix: str = "") -> list:
     """A panel per metric: the model in focus, its count of verdicts, then the other models."""
     result = []
     for metric in metrics:
-        stats = statistics(comparison, metric)
+        stats = statistics(comparison, metric, prefix)
         focus, *others = effective_models(comparison, metric)
         text = shown(metric)
         of_focus = stats[stats.model == focus].set_index("dataset")
@@ -141,6 +143,19 @@ def generate_tables(comparison, out_dir: str):
             panels(comparison, metrics),
             short=title,
         )
+    dimensions = statistics(comparison, QUALITY_METRICS[0], "scalability_")["dataset"]
+    title = f"Clustering quality of {subject} in the scalability streams"
+    panel_table(
+        Path(out_dir) / "scalability.tex",
+        f"{title}: medians over the runs of the main experiment.",
+        f"tab:{comparison.label}_scalability",
+        {
+            dataset: f"S{dataset.removeprefix('SCL-')}"
+            for dataset in sorted(dimensions.unique(), key=lambda d: int(d[4:]))
+        },
+        panels(comparison, QUALITY_METRICS, "scalability_"),
+        short=title,
+    )
 
 
 def draw(ax, frame: pd.DataFrame, metric: str, x: str, comparison, scale=1.0):

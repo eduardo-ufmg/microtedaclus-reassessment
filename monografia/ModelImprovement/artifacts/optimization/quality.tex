@@ -1,26 +1,19 @@
 \begin{table}[htbp]
 \centering
-\caption{Implementation optimization: ARI metrics. The last column gives the outcome of the decision rule: improvement ($+$), regression ($-$), both ($\pm$) or neither ($=$).}
-\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\small
+\caption[Implementation optimization: clustering quality]{Implementation optimization: clustering quality, medians over the development runs.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
 \begin{tabular}{l c c c c c c c c c}
 \toprule
 Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 & Rule \\
 \midrule
 \multicolumn{10}{l}{\textit{Overall ARI}} \\
-\modelname{original} & 0.000 & 0.532 & 0.335 & 0.457 & 0.206 & 0.220 & 0.869 & 0.857 &  \\
-\modelname{vectorized} & 0.000 & 0.581 & 0.328 & 0.520 & \textbf{0.230} & 0.235 & 0.851 & 0.859 & $+$ \\
+\variant{original} & 0.000 & 0.532 & 0.335 & 0.457 & 0.206 & 0.220 & 0.869 & 0.857 &  \\
+\variant{vectorized} & 0.000 & 0.581 & 0.328 & 0.520 & \textbf{0.230} & 0.235 & 0.851 & 0.859 & $+$ \\
 \midrule
 \multicolumn{10}{l}{\textit{Steady-State ARI}} \\
-\modelname{original} & 0.000 & 0.480 & 0.000 & 0.400 & 0.171 & 0.171 & 0.000 & 0.000 &  \\
-\modelname{vectorized} & 0.000 & 0.541 & 0.000 & 0.458 & 0.176 & 0.209 & 0.000 & 0.000 & $+$ \\
-\midrule
-\multicolumn{10}{l}{\textit{ARI at the Fifth Batch}} \\
-\modelname{original} & 0.844 & 0.546 & 0.573 & 0.503 & 0.239 & 0.138 & 0.913 & 0.865 &  \\
-\modelname{vectorized} & 0.834 & 0.543 & 0.579 & 0.566 & 0.218 & 0.102 & 0.928 & 0.907 &  \\
-\midrule
-\multicolumn{10}{l}{\textit{Maximum ARI Drop}} \\
-\modelname{original} & 0.908 & 0.295 & 0.690 & 0.338 & 0.250 & 0.245 & 0.888 & 1.000 &  \\
-\modelname{vectorized} & 0.907 & 0.434 & 0.807 & 0.322 & 0.250 & 0.234 & 0.982 & 1.000 &  \\
+\variant{original} & 0.000 & 0.480 & 0.000 & 0.400 & 0.171 & 0.171 & 0.000 & 0.000 &  \\
+\variant{vectorized} & 0.000 & 0.541 & 0.000 & 0.458 & 0.176 & 0.209 & 0.000 & 0.000 & $+$ \\
 \bottomrule
 \end{tabular}
 }

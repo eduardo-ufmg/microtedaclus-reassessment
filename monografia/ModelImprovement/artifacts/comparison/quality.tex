@@ -1,0 +1,35 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption[Clustering quality of \modelname{MicroTEDAClus+}, \modelname{MicroTEDAClus} and the benchmark models]{Clustering quality of \modelname{MicroTEDAClus+}, \modelname{MicroTEDAClus} and the benchmark models: medians over the runs of the main experiment.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
+\begin{tabular}{l c c c c c c }
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 \\
+\midrule
+\multicolumn{7}{l}{\textit{Overall ARI}} \\
+\modelname{MicroTEDAClus+} & 0.894 & 0.634 & 0.491 & 0.496 & 0.288 & 0.296 \\
+Better/same/worse & 7/0/0 & 7/0/0 & 6/1/0 & 4/1/2 & 5/0/2 & 5/1/1 \\
+\modelname{MicroTEDAClus} & \textbf{0.035} & \textbf{0.564} & \textbf{0.359} & 0.492 & \textbf{0.215} & \textbf{0.202} \\
+\modelname{DenStream} & \textbf{0.665} & \textbf{0.402} & \textbf{0.360} & \textbf{0.383} & \textbf{0.174} & \textbf{0.184} \\
+\modelname{CluStream} & \textbf{0.096} & \textbf{0.566} & \textbf{0.170} & \textcolor{red}{0.573} & \textcolor{red}{0.324} & \textcolor{red}{0.319} \\
+\modelname{StreamKM} & \textbf{0.183} & \textbf{0.498} & \textbf{0.371} & \textcolor{red}{0.696} & \textcolor{red}{0.330} & 0.327 \\
+\modelname{AutoCloud} & \textbf{0.043} & \textbf{0.001} & \textbf{0.051} & \textbf{0.076} & \textbf{0.023} & \textbf{0.030} \\
+\modelname{CEDAS} & \textbf{0.252} & \textbf{0.000} & \textbf{0.178} & \textbf{0.000} & \textbf{0.000} & \textbf{0.000} \\
+\modelname{TEDACloud} & \textbf{0.827} & \textbf{0.509} & 0.495 & \textbf{0.360} & \textbf{0.040} & \textbf{0.125} \\
+\midrule
+\multicolumn{7}{l}{\textit{Steady-State ARI}} \\
+\modelname{MicroTEDAClus+} & 0.869 & 0.842 & 0.495 & 0.500 & 0.300 & 0.316 \\
+Better/same/worse & 6/1/0 & 6/1/0 & 4/3/0 & 5/0/2 & 5/0/2 & 4/3/0 \\
+\modelname{MicroTEDAClus} & \textbf{0.000} & \textbf{0.524} & \textbf{0.000} & \textbf{0.436} & \textbf{0.126} & \textbf{0.124} \\
+\modelname{DenStream} & \textbf{0.822} & \textbf{0.567} & 0.340 & \textbf{0.405} & \textbf{0.196} & 0.274 \\
+\modelname{CluStream} & \textbf{0.174} & \textbf{0.599} & \textbf{0.194} & \textcolor{red}{0.589} & \textcolor{red}{0.338} & 0.320 \\
+\modelname{StreamKM} & \textbf{0.164} & 0.860 & 0.451 & \textcolor{red}{0.569} & \textcolor{red}{0.341} & 0.301 \\
+\modelname{AutoCloud} & \textbf{0.020} & \textbf{0.135} & \textbf{0.040} & \textbf{0.052} & \textbf{0.073} & \textbf{0.070} \\
+\modelname{CEDAS} & \textbf{0.211} & \textbf{0.000} & \textbf{0.142} & \textbf{0.000} & \textbf{0.000} & \textbf{0.000} \\
+\modelname{TEDACloud} & 0.760 & \textbf{0.518} & 0.541 & \textbf{0.366} & \textbf{0.117} & \textbf{0.091} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_comparison_quality}
+\end{table}

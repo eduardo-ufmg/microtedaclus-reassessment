@@ -1,42 +1,27 @@
 \begin{table}[htbp]
 \centering
-\caption{Combined corrections: ARI metrics. The last column gives the outcome of the decision rule: improvement ($+$), regression ($-$), both ($\pm$) or neither ($=$).}
-\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\small
+\caption[Combined corrections: clustering quality]{Combined corrections: clustering quality, medians over the development runs.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
 \begin{tabular}{l c c c c c c c c c}
 \toprule
 Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 & Rule \\
 \midrule
 \multicolumn{10}{l}{\textit{Overall ARI}} \\
-\modelname{nearest} & 0.037 & 0.578 & 0.498 & 0.599 & 0.239 & 0.242 & 0.964 & 0.856 &  \\
-\modelname{nearest + peak-density} & 0.061 & 0.603 & 0.468 & 0.605 & \textcolor{red}{0.220} & 0.270 & 0.897 & 0.857 & $-$ \\
-\modelname{nearest + peak-density + mature-mean} & 0.093 & 0.609 & 0.399 & \textcolor{red}{0.512} & 0.222 & 0.254 & 0.875 & 0.857 & $-$ \\
-\modelname{nearest + no-penalty} & 0.041 & 0.611 & 0.504 & 0.589 & 0.238 & 0.241 & \textcolor{red}{0.859} & 0.859 & $-$ \\
-\modelname{nearest + peak-density + no-penalty} & 0.055 & 0.597 & 0.430 & 0.605 & \textcolor{red}{0.225} & 0.267 & \textcolor{red}{0.860} & 0.859 & $-$ \\
-\modelname{nearest + peak-density + mature-mean + no-penalty} & 0.111 & 0.611 & 0.413 & \textcolor{red}{0.512} & \textcolor{red}{0.219} & 0.255 & \textcolor{red}{0.860} & 0.859 & $-$ \\
+\variant{nearest} & 0.037 & 0.578 & 0.498 & 0.599 & 0.239 & 0.242 & 0.964 & 0.856 &  \\
+\variant{nearest + peak-density} & 0.061 & 0.603 & 0.468 & 0.605 & \textcolor{red}{0.220} & 0.270 & 0.897 & 0.857 & $-$ \\
+\variant{nearest + peak-density + mature-mean} & 0.093 & 0.609 & 0.399 & \textcolor{red}{0.512} & 0.222 & 0.254 & 0.875 & 0.857 & $-$ \\
+\variant{nearest + no-penalty} & 0.041 & 0.611 & 0.504 & 0.589 & 0.238 & 0.241 & \textcolor{red}{0.859} & 0.859 & $-$ \\
+\variant{nearest + peak-density + no-penalty} & 0.055 & 0.597 & 0.430 & 0.605 & \textcolor{red}{0.225} & 0.267 & \textcolor{red}{0.860} & 0.859 & $-$ \\
+\variant{nearest + peak-density + mature-mean + no-penalty} & 0.111 & 0.611 & 0.413 & \textcolor{red}{0.512} & \textcolor{red}{0.219} & 0.255 & \textcolor{red}{0.860} & 0.859 & $-$ \\
 \midrule
 \multicolumn{10}{l}{\textit{Steady-State ARI}} \\
-\modelname{nearest} & 0.000 & 0.680 & 0.180 & 0.593 & 0.185 & 0.201 & 0.897 & 0.848 &  \\
-\modelname{nearest + peak-density} & 0.010 & 0.827 & 0.188 & 0.623 & \textcolor{red}{0.166} & 0.195 & 0.881 & 0.833 & $-$ \\
-\modelname{nearest + peak-density + mature-mean} & 0.000 & 0.756 & 0.017 & 0.499 & \textcolor{red}{0.165} & 0.191 & \textcolor{red}{0.865} & 0.841 & $-$ \\
-\modelname{nearest + no-penalty} & 0.000 & 0.736 & 0.162 & 0.588 & 0.185 & 0.200 & 0.867 & 0.849 & $-$ \\
-\modelname{nearest + peak-density + no-penalty} & 0.010 & 0.750 & 0.188 & 0.623 & \textcolor{red}{0.165} & 0.191 & 0.867 & 0.849 & $-$ \\
-\modelname{nearest + peak-density + mature-mean + no-penalty} & 0.000 & 0.789 & 0.019 & 0.488 & \textcolor{red}{0.153} & 0.188 & 0.867 & 0.849 & $-$ \\
-\midrule
-\multicolumn{10}{l}{\textit{ARI at the Fifth Batch}} \\
-\modelname{nearest} & 0.844 & 0.562 & 0.637 & 0.617 & 0.254 & 0.102 & 0.956 & 0.867 &  \\
-\modelname{nearest + peak-density} & 0.899 & 0.563 & 0.639 & 0.424 & 0.254 & 0.102 & 0.947 & 0.869 &  \\
-\modelname{nearest + peak-density + mature-mean} & 0.855 & 0.564 & 0.627 & 0.426 & 0.254 & 0.102 & 0.905 & 0.881 &  \\
-\modelname{nearest + no-penalty} & 0.875 & 0.564 & 0.594 & 0.558 & 0.254 & 0.102 & \textcolor{red}{0.869} & 0.863 &  \\
-\modelname{nearest + peak-density + no-penalty} & 0.863 & 0.542 & 0.603 & 0.466 & 0.254 & 0.102 & \textcolor{red}{0.869} & 0.863 &  \\
-\modelname{nearest + peak-density + mature-mean + no-penalty} & 0.887 & 0.571 & 0.627 & 0.520 & 0.254 & 0.102 & \textcolor{red}{0.869} & 0.863 &  \\
-\midrule
-\multicolumn{10}{l}{\textit{Maximum ARI Drop}} \\
-\modelname{nearest} & 0.931 & 0.191 & 0.714 & 0.220 & 0.356 & 0.212 & 0.084 & 0.109 &  \\
-\modelname{nearest + peak-density} & 0.938 & 0.140 & 0.714 & 0.194 & 0.373 & 0.254 & 0.115 & 0.114 &  \\
-\modelname{nearest + peak-density + mature-mean} & 0.928 & 0.193 & 0.784 & 0.229 & 0.375 & 0.237 & 0.113 & 0.113 &  \\
-\modelname{nearest + no-penalty} & 0.944 & 0.167 & 0.729 & 0.220 & 0.355 & 0.213 & 0.080 & 0.096 &  \\
-\modelname{nearest + peak-density + no-penalty} & 0.917 & 0.152 & 0.714 & 0.198 & 0.375 & 0.262 & 0.080 & 0.098 &  \\
-\modelname{nearest + peak-density + mature-mean + no-penalty} & 0.921 & 0.172 & 0.784 & 0.209 & 0.379 & \textcolor{red}{0.259} & 0.080 & 0.096 &  \\
+\variant{nearest} & 0.000 & 0.680 & 0.180 & 0.593 & 0.185 & 0.201 & 0.897 & 0.848 &  \\
+\variant{nearest + peak-density} & 0.010 & 0.827 & 0.188 & 0.623 & \textcolor{red}{0.166} & 0.195 & 0.881 & 0.833 & $-$ \\
+\variant{nearest + peak-density + mature-mean} & 0.000 & 0.756 & 0.017 & 0.499 & \textcolor{red}{0.165} & 0.191 & \textcolor{red}{0.865} & 0.841 & $-$ \\
+\variant{nearest + no-penalty} & 0.000 & 0.736 & 0.162 & 0.588 & 0.185 & 0.200 & 0.867 & 0.849 & $-$ \\
+\variant{nearest + peak-density + no-penalty} & 0.010 & 0.750 & 0.188 & 0.623 & \textcolor{red}{0.165} & 0.191 & 0.867 & 0.849 & $-$ \\
+\variant{nearest + peak-density + mature-mean + no-penalty} & 0.000 & 0.789 & 0.019 & 0.488 & \textcolor{red}{0.153} & 0.188 & 0.867 & 0.849 & $-$ \\
 \bottomrule
 \end{tabular}
 }

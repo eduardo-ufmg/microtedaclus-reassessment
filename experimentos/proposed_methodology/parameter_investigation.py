@@ -30,6 +30,10 @@ HYPERPARAMETER_NAMES = {
     "decay": "decay",
     "noise_distance": "noise distance",
 }
+# MicroTEDAClus+ searches its variance limit relative to the variance of the stream.
+MODEL_HYPERPARAMETER_NAMES = {
+    "MicroTEDAClusPlus": {"variance_limit": "relative variance limit"},
+}
 
 
 def format_value(value) -> str:
@@ -67,7 +71,10 @@ def hyperparameter_table(selected: pd.DataFrame, comparison):
     for position, name in enumerate(names):
         parent = rf"\multirow{{{len(names)}}}{{*}}{{{label}}}" if position == 0 else ""
         cells = [median_qcd(of_model.loc[d, name]) for d in datasets]
-        lines.append(" & ".join([parent, HYPERPARAMETER_NAMES[name], *cells]) + r" \\")
+        shown = MODEL_HYPERPARAMETER_NAMES.get(model, {}).get(
+            name, HYPERPARAMETER_NAMES[name]
+        )
+        lines.append(" & ".join([parent, shown, *cells]) + r" \\")
     title = f"Hyperparameters selected for {label}"
     out_dir = os.path.join(
         REPOSITORY_ROOT, "monografia", comparison.chapter, "artifacts", "parameters"

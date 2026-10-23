@@ -1,18 +1,19 @@
 \begin{table}[htbp]
 \centering
-\caption{Search range of the variance limit: limit selected, as the median over the runs, and runs, of 32, whose penultimate batch has a single predicted cluster.}
-\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\small
+\caption[Search range of the variance limit: selected limits]{Search range of the variance limit: limit selected, median over the development runs, and number of the 32 runs whose penultimate batch holds a single predicted cluster.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
 \begin{tabular}{l c c c c c c c c }
 \toprule
 Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
 \midrule
 \multicolumn{9}{l}{\textit{Variance limit selected}} \\
-\modelname{corrected} & 0.0259 & 0.0176 & 0.000993 & 0.0824 & 68.9 & 35.5 & 2.54 & 0.0117 \\
-\modelname{wide-range} & 0.00643 & 0.00527 & 0.000785 & 0.0909 & 2.4e+03 & 1.77e+03 & 3.4 & 0.381 \\
+\variant{corrected} & 0.0259 & 0.0176 & 0.000993 & 0.0824 & 68.9 & 35.5 & 2.54 & 0.0117 \\
+\variant{wide-range} & 0.00643 & 0.00527 & 0.000785 & 0.0909 & 2.4e+03 & 1.77e+03 & 3.4 & 0.381 \\
 \midrule
 \multicolumn{9}{l}{\textit{Runs that end with a single predicted cluster}} \\
-\modelname{corrected} & 24 & 12 & 8 & 5 & 0 & 0 & 0 & 0 \\
-\modelname{wide-range} & 16 & 7 & 8 & 8 & 5 & 19 & 0 & 0 \\
+\variant{corrected} & 24 & 12 & 8 & 5 & 0 & 0 & 0 & 0 \\
+\variant{wide-range} & 16 & 7 & 8 & 8 & 5 & 19 & 0 & 0 \\
 \bottomrule
 \end{tabular}
 }

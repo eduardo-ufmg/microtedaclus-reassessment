@@ -1,26 +1,19 @@
 \begin{table}[htbp]
 \centering
-\caption{Search range of the variance limit: ARI metrics. The last column gives the outcome of the decision rule: improvement ($+$), regression ($-$), both ($\pm$) or neither ($=$).}
-\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\small
+\caption[Search range of the variance limit: clustering quality]{Search range of the variance limit: clustering quality, medians over the development runs.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
 \begin{tabular}{l c c c c c c c c c}
 \toprule
 Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 & Rule \\
 \midrule
 \multicolumn{10}{l}{\textit{Overall ARI}} \\
-\modelname{corrected} & 0.037 & 0.578 & 0.498 & 0.599 & 0.239 & 0.242 & 0.964 & 0.856 &  \\
-\modelname{wide-range} & 0.071 & 0.617 & 0.479 & 0.554 & \textbf{0.376} & \textbf{0.357} & 0.958 & 0.861 & $+$ \\
+\variant{corrected} & 0.037 & 0.578 & 0.498 & 0.599 & 0.239 & 0.242 & 0.964 & 0.856 &  \\
+\variant{wide-range} & 0.071 & 0.617 & 0.479 & 0.554 & \textbf{0.376} & \textbf{0.357} & 0.958 & 0.861 & $+$ \\
 \midrule
 \multicolumn{10}{l}{\textit{Steady-State ARI}} \\
-\modelname{corrected} & 0.000 & 0.680 & 0.180 & 0.593 & 0.185 & 0.201 & 0.897 & 0.848 &  \\
-\modelname{wide-range} & 0.010 & 0.810 & 0.086 & 0.543 & \textbf{0.361} & 0.000 & 0.897 & 0.835 & $+$ \\
-\midrule
-\multicolumn{10}{l}{\textit{ARI at the Fifth Batch}} \\
-\modelname{corrected} & 0.844 & 0.562 & 0.637 & 0.617 & 0.254 & 0.102 & 0.956 & 0.867 &  \\
-\modelname{wide-range} & 0.849 & 0.560 & 0.540 & 0.548 & 0.303 & \textbf{0.210} & 0.964 & 0.881 &  \\
-\midrule
-\multicolumn{10}{l}{\textit{Maximum ARI Drop}} \\
-\modelname{corrected} & 0.931 & 0.191 & 0.714 & 0.220 & 0.356 & 0.212 & 0.084 & 0.109 &  \\
-\modelname{wide-range} & 0.938 & 0.149 & 0.722 & 0.216 & \textbf{0.136} & \textcolor{red}{0.481} & 0.079 & 0.120 &  \\
+\variant{corrected} & 0.000 & 0.680 & 0.180 & 0.593 & 0.185 & 0.201 & 0.897 & 0.848 &  \\
+\variant{wide-range} & 0.010 & 0.810 & 0.086 & 0.543 & \textbf{0.361} & 0.000 & 0.897 & 0.835 & $+$ \\
 \bottomrule
 \end{tabular}
 }

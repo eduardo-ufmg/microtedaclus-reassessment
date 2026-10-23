@@ -1,38 +1,25 @@
 \begin{table}[htbp]
 \centering
-\caption{Refinements of the improved model: ARI metrics. The last column gives the outcome of the decision rule: improvement ($+$), regression ($-$), both ($\pm$) or neither ($=$).}
-\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\small
+\caption[Refinements of the improved model: clustering quality]{Refinements of the improved model: clustering quality, medians over the development runs.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
 \begin{tabular}{l c c c c c c c c c}
 \toprule
 Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 & Rule \\
 \midrule
 \multicolumn{10}{l}{\textit{Overall ARI}} \\
-\modelname{improved} & 0.915 & 0.643 & 0.510 & 0.455 & 0.304 & 0.255 & 0.987 & 0.990 &  \\
-\modelname{improved + no-penalty} & 0.864 & 0.696 & 0.508 & 0.454 & 0.304 & 0.255 & \textbf{1.000} & \textbf{1.000} & $+$ \\
-\modelname{improved + persistent-labels} & 0.887 & 0.657 & 0.524 & 0.536 & 0.311 & 0.283 & 0.990 & 0.991 & $=$ \\
-\modelname{improved + forgetting} & 0.903 & 0.640 & 0.550 & 0.593 & 0.291 & 0.264 & 0.981 & 0.990 & $=$ \\
-\modelname{improved + recency} & 0.890 & 0.582 & 0.506 & 0.476 & \textcolor{red}{0.218} & \textcolor{red}{0.213} & 0.988 & 0.994 & $-$ \\
+\variant{improved} & 0.915 & 0.643 & 0.510 & 0.455 & 0.304 & 0.255 & 0.987 & 0.990 &  \\
+\variant{improved + no-penalty} & 0.864 & 0.696 & 0.508 & 0.454 & 0.304 & 0.255 & \textbf{1.000} & \textbf{1.000} & $+$ \\
+\variant{improved + persistent-labels} & 0.887 & 0.657 & 0.524 & 0.536 & 0.311 & 0.283 & 0.990 & 0.991 & $=$ \\
+\variant{improved + forgetting} & 0.903 & 0.640 & 0.550 & 0.593 & 0.291 & 0.264 & 0.981 & 0.990 & $=$ \\
+\variant{improved + recency} & 0.890 & 0.582 & 0.506 & 0.476 & \textcolor{red}{0.218} & \textcolor{red}{0.213} & 0.988 & 0.994 & $-$ \\
 \midrule
 \multicolumn{10}{l}{\textit{Steady-State ARI}} \\
-\modelname{improved} & 0.865 & 0.859 & 0.395 & 0.451 & 0.338 & 0.320 & 0.983 & 0.982 &  \\
-\modelname{improved + no-penalty} & 0.783 & 0.913 & 0.395 & 0.461 & 0.338 & 0.320 & \textbf{1.000} & \textbf{1.000} & $+$ \\
-\modelname{improved + persistent-labels} & 0.833 & 0.925 & 0.461 & 0.540 & 0.305 & 0.328 & 0.985 & 0.982 & $=$ \\
-\modelname{improved + forgetting} & 0.915 & 0.854 & 0.498 & 0.601 & 0.307 & 0.289 & 0.950 & 0.986 & $=$ \\
-\modelname{improved + recency} & 0.732 & 0.803 & 0.336 & 0.457 & 0.221 & 0.328 & 0.974 & 0.990 & $-$ \\
-\midrule
-\multicolumn{10}{l}{\textit{ARI at the Fifth Batch}} \\
-\modelname{improved} & 0.978 & 0.573 & 0.629 & 0.455 & 0.296 & 0.231 & 0.991 & 0.991 &  \\
-\modelname{improved + no-penalty} & 0.976 & 0.585 & 0.629 & 0.436 & 0.296 & 0.231 & 1.000 & 1.000 &  \\
-\modelname{improved + persistent-labels} & 0.996 & 0.560 & 0.605 & 0.480 & 0.314 & 0.312 & 0.993 & 0.989 &  \\
-\modelname{improved + forgetting} & 0.980 & 0.580 & 0.634 & 0.595 & 0.293 & 0.220 & 0.993 & 0.992 &  \\
-\modelname{improved + recency} & 0.979 & 0.569 & 0.601 & 0.500 & 0.251 & \textbf{0.334} & 0.994 & 0.999 &  \\
-\midrule
-\multicolumn{10}{l}{\textit{Maximum ARI Drop}} \\
-\modelname{improved} & 0.136 & 0.131 & 0.484 & 0.200 & 0.116 & 0.186 & 0.017 & 0.018 &  \\
-\modelname{improved + no-penalty} & 0.217 & 0.072 & 0.484 & 0.164 & 0.116 & 0.186 & \textbf{0.000} & \textbf{0.000} &  \\
-\modelname{improved + persistent-labels} & 0.166 & 0.070 & 0.460 & 0.227 & 0.161 & 0.173 & 0.015 & 0.018 &  \\
-\modelname{improved + forgetting} & 0.084 & 0.096 & 0.427 & 0.241 & 0.139 & 0.143 & 0.049 & 0.014 &  \\
-\modelname{improved + recency} & 0.268 & 0.108 & 0.579 & 0.326 & 0.153 & \textcolor{red}{0.261} & 0.027 & 0.010 &  \\
+\variant{improved} & 0.865 & 0.859 & 0.395 & 0.451 & 0.338 & 0.320 & 0.983 & 0.982 &  \\
+\variant{improved + no-penalty} & 0.783 & 0.913 & 0.395 & 0.461 & 0.338 & 0.320 & \textbf{1.000} & \textbf{1.000} & $+$ \\
+\variant{improved + persistent-labels} & 0.833 & 0.925 & 0.461 & 0.540 & 0.305 & 0.328 & 0.985 & 0.982 & $=$ \\
+\variant{improved + forgetting} & 0.915 & 0.854 & 0.498 & 0.601 & 0.307 & 0.289 & 0.950 & 0.986 & $=$ \\
+\variant{improved + recency} & 0.732 & 0.803 & 0.336 & 0.457 & 0.221 & 0.328 & 0.974 & 0.990 & $-$ \\
 \bottomrule
 \end{tabular}
 }

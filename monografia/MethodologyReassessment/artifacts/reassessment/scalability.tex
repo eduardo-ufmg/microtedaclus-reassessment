@@ -1,0 +1,33 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption[Clustering quality of \modelname{MicroTEDAClus} and the benchmark models in the scalability streams]{Clustering quality of \modelname{MicroTEDAClus} and the benchmark models in the scalability streams: medians over the runs of the main experiment.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
+\begin{tabular}{l c c c c c c c }
+\toprule
+Model & S1 & S2 & S4 & S8 & S16 & S32 & S64 \\
+\midrule
+\multicolumn{8}{l}{\textit{Overall ARI}} \\
+\modelname{MicroTEDAClus} & 0.763 & 0.861 & 0.860 & 0.867 & 0.883 & 0.865 & 0.843 \\
+Better/same/worse & 4/2/0 & 3/3/0 & 2/2/2 & 2/1/3 & 2/1/3 & 2/1/3 & 2/1/3 \\
+\modelname{DenStream} & \textbf{0.000} & \textbf{0.690} & \textbf{0.442} & \textbf{0.426} & \textbf{0.000} & \textbf{0.000} & \textbf{0.000} \\
+\modelname{CluStream} & 0.661 & 0.887 & 0.895 & \textcolor{red}{0.913} & \textcolor{red}{0.953} & \textcolor{red}{0.980} & \textcolor{red}{0.991} \\
+\modelname{StreamKM} & 0.665 & 0.887 & \textcolor{red}{0.927} & \textcolor{red}{0.953} & \textcolor{red}{0.971} & \textcolor{red}{0.983} & \textcolor{red}{0.989} \\
+\modelname{AutoCloud} & \textbf{0.325} & \textbf{0.446} & \textbf{0.405} & \textbf{0.426} & \textbf{0.435} & \textbf{0.443} & \textbf{0.445} \\
+\modelname{CEDAS} & \textbf{0.511} & 0.932 & \textcolor{red}{1.000} & \textcolor{red}{1.000} & \textcolor{red}{1.000} & \textcolor{red}{1.000} & \textcolor{red}{1.000} \\
+\modelname{TEDACloud} & \textbf{0.495} & \textbf{0.536} & 0.565 & 0.924 & 0.567 & 0.503 & 0.586 \\
+\midrule
+\multicolumn{8}{l}{\textit{Steady-State ARI}} \\
+\modelname{MicroTEDAClus} & 0.727 & 0.857 & 0.856 & 0.847 & 0.810 & 0.462 & 0.000 \\
+Better/same/worse & 4/2/0 & 3/2/1 & 2/1/3 & 2/1/3 & 2/1/3 & 2/1/3 & 1/0/5 \\
+\modelname{DenStream} & \textbf{0.000} & \textbf{0.768} & \textbf{0.493} & \textbf{0.454} & \textbf{0.000} & \textbf{0.000} & \textbf{0.000} \\
+\modelname{CluStream} & 0.677 & 0.873 & \textcolor{red}{0.894} & \textcolor{red}{0.916} & \textcolor{red}{0.960} & \textcolor{red}{0.980} & \textcolor{red}{0.991} \\
+\modelname{StreamKM} & 0.621 & \textcolor{red}{0.903} & \textcolor{red}{0.934} & \textcolor{red}{0.957} & \textcolor{red}{0.972} & \textcolor{red}{0.985} & \textcolor{red}{0.990} \\
+\modelname{AutoCloud} & \textbf{0.280} & \textbf{0.419} & \textbf{0.372} & \textbf{0.379} & \textbf{0.421} & \textbf{0.419} & \textcolor{red}{0.433} \\
+\modelname{CEDAS} & \textbf{0.508} & 0.885 & \textcolor{red}{1.000} & \textcolor{red}{1.000} & \textcolor{red}{1.000} & \textcolor{red}{1.000} & \textcolor{red}{1.000} \\
+\modelname{TEDACloud} & \textbf{0.532} & \textbf{0.583} & 0.606 & 0.903 & 0.598 & 0.529 & \textcolor{red}{0.510} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mr_scalability}
+\end{table}

@@ -100,6 +100,22 @@ COMPARISONS = [
         "mr",
         "\\modelname{MicroTEDAClus} and the benchmark models",
     ),
+    Comparison(
+        "comparison",
+        "MicroTEDAClusPlus",
+        (
+            "MicroTEDAClus",
+            "DenStream",
+            "CluStream",
+            "StreamKM",
+            "AutoCloud",
+            "CEDAS",
+            "TEDACloud",
+        ),
+        "ModelImprovement",
+        "mi_comparison",
+        "\\modelname{MicroTEDAClus+}, \\modelname{MicroTEDAClus} and the benchmark models",
+    ),
 ]
 
 METRIC_EXCLUDED_MODELS: dict[str, set[str]] = {

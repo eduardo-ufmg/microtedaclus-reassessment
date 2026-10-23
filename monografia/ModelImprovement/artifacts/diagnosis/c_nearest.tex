@@ -1,7 +1,8 @@
 \begin{table}[htbp]
 \centering
-\caption{Partitions predicted by the \modelname{corrected} model: medians over the runs of the means over the batches of a run. The noise label counts as one cluster. The first batch is predicted before any sample is learned and is labelled as noise in full, which is the noise that a model without a noise label predicts.}
-\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\small
+\caption[Partitions predicted by the \variant{corrected} model]{Partitions predicted by the \variant{corrected} model: medians over the development runs of the means over the batches. The noise label counts as one cluster, and the first batch, predicted before any sample is learned, is labeled as noise in full, the only noise of a model without a noise label.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
 \begin{tabular}{l c c c c c c}
 \toprule
 Dataset & True clusters & Predicted clusters & Homogeneity & Completeness & True noise [\%] & Predicted noise [\%] \\
