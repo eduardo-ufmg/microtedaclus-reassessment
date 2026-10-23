@@ -1,9 +1,9 @@
 """Run-level metrics and statistical comparisons of the experiment.
 
-The metrics and the comparisons are those of the previous experiment, from the
-shared package: the ARI and summary-size metrics of a run, the comparison of
-every model with the best and with the worst of a dataset, and the paired
-comparison of two alternatives over the same runs.
+The metrics and the comparisons come from the shared package: the ARI and
+summary-size metrics of a run, the comparison of a model in focus with each
+other model of a dataset, and the paired comparison of two alternatives over the
+same runs.
 """
 
 import json
@@ -23,7 +23,7 @@ from pfc_shared.metrics import (
     quality_metrics,
     time_metrics,
 )
-from pfc_shared.statistics import METRICS, paired_comparisons, process_metric
+from pfc_shared.statistics import compare_with_focus, paired_comparisons
 
 ROOT = Path(__file__).resolve().parents[1]
 MAIN = ROOT / "results_main"
@@ -32,7 +32,7 @@ REAL = ROOT / "results_real"
 TIMING = ROOT / "results_timing"
 MEMORY = ROOT / "results_memory"
 
-QUALITY_METRICS = ("ari_overall", "ari_steadystate", "ari_fifth", "ari_diff")
+QUALITY_METRICS = ("ari_overall", "ari_steadystate")
 SUMMARY_METRICS = ("mc_max", "mc_steadystate")
 TIME_METRICS = ("time_fit_cum_ms", "time_predict_cum_ms")
 MEMORY_METRICS = ("memory_retained_bytes", "memory_peak_bytes")
@@ -111,32 +111,12 @@ def on_complete_runs(results: pd.DataFrame, models, datasets=DATASETS) -> pd.Dat
     ]
 
 
-def tiers(results: pd.DataFrame, metric: str, models, datasets) -> pd.DataFrame:
-    """Median of every model in every dataset, and whether it is with the best or the worst.
-
-    Columns: dataset, model, median and verdict, which is "better" for a model
-    in the group of the best only, "worse" in that of the worst only, and
-    "same" otherwise.
-    """
-    cells = process_metric(
-        results[results.dataset.isin(datasets)], metric, METRICS[metric], list(models)
+def compared(results: pd.DataFrame, metric: str, focus: str, others, datasets):
+    """The model in focus against each other model in every dataset, as in
+    `pfc_shared.statistics.compare_with_focus`."""
+    return compare_with_focus(
+        results[results.dataset.isin(datasets)], metric, focus, list(others)
     )
-    rows = []
-    for dataset, of_dataset in cells.iterrows():
-        for model, cell in of_dataset.items():
-            if not isinstance(cell, str):  # a model without results on this dataset
-                continue
-            value, _, tags = cell.partition(" [")
-            verdict = {"B]": "better", "W]": "worse"}.get(tags, "same")
-            rows.append(
-                {
-                    "dataset": dataset,
-                    "model": model,
-                    "median": value.split(" (")[0],
-                    "verdict": verdict,
-                }
-            )
-    return pd.DataFrame(rows)
 
 
 def against(control: pd.DataFrame, variant: pd.DataFrame, metric: str) -> pd.DataFrame:

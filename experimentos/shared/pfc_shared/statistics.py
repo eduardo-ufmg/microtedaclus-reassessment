@@ -1,10 +1,12 @@
-"""Statistical analysis: discretization per metric, paired test, effect size and the two comparisons."""
+"""Statistical analysis: discretization per metric, paired test, effect size, and the
+comparisons of a model in focus with each other model and of a variant with its control.
+"""
 
 import warnings
 
 import numpy as np
 import pandas as pd
-from scipy.stats import friedmanchisquare, mannwhitneyu, wilcoxon
+from scipy.stats import mannwhitneyu, wilcoxon
 from statsmodels.stats.multitest import multipletests
 
 ALPHA = 0.05
@@ -80,124 +82,6 @@ def safe_mannwhitney(x: np.ndarray, y: np.ndarray) -> float:
     if np.all(x == x[0]) and np.all(y == x[0]):
         return 1.0
     return float(mannwhitneyu(x, y, alternative="two-sided").pvalue)
-
-
-def process_metric(
-    df: pd.DataFrame, metric: str, config: dict, subset_models: list
-) -> pd.DataFrame:
-    results = []
-    datasets = df["dataset"].unique()
-
-    for dataset in datasets:
-        df_ds = df[df["dataset"] == dataset].pivot(
-            index="run", columns="model", values=metric
-        )
-
-        valid_models = [m for m in subset_models if m in df_ds.columns]
-        if len(valid_models) < 2:
-            continue
-
-        df_ds = df_ds[valid_models].dropna()
-        if df_ds.empty:
-            continue
-
-        data_matrix = config["round"](df_ds.values)
-        df_disc = pd.DataFrame(data_matrix, columns=valid_models, index=df_ds.index)
-
-        medians = df_disc.median()
-        q1s = df_disc.quantile(0.25)
-        q3s = df_disc.quantile(0.75)
-
-        # The references are the models of optimal and pessimal median; among
-        # models that share it, the one of optimal or pessimal mean rank over
-        # the runs, the statistic of the Friedman test.
-        order = pd.DataFrame(
-            {"median": medians, "rank": df_disc.rank(axis=1).mean()}
-        ).sort_values(["median", "rank"])
-        if config["dir"] == "max":
-            best_model, worst_model = order.index[-1], order.index[0]
-        else:
-            best_model, worst_model = order.index[0], order.index[-1]
-
-        # The Friedman test needs at least three models. With two, the pairwise
-        # test below is the whole comparison, so no omnibus test precedes it.
-        is_omnibus_sig = len(valid_models) == 2
-        if not is_omnibus_sig:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                try:
-                    stat, p_friedman = friedmanchisquare(
-                        *[df_disc[m].values for m in valid_models]
-                    )
-                    if p_friedman < ALPHA:
-                        is_omnibus_sig = True
-                except ValueError:
-                    pass
-
-        best_tier = set([best_model])
-        worst_tier = set([worst_model])
-
-        if not is_omnibus_sig:
-            best_tier = set(valid_models)
-            worst_tier = set(valid_models)
-        else:
-            pvals_best = []
-            models_to_test_best = [m for m in valid_models if m != best_model]
-            for m in models_to_test_best:
-                pvals_best.append(
-                    safe_wilcoxon(df_disc[best_model].to_numpy(), df_disc[m].values)
-                )
-
-            pvals_worst = []
-            models_to_test_worst = [m for m in valid_models if m != worst_model]
-            for m in models_to_test_worst:
-                pvals_worst.append(
-                    safe_wilcoxon(df_disc[worst_model].to_numpy(), df_disc[m].values)
-                )
-
-            _, pvals_best_adj, _, _ = multipletests(
-                pvals_best, alpha=ALPHA, method="holm"
-            )
-            _, pvals_worst_adj, _, _ = multipletests(
-                pvals_worst, alpha=ALPHA, method="holm"
-            )
-
-            for m, p_adj in zip(models_to_test_best, pvals_best_adj):
-                d = cliffs_delta(df_disc[best_model].to_numpy(), df_disc[m].values)
-                if p_adj >= ALPHA or abs(d) < CLIFFS_DELTA_THRESHOLD:
-                    best_tier.add(m)
-
-            for m, p_adj in zip(models_to_test_worst, pvals_worst_adj):
-                d = cliffs_delta(df_disc[worst_model].to_numpy(), df_disc[m].values)
-                if p_adj >= ALPHA or abs(d) < CLIFFS_DELTA_THRESHOLD:
-                    worst_tier.add(m)
-
-        row_dict = {"dataset": dataset}
-        fmt = config["fmt"]
-        for m in valid_models:
-            med_val = medians[m]
-            q1_val = q1s[m]
-            q3_val = q3s[m]
-
-            base_str = (
-                f"{fmt.format(med_val)} ({fmt.format(q1_val)}, {fmt.format(q3_val)})"
-            )
-
-            tags = []
-            if m in best_tier:
-                tags.append("B")
-            if m in worst_tier:
-                tags.append("W")
-
-            tag_str = f" [{','.join(tags)}]" if tags else ""
-            row_dict[m] = f"{base_str}{tag_str}"
-
-        results.append(row_dict)
-
-    if not results:
-        return pd.DataFrame()
-
-    return pd.DataFrame(results).set_index("dataset")
 
 
 def compare_with_focus(

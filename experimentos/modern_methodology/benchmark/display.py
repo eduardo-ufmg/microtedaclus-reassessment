@@ -1,4 +1,5 @@
-"""Names, order and colours of datasets and models in tables and figures."""
+"""Names and order of datasets and models in tables and figures; their colours are
+those of `pfc_shared.figures`."""
 
 from benchmark.datasets import SCALABILITY_DIMENSIONS
 
@@ -32,15 +33,6 @@ MODEL_NAMES = {
     "MiniBatchKMeans": "Mini-batch k-means",
     "BICO": "BICO",
     "MicroTEDAClusPlusFinal": "MicroTEDAClus+",
-}
-MODEL_COLORS = {
-    "MicroTEDAClusPlus": "xkcd:red",
-    "DenStream": "xkcd:blue",
-    "DBSTREAM": "xkcd:orange",
-    "BIRCH": "xkcd:purple",
-    "MiniBatchKMeans": "xkcd:brown",
-    "BICO": "xkcd:green",
-    "MicroTEDAClusPlusFinal": "xkcd:red",
 }
 
 

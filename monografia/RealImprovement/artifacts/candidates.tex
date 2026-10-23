@@ -1,31 +1,32 @@
 \begin{table}[htbp]
 \centering
-\caption{The candidates outside the chain of kept changes, each against its control on the development runs: the outcome of the decision rule, improvement ($+$), regression ($-$), both ($\pm$) or neither ($=$); its numbers of significant gains and losses in the Overall ARI of the six datasets and in the Steady-State ARI of the four whose penultimate batch does not hold a single class; the number of datasets in which its median Overall ARI is lower than that of its control, significantly or not; and the numbers of datasets in which its steady-state summary is significantly larger or smaller than that of its control. The covariance was evaluated on eight runs of three datasets.}
-\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%
+\small
+\caption[The candidates outside the chain of kept changes]{The candidates outside the chain of kept changes, each against its control on the development runs: outcome of the decision rule, significant gains and losses, datasets where its median Overall ARI is lower, and datasets where its steady-state summary is significantly larger or smaller. The covariance was evaluated on eight runs of three datasets.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
 \begin{tabular}{l l c c c c c c}
 \toprule
 Candidate & Control & Outcome & Gains & Losses & Lower & Larger & Smaller \\
 \midrule
-\modelname{m-fixed} & \modelname{low-variance} & $-$ & 0 & 7 & 6 & 0 & 6 \\
-\modelname{m-constant} & \modelname{low-variance} & $-$ & 0 & 7 & 6 & 0 & 6 \\
-\modelname{m-sigmoid} & \modelname{low-variance} & $-$ & 0 & 5 & 5 & 0 & 0 \\
-\modelname{m-reparam} & \modelname{low-variance} & $-$ & 0 & 2 & 3 & 0 & 0 \\
-\modelname{m-rate} & \modelname{low-variance} & $-$ & 0 & 2 & 5 & 0 & 0 \\
-\modelname{chi-threshold} & \modelname{low-variance} & $+$ & 1 & 0 & 5 & 0 & 0 \\
-\modelname{diagonal-variance} & \modelname{low-variance} & $-$ & 0 & 5 & 5 & 0 & 2 \\
-\modelname{covariance} & \modelname{low-variance} & $-$ & 0 & 2 & 2 & 0 & 1 \\
-\modelname{volume-density} & \modelname{low-variance} & $\pm$ & 1 & 1 & 4 & 1 & 0 \\
-\modelname{log-density} & \modelname{low-variance} & $-$ & 0 & 6 & 6 & 0 & 2 \\
-\modelname{diagonal-variance + log-density} & \modelname{low-variance} & not run & - & - & - & - & - \\
-\modelname{no-activation} & \modelname{low-variance} & $\pm$ & 2 & 6 & 5 & 4 & 0 \\
-\modelname{mature-mean} & \modelname{low-variance} & $=$ & 0 & 0 & 4 & 1 & 0 \\
-\modelname{recency} & \modelname{low-variance} & $\pm$ & 2 & 3 & 5 & 2 & 0 \\
-\modelname{dimensionality-penalty} & \modelname{low-variance} & $\pm$ & 2 & 4 & 5 & 0 & 6 \\
-\modelname{norm-typicality} & \modelname{low-variance} & $-$ & 0 & 10 & 6 & 0 & 2 \\
-\modelname{local-weights} & \modelname{low-variance} & $-$ & 0 & 9 & 6 & 0 & 0 \\
-\modelname{link-factor} & \modelname{low-variance} & $+$ & 1 & 0 & 4 & 1 & 1 \\
-\modelname{wide-link} & \modelname{low-variance + no-noise} & $\pm$ & 1 & 1 & 3 & 1 & 3 \\
-\modelname{wide-link} & \modelname{low-variance + no-noise + link-factor} & $+$ & 2 & 0 & 5 & 0 & 3 \\
+\variant{m-fixed} & \variant{low-variance} & regresses & 0 & 7 & 6 & 0 & 6 \\
+\variant{m-constant} & \variant{low-variance} & regresses & 0 & 7 & 6 & 0 & 6 \\
+\variant{m-sigmoid} & \variant{low-variance} & regresses & 0 & 5 & 5 & 0 & 0 \\
+\variant{m-reparam} & \variant{low-variance} & regresses & 0 & 2 & 3 & 0 & 0 \\
+\variant{m-rate} & \variant{low-variance} & regresses & 0 & 2 & 5 & 0 & 0 \\
+\variant{chi-threshold} & \variant{low-variance} & improves & 1 & 0 & 5 & 0 & 0 \\
+\variant{diagonal-variance} & \variant{low-variance} & regresses & 0 & 5 & 5 & 0 & 2 \\
+\variant{covariance} & \variant{low-variance} & regresses & 0 & 2 & 2 & 0 & 1 \\
+\variant{volume-density} & \variant{low-variance} & mixed & 1 & 1 & 4 & 1 & 0 \\
+\variant{log-density} & \variant{low-variance} & regresses & 0 & 6 & 6 & 0 & 2 \\
+\variant{diagonal-variance + log-density} & \variant{low-variance} & not run & - & - & - & - & - \\
+\variant{no-activation} & \variant{low-variance} & mixed & 2 & 6 & 5 & 4 & 0 \\
+\variant{mature-mean} & \variant{low-variance} & indistinguishable & 0 & 0 & 4 & 1 & 0 \\
+\variant{recency} & \variant{low-variance} & mixed & 2 & 3 & 5 & 2 & 0 \\
+\variant{dimensionality-penalty} & \variant{low-variance} & mixed & 2 & 4 & 5 & 0 & 6 \\
+\variant{norm-typicality} & \variant{low-variance} & regresses & 0 & 10 & 6 & 0 & 2 \\
+\variant{local-weights} & \variant{low-variance} & regresses & 0 & 9 & 6 & 0 & 0 \\
+\variant{link-factor} & \variant{low-variance} & improves & 1 & 0 & 4 & 1 & 1 \\
+\variant{wide-link} & \variant{low-variance + no-noise} & mixed & 1 & 1 & 3 & 1 & 3 \\
+\variant{wide-link} & \variant{low-variance + no-noise + link-factor} & improves & 2 & 0 & 5 & 0 & 3 \\
 \bottomrule
 \end{tabular}
 }

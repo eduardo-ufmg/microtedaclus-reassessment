@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 
 from benchmark import analysis, real_data
-from benchmark.artifacts import GROUPS, _bands, _save, tier_panels
+from benchmark.artifacts import SUBJECT, _bands, _save, focus_panels
 from benchmark.datasets import REAL_DATASETS, load_stream
 from benchmark.display import REAL_SHORT_NAMES, columns, model_label
 from benchmark.evaluation import BATCH_SIZE
@@ -56,10 +56,7 @@ DESCRIPTION = {
     "pendigits": (r"\Pendigits", "alpaydin1996pen", "shuffled"),
     "shuttle": (r"\Shuttle", "statlog_shuttle", "shuffled"),
 }
-SINGLE_BATCH_METRICS = (
-    "ari_steadystate",
-    "ari_diff",
-)  # both read the penultimate batch
+SINGLE_BATCH_METRICS = ("ari_steadystate",)  # it reads the penultimate batch
 OUT = analysis.ROOT.parent.parent / "monografia" / "RealData" / "artifacts"
 # Change points of the abrupt INSECTS stream, in samples from its start (Souza et al., 2020)
 INSECTS_ABRUPT_CHANGES = (14352, 19500, 33240, 38682, 39510)
@@ -114,6 +111,7 @@ def failure_table(tasks, models, out):
         "tab:real_failures",
         columns(DATASETS),
         [("Failed runs", rows)],
+        short="Failed runs on the real datasets",
     )
 
 
@@ -168,13 +166,14 @@ def single_class_table(shares, out):
     ]
     panel_table(
         out / "single_class.tex",
-        "Batches of a single class in the evaluation segment of the real datasets: their "
-        "percentage in the order of the files and in the streams evaluated, which shuffle "
-        "some datasets, and the percentage of runs whose penultimate batch holds a single class.",
+        "Batches of a single class in the evaluation segment of the real datasets, in the order "
+        "of the files and in the streams evaluated, and runs whose penultimate batch holds a "
+        "single class: percentages.",
         "tab:real_single_class",
         columns(DATASETS),
         [("Batches of a single class", rows), ("Runs", penultimate)],
         first_column="",
+        short="Batches of a single class in the real datasets",
     )
 
 
@@ -197,11 +196,13 @@ def dataset_table(out):
         "tab:real_datasets",
         "l l r r r l",
         lines,
+        "The real datasets",
     )
 
 
-def quality_table(results, models, runs, excluded, path, label):
-    """The single-batch metrics are left out of the datasets in `excluded`."""
+def quality_table(results, models, runs, excluded, path, label, subject=SUBJECT):
+    """The first of `models` in focus; the single-batch metrics are left out of the datasets
+    in `excluded`."""
     panels = []
     for metric in analysis.QUALITY_METRICS:
         datasets = [
@@ -209,16 +210,17 @@ def quality_table(results, models, runs, excluded, path, label):
             for d in DATASETS
             if not (metric in SINGLE_BATCH_METRICS and d in excluded)
         ]
-        panels += tier_panels(results, (metric,), models, datasets)
+        panels += focus_panels(results, (metric,), models, datasets)
+    title = f"Clustering quality of {subject} on the real datasets"
     panel_table(
         path,
-        f"Quality of the models on the real datasets: medians over {run_text(runs)}. {GROUPS} "
-        "A dash marks a value left out: the Steady-State ARI and the maximum ARI drop, which "
-        "read the penultimate batch, of the streams in which that batch holds a single class, "
-        "and the values of a model that failed in more than half of the runs of a dataset.",
+        f"{title}: medians over {run_text(runs)}. A dash marks a value left out: the "
+        "Steady-State ARI of a stream whose penultimate batch holds a single class, or a model "
+        "that failed in more than half of the runs of a dataset.",
         label,
         columns(DATASETS),
         panels,
+        short=title,
     )
 
 
@@ -234,7 +236,9 @@ def insects_abrupt_figure(results_dir, models, runs, out):
                 for run in runs
             ]
         )
-        _bands(ax, (np.arange(values.shape[1]) + 1) * BATCH_SIZE, values, model)
+        _bands(
+            ax, (np.arange(values.shape[1]) + 1) * BATCH_SIZE, values, model, models[0]
+        )
     for change in INSECTS_ABRUPT_CHANGES:
         ax.axvline(change - TUNING_LIMIT, color="black", linestyle="--", linewidth=0.8)
     ax.set_xlabel("Samples of the evaluation segment")

@@ -21,7 +21,7 @@ from editorial_config import (
     model_display_name,
 )
 from pfc_shared.figures import band
-from pfc_shared.latex import marked, panel_table
+from pfc_shared.latex import focus_rows, panel_table
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
@@ -80,33 +80,14 @@ def panels(comparison, metrics, prefix: str = "") -> list:
     """A panel per metric: the model in focus, its count of verdicts, then the other models."""
     result = []
     for metric in metrics:
-        stats = statistics(comparison, metric, prefix)
         focus, *others = effective_models(comparison, metric)
-        text = shown(metric)
-        of_focus = stats[stats.model == focus].set_index("dataset")
-        counts = {
-            dataset: "/".join(
-                str((of_dataset.verdict == verdict).sum())
-                for verdict in ("better", "same", "worse")
-            )
-            for dataset, of_dataset in stats[stats.model != focus].groupby("dataset")
-        }
-        rows = [
-            (model_label(focus), of_focus["median"].to_dict(), text),
-            ("Better/same/worse", counts, str),
-        ]
-        for model in others:
-            of_model = stats[stats.model == model].set_index("dataset")
-            rows.append(
-                (
-                    model_label(model),
-                    {
-                        dataset: marked(text(row["median"]), row["verdict"])
-                        for dataset, row in of_model.iterrows()
-                    },
-                    str,
-                )
-            )
+        rows = focus_rows(
+            statistics(comparison, metric, prefix),
+            focus,
+            others,
+            model_label,
+            shown(metric),
+        )
         result.append((TITLES[metric], rows))
     return result
 
@@ -196,8 +177,12 @@ def dimension_axis(ax, dimensions):
 
 
 def save(fig, axes, path: str):
-    """One legend above the panels, with the models of the first panel."""
-    handles, labels = np.ravel(axes)[0].get_legend_handles_labels()
+    """One legend above the panels, with every model drawn in any of them."""
+    entries = {}
+    for ax in np.ravel(axes):
+        for handle, label in zip(*ax.get_legend_handles_labels()):
+            entries.setdefault(label, handle)
+    handles, labels = list(entries.values()), list(entries)
     fig.legend(handles, labels, loc="upper center", ncol=4, bbox_to_anchor=(0.5, 1.06))
     fig.tight_layout()
     fig.savefig(path, dpi=300, bbox_inches="tight")

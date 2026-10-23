@@ -4,7 +4,7 @@ The final model of the improvement rounds, run by `run_confirmation.sh` on runs 
 eight real datasets, joins the benchmark models and MicroTEDAClus+ of the real-data
 experiment, whose tasks used the same streams and the same seeds of the search. Two analyses:
 
-- the comparison of every model with the best and the worst of each dataset, as in the
+- the comparison of the final model with each other model in each dataset, as in the
   tables of the real-data experiment, with the same treatment of failed runs;
 - the paired comparisons of the chain: each step against its predecessor, from
   MicroTEDAClus+ (the control, which the copied engine reproduces exactly) to the final model.
@@ -54,21 +54,22 @@ def load(results_dir: Path):
     return pd.concat(parts), pd.concat(tasks)
 
 
-def tier_table(results, models, metric):
-    tiers = analysis.tiers(results, metric, models, DATASETS)
+def focus_table(results, focus, others, metric):
+    """Medians of every model; B or W where the model in focus is better or worse than it."""
+    compared = analysis.compared(results, metric, focus, others, DATASETS)
     lines = [f"{metric:22}" + "".join(f"{SHORT[d]:>10}" for d in DATASETS)]
-    for model in models:
-        of_model = tiers[tiers.model == model].set_index("dataset")
+    for model in (focus, *others):
+        of_model = compared[compared.model == model].set_index("dataset")
         cells = []
         for dataset in DATASETS:
             if dataset not in of_model.index:
                 cells.append(f"{'-':>10}")
                 continue
             row = of_model.loc[dataset]
-            mark = {"better": "B", "worse": "W", "same": " "}[row.verdict]
-            cells.append(f"{row['median'] + mark:>10}")
+            mark = {"better": "B", "worse": "W"}.get(row.verdict, " ")
+            cells.append(f"{row['median']:.3f}{mark}".rjust(10))
         lines.append(f"{model[:22]:22}" + "".join(cells))
-    return "\n".join(lines), tiers
+    return "\n".join(lines)
 
 
 def chain(results):
@@ -117,25 +118,10 @@ def main():
     failed = tasks[(tasks.status != "OK") & tasks.model.isin(models)]
     print("failed tasks:", failed.groupby(["model", "dataset"]).size().to_dict())
 
-    best_counts = {}
-    for metric in ("ari_overall", "ari_steadystate", "ari_fifth", "ari_diff"):
-        text, tiers = tier_table(complete, models, metric)
-        print("\n" + text)
-        if FINAL in models:
-            of_final = tiers[tiers.model == FINAL]
-            if metric == "ari_steadystate":
-                of_final = of_final[~of_final.dataset.isin(SINGLE_CLASS_END)]
-            best_counts[metric] = (
-                int((of_final.verdict == "better").sum()),
-                int((of_final.verdict == "worse").sum()),
-                len(of_final),
-            )
-    if best_counts:
-        print(
-            "\nfinal model: datasets with the best (B) / with the worst (W) / compared"
-        )
-        for metric, (b, w, n) in best_counts.items():
-            print(f"  {metric}: {b} / {w} / {n}")
+    focus = FINAL if FINAL in models else "MicroTEDAClusPlus"
+    others = [m for m in models if m != focus]
+    for metric in analysis.QUALITY_METRICS:
+        print("\n" + focus_table(complete, focus, others, metric))
     print("\nchain (paired, runs shared):")
     print(chain(results))
 

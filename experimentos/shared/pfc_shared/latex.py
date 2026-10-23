@@ -14,6 +14,41 @@ def marked(text: str, verdict: str) -> str:
     return text
 
 
+def focus_rows(compared: pd.DataFrame, focus: str, others, label, text) -> list:
+    """Rows of a panel of the comparison of a model in focus with each other model.
+
+    `compared` is the result of `pfc_shared.statistics.compare_with_focus`. The
+    rows are the model in focus, its count of verdicts, and every other model,
+    marked by how the model in focus compares with it. `label` gives the name of
+    a model in the table and `text` the text of a median.
+    """
+    of_focus = compared[compared.model == focus].set_index("dataset")
+    counts = {
+        dataset: "/".join(
+            str((of_dataset.verdict == verdict).sum())
+            for verdict in ("better", "same", "worse")
+        )
+        for dataset, of_dataset in compared[compared.model != focus].groupby("dataset")
+    }
+    rows = [
+        (label(focus), of_focus["median"].to_dict(), text),
+        ("Better/same/worse", counts, str),
+    ]
+    for model in others:
+        of_model = compared[compared.model == model].set_index("dataset")
+        rows.append(
+            (
+                label(model),
+                {
+                    dataset: marked(text(row["median"]), row["verdict"])
+                    for dataset, row in of_model.iterrows()
+                },
+                str,
+            )
+        )
+    return rows
+
+
 def write_table(
     path: Path,
     caption: str,

@@ -22,25 +22,33 @@ Usage (from experimentos/modern_methodology):
     python -m benchmark.improvement.artifacts
 """
 
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 from benchmark import analysis
 from benchmark.artifacts import (
-    GROUPS,
+    SUBJECT,
     TITLES,
+    _bands,
     _in_kib,
     _in_ms,
+    _save,
     at_the_ends,
-    tier_panels,
+    focus_panels,
 )
-from benchmark.display import columns
+from benchmark.display import REAL_SHORT_NAMES, columns
+from benchmark.evaluation import BATCH_SIZE
 from benchmark.hyperparameters import Category, widened_ranges_of_categories
 from benchmark.improvement.candidates import CANDIDATES
 from benchmark.improvement.compare import comparison, outcome
 from benchmark.improvement.run import DATASETS as DEVELOPMENT_DATASETS
 from benchmark.improvement.run import OUT as DEVELOPMENT
 from benchmark.preprocessing import segments
+from benchmark.runner import batches_file
 from benchmark.real_artifacts import (
     DATASETS,
     complete_by_dataset,
@@ -66,9 +74,9 @@ FINAL = "MicroTEDAClusPlusFinal"
 EARLIER = r"\modelname{MicroTEDAClus+ (Ch.~\ref{chap:ModelImprovement})}"
 CHAIN = {
     "control": EARLIER,
-    "low_variance": r"\modelname{low-variance}",
-    "no_noise": r"\modelname{low-variance + no-noise}",
-    "no_noise_link": r"\modelname{low-variance + no-noise + link-factor}",
+    "low_variance": r"\variant{low-variance}",
+    "no_noise": r"\variant{low-variance + no-noise}",
+    "no_noise_link": r"\variant{low-variance + no-noise + link-factor}",
 }
 # the candidates outside the chain, by their names in the improvement experiments and in the
 # chapter, with their control, None for the one of their registration; the wide link factor is
@@ -96,9 +104,17 @@ CANDIDATES_OUTSIDE = [
     ("no_noise_link_wide", "no_noise_link", "wide-link"),
 ]
 NOT_RUN = {"diagonal_log_density"}
-OUTCOME = {"+": "$+$", "-": "$-$", "±": r"$\pm$", "=": "$=$"}
+OUTCOME = {"+": "improves", "-": "regresses", "±": "mixed", "=": "indistinguishable"}
 CHAIN_METRICS = ("ari_overall", "ari_steadystate", "mc_steadystate")
 SINGLE_BATCH_METRICS = ("ari_steadystate",)
+# the real datasets where the final version starts slowly, and the batches that show it
+SLOW_START = (
+    "insects_abrupt",
+    "insects_incremental",
+    "insects_incremental_reoccurring",
+    "covertype",
+)
+EARLY_BATCHES = 50
 
 
 def _median(values: pd.Series, metric: str) -> str:
@@ -162,15 +178,14 @@ def chain_table(steps, failed, datasets, excluded, runs, caption, label, path):
     )
     panel_table(
         path,
-        f"{caption}: medians over the {runs} runs less the failed ones. Each row is compared "
-        "with the row above it over the runs that both finished: a value in bold is "
-        "significantly better than that of the row above it, and a value in red "
-        "significantly worse; a smaller summary is better. A dash marks the Steady-State ARI "
-        "of the streams whose penultimate batch holds a single class. Every failure is a "
-        "summary that exceeded a quarter of the tuning segment.",
+        f"{caption}: medians over the {runs} runs less the failed ones, each row compared with "
+        "the row above it over the runs that both finished. A dash marks the Steady-State ARI "
+        "of a stream whose penultimate batch holds a single class; every failure is a summary "
+        "over its limit.",
         label,
         columns(datasets),
         panels,
+        short=caption,
     )
 
 
@@ -291,6 +306,7 @@ def variance_table():
                 ],
             )
         ],
+        short="Variance limits at the lower end of their range",
     )
 
 
@@ -310,6 +326,7 @@ def link_table():
             )
         ],
         first_column="",
+        short="Link factor selected on the development runs",
     )
 
 
@@ -320,7 +337,7 @@ def candidates_table():
     ]
     for name, control, label in CANDIDATES_OUTSIDE:
         control = control or CANDIDATES[name].control
-        cells = [rf"\modelname{{{label}}}", CHAIN[control]]
+        cells = [rf"\variant{{{label}}}", CHAIN[control]]
         if name in NOT_RUN:
             cells += ["not run", *["-"] * 5]
         else:
@@ -340,17 +357,14 @@ def candidates_table():
     write_table(
         OUT / "candidates.tex",
         "The candidates outside the chain of kept changes, each against its control on the "
-        "development runs: the outcome of the decision rule, improvement ($+$), regression "
-        r"($-$), both ($\pm$) or neither ($=$); its numbers of significant gains and losses "
-        "in the Overall ARI of the six datasets and in the Steady-State ARI of the four whose "
-        "penultimate batch does not hold a single class; the number of datasets in which its "
-        "median Overall ARI is lower than that of its control, significantly or not; and the "
-        "numbers of datasets in which its steady-state summary is significantly larger or "
-        "smaller than that of its control. The covariance was evaluated on eight runs of three "
+        "development runs: outcome of the decision rule, significant gains and losses, datasets "
+        "where its median Overall ARI is lower, and datasets where its steady-state summary is "
+        "significantly larger or smaller. The covariance was evaluated on eight runs of three "
         "datasets.",
         "tab:ri_candidates",
         "l l c c c c c c",
         lines,
+        "The candidates outside the chain of kept changes",
     )
 
 
@@ -388,6 +402,7 @@ def diagnosis_table():
             )
         ],
         first_column="",
+        short=f"{EARLIER} on the real datasets of the development",
     )
 
 
@@ -442,7 +457,9 @@ def comparison_tables(excluded):
                 ],
             )
         ],
+        short=r"Failed runs of \modelname{MicroTEDAClus+} on the real datasets",
     )
+    start_figure(complete)
     if (TIMING / "batches").exists() and (MEMORY / "tasks.csv").exists():
         staying = {d: set(complete.model[complete.dataset == d]) for d in DATASETS}
         cost_table(staying, models)
@@ -460,16 +477,42 @@ def cost_table(staying, models):
         kept_memory.append(m[m.run.isin(shared)])
         runs[dataset] = len(shared)
     timing, memory = pd.concat(kept_timing), pd.concat(kept_memory)
+    title = f"Execution time and memory of {SUBJECT} on the real datasets"
     panel_table(
         OUT / "cost.tex",
-        "Execution time and memory of the models on the real datasets, each task measured "
-        "alone and its memory counted from every allocation of its process: medians over "
-        f"{run_text(runs)}. {GROUPS} A dash marks a model left out of a dataset.",
+        f"{title}: medians over {run_text(runs)}. A dash marks a model left out of a dataset.",
         "tab:ri_cost",
         columns(DATASETS),
-        tier_panels(timing, analysis.TIME_METRICS, models, DATASETS, shown=_in_ms)
-        + tier_panels(memory, analysis.MEMORY_METRICS, models, DATASETS, shown=_in_kib),
+        focus_panels(timing, analysis.TIME_METRICS, models, DATASETS, _in_ms)
+        + focus_panels(memory, analysis.MEMORY_METRICS, models, DATASETS, _in_kib),
+        short=title,
     )
+
+
+def start_figure(complete):
+    """ARI of the first batches of the real datasets where the final version starts slowly."""
+    fig, axes = plt.subplots(2, 2, figsize=(12, 7), sharey=True)
+    for ax, dataset in zip(np.ravel(axes), SLOW_START):
+        of_dataset = complete[complete.dataset == dataset]
+        runs = sorted(of_dataset.run.unique())
+        for model in [m for m in (FINAL, *BENCHMARKS) if m in set(of_dataset.model)]:
+            source = FINAL_EXPERIMENT if model == FINAL else analysis.REAL
+            values = np.vstack(
+                [
+                    pd.read_csv(batches_file(source, dataset, model, run))[
+                        "ari"
+                    ].to_numpy()[:EARLY_BATCHES]
+                    for run in runs
+                ]
+            )
+            _bands(
+                ax, (np.arange(EARLY_BATCHES) + 1) * BATCH_SIZE, values, model, FINAL
+            )
+        ax.set_title(REAL_SHORT_NAMES[dataset], fontsize=10)
+        ax.set_xlabel("Samples of the evaluation segment")
+    for ax in axes[:, 0]:
+        ax.set_ylabel("ARI")
+    _save(fig, axes, "slow_start.png", columns_of_legend=6, directory=OUT)
 
 
 def partitions_table():
@@ -515,16 +558,16 @@ def partitions_table():
         ),
     ]
     fewest = pd.concat(runs.values(), axis=1).min(axis=1).to_dict()
+    title = r"The partitions of the two versions of \MicroTEDAClusPlus{} on the real datasets"
     panel_table(
         OUT / "partitions.tex",
-        r"The partitions of the two versions of \MicroTEDAClusPlus{} on the real datasets: "
-        "medians over the batches of the evaluation segment, "
-        f"then medians over the runs, at least {run_text(fewest)}. Homogeneity and "
-        "completeness compare the clusters predicted for a batch with its classes, over the "
-        "samples not labelled as noise.",
+        f"{title}: medians over the batches of the evaluation segment, then over the runs, at "
+        f"least {run_text(fewest)}. Homogeneity and completeness compare the clusters predicted "
+        "for a batch with its classes, over the samples not labeled as noise.",
         "tab:ri_partitions",
         columns(DATASETS),
         panels,
+        short=title,
     )
 
 

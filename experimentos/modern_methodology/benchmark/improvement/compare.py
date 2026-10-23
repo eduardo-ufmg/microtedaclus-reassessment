@@ -32,7 +32,7 @@ DECIDING = {
     "ari_overall": DATASETS,
     "ari_steadystate": [d for d in DATASETS if d not in NO_STEADY_STATE],
 }
-REPORTED = {"ari_fifth": DATASETS, "mc_max": DATASETS, "mc_steadystate": DATASETS}
+REPORTED = {"mc_max": DATASETS, "mc_steadystate": DATASETS}
 SHORT = {
     "insects_abrupt": "INS-A",
     "insects_incremental": "INS-I",

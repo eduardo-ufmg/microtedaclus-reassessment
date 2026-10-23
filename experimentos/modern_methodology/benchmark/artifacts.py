@@ -24,7 +24,6 @@ from benchmark import analysis
 from benchmark.datasets import SCALABILITY_DIMENSIONS
 from benchmark.display import (
     MAIN_DATASETS,
-    MODEL_COLORS,
     MODEL_NAMES,
     SCALABILITY_DATASETS,
     SHORT_NAMES,
@@ -35,7 +34,8 @@ from benchmark.evaluation import BATCH_SIZE
 from benchmark.hyperparameters import Category
 from benchmark.models import MODELS
 from benchmark.runner import batches_file
-from pfc_shared.latex import marked, panel_table, write_table
+from pfc_shared.figures import band
+from pfc_shared.latex import focus_rows, marked, panel_table, write_table
 from pfc_shared.statistics import METRICS
 
 ARTIFACT_DIR = (
@@ -48,63 +48,60 @@ ARTIFACT_DIR = (
 TITLES = {
     "ari_overall": "Overall ARI",
     "ari_steadystate": "Steady-State ARI",
-    "ari_fifth": "ARI at the fifth batch",
-    "ari_diff": "Maximum ARI drop",
     "mc_max": "Largest summary",
     "mc_steadystate": "Steady-state summary",
-    "time_fit_cum_ms": "Learning time of the evaluation segment, in milliseconds",
-    "time_predict_cum_ms": "Prediction time of the evaluation segment, in milliseconds",
-    "memory_retained_bytes": "Memory held at the end of the stream, in KiB",
-    "memory_peak_bytes": "Peak memory during the evaluation, in KiB",
+    "time_fit_cum_ms": "Learning time [ms]",
+    "time_predict_cum_ms": "Prediction time [ms]",
+    "memory_retained_bytes": "Memory held at the end of the stream [KiB]",
+    "memory_peak_bytes": "Peak memory [KiB]",
 }
-GROUPS = (
-    "A value in bold is statistically indistinguishable from the best model of its dataset, "
-    "and a value in red from the worst."
-)
+SUBJECT = r"\modelname{MicroTEDAClus+} and the benchmark models"
 
 
-def _in_ms(value: str) -> str:
-    return f"{float(value):.0f}"
+def _in_ms(value: float) -> str:
+    return f"{value:.0f}"
 
 
-def _in_kib(value: str) -> str:
-    return f"{float(value) / 1024:.0f}"
+def _in_kib(value: float) -> str:
+    return f"{value / 1024:.0f}"
 
 
-def tier_panels(results, metrics, models, datasets, shown=str):
-    """A panel per metric; `shown` rewrites the text of a median, such as to change its unit."""
+def focus_panels(results, metrics, models, datasets, shown=None):
+    """A panel per metric: the first of `models`, in focus, against each of the others.
+
+    `shown` gives the text of a median, such as in another unit; by default, the
+    format of its metric.
+    """
+    focus, *others = models
     panels = []
     for metric in metrics:
-        of_metric = analysis.tiers(results, metric, models, datasets)
-        rows = []
-        for model in models:
-            of_model = of_metric[of_metric.model == model].set_index("dataset")
-            values = {
-                dataset: marked(shown(row["median"]), row["verdict"])
-                for dataset, row in of_model.iterrows()
-            }
-            rows.append((model_label(model), values, str))
-        panels.append((TITLES[metric], rows))
+        compared = analysis.compared(results, metric, focus, others, datasets)
+        text = shown or METRICS[metric]["fmt"].format
+        panels.append(
+            (TITLES[metric], focus_rows(compared, focus, others, model_label, text))
+        )
     return panels
 
 
 def quality_tables(results, models, runs):
-    panel_table(
-        ARTIFACT_DIR / "quality.tex",
-        f"Quality of the models: medians over {runs} runs. {GROUPS}",
-        "tab:mod_quality",
-        columns(MAIN_DATASETS),
-        tier_panels(results, analysis.QUALITY_METRICS, models, MAIN_DATASETS),
-    )
-    panel_table(
-        ARTIFACT_DIR / "scalability.tex",
-        f"Quality of the models along the dimension of the data: medians over {runs} runs. {GROUPS}",
-        "tab:mod_scalability",
-        columns(SCALABILITY_DATASETS),
-        tier_panels(
-            results, ("ari_overall", "ari_steadystate"), models, SCALABILITY_DATASETS
+    for name, label, datasets, scope in (
+        ("quality", "tab:mod_quality", MAIN_DATASETS, ""),
+        (
+            "scalability",
+            "tab:mod_scalability",
+            SCALABILITY_DATASETS,
+            " in the scalability streams",
         ),
-    )
+    ):
+        title = f"Clustering quality of {SUBJECT}{scope}"
+        panel_table(
+            ARTIFACT_DIR / f"{name}.tex",
+            f"{title}: medians over {runs} runs.",
+            label,
+            columns(datasets),
+            focus_panels(results, analysis.QUALITY_METRICS, models, datasets),
+            short=title,
+        )
 
 
 def summary_table(results, models, runs):
@@ -115,16 +112,17 @@ def summary_table(results, models, runs):
             "summary_size_scalability",
             "tab:mod_summary_size_scalability",
             SCALABILITY_DATASETS,
-            " along the dimension of the data",
+            " in the scalability streams",
         ),
     ):
+        title = f"Summary size of {SUBJECT}{scope}"
         panel_table(
             ARTIFACT_DIR / f"{name}.tex",
-            f"Number of structures in the summary that each model keeps of the stream{scope}: "
-            f"medians over {runs} runs. {GROUPS}",
+            f"{title}: medians over {runs} runs.",
             label,
             columns(datasets),
-            tier_panels(results, analysis.SUMMARY_METRICS, models, datasets),
+            focus_panels(results, analysis.SUMMARY_METRICS, models, datasets),
+            short=title,
         )
 
 
@@ -148,20 +146,18 @@ def cost_tables(models):
             "cost_scalability",
             "tab:mod_cost_scalability",
             SCALABILITY_DATASETS,
-            " along the dimension of the data",
+            " in the scalability streams",
         ),
     ):
+        title = f"Execution time and memory of {SUBJECT}{scope}"
         panel_table(
             ARTIFACT_DIR / f"{name}.tex",
-            f"Execution time and memory of the models{scope}, each task measured alone and its "
-            f"memory counted from every allocation of its process: medians over {len(runs)} runs. "
-            f"{GROUPS}",
+            f"{title}: medians over {len(runs)} runs.",
             label,
             columns(datasets),
-            tier_panels(timing, analysis.TIME_METRICS, models, datasets, shown=_in_ms)
-            + tier_panels(
-                memory, analysis.MEMORY_METRICS, models, datasets, shown=_in_kib
-            ),
+            focus_panels(timing, analysis.TIME_METRICS, models, datasets, _in_ms)
+            + focus_panels(memory, analysis.MEMORY_METRICS, models, datasets, _in_kib),
+            short=title,
         )
 
 
@@ -189,12 +185,12 @@ def protocol_table(rules, previous):
     panel_table(
         ARTIFACT_DIR / "protocols.tex",
         r"\MicroTEDAClusPlus{} with its hyperparameters selected by the previous protocol and by the "
-        f"protocol by rules, on the same streams: medians over {len(shared)} runs. A value in bold is "
-        "significantly better than that of the previous protocol, and a value in red is significantly worse.",
+        f"protocol by rules, on the same streams: medians over {len(shared)} runs.",
         "tab:mod_protocols",
         columns(SHORT_NAMES),
         panels,
         first_column="Selection",
+        short=r"\MicroTEDAClusPlus{} under the two protocols of hyperparameter selection",
     )
 
 
@@ -216,6 +212,7 @@ def hyperparameter_table(models):
         "tab:mod_hyperparameters",
         "l l l",
         lines,
+        "Hyperparameters of the models and their categories",
     )
 
 
@@ -266,6 +263,7 @@ def range_table(ranges, runs):
         "tab:mod_ranges",
         "l " + "c " * len(categories),
         lines,
+        "Search ranges that the rules give",
     )
 
 
@@ -333,20 +331,27 @@ def ends_table(ends, models, runs):
         columns(SHORT_NAMES),
         panels,
         first_column="Model and hyperparameter",
+        short="Selected values at the ends of their search ranges",
     )
 
 
-def _bands(ax, x, values, model):
-    """Median and interquartile band of the columns of `values`."""
+def _bands(ax, x, values, model, focus):
+    """Median of the columns of `values`, with its interquartile band for the model in focus."""
     q1, median, q3 = np.quantile(values, [0.25, 0.5, 0.75], axis=0)
-    ax.plot(
-        x, median, color=MODEL_COLORS[model], linewidth=1.5, label=MODEL_NAMES[model]
-    )
-    ax.fill_between(x, q1, q3, color=MODEL_COLORS[model], alpha=0.15)
+    band(ax, x, median, q1, q3, model, MODEL_NAMES[model], model == focus)
+
+
+def _legend_entries(axes):
+    """Handles and labels of every model drawn in any of the axes, each once, in order."""
+    entries = {}
+    for ax in np.ravel(axes):
+        for handle, label in zip(*ax.get_legend_handles_labels()):
+            entries.setdefault(label, handle)
+    return list(entries.values()), list(entries)
 
 
 def _save(fig, axes, name, columns_of_legend=4, directory=ARTIFACT_DIR):
-    handles, labels = np.ravel(axes)[0].get_legend_handles_labels()
+    handles, labels = _legend_entries(axes)
     fig.legend(
         handles,
         labels,
@@ -362,9 +367,9 @@ def _save(fig, axes, name, columns_of_legend=4, directory=ARTIFACT_DIR):
 
 
 def dimension_figure(results, models):
-    """ARI against the dimension of the data, early in the stream and at its end."""
+    """Overall and Steady-State ARI against the dimension of the data."""
     fig, axes = plt.subplots(1, 2, figsize=(12, 4), sharey=True)
-    for ax, metric in zip(axes, ("ari_fifth", "ari_steadystate")):
+    for ax, metric in zip(axes, analysis.QUALITY_METRICS):
         for model in models:
             of_model = results[results.model == model]
             values = np.column_stack(
@@ -373,7 +378,7 @@ def dimension_figure(results, models):
                     for dataset in SCALABILITY_DATASETS
                 ]
             )
-            _bands(ax, SCALABILITY_DIMENSIONS, values, model)
+            _bands(ax, SCALABILITY_DIMENSIONS, values, model, models[0])
         ax.set_xscale("log", base=2)
         ax.set_xticks(SCALABILITY_DIMENSIONS, [str(d) for d in SCALABILITY_DIMENSIONS])
         ax.set_xlabel("Dimension")
@@ -396,7 +401,13 @@ def stream_figure(out, models, runs):
                     for run in runs
                 ]
             )
-            _bands(ax, (np.arange(values.shape[1]) + 1) * BATCH_SIZE, values, model)
+            _bands(
+                ax,
+                (np.arange(values.shape[1]) + 1) * BATCH_SIZE,
+                values,
+                model,
+                models[0],
+            )
         ax.set_xlabel("Samples of the evaluation segment")
         ax.set_title(f"Dimension {dataset.split('-')[1]}", fontsize=10)
     axes[0].set_ylabel("ARI")
