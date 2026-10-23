@@ -15,15 +15,24 @@ def marked(text: str, verdict: str) -> str:
 
 
 def write_table(
-    path: Path, caption: str, label: str, column_spec: str, lines: list[str]
+    path: Path,
+    caption: str,
+    label: str,
+    column_spec: str,
+    lines: list[str],
+    short: str | None = None,
 ):
-    """Write a table that fits the text block in both directions."""
+    """Write a table at its natural size, reduced only if it exceeds the text block.
+
+    `short`, if given, is the entry of the table in the list of tables.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     body = [
         r"\begin{table}[htbp]",
         r"\centering",
-        rf"\caption{{{caption}}}",
-        r"\adjustbox{width=\textwidth, totalheight=0.82\textheight, keepaspectratio}{%",
+        r"\small",
+        rf"\caption[{short}]{{{caption}}}" if short else rf"\caption{{{caption}}}",
+        r"\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%",
         rf"\begin{{tabular}}{{{column_spec}}}",
         r"\toprule",
         *lines,
@@ -37,7 +46,13 @@ def write_table(
 
 
 def panel_table(
-    path: Path, caption: str, label: str, columns: dict, panels, first_column="Model"
+    path: Path,
+    caption: str,
+    label: str,
+    columns: dict,
+    panels,
+    first_column="Model",
+    short: str | None = None,
 ):
     """Panels of rows with one value per column.
 
@@ -57,4 +72,4 @@ def panel_table(
                 for key in columns
             ]
             lines.append(" & ".join([row_label, *cells]) + r" \\")
-    write_table(path, caption, label, "l " + "c " * len(columns), lines)
+    write_table(path, caption, label, "l " + "c " * len(columns), lines, short)

@@ -1,17 +1,14 @@
 \begin{table}[htbp]
 \centering
-\caption{Hyperparameter dispersion for MicroTEDAClus: median $(Q_1, Q_3)$ [QCD].}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{l c c }
+\small
+\caption[Hyperparameters selected for \modelname{MicroTEDAClus}]{Hyperparameters selected for \modelname{MicroTEDAClus}: median [QCD] over the 94 runs.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
+\begin{tabular}{l l c c c c c c }
 \toprule
-Dataset & decay & variance\_limit \\
+Model & Hyperparameter & B1 & B2 & RBF & CSN & DS3 & DS4 \\
 \midrule
-\datasetname{Stream Benchmark 1} & 363 (120, 1778) [0.874] & 0.006025 (0.002517, 0.06625) [0.927] \\
-\datasetname{Stream Benchmark 2} & 32.5 (12, 168.5) [0.867] & 0.008382 (0.003356, 0.4418) [0.985] \\
-\datasetname{Random RBF Generator with Events} & 1040 (107.8, 3256) [0.936] & 0.0009299 (0.000541, 0.002073) [0.586] \\
-\datasetname{Cassini} & 35 (19, 68.5) [0.566] & 0.1047 (0.06024, 0.1539) [0.437] \\
-\datasetname{Chameleon DS3} & 422 (260, 811) [0.514] & 4.86 (3.865, 6.15) [0.228] \\
-\datasetname{Chameleon DS4} & 367 (259.2, 866.5) [0.539] & 6.861 (2.354, 9.105) [0.589] \\
+\multirow{2}{*}{\modelname{MicroTEDAClus}} & variance limit & 0.00602 [0.93] & 0.00838 [0.98] & 0.00093 [0.59] & 0.105 [0.44] & 4.86 [0.23] & 6.86 [0.59] \\
+ & decay & 363 [0.87] & 32.5 [0.87] & 1040 [0.94] & 35 [0.57] & 422 [0.51] & 367 [0.54] \\
 \bottomrule
 \end{tabular}
 }

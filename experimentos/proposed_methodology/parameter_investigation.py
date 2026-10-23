@@ -1,195 +1,86 @@
 #!/usr/bin/env python3
+"""Hyperparameters selected for the model in focus of each comparison.
+
+One table per model, in the chapter of its comparison: each hyperparameter is a
+row under its model, each dataset a column, and a cell gives the median and the
+quartile coefficient of dispersion of the values selected over the runs.
+"""
+
 import os
-import pandas as pd
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 
 from editorial_config import (
-    BENCHMARK_MODELS,
+    COMPARISONS,
     DATASET_ORDER,
-    MODEL_ORDER,
-    dataset_display_name,
+    DATASET_SHORT_NAMES,
     model_display_name,
 )
+from pfc_shared.latex import write_table
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
 
 DIR_PARAMS = os.path.join(SCRIPT_DIR, "metrics", "parameters")
 DIR_METRICS = os.path.join(SCRIPT_DIR, "metrics", "non_scalability")
-DIR_OUT = os.path.join(
-    REPOSITORY_ROOT,
-    "monografia",
-    "MethodologyReassessment",
-    "artifacts",
-    "parameters",
-)
-DIR_OUT_RESULTS = os.path.join(
-    REPOSITORY_ROOT, "monografia", "Results", "artifacts", "parameters"
-)
-os.makedirs(DIR_OUT, exist_ok=True)
-os.makedirs(DIR_OUT_RESULTS, exist_ok=True)
+HYPERPARAMETER_NAMES = {
+    "variance_limit": "variance limit",
+    "decay": "decay",
+    "noise_distance": "noise distance",
+}
 
 
-def output_dir(model: str) -> str:
-    """Benchmark models belong to the reassessment chapter; the proposed model to the results."""
-    return DIR_OUT if model in BENCHMARK_MODELS else DIR_OUT_RESULTS
-
-
-def format_model_name(model: str) -> str:
-    return f"\\modelname{{{model}}}"
-
-
-def format_dataset_name(dataset: str) -> str:
-    escaped_dataset = dataset_display_name(dataset).replace("_", "\\_")
-    return f"\\datasetname{{{escaped_dataset}}}"
-
-
-def format_val(val) -> str:
-    if pd.isna(val):
+def format_value(value) -> str:
+    if pd.isna(value):
         return "-"
-    if isinstance(val, (float, np.floating)):
-        if val.is_integer():
-            return f"{int(val)}"
-        return f"{val:.4g}"
-    return str(val)
+    if float(value).is_integer() or abs(value) >= 100:
+        return f"{value:.0f}"
+    return f"{value:.3g}"
 
 
-def process_model_parameters(df_params: pd.DataFrame, model: str) -> dict:
-    df_m_params_long = df_params[df_params["model"] == model]
-    if df_m_params_long.empty:
-        return {}
+def median_qcd(values: pd.Series) -> str:
+    """Median and quartile coefficient of dispersion, $(Q_3 - Q_1)/(Q_3 + Q_1)$."""
+    q1, median, q3 = values.quantile([0.25, 0.5, 0.75])
+    qcd = (q3 - q1) / (q3 + q1) if q3 + q1 > 0 else np.nan
+    dispersion = "-" if pd.isna(qcd) else f"{qcd:.2f}"
+    return f"{format_value(median)} [{dispersion}]"
 
-    try:
-        df_m_params = df_m_params_long.pivot_table(
-            index=["dataset", "model", "run"],
-            columns="param_name",
-            values="param_value",
-        ).reset_index()
-    except KeyError:
-        df_m_params = df_m_params_long
 
-    meta_cols = {"dataset", "model", "run"}
-    param_cols = [c for c in df_m_params.columns if c not in meta_cols]
-
-    if not param_cols:
-        return {}
-
-    for p in param_cols:
-        df_m_params[p] = pd.to_numeric(df_m_params[p], errors="coerce")
-
-    latex_lines = [
-        "\\begin{table}[htbp]",
-        "\\centering",
-        f"\\caption{{Hyperparameter dispersion for {model_display_name(model)}: median $(Q_1, Q_3)$ [QCD].}}",
-        "\\resizebox{\\textwidth}{!}{%",
-        "\\begin{tabular}{l " + "c " * len(param_cols) + "}",
-        "\\toprule",
-        "Dataset & "
-        + " & ".join([p.replace("_", "\\_") for p in param_cols])
-        + " \\\\",
-        "\\midrule",
+def hyperparameter_table(selected: pd.DataFrame, comparison, runs: int):
+    model = comparison.focus
+    of_model = selected[selected["model"] == model].pivot_table(
+        index=["dataset", "run"], columns="param_name", values="param_value"
+    )
+    names = [name for name in HYPERPARAMETER_NAMES if name in of_model.columns]
+    datasets = [
+        d for d in DATASET_ORDER if d in of_model.index.get_level_values("dataset")
     ]
-
-    dataset_order = {dataset: index for index, dataset in enumerate(DATASET_ORDER)}
-    datasets = sorted(
-        df_m_params["dataset"].unique(),
-        key=lambda dataset: dataset_order.get(dataset, len(DATASET_ORDER)),
-    )
-    qcd_sums = {}
-
-    for dataset in datasets:
-        df_dp = df_m_params[df_m_params["dataset"] == dataset]
-        row_str = format_dataset_name(dataset)
-        sum_qcd = 0.0
-
-        for p in param_cols:
-            med = df_dp[p].median()
-            q1 = df_dp[p].quantile(0.25)
-            q3 = df_dp[p].quantile(0.75)
-
-            denom = q3 + q1
-            if pd.notna(denom) and denom > 0:
-                qcd = (q3 - q1) / denom
-                sum_qcd += qcd
-                qcd_str = f" [{qcd:.3f}]"
-            else:
-                qcd_str = " [-]"
-
-            row_str += (
-                f" & {format_val(med)} ({format_val(q1)}, {format_val(q3)}){qcd_str}"
-            )
-
-        latex_lines.append(row_str + " \\\\")
-        qcd_sums[dataset] = sum_qcd
-
-    latex_lines.extend(
-        [
-            "\\bottomrule",
-            "\\end{tabular}",
-            "}",
-            f"\\label{{tab:params_{model.lower()}}}",
-            "\\end{table}",
-        ]
-    )
-
-    with open(os.path.join(output_dir(model), f"{model}_parameters.tex"), "w") as f:
-        f.write("\n".join(latex_lines))
-        f.write("\n")
-
-    return qcd_sums
-
-
-def generate_qcd_sum_table(all_qcd_sums: dict, models: list):
-    df_qcd = pd.DataFrame(all_qcd_sums)
-
-    latex_lines = [
-        "\\begin{table}[htbp]",
-        "\\centering",
-        "\\caption{Unified sum of Quartile Coefficients of Dispersion per model. Bold indicates the absolute deterministic minimum, and red indicates the absolute deterministic maximum.}",
-        "\\resizebox{\\textwidth}{!}{%",
-        "\\begin{tabular}{l " + "c " * len(models) + "}",
-        "\\toprule",
-        "Dataset & "
-        + " & ".join(format_model_name(model) for model in models)
-        + " \\\\",
-        "\\midrule",
+    label = f"\\modelname{{{model_display_name(model)}}}"
+    lines = [
+        "Model & Hyperparameter & "
+        + " & ".join(DATASET_SHORT_NAMES[d] for d in datasets)
+        + r" \\",
+        r"\midrule",
     ]
-
-    for dataset in df_qcd.index:
-        row = df_qcd.loc[dataset]
-        min_val = row.min()
-        max_val = row.max()
-
-        row_str = format_dataset_name(dataset)
-        for m in models:
-            val = row.get(m, np.nan)
-            if pd.isna(val):
-                row_str += " & -"
-            else:
-                val_str = f"{val:.3f}"
-                if val == min_val and val == max_val:
-                    row_str += f" & {val_str}"
-                elif val == min_val:
-                    row_str += f" & \\textbf{{{val_str}}}"
-                elif val == max_val:
-                    row_str += f" & \\textcolor{{red}}{{{val_str}}}"
-                else:
-                    row_str += f" & {val_str}"
-        latex_lines.append(row_str + " \\\\")
-
-    latex_lines.extend(
-        [
-            "\\bottomrule",
-            "\\end{tabular}",
-            "}",
-            "\\label{tab:qcd_sum}",
-            "\\end{table}",
-        ]
+    for position, name in enumerate(names):
+        parent = rf"\multirow{{{len(names)}}}{{*}}{{{label}}}" if position == 0 else ""
+        cells = [median_qcd(of_model.loc[d, name]) for d in datasets]
+        lines.append(" & ".join([parent, HYPERPARAMETER_NAMES[name], *cells]) + r" \\")
+    title = f"Hyperparameters selected for {label}"
+    out_dir = os.path.join(
+        REPOSITORY_ROOT, "monografia", comparison.chapter, "artifacts", "parameters"
     )
-
-    with open(os.path.join(DIR_OUT, "qcd_sum.tex"), "w") as f:
-        f.write("\n".join(latex_lines))
-        f.write("\n")
+    os.makedirs(out_dir, exist_ok=True)
+    write_table(
+        Path(out_dir) / f"{model}_parameters.tex",
+        f"{title}: median [QCD] over the {runs} runs.",
+        f"tab:params_{model.lower()}",
+        "l l " + "c " * len(datasets),
+        lines,
+        short=title,
+    )
 
 
 def main():
@@ -200,31 +91,16 @@ def main():
         print("Required input files not found.")
         return
 
-    df_params = pd.read_parquet(path_params)
-    df_metrics = pd.read_parquet(path_metrics)
+    selected = pd.read_parquet(path_params)
+    metrics = pd.read_parquet(path_metrics)
+    selected = selected[selected["dataset"].isin(metrics["dataset"].unique())]
 
-    valid_datasets = df_metrics["dataset"].unique()
-    df_params = df_params[df_params["dataset"].isin(valid_datasets)]
-
-    models = [model for model in MODEL_ORDER if model in df_params["model"].unique()]
-    all_qcd_sums = {}
-
-    for model in models:
-        sums = process_model_parameters(df_params, model)
-        if sums:
-            all_qcd_sums[model] = sums
-            print(f"Generated parameter artifact for: {model}")
-
-    benchmark_models = [model for model in models if model in BENCHMARK_MODELS]
-    generate_qcd_sum_table(
-        {
-            model: all_qcd_sums[model]
-            for model in benchmark_models
-            if model in all_qcd_sums
-        },
-        benchmark_models,
-    )
-    print("Generated unified QCD sum table.")
+    for comparison in COMPARISONS:
+        of_focus = selected[selected["model"] == comparison.focus]
+        runs = of_focus.groupby("dataset")["run"].nunique()
+        assert runs.nunique() == 1, f"uneven runs for {comparison.focus}: {runs}"
+        hyperparameter_table(selected, comparison, int(runs.iloc[0]))
+        print(f"Generated the hyperparameter table of: {comparison.focus}")
 
 
 if __name__ == "__main__":

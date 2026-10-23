@@ -13,9 +13,6 @@ MODEL_ORDER = [
     "MicroTEDAClusPlus",
 ]
 
-# Models of the original evaluation; MicroTEDAClusPlus is the model proposed by the thesis.
-BENCHMARK_MODELS = MODEL_ORDER[:-1]
-
 MODEL_DISPLAY_NAMES = {"MicroTEDAClusPlus": "MicroTEDAClus+"}
 
 
@@ -67,27 +64,43 @@ def dataset_display_name(dataset_id: str) -> str:
     return DATASET_DISPLAY_NAMES.get(dataset_id, dataset_id)
 
 
-SUBSET_MODEL_NAMES = {
-    "all": set(BENCHMARK_MODELS),
-    "original-paper": {"MicroTEDAClus", "DenStream", "CluStream", "StreamKM"},
-    "teda-micro-based": {"MicroTEDAClus", "AutoCloud", "CEDAS", "TEDACloud"},
-    "plus-vs-baseline": {"MicroTEDAClus", "MicroTEDAClusPlus"},
-    "plus-vs-benchmarks": set(MODEL_ORDER) - {"MicroTEDAClus"},
+DATASET_SHORT_NAMES = {
+    "benchmark_1": "B1",
+    "benchmark_2": "B2",
+    "random_rbf_events": "RBF",
+    "cassini": "CSN",
+    "chameleon_ds3": "DS3",
+    "chameleon_ds4": "DS4",
 }
 
-# Thesis chapter whose artifacts directory receives the tables and plots of each subset.
-SUBSET_CHAPTERS = {
-    "all": "MethodologyReassessment",
-    "original-paper": "MethodologyReassessment",
-    "teda-micro-based": "MethodologyReassessment",
-    "plus-vs-baseline": "ModelImprovement",
-    "plus-vs-benchmarks": "Results",
-}
 
-SUBSETS = {
-    subset_name: [model for model in MODEL_ORDER if model in model_names]
-    for subset_name, model_names in SUBSET_MODEL_NAMES.items()
-}
+@dataclass(frozen=True)
+class Comparison:
+    """A model in focus compared with each of the other models.
+
+    Its tables and figures go to the artifacts directory of `chapter`, under
+    `name`, and their labels start with `label`. `subject` names the models in
+    the captions.
+    """
+
+    name: str
+    focus: str
+    others: tuple[str, ...]
+    chapter: str
+    label: str
+    subject: str
+
+
+COMPARISONS = [
+    Comparison(
+        "reassessment",
+        "MicroTEDAClus",
+        ("DenStream", "CluStream", "StreamKM", "AutoCloud", "CEDAS", "TEDACloud"),
+        "MethodologyReassessment",
+        "mr",
+        "\\modelname{MicroTEDAClus} and the benchmark models",
+    ),
+]
 
 METRIC_EXCLUDED_MODELS: dict[str, set[str]] = {
     "mc_max": {"StreamKM"},
@@ -96,24 +109,7 @@ METRIC_EXCLUDED_MODELS: dict[str, set[str]] = {
 }
 
 
-def effective_models(subset_name: str, metric: str) -> list[str]:
-    """Return the subset's model list minus any metric-level exclusions."""
+def effective_models(comparison: Comparison, metric: str) -> list[str]:
+    """The models of a comparison, the model in focus first, minus the exclusions of a metric."""
     excluded = METRIC_EXCLUDED_MODELS.get(metric, set())
-    return [m for m in SUBSETS[subset_name] if m not in excluded]
-
-
-MODEL_COLORS = dict(
-    zip(
-        MODEL_ORDER,
-        [
-            "xkcd:purple",
-            "xkcd:green",
-            "xkcd:blue",
-            "xkcd:pink",
-            "xkcd:brown",
-            "xkcd:red",
-            "xkcd:lightblue",
-            "xkcd:orange",
-        ],
-    )
-)
+    return [m for m in (comparison.focus, *comparison.others) if m not in excluded]

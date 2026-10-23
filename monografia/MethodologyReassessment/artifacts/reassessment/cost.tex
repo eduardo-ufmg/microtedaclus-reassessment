@@ -1,0 +1,53 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption[Execution time and memory footprint of \modelname{MicroTEDAClus} and the benchmark models]{Execution time and memory footprint of \modelname{MicroTEDAClus} and the benchmark models: medians over the 94 runs, 93 in B1, B2 and RBF, where a model has no result for a run.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
+\begin{tabular}{l c c c c c c }
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 \\
+\midrule
+\multicolumn{7}{l}{\textit{Learning time [ms]}} \\
+\modelname{MicroTEDAClus} & 1000 & 570 & 8210 & 590 & 27850 & 18815 \\
+Better/same/worse & 0/1/5 & 0/1/5 & 0/1/5 & 1/0/5 & 0/0/6 & 1/0/5 \\
+\modelname{DenStream} & \textcolor{red}{180} & \textcolor{red}{200} & \textcolor{red}{200} & \textcolor{red}{190} & \textcolor{red}{210} & \textcolor{red}{210} \\
+\modelname{CluStream} & \textcolor{red}{230} & \textcolor{red}{140} & \textcolor{red}{4260} & \textcolor{red}{120} & \textcolor{red}{380} & \textcolor{red}{375} \\
+\modelname{StreamKM} & \textcolor{red}{60} & \textcolor{red}{30} & \textcolor{red}{120} & \textcolor{red}{25} & \textcolor{red}{120} & \textcolor{red}{105} \\
+\modelname{AutoCloud} & 12910 & 50 & 460 & \textbf{16910} & \textcolor{red}{445} & \textbf{97150} \\
+\modelname{CEDAS} & \textcolor{red}{30} & \textcolor{red}{20} & \textcolor{red}{90} & \textcolor{red}{30} & \textcolor{red}{90} & \textcolor{red}{70} \\
+\modelname{TEDACloud} & \textcolor{red}{110} & \textcolor{red}{50} & \textcolor{red}{530} & \textcolor{red}{270} & \textcolor{red}{360} & \textcolor{red}{310} \\
+\midrule
+\multicolumn{7}{l}{\textit{Prediction time [ms]}} \\
+\modelname{MicroTEDAClus} & 100 & 50 & 800 & 60 & 480 & 445 \\
+Better/same/worse & 1/2/3 & 2/0/4 & 0/2/4 & 3/1/2 & 0/0/6 & 1/0/5 \\
+\modelname{DenStream} & 90 & \textbf{140} & \textcolor{red}{150} & \textbf{135} & \textcolor{red}{70} & \textcolor{red}{110} \\
+\modelname{CluStream} & 100 & \textbf{80} & 1220 & \textbf{80} & \textcolor{red}{260} & \textcolor{red}{200} \\
+\modelname{StreamKM} & \textcolor{red}{10} & \textcolor{red}{10} & \textcolor{red}{30} & \textcolor{red}{10} & \textcolor{red}{30} & \textcolor{red}{30} \\
+\modelname{AutoCloud} & \textbf{4770} & \textcolor{red}{20} & 160 & \textbf{6200} & \textcolor{red}{160} & \textbf{35680} \\
+\modelname{CEDAS} & \textcolor{red}{20} & \textcolor{red}{10} & \textcolor{red}{60} & \textcolor{red}{20} & \textcolor{red}{70} & \textcolor{red}{50} \\
+\modelname{TEDACloud} & \textcolor{red}{40} & \textcolor{red}{20} & \textcolor{red}{150} & 70 & \textcolor{red}{110} & \textcolor{red}{100} \\
+\midrule
+\multicolumn{7}{l}{\textit{Maximum memory footprint [KiB]}} \\
+\modelname{MicroTEDAClus} & 277 & 141 & 1030 & 140 & 702 & 628 \\
+Better/same/worse & 0/2/4 & 0/2/4 & 0/2/4 & 0/2/4 & 0/0/6 & 1/0/5 \\
+\modelname{DenStream} & \textcolor{red}{15} & \textcolor{red}{28} & \textcolor{red}{10} & \textcolor{red}{24} & \textcolor{red}{10} & \textcolor{red}{10} \\
+\modelname{CluStream} & 209 & 152 & 1066 & 148 & \textcolor{red}{218} & \textcolor{red}{201} \\
+\modelname{StreamKM} & \textcolor{red}{27} & \textcolor{red}{28} & \textcolor{red}{84} & \textcolor{red}{31} & \textcolor{red}{35} & \textcolor{red}{38} \\
+\modelname{AutoCloud} & 654 & 3 & 11 & 706 & \textcolor{red}{9} & \textbf{1941} \\
+\modelname{CEDAS} & \textcolor{red}{8} & \textcolor{red}{3} & \textcolor{red}{9} & \textcolor{red}{5} & \textcolor{red}{8} & \textcolor{red}{8} \\
+\modelname{TEDACloud} & \textcolor{red}{6} & \textcolor{red}{3} & \textcolor{red}{11} & \textcolor{red}{12} & \textcolor{red}{7} & \textcolor{red}{7} \\
+\midrule
+\multicolumn{7}{l}{\textit{Steady-state memory footprint [KiB]}} \\
+\modelname{MicroTEDAClus} & 155 & 106 & 423 & 118 & 698 & 626 \\
+Better/same/worse & 0/2/4 & 1/1/4 & 0/2/4 & 1/1/4 & 0/0/6 & 1/0/5 \\
+\modelname{DenStream} & \textcolor{red}{12} & \textcolor{red}{23} & \textcolor{red}{9} & \textcolor{red}{18} & \textcolor{red}{6} & \textcolor{red}{9} \\
+\modelname{CluStream} & 209 & \textbf{152} & 1066 & \textbf{148} & \textcolor{red}{218} & \textcolor{red}{201} \\
+\modelname{StreamKM} & \textcolor{red}{16} & \textcolor{red}{17} & \textcolor{red}{31} & \textcolor{red}{17} & \textcolor{red}{20} & \textcolor{red}{28} \\
+\modelname{AutoCloud} & 629 & 2 & 9 & 685 & \textcolor{red}{6} & \textbf{1914} \\
+\modelname{CEDAS} & \textcolor{red}{7} & \textcolor{red}{3} & \textcolor{red}{8} & \textcolor{red}{5} & \textcolor{red}{8} & \textcolor{red}{8} \\
+\modelname{TEDACloud} & \textcolor{red}{6} & \textcolor{red}{2} & \textcolor{red}{9} & \textcolor{red}{8} & \textcolor{red}{3} & \textcolor{red}{4} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mr_cost}
+\end{table}

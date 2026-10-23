@@ -1,0 +1,53 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption[Clustering quality of \modelname{MicroTEDAClus} and the benchmark models]{Clustering quality of \modelname{MicroTEDAClus} and the benchmark models: medians over the 94 runs, 93 in B1, B2 and RBF, where a model has no result for a run.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
+\begin{tabular}{l c c c c c c }
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 \\
+\midrule
+\multicolumn{7}{l}{\textit{Overall ARI}} \\
+\modelname{MicroTEDAClus} & 0.035 & 0.564 & 0.359 & 0.492 & 0.215 & 0.202 \\
+Better/same/worse & 0/3/3 & 5/1/0 & 2/3/1 & 3/1/2 & 4/0/2 & 3/1/2 \\
+\modelname{DenStream} & \textcolor{red}{0.665} & \textbf{0.402} & 0.360 & 0.383 & \textbf{0.174} & 0.184 \\
+\modelname{CluStream} & 0.096 & 0.566 & \textbf{0.170} & \textcolor{red}{0.573} & \textcolor{red}{0.324} & \textcolor{red}{0.319} \\
+\modelname{StreamKM} & 0.183 & \textbf{0.498} & 0.371 & \textcolor{red}{0.696} & \textcolor{red}{0.330} & \textcolor{red}{0.327} \\
+\modelname{AutoCloud} & 0.043 & \textbf{0.001} & \textbf{0.051} & \textbf{0.076} & \textbf{0.023} & \textbf{0.030} \\
+\modelname{CEDAS} & \textcolor{red}{0.252} & \textbf{0.000} & 0.178 & \textbf{0.000} & \textbf{0.000} & \textbf{0.000} \\
+\modelname{TEDACloud} & \textcolor{red}{0.827} & \textbf{0.509} & \textcolor{red}{0.495} & \textbf{0.360} & \textbf{0.040} & \textbf{0.125} \\
+\midrule
+\multicolumn{7}{l}{\textit{Steady-State ARI}} \\
+\modelname{MicroTEDAClus} & 0.000 & 0.524 & 0.000 & 0.436 & 0.126 & 0.124 \\
+Better/same/worse & 0/1/5 & 2/2/2 & 0/3/3 & 2/2/2 & 2/1/3 & 2/1/3 \\
+\modelname{DenStream} & \textcolor{red}{0.822} & 0.567 & \textcolor{red}{0.340} & 0.405 & \textcolor{red}{0.196} & \textcolor{red}{0.274} \\
+\modelname{CluStream} & \textcolor{red}{0.174} & \textcolor{red}{0.599} & 0.194 & \textcolor{red}{0.589} & \textcolor{red}{0.338} & \textcolor{red}{0.320} \\
+\modelname{StreamKM} & \textcolor{red}{0.164} & \textcolor{red}{0.860} & \textcolor{red}{0.451} & \textcolor{red}{0.569} & \textcolor{red}{0.341} & \textcolor{red}{0.301} \\
+\modelname{AutoCloud} & 0.020 & \textbf{0.135} & 0.040 & \textbf{0.052} & \textbf{0.073} & \textbf{0.070} \\
+\modelname{CEDAS} & \textcolor{red}{0.211} & \textbf{0.000} & 0.142 & \textbf{0.000} & \textbf{0.000} & \textbf{0.000} \\
+\modelname{TEDACloud} & \textcolor{red}{0.760} & 0.518 & \textcolor{red}{0.541} & 0.366 & 0.117 & 0.091 \\
+\midrule
+\multicolumn{7}{l}{\textit{ARI at the fifth batch}} \\
+\modelname{MicroTEDAClus} & 0.847 & 0.593 & 0.587 & 0.461 & 0.000 & 0.072 \\
+Better/same/worse & 3/1/2 & 5/1/0 & 6/0/0 & 4/0/2 & 1/1/4 & 3/0/3 \\
+\modelname{DenStream} & \textbf{0.000} & \textbf{0.000} & \textbf{0.000} & \textbf{0.000} & \textbf{0.000} & \textbf{0.000} \\
+\modelname{CluStream} & \textbf{0.738} & 0.565 & \textbf{0.000} & \textcolor{red}{0.580} & \textcolor{red}{0.267} & \textcolor{red}{0.332} \\
+\modelname{StreamKM} & 0.875 & \textbf{0.439} & \textbf{0.015} & \textcolor{red}{0.859} & \textcolor{red}{0.204} & \textcolor{red}{0.248} \\
+\modelname{AutoCloud} & \textbf{0.384} & \textbf{0.002} & \textbf{0.213} & \textbf{0.081} & \textcolor{red}{0.040} & \textbf{0.037} \\
+\modelname{CEDAS} & \textcolor{red}{0.969} & \textbf{0.000} & \textbf{0.307} & \textbf{0.000} & 0.000 & \textbf{0.000} \\
+\modelname{TEDACloud} & \textcolor{red}{0.967} & \textbf{0.250} & \textbf{0.399} & \textbf{0.315} & \textcolor{red}{0.033} & \textcolor{red}{0.170} \\
+\midrule
+\multicolumn{7}{l}{\textit{Maximum ARI drop}} \\
+\modelname{MicroTEDAClus} & 0.902 & 0.329 & 0.677 & 0.295 & 0.274 & 0.292 \\
+Better/same/worse & 0/0/6 & 0/2/4 & 0/0/6 & 0/2/4 & 0/0/6 & 0/0/6 \\
+\modelname{DenStream} & \textcolor{red}{0.023} & \textcolor{red}{0.259} & \textcolor{red}{0.227} & \textcolor{red}{0.144} & \textcolor{red}{0.070} & \textcolor{red}{0.071} \\
+\modelname{CluStream} & \textcolor{red}{0.752} & 0.371 & \textcolor{red}{0.521} & \textcolor{red}{0.176} & \textcolor{red}{0.118} & \textcolor{red}{0.158} \\
+\modelname{StreamKM} & \textcolor{red}{0.500} & \textcolor{red}{0.056} & \textcolor{red}{0.336} & 0.300 & \textcolor{red}{0.168} & \textcolor{red}{0.184} \\
+\modelname{AutoCloud} & \textcolor{red}{0.232} & \textcolor{red}{0.042} & \textcolor{red}{0.311} & \textcolor{red}{0.095} & \textcolor{red}{0.041} & \textcolor{red}{0.008} \\
+\modelname{CEDAS} & \textcolor{red}{0.777} & 0.111 & \textcolor{red}{0.428} & 0.208 & \textcolor{red}{0.000} & \textcolor{red}{0.000} \\
+\modelname{TEDACloud} & \textcolor{red}{0.194} & \textcolor{red}{0.090} & \textcolor{red}{0.329} & \textcolor{red}{0.192} & \textcolor{red}{0.055} & \textcolor{red}{0.243} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mr_quality}
+\end{table}

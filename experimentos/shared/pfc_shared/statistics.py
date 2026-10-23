@@ -200,6 +200,52 @@ def process_metric(
     return pd.DataFrame(results).set_index("dataset")
 
 
+def compare_with_focus(
+    df: pd.DataFrame, metric: str, focus: str, others: list
+) -> pd.DataFrame:
+    """The model in focus compared with each other model, in each dataset.
+
+    Over the runs that every model of the comparison finished, each other model
+    is compared with the model in focus by the paired test of
+    `paired_comparisons`, and the p-values of a dataset are corrected together.
+    The verdict of a row says how the model in focus compares with the model of
+    that row; the row of the model in focus has none.
+    """
+    rows = []
+    for dataset, of_dataset in df.groupby("dataset", sort=False):
+        table = of_dataset.pivot(index="run", columns="model", values=metric)
+        present = [model for model in others if model in table.columns]
+        if focus not in table.columns or not present:
+            continue
+        table = table[[focus, *present]].dropna()
+        if table.empty:
+            continue
+        pairs = {
+            model: (table[model].to_numpy(), table[focus].to_numpy())
+            for model in present
+        }
+        verdicts = paired_comparisons(pairs, metric)
+        common = {"dataset": dataset, "runs": len(table)}
+        rows.append(
+            {
+                **common,
+                "model": focus,
+                "median": verdicts["median"].iloc[0],
+                "verdict": None,
+            }
+        )
+        for model in present:
+            rows.append(
+                {
+                    **common,
+                    "model": model,
+                    "median": verdicts.loc[model, "control_median"],
+                    "verdict": verdicts.loc[model, "verdict"],
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def paired_comparisons(pairs: dict, metric: str) -> pd.DataFrame:
     """Paired comparison of a variant with its control in each group of observations.
 
