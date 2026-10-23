@@ -3,21 +3,21 @@
 \small
 \caption[Reparameterizations of the m function: clustering quality]{Reparameterizations of the m function: clustering quality, medians over the development runs.}
 \adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
-\begin{tabular}{l c c c c c c c c c}
+\begin{tabular}{l c c c c c c c c}
 \toprule
-Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 & Rule \\
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
 \midrule
-\multicolumn{10}{l}{\textit{Overall ARI}} \\
-\variant{corrected} & 0.037 & 0.578 & 0.498 & 0.599 & 0.239 & 0.242 & 0.964 & 0.856 &  \\
-\variant{m-reparam} & 0.009 & 0.544 & 0.407 & 0.581 & 0.234 & 0.246 & \textcolor{red}{0.857} & \textcolor{red}{0.853} & $-$ \\
-\variant{m-constant} & \textbf{0.224} & 0.613 & 0.431 & \textcolor{red}{0.282} & \textcolor{red}{0.000} & \textcolor{red}{0.203} & \textcolor{red}{0.855} & \textcolor{red}{0.853} & $\pm$ \\
-\variant{m-asymptote} & 0.048 & 0.561 & 0.445 & \textcolor{red}{0.450} & \textcolor{red}{0.196} & \textcolor{red}{0.230} & \textcolor{red}{0.859} & 0.858 & $-$ \\
+\multicolumn{9}{l}{\textit{Overall ARI}} \\
+\variant{corrected} & 0.037 & 0.578 & 0.498 & 0.599 & 0.239 & 0.242 & 0.964 & 0.856 \\
+\variant{m-reparam} & 0.009 & 0.544 & 0.407 & 0.581 & 0.234 & 0.246 & \textcolor{red}{0.857} & \textcolor{red}{0.853} \\
+\variant{m-constant} & \textbf{0.224} & 0.613 & 0.431 & \textcolor{red}{0.282} & \textcolor{red}{0.000} & \textcolor{red}{0.203} & \textcolor{red}{0.855} & \textcolor{red}{0.853} \\
+\variant{m-asymptote} & 0.048 & 0.561 & 0.445 & \textcolor{red}{0.450} & \textcolor{red}{0.196} & \textcolor{red}{0.230} & \textcolor{red}{0.859} & 0.858 \\
 \midrule
-\multicolumn{10}{l}{\textit{Steady-State ARI}} \\
-\variant{corrected} & 0.000 & 0.680 & 0.180 & 0.593 & 0.185 & 0.201 & 0.897 & 0.848 &  \\
-\variant{m-reparam} & 0.000 & 0.471 & 0.235 & 0.502 & 0.182 & 0.194 & \textcolor{red}{0.831} & \textcolor{red}{0.821} & $-$ \\
-\variant{m-constant} & \textbf{0.110} & \textbf{0.892} & 0.487 & \textcolor{red}{0.326} & 0.000 & \textcolor{red}{0.147} & 0.856 & 0.823 & $\pm$ \\
-\variant{m-asymptote} & 0.010 & 0.499 & 0.307 & 0.421 & \textcolor{red}{0.113} & 0.218 & 0.847 & 0.831 & $-$ \\
+\multicolumn{9}{l}{\textit{Steady-State ARI}} \\
+\variant{corrected} & 0.000 & 0.680 & 0.180 & 0.593 & 0.185 & 0.201 & 0.897 & 0.848 \\
+\variant{m-reparam} & 0.000 & 0.471 & 0.235 & 0.502 & 0.182 & 0.194 & \textcolor{red}{0.831} & \textcolor{red}{0.821} \\
+\variant{m-constant} & \textbf{0.110} & \textbf{0.892} & 0.487 & \textcolor{red}{0.326} & 0.000 & \textcolor{red}{0.147} & 0.856 & 0.823 \\
+\variant{m-asymptote} & 0.010 & 0.499 & 0.307 & 0.421 & \textcolor{red}{0.113} & 0.218 & 0.847 & 0.831 \\
 \bottomrule
 \end{tabular}
 }

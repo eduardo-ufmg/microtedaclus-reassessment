@@ -3,23 +3,23 @@
 \small
 \caption[Refinements of the improved model: clustering quality]{Refinements of the improved model: clustering quality, medians over the development runs.}
 \adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
-\begin{tabular}{l c c c c c c c c c}
+\begin{tabular}{l c c c c c c c c}
 \toprule
-Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 & Rule \\
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
 \midrule
-\multicolumn{10}{l}{\textit{Overall ARI}} \\
-\variant{improved} & 0.915 & 0.643 & 0.510 & 0.455 & 0.304 & 0.255 & 0.987 & 0.990 &  \\
-\variant{improved + no-penalty} & 0.864 & 0.696 & 0.508 & 0.454 & 0.304 & 0.255 & \textbf{1.000} & \textbf{1.000} & $+$ \\
-\variant{improved + persistent-labels} & 0.887 & 0.657 & 0.524 & 0.536 & 0.311 & 0.283 & 0.990 & 0.991 & $=$ \\
-\variant{improved + forgetting} & 0.903 & 0.640 & 0.550 & 0.593 & 0.291 & 0.264 & 0.981 & 0.990 & $=$ \\
-\variant{improved + recency} & 0.890 & 0.582 & 0.506 & 0.476 & \textcolor{red}{0.218} & \textcolor{red}{0.213} & 0.988 & 0.994 & $-$ \\
+\multicolumn{9}{l}{\textit{Overall ARI}} \\
+\variant{improved} & 0.915 & 0.643 & 0.510 & 0.455 & 0.304 & 0.255 & 0.987 & 0.990 \\
+\variant{improved + no-penalty} & 0.864 & 0.696 & 0.508 & 0.454 & 0.304 & 0.255 & \textbf{1.000} & \textbf{1.000} \\
+\variant{improved + persistent-labels} & 0.887 & 0.657 & 0.524 & 0.536 & 0.311 & 0.283 & 0.990 & 0.991 \\
+\variant{improved + forgetting} & 0.903 & 0.640 & 0.550 & 0.593 & 0.291 & 0.264 & 0.981 & 0.990 \\
+\variant{improved + recency} & 0.890 & 0.582 & 0.506 & 0.476 & \textcolor{red}{0.218} & \textcolor{red}{0.213} & 0.988 & 0.994 \\
 \midrule
-\multicolumn{10}{l}{\textit{Steady-State ARI}} \\
-\variant{improved} & 0.865 & 0.859 & 0.395 & 0.451 & 0.338 & 0.320 & 0.983 & 0.982 &  \\
-\variant{improved + no-penalty} & 0.783 & 0.913 & 0.395 & 0.461 & 0.338 & 0.320 & \textbf{1.000} & \textbf{1.000} & $+$ \\
-\variant{improved + persistent-labels} & 0.833 & 0.925 & 0.461 & 0.540 & 0.305 & 0.328 & 0.985 & 0.982 & $=$ \\
-\variant{improved + forgetting} & 0.915 & 0.854 & 0.498 & 0.601 & 0.307 & 0.289 & 0.950 & 0.986 & $=$ \\
-\variant{improved + recency} & 0.732 & 0.803 & 0.336 & 0.457 & 0.221 & 0.328 & 0.974 & 0.990 & $-$ \\
+\multicolumn{9}{l}{\textit{Steady-State ARI}} \\
+\variant{improved} & 0.865 & 0.859 & 0.395 & 0.451 & 0.338 & 0.320 & 0.983 & 0.982 \\
+\variant{improved + no-penalty} & 0.783 & 0.913 & 0.395 & 0.461 & 0.338 & 0.320 & \textbf{1.000} & \textbf{1.000} \\
+\variant{improved + persistent-labels} & 0.833 & 0.925 & 0.461 & 0.540 & 0.305 & 0.328 & 0.985 & 0.982 \\
+\variant{improved + forgetting} & 0.915 & 0.854 & 0.498 & 0.601 & 0.307 & 0.289 & 0.950 & 0.986 \\
+\variant{improved + recency} & 0.732 & 0.803 & 0.336 & 0.457 & 0.221 & 0.328 & 0.974 & 0.990 \\
 \bottomrule
 \end{tabular}
 }

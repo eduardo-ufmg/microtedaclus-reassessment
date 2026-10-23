@@ -3,37 +3,37 @@
 \small
 \caption[Combined improvements: clustering quality]{Combined improvements: clustering quality, medians over the development runs.}
 \adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
-\begin{tabular}{l c c c c c c c c c}
+\begin{tabular}{l c c c c c c c c}
 \toprule
-Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 & Rule \\
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
 \midrule
-\multicolumn{10}{l}{\textit{Overall ARI}} \\
-\variant{corrected} & 0.037 & 0.578 & 0.498 & 0.599 & 0.239 & 0.242 & 0.964 & 0.856 &  \\
-\variant{single + cap} & \textbf{0.175} & 0.637 & \textbf{0.570} & \textcolor{red}{0.475} & 0.239 & 0.222 & \textbf{0.989} & \textbf{0.992} & $\pm$ \\
-\variant{single + noise} & \textbf{0.621} & 0.581 & 0.548 & 0.548 & 0.168 & 0.198 & \textbf{0.990} & \textbf{0.992} & $+$ \\
-\variant{single + relative} & \textbf{0.786} & 0.625 & \textbf{0.552} & 0.554 & \textbf{0.295} & 0.246 & \textbf{0.988} & \textbf{0.992} & $+$ \\
-\variant{cap + noise} & \textbf{0.911} & 0.595 & 0.536 & 0.556 & \textcolor{red}{0.153} & 0.198 & \textbf{0.970} & 0.995 & $\pm$ \\
-\variant{cap + relative} & \textbf{0.748} & 0.621 & \textbf{0.534} & 0.577 & \textbf{0.272} & \textbf{0.380} & 0.941 & 0.857 & $+$ \\
-\variant{noise + relative} & \textbf{0.808} & \textbf{0.646} & 0.492 & 0.581 & \textbf{0.309} & 0.334 & \textbf{0.995} & \textbf{1.000} & $+$ \\
-\variant{single + cap + noise} & \textbf{0.629} & 0.621 & 0.530 & 0.514 & 0.160 & 0.177 & \textbf{0.988} & \textbf{0.993} & $+$ \\
-\variant{single + cap + relative} & \textbf{0.812} & 0.621 & \textbf{0.552} & 0.478 & 0.231 & 0.272 & \textbf{0.988} & \textbf{0.992} & $+$ \\
-\variant{single + noise + relative} & \textbf{0.915} & \textbf{0.643} & 0.510 & 0.455 & \textbf{0.304} & 0.255 & \textbf{0.987} & \textbf{0.990} & $+$ \\
-\variant{cap + noise + relative} & \textbf{0.775} & 0.623 & 0.532 & 0.590 & 0.267 & \textbf{0.386} & \textbf{0.982} & 1.000 & $+$ \\
-\variant{single + cap + noise + relative} & \textbf{0.879} & 0.649 & \textbf{0.567} & 0.515 & 0.236 & 0.271 & \textbf{0.985} & \textbf{0.990} & $+$ \\
+\multicolumn{9}{l}{\textit{Overall ARI}} \\
+\variant{corrected} & 0.037 & 0.578 & 0.498 & 0.599 & 0.239 & 0.242 & 0.964 & 0.856 \\
+\variant{single + cap} & \textbf{0.175} & 0.637 & \textbf{0.570} & \textcolor{red}{0.475} & 0.239 & 0.222 & \textbf{0.989} & \textbf{0.992} \\
+\variant{single + noise} & \textbf{0.621} & 0.581 & 0.548 & 0.548 & 0.168 & 0.198 & \textbf{0.990} & \textbf{0.992} \\
+\variant{single + relative} & \textbf{0.786} & 0.625 & \textbf{0.552} & 0.554 & \textbf{0.295} & 0.246 & \textbf{0.988} & \textbf{0.992} \\
+\variant{cap + noise} & \textbf{0.911} & 0.595 & 0.536 & 0.556 & \textcolor{red}{0.153} & 0.198 & \textbf{0.970} & 0.995 \\
+\variant{cap + relative} & \textbf{0.748} & 0.621 & \textbf{0.534} & 0.577 & \textbf{0.272} & \textbf{0.380} & 0.941 & 0.857 \\
+\variant{noise + relative} & \textbf{0.808} & \textbf{0.646} & 0.492 & 0.581 & \textbf{0.309} & 0.334 & \textbf{0.995} & \textbf{1.000} \\
+\variant{single + cap + noise} & \textbf{0.629} & 0.621 & 0.530 & 0.514 & 0.160 & 0.177 & \textbf{0.988} & \textbf{0.993} \\
+\variant{single + cap + relative} & \textbf{0.812} & 0.621 & \textbf{0.552} & 0.478 & 0.231 & 0.272 & \textbf{0.988} & \textbf{0.992} \\
+\variant{single + noise + relative} & \textbf{0.915} & \textbf{0.643} & 0.510 & 0.455 & \textbf{0.304} & 0.255 & \textbf{0.987} & \textbf{0.990} \\
+\variant{cap + noise + relative} & \textbf{0.775} & 0.623 & 0.532 & 0.590 & 0.267 & \textbf{0.386} & \textbf{0.982} & 1.000 \\
+\variant{single + cap + noise + relative} & \textbf{0.879} & 0.649 & \textbf{0.567} & 0.515 & 0.236 & 0.271 & \textbf{0.985} & \textbf{0.990} \\
 \midrule
-\multicolumn{10}{l}{\textit{Steady-State ARI}} \\
-\variant{corrected} & 0.000 & 0.680 & 0.180 & 0.593 & 0.185 & 0.201 & 0.897 & 0.848 &  \\
-\variant{single + cap} & \textbf{0.000} & \textbf{0.867} & \textbf{0.478} & 0.462 & 0.180 & 0.176 & \textbf{0.980} & \textbf{0.988} & $\pm$ \\
-\variant{single + noise} & \textbf{0.221} & \textbf{0.806} & \textbf{0.422} & 0.576 & 0.181 & 0.150 & \textbf{0.984} & \textbf{0.988} & $+$ \\
-\variant{single + relative} & \textbf{0.710} & \textbf{0.867} & \textbf{0.473} & 0.512 & \textbf{0.341} & \textbf{0.328} & \textbf{0.982} & \textbf{0.986} & $+$ \\
-\variant{cap + noise} & \textbf{0.290} & 0.747 & \textbf{0.553} & 0.548 & \textcolor{red}{0.156} & 0.159 & 0.967 & 1.000 & $\pm$ \\
-\variant{cap + relative} & \textbf{0.271} & \textbf{0.896} & \textbf{0.514} & 0.564 & 0.248 & \textbf{0.351} & 0.930 & 0.833 & $+$ \\
-\variant{noise + relative} & \textbf{0.383} & 0.869 & 0.292 & 0.551 & 0.319 & 0.023 & \textbf{1.000} & \textbf{1.000} & $+$ \\
-\variant{single + cap + noise} & \textbf{0.215} & \textbf{0.878} & \textbf{0.489} & 0.470 & 0.160 & 0.132 & \textbf{0.984} & \textbf{0.990} & $+$ \\
-\variant{single + cap + relative} & \textbf{0.834} & 0.876 & \textbf{0.444} & 0.519 & 0.148 & \textbf{0.232} & \textbf{0.982} & \textbf{0.990} & $+$ \\
-\variant{single + noise + relative} & \textbf{0.865} & \textbf{0.859} & \textbf{0.395} & 0.451 & \textbf{0.338} & \textbf{0.320} & \textbf{0.983} & \textbf{0.982} & $+$ \\
-\variant{cap + noise + relative} & \textbf{0.488} & 0.744 & \textbf{0.502} & 0.556 & \textbf{0.249} & \textbf{0.408} & 0.992 & 1.000 & $+$ \\
-\variant{single + cap + noise + relative} & \textbf{0.752} & 0.843 & \textbf{0.397} & 0.443 & 0.161 & \textbf{0.307} & \textbf{0.984} & \textbf{0.986} & $+$ \\
+\multicolumn{9}{l}{\textit{Steady-State ARI}} \\
+\variant{corrected} & 0.000 & 0.680 & 0.180 & 0.593 & 0.185 & 0.201 & 0.897 & 0.848 \\
+\variant{single + cap} & \textbf{0.000} & \textbf{0.867} & \textbf{0.478} & 0.462 & 0.180 & 0.176 & \textbf{0.980} & \textbf{0.988} \\
+\variant{single + noise} & \textbf{0.221} & \textbf{0.806} & \textbf{0.422} & 0.576 & 0.181 & 0.150 & \textbf{0.984} & \textbf{0.988} \\
+\variant{single + relative} & \textbf{0.710} & \textbf{0.867} & \textbf{0.473} & 0.512 & \textbf{0.341} & \textbf{0.328} & \textbf{0.982} & \textbf{0.986} \\
+\variant{cap + noise} & \textbf{0.290} & 0.747 & \textbf{0.553} & 0.548 & \textcolor{red}{0.156} & 0.159 & 0.967 & 1.000 \\
+\variant{cap + relative} & \textbf{0.271} & \textbf{0.896} & \textbf{0.514} & 0.564 & 0.248 & \textbf{0.351} & 0.930 & 0.833 \\
+\variant{noise + relative} & \textbf{0.383} & 0.869 & 0.292 & 0.551 & 0.319 & 0.023 & \textbf{1.000} & \textbf{1.000} \\
+\variant{single + cap + noise} & \textbf{0.215} & \textbf{0.878} & \textbf{0.489} & 0.470 & 0.160 & 0.132 & \textbf{0.984} & \textbf{0.990} \\
+\variant{single + cap + relative} & \textbf{0.834} & 0.876 & \textbf{0.444} & 0.519 & 0.148 & \textbf{0.232} & \textbf{0.982} & \textbf{0.990} \\
+\variant{single + noise + relative} & \textbf{0.865} & \textbf{0.859} & \textbf{0.395} & 0.451 & \textbf{0.338} & \textbf{0.320} & \textbf{0.983} & \textbf{0.982} \\
+\variant{cap + noise + relative} & \textbf{0.488} & 0.744 & \textbf{0.502} & 0.556 & \textbf{0.249} & \textbf{0.408} & 0.992 & 1.000 \\
+\variant{single + cap + noise + relative} & \textbf{0.752} & 0.843 & \textbf{0.397} & 0.443 & 0.161 & \textbf{0.307} & \textbf{0.984} & \textbf{0.986} \\
 \bottomrule
 \end{tabular}
 }

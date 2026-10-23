@@ -70,13 +70,6 @@ METRIC_TITLES = {
     "mc_max": "Maximum microcluster count",
     "mc_steadystate": "Steady-state microcluster count",
 }
-OUTCOME_SYMBOLS = {
-    "improves": "$+$",
-    "regresses": "$-$",
-    "mixed": r"$\pm$",
-    "indistinguishable": "$=$",
-    "missing": "",
-}
 CHAIN = ["vectorized", CORRECTED, IMPROVED, FINAL]
 PROBE_DATASETS = ["cassini", "chameleon_ds3", "chameleon_ds4"]
 QUALITY_METRICS = ["ari_overall", "ari_steadystate"]
@@ -153,7 +146,7 @@ def panel_table(
 # -----------------------------------------------------------------------------
 # Comparison tables (variants in rows, datasets in columns)
 # -----------------------------------------------------------------------------
-def comparison_table(experiment, metrics, name, caption, short, with_rule=True):
+def comparison_table(experiment, metrics, name, caption, short):
     """One panel per metric; each variant is marked against its own control."""
     comparisons = list(experiment.comparisons)
     controls = list(dict.fromkeys(control for _, control in comparisons))
@@ -161,9 +154,9 @@ def comparison_table(experiment, metrics, name, caption, short, with_rule=True):
     many_controls = len(controls) > 1
     rows = [(c, None) for c in controls if c not in variants] + comparisons
 
-    n_cols = 1 + many_controls + len(DATASETS) + with_rule
+    n_cols = 1 + many_controls + len(DATASETS)
     header = ["Model"] + (["Control"] if many_controls else [])
-    header += [SHORT_NAMES[d] for d in DATASETS] + (["Rule"] if with_rule else [])
+    header += [SHORT_NAMES[d] for d in DATASETS]
     lines = [" & ".join(header) + r" \\"]
 
     for metric in metrics:
@@ -185,17 +178,9 @@ def comparison_table(experiment, metrics, name, caption, short, with_rule=True):
                 cells.append(
                     marked(number(metric, value), verdicts.get(dataset, "same"))
                 )
-            if with_rule:
-                decides = control and metric in analysis.DECISION_METRICS
-                outcome = (
-                    analysis.decide(control, variant, experiment.runs)["outcome"]
-                    if decides
-                    else ""
-                )
-                cells.append(OUTCOME_SYMBOLS.get(outcome, ""))
             lines.append(" & ".join(cells) + r" \\")
 
-    spec = "l " + ("l " if many_controls else "") + "c " * (len(DATASETS) + with_rule)
+    spec = "l " + ("l " if many_controls else "") + "c " * len(DATASETS)
     write_table(
         ARTIFACT_DIR / experiment.key / f"{name}.tex",
         caption,
@@ -224,7 +209,6 @@ def experiment_tables(experiment):
             f"{experiment.title}: steady-state microcluster count and memory footprint, "
             f"medians over the {runs}.",
             f"{experiment.title}: microcluster count and memory footprint",
-            with_rule=False,
         )
 
 
@@ -307,7 +291,6 @@ def validation_tables():
         "final_vs_vectorized",
         f"{title}: medians over the {run_set(runs)}.",
         title,
-        with_rule=False,
     )
 
 

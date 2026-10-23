@@ -3,17 +3,17 @@
 \small
 \caption[Implementation optimization: clustering quality]{Implementation optimization: clustering quality, medians over the development runs.}
 \adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
-\begin{tabular}{l c c c c c c c c c}
+\begin{tabular}{l c c c c c c c c}
 \toprule
-Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 & Rule \\
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
 \midrule
-\multicolumn{10}{l}{\textit{Overall ARI}} \\
-\variant{original} & 0.000 & 0.532 & 0.335 & 0.457 & 0.206 & 0.220 & 0.869 & 0.857 &  \\
-\variant{vectorized} & 0.000 & 0.581 & 0.328 & 0.520 & \textbf{0.230} & 0.235 & 0.851 & 0.859 & $+$ \\
+\multicolumn{9}{l}{\textit{Overall ARI}} \\
+\variant{original} & 0.000 & 0.532 & 0.335 & 0.457 & 0.206 & 0.220 & 0.869 & 0.857 \\
+\variant{vectorized} & 0.000 & 0.581 & 0.328 & 0.520 & \textbf{0.230} & 0.235 & 0.851 & 0.859 \\
 \midrule
-\multicolumn{10}{l}{\textit{Steady-State ARI}} \\
-\variant{original} & 0.000 & 0.480 & 0.000 & 0.400 & 0.171 & 0.171 & 0.000 & 0.000 &  \\
-\variant{vectorized} & 0.000 & 0.541 & 0.000 & 0.458 & 0.176 & 0.209 & 0.000 & 0.000 & $+$ \\
+\multicolumn{9}{l}{\textit{Steady-State ARI}} \\
+\variant{original} & 0.000 & 0.480 & 0.000 & 0.400 & 0.171 & 0.171 & 0.000 & 0.000 \\
+\variant{vectorized} & 0.000 & 0.541 & 0.000 & 0.458 & 0.176 & 0.209 & 0.000 & 0.000 \\
 \bottomrule
 \end{tabular}
 }

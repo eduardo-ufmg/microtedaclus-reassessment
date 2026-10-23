@@ -3,35 +3,35 @@
 \small
 \caption[Corrections, one at a time: clustering quality]{Corrections, one at a time: clustering quality, medians over the development runs.}
 \adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
-\begin{tabular}{l c c c c c c c c c}
+\begin{tabular}{l c c c c c c c c}
 \toprule
-Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 & Rule \\
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
 \midrule
-\multicolumn{10}{l}{\textit{Overall ARI}} \\
-\variant{vectorized} & 0.000 & 0.581 & 0.328 & 0.520 & 0.230 & 0.235 & 0.851 & 0.859 &  \\
-\variant{born-inactive} & 0.133 & 0.550 & 0.410 & 0.489 & 0.216 & \textcolor{red}{0.207} & 0.893 & 0.863 & $-$ \\
-\variant{peak-density} & 0.000 & 0.583 & 0.266 & 0.478 & \textcolor{red}{0.214} & 0.257 & 0.854 & 0.859 & $-$ \\
-\variant{volume-density} & 0.004 & 0.559 & 0.402 & \textcolor{red}{0.319} & 0.228 & 0.223 & 0.817 & 0.804 & $\pm$ \\
-\variant{mature-mean} & 0.258 & 0.553 & 0.460 & 0.486 & 0.231 & 0.259 & 0.842 & 0.858 & $-$ \\
-\variant{no-penalty} & 0.000 & 0.576 & 0.328 & 0.512 & 0.232 & 0.256 & 0.864 & 0.860 & $+$ \\
-\variant{norm-typicality} & 0.000 & 0.555 & 0.399 & 0.482 & \textcolor{red}{0.202} & 0.219 & 0.821 & 0.845 & $\pm$ \\
-\variant{local-weights} & 0.000 & 0.562 & 0.472 & 0.478 & \textcolor{red}{0.194} & 0.223 & 0.839 & 0.861 & $\pm$ \\
-\variant{density-sum} & 0.000 & 0.507 & 0.356 & 0.487 & 0.231 & 0.265 & 0.861 & \textcolor{red}{0.851} & $-$ \\
-\variant{density-max} & 0.000 & 0.554 & 0.345 & 0.518 & 0.231 & 0.239 & 0.861 & 0.855 & $=$ \\
-\variant{nearest} & 0.037 & 0.578 & \textbf{0.498} & 0.599 & 0.239 & 0.242 & \textbf{0.964} & 0.856 & $+$ \\
+\multicolumn{9}{l}{\textit{Overall ARI}} \\
+\variant{vectorized} & 0.000 & 0.581 & 0.328 & 0.520 & 0.230 & 0.235 & 0.851 & 0.859 \\
+\variant{born-inactive} & 0.133 & 0.550 & 0.410 & 0.489 & 0.216 & \textcolor{red}{0.207} & 0.893 & 0.863 \\
+\variant{peak-density} & 0.000 & 0.583 & 0.266 & 0.478 & \textcolor{red}{0.214} & 0.257 & 0.854 & 0.859 \\
+\variant{volume-density} & 0.004 & 0.559 & 0.402 & \textcolor{red}{0.319} & 0.228 & 0.223 & 0.817 & 0.804 \\
+\variant{mature-mean} & 0.258 & 0.553 & 0.460 & 0.486 & 0.231 & 0.259 & 0.842 & 0.858 \\
+\variant{no-penalty} & 0.000 & 0.576 & 0.328 & 0.512 & 0.232 & 0.256 & 0.864 & 0.860 \\
+\variant{norm-typicality} & 0.000 & 0.555 & 0.399 & 0.482 & \textcolor{red}{0.202} & 0.219 & 0.821 & 0.845 \\
+\variant{local-weights} & 0.000 & 0.562 & 0.472 & 0.478 & \textcolor{red}{0.194} & 0.223 & 0.839 & 0.861 \\
+\variant{density-sum} & 0.000 & 0.507 & 0.356 & 0.487 & 0.231 & 0.265 & 0.861 & \textcolor{red}{0.851} \\
+\variant{density-max} & 0.000 & 0.554 & 0.345 & 0.518 & 0.231 & 0.239 & 0.861 & 0.855 \\
+\variant{nearest} & 0.037 & 0.578 & \textbf{0.498} & 0.599 & 0.239 & 0.242 & \textbf{0.964} & 0.856 \\
 \midrule
-\multicolumn{10}{l}{\textit{Steady-State ARI}} \\
-\variant{vectorized} & 0.000 & 0.541 & 0.000 & 0.458 & 0.176 & 0.209 & 0.000 & 0.000 &  \\
-\variant{born-inactive} & 0.000 & 0.528 & 0.002 & 0.266 & 0.177 & \textcolor{red}{0.146} & 0.684 & 0.000 & $-$ \\
-\variant{peak-density} & 0.000 & 0.620 & 0.000 & 0.408 & \textcolor{red}{0.160} & 0.196 & 0.000 & 0.000 & $-$ \\
-\variant{volume-density} & 0.000 & 0.548 & \textbf{0.211} & 0.291 & 0.172 & 0.171 & 0.000 & 0.000 & $\pm$ \\
-\variant{mature-mean} & 0.000 & 0.498 & 0.000 & 0.428 & \textcolor{red}{0.161} & 0.210 & 0.000 & 0.366 & $-$ \\
-\variant{no-penalty} & 0.000 & 0.566 & 0.000 & 0.445 & 0.176 & 0.211 & \textbf{0.869} & \textbf{0.849} & $+$ \\
-\variant{norm-typicality} & 0.000 & 0.540 & 0.077 & 0.343 & 0.193 & \textbf{0.249} & 0.718 & \textbf{0.821} & $\pm$ \\
-\variant{local-weights} & 0.000 & 0.526 & \textbf{0.177} & 0.431 & 0.181 & \textbf{0.248} & 0.806 & \textbf{0.824} & $\pm$ \\
-\variant{density-sum} & 0.000 & 0.000 & 0.031 & 0.535 & 0.176 & 0.211 & 0.032 & 0.000 & $-$ \\
-\variant{density-max} & 0.000 & 0.536 & 0.000 & 0.492 & 0.176 & 0.200 & 0.000 & 0.000 & $=$ \\
-\variant{nearest} & 0.000 & 0.680 & \textbf{0.180} & \textbf{0.593} & 0.185 & 0.201 & \textbf{0.897} & \textbf{0.848} & $+$ \\
+\multicolumn{9}{l}{\textit{Steady-State ARI}} \\
+\variant{vectorized} & 0.000 & 0.541 & 0.000 & 0.458 & 0.176 & 0.209 & 0.000 & 0.000 \\
+\variant{born-inactive} & 0.000 & 0.528 & 0.002 & 0.266 & 0.177 & \textcolor{red}{0.146} & 0.684 & 0.000 \\
+\variant{peak-density} & 0.000 & 0.620 & 0.000 & 0.408 & \textcolor{red}{0.160} & 0.196 & 0.000 & 0.000 \\
+\variant{volume-density} & 0.000 & 0.548 & \textbf{0.211} & 0.291 & 0.172 & 0.171 & 0.000 & 0.000 \\
+\variant{mature-mean} & 0.000 & 0.498 & 0.000 & 0.428 & \textcolor{red}{0.161} & 0.210 & 0.000 & 0.366 \\
+\variant{no-penalty} & 0.000 & 0.566 & 0.000 & 0.445 & 0.176 & 0.211 & \textbf{0.869} & \textbf{0.849} \\
+\variant{norm-typicality} & 0.000 & 0.540 & 0.077 & 0.343 & 0.193 & \textbf{0.249} & 0.718 & \textbf{0.821} \\
+\variant{local-weights} & 0.000 & 0.526 & \textbf{0.177} & 0.431 & 0.181 & \textbf{0.248} & 0.806 & \textbf{0.824} \\
+\variant{density-sum} & 0.000 & 0.000 & 0.031 & 0.535 & 0.176 & 0.211 & 0.032 & 0.000 \\
+\variant{density-max} & 0.000 & 0.536 & 0.000 & 0.492 & 0.176 & 0.200 & 0.000 & 0.000 \\
+\variant{nearest} & 0.000 & 0.680 & \textbf{0.180} & \textbf{0.593} & 0.185 & 0.201 & \textbf{0.897} & \textbf{0.848} \\
 \bottomrule
 \end{tabular}
 }
