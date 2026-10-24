@@ -8,7 +8,7 @@ the runs that all of them finished on it, so a failed task removes its run from
 its dataset only.
 
 Usage (from experimentos/modern_methodology):
-    python -m benchmark.real_artifacts [--results DIR] [--pilot DIR] [--timing DIR]
+    python -m benchmark.real_artifacts [--results DIR] [--pilot DIR ...] [--timing DIR]
                                        [--memory DIR] [--out DIR]
 """
 
@@ -255,13 +255,14 @@ def cost_table(complete, models, timing_dir, memory_dir, out):
     )
 
 
-def range_ends_table(pilot_dir, models, out):
+def range_ends_table(pilot_dirs, models, out):
     """The largest share of the runs at each end of the ranges, in the modernized experiment
-    and, for the models of the real-data experiment, in its pilot; in the pilot, an end that
-    is a natural limit in every dataset is in italics."""
+    and, for the models of the real-data experiment, in its pilot, each model from the last
+    pilot directory that holds it; in the pilot, an end that is a natural limit in every
+    dataset is in italics."""
     sources = {
         "modernized": range_check.ends(analysis.MAIN),
-        "pilot": range_check.ends(pilot_dir, models),
+        "pilot": range_check.combined_ends(pilot_dirs, models),
     }
     percent = "{:.0f}".format
     lines = [
@@ -323,7 +324,12 @@ def insects_abrupt_figure(results_dir, models, runs, out):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--results", type=Path, default=analysis.REAL_MAIN)
-    parser.add_argument("--pilot", type=Path, default=analysis.REAL_PILOT)
+    parser.add_argument(
+        "--pilot",
+        type=Path,
+        nargs="+",
+        default=[analysis.REAL_PILOT, analysis.REAL_PILOT_RATIO],
+    )
     parser.add_argument("--timing", type=Path, default=analysis.TIMING_REAL)
     parser.add_argument("--memory", type=Path, default=analysis.MEMORY_REAL)
     parser.add_argument("--out", type=Path, default=OUT)

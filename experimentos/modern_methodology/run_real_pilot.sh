@@ -1,6 +1,6 @@
 #!/bin/bash
 # The pilot of the real-data experiment: every model selects its hyperparameters by the
-# real-data rules on the runs 94 to 125, which the experiment does not use, and nothing is
+# real-data rules, real2, on the runs 94 to 125, which the experiment does not use, and nothing is
 # evaluated. `python -m benchmark.range_check results_real_pilot` then checks the ranges.
 # It continues from the tasks already written.
 # Options: --workers N and --memory-limit GIGABYTES (default 16 and 5); --models M ... to
@@ -35,7 +35,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-.venv/bin/python -m benchmark.runner "$root/$out" --protocol real --tune-only \
+.venv/bin/python -m benchmark.runner "$root/$out" --protocol real2 --tune-only \
     --runs "${runs[@]}" --datasets "${datasets[@]}" --models "${models[@]}" \
     --trials "$trials" --workers "$workers" --memory-limit "$memory_limit" --stall-limit 10800
 echo "The pilot is complete."

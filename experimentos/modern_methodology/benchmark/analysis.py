@@ -29,6 +29,9 @@ ROOT = Path(__file__).resolve().parents[1]
 MAIN = ROOT / "results_main"
 PREVIOUS_PROTOCOL = ROOT / "results_previous_protocol"
 REAL_PILOT = ROOT / "results_real_pilot"  # the search alone, to check its ranges
+REAL_PILOT_RATIO = (
+    ROOT / "results_real_pilot_ratio"
+)  # its models that use a ratio, by real2
 REAL_MAIN = ROOT / "results_real_main"
 TIMING_REAL = ROOT / "results_timing_real_main"
 MEMORY_REAL = ROOT / "results_memory_real_main"

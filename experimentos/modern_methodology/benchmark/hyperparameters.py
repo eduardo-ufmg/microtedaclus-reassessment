@@ -45,12 +45,16 @@ The real-data rules are the widened rules with two corrections:
 - clusters: up to 20 k, ten times the upper end of the synthetic rules, and no
   more than the samples of a batch, the most clusters that a batch can show.
 
+Their second version, `real2`, also moves the lower end of the ratio one decade
+further, to 0.0001, because the pilot of the first found the reassignment ratio of
+Mini-batch k-means at 0.001 in a quarter of the runs of two datasets.
+
 The natural limits of the real-data rules are the ends that no widening moves:
 the longest horizon, n; the largest summary, the summary limit below; one
 minimum point; one standard deviation; and two clusters and the samples of a
 batch.
 
-Under the widened and the real-data rules, no model may keep a larger summary than
+Under the widened and both real-data rules, no model may keep a larger summary than
 the largest that the summary-size rule allows, a quarter of the tuning segment: a
 configuration whose summary grows beyond it fails, in the search and in the
 evaluation alike. At the fine end of these ranges a summary can hold one structure
@@ -208,10 +212,18 @@ def real_ranges_of_categories(X: np.ndarray, y: np.ndarray) -> dict[Category, Ra
     }
 
 
+def real2_ranges_of_categories(X: np.ndarray, y: np.ndarray) -> dict[Category, Range]:
+    """Search range of every category by the second version of the real-data rules."""
+    return real_ranges_of_categories(X, y) | {
+        Category.RATIO: Range(0.0001, 0.999, log=False, integer=False, logit=True)
+    }
+
+
 RULES = {
     "rules": ranges_of_categories,
     "widened": widened_ranges_of_categories,
     "real": real_ranges_of_categories,
+    "real2": real2_ranges_of_categories,
 }
 
 NATURAL_LIMITS = {

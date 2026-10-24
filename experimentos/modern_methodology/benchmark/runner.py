@@ -13,7 +13,7 @@ search ranges does.
 Usage (from experimentos/modern_methodology):
     python -m benchmark.runner OUT [--runs FIRST LAST] [--models M ...] [--datasets D ...]
                                [--workers N] [--trials N] [--length-factor F]
-                               [--protocol rules|widened|real|previous] [--stall-limit SECONDS]
+                               [--protocol rules|widened|real|real2|previous] [--stall-limit SECONDS]
                                [--memory-limit GIGABYTES] [--tune-only]
 OUT receives tasks.csv, with one row per task, and batches/DATASET/MODEL/RUN.csv.
 It holds the results of one configuration: a protocol, a number of trials and a

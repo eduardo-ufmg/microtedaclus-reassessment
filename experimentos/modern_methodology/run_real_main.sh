@@ -1,6 +1,6 @@
 #!/bin/bash
 # The real-data experiment, in three parts that continue from what is already written:
-#   1. the quality of every model, tuned by the real-data rules, on the runs 126 to 219, which
+#   1. the quality of every model, tuned by the real-data rules, real2, on the runs 126 to 219, which
 #      no earlier analysis of the real datasets used, in results_real_main;
 #   2. their execution time on the runs 126 to 157, one task at a time, in
 #      results_timing_real_main; the pass fails if it takes more than 24 hours;
@@ -35,7 +35,7 @@ done
 models=(MicroTEDAClusPlusNoNoise DenStream DBSTREAM BIRCH MiniBatchKMeans BICO)
 parallel=(--workers "$workers" --memory-limit "$memory_limit" --stall-limit 10800)
 
-.venv/bin/python -m benchmark.runner "$root/results_real_main" --protocol real \
+.venv/bin/python -m benchmark.runner "$root/results_real_main" --protocol real2 \
     --runs "${runs[@]}" --datasets "${datasets[@]}" --models "${models[@]}" \
     --trials "$trials" "${parallel[@]}"
 echo "The quality part is complete."

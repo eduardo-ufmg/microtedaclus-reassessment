@@ -67,7 +67,7 @@ def tune(
     the search carries the limit for the evaluation.
     """
     space = search_space(model_class, X, y, RULES[rules])
-    limit = summary_limit(X, y) if rules in ("widened", "real") else None
+    limit = summary_limit(X, y) if rules in ("widened", "real", "real2") else None
 
     def objective(trial):
         hyperparameters = {
@@ -114,6 +114,11 @@ def tune_real(model_class, X, y, search_seed, model_seed, trials=TRIALS):
     return tune(model_class, X, y, search_seed, model_seed, trials, rules="real")
 
 
+def tune_real2(model_class, X, y, search_seed, model_seed, trials=TRIALS):
+    """Selection by the second version of the real-data rules."""
+    return tune(model_class, X, y, search_seed, model_seed, trials, rules="real2")
+
+
 def tune_previous(
     model_class, X, y, search_seed: int, model_seed: int, trials: int = TRIALS
 ):
@@ -153,5 +158,6 @@ PROTOCOLS = {
     "rules": tune,
     "widened": tune_widened,
     "real": tune_real,
+    "real2": tune_real2,
     "previous": tune_previous,
 }
