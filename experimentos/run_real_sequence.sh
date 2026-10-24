@@ -16,7 +16,9 @@
 #       > real_sequence.log 2>&1 < /dev/null &
 # PILOT is the process id of the running run_real_pilot.sh, or "none" if no pilot runs.
 # OPTIONS go to run_real_pilot.sh and to run_real_main.sh, e.g. --workers 16 --memory-limit 5.
-# Stop the whole sequence: kill -TERM -- -$(cat experimentos/real_sequence.pgid)
+# Stop the whole sequence: kill -TERM -- -$(cat experimentos/real_sequence.pgid), and after 30
+# seconds kill -KILL -- -$(cat experimentos/real_sequence.pgid), because the memory pass, which
+# starts a process per task, does not end on TERM; then ps -g of that group shows nothing.
 set -u
 
 here="$(cd "$(dirname "$0")" && pwd)"
@@ -26,17 +28,25 @@ models=(MicroTEDAClusPlusNoNoise DenStream DBSTREAM BIRCH MiniBatchKMeans BICO)
 wait_limit=$((24 * 3600))
 
 log() { echo "$(date '+%F %T') $*"; }
+# Whether process $1 is bash running run_real_pilot.sh, as launched: the script is its first
+# argument. A pattern on the whole command line would also match shells that only mention it.
+is_pilot() {
+    local first
+    [ -r "/proc/$1/cmdline" ] || return 1
+    first="$(tr '\0' '\n' < "/proc/$1/cmdline" 2> /dev/null | sed -n 2p)"
+    [ "${first##*/}" = run_real_pilot.sh ]
+}
 fail() {
     log "ERROR: $*"
     exit 1
 }
 
-if [ $# -lt 2 ]; then
+if [ $# -lt 2 ] || [[ "$2" == --* ]]; then
     echo "usage: $0 PILOT ARCHIVE [OPTIONS]" >&2
     exit 2
 fi
 pilot=$1
-archive="$(realpath "$2")"
+archive="$(realpath -- "$2")"
 shift 2
 options=("$@")
 
@@ -51,12 +61,13 @@ tar -tzf "$archive" | grep -qx "experimentos/modern_methodology/run_real_main.sh
 
 # 1. The pilot that is already running
 if [ "$pilot" = none ]; then
-    if pgrep -f "run_real_pilot.sh" > /dev/null; then
-        fail "a pilot is running: give its process id instead of none"
-    fi
+    for candidate in $(pgrep -f "run_real_pilot.sh"); do
+        if is_pilot "$candidate"; then
+            fail "a pilot is running, process $candidate: give its process id instead of none"
+        fi
+    done
 else
-    tr '\0' ' ' < "/proc/$pilot/cmdline" 2> /dev/null | grep -q "run_real_pilot.sh" ||
-        fail "process $pilot is not run_real_pilot.sh"
+    is_pilot "$pilot" || fail "process $pilot is not run_real_pilot.sh"
     log "Waiting for the pilot, process $pilot, to end"
     waited=0
     while kill -0 "$pilot" 2> /dev/null; do
