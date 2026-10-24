@@ -5,7 +5,8 @@
 # It continues from the tasks already written.
 # Options: --workers N and --memory-limit GIGABYTES (default 16 and 5); --models M ... to
 # select the models again in a new directory, --out DIR (default results_real_pilot);
-# --test runs only the first run; --trials N and --root DIR serve a test at small scale.
+# --test runs only the first run; --trials N, --root DIR and --datasets D ... serve a test at
+# small scale.
 set -e
 cd "$(dirname "$0")"
 
@@ -16,6 +17,8 @@ trials=100
 root=.
 out=results_real_pilot
 models=(MicroTEDAClusPlusNoNoise DenStream DBSTREAM BIRCH MiniBatchKMeans BICO)
+datasets=(insects_abrupt insects_incremental insects_incremental_reoccurring gas_drift kddcup99
+    covertype pendigits shuttle)
 while [ $# -gt 0 ]; do
     case "$1" in
         --workers) workers=$2; shift 2 ;;
@@ -26,12 +29,11 @@ while [ $# -gt 0 ]; do
         --out) out=$2; shift 2 ;;
         --models) models=(); shift; while [ $# -gt 0 ] && [[ "$1" != --* ]]; do
             models+=("$1"); shift; done ;;
+        --datasets) datasets=(); shift; while [ $# -gt 0 ] && [[ "$1" != --* ]]; do
+            datasets+=("$1"); shift; done ;;
         *) echo "ERROR: unknown option $1" >&2; exit 2 ;;
     esac
 done
-
-datasets=(insects_abrupt insects_incremental insects_incremental_reoccurring gas_drift kddcup99
-    covertype pendigits shuttle)
 
 .venv/bin/python -m benchmark.runner "$root/$out" --protocol real --tune-only \
     --runs "${runs[@]}" --datasets "${datasets[@]}" --models "${models[@]}" \

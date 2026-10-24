@@ -35,7 +35,7 @@ from benchmark.tuning import TUNING_LIMIT, split
 from pfc_shared.latex import panel_table, write_table
 
 DATASETS = list(REAL_DATASETS)
-RUNS = range(94)  # the runs of the experiment; the pilot has runs of its own
+RUNS = range(126, 220)  # the runs of the experiment; the pilot has runs of its own
 # Name macro of the thesis, reference and order of every dataset
 DESCRIPTION = {
     "insects_abrupt": (r"\InsectsAbrupt", "souza2020challenges", "as recorded"),
