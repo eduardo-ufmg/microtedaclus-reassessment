@@ -255,13 +255,13 @@ def cost_table(complete, models, timing_dir, memory_dir, out):
     )
 
 
-def range_ends_table(pilot_dir, out):
+def range_ends_table(pilot_dir, models, out):
     """The largest share of the runs at each end of the ranges, in the modernized experiment
-    and in the pilot; in the pilot, an end that is a natural limit in every dataset is in
-    italics."""
+    and, for the models of the real-data experiment, in its pilot; in the pilot, an end that
+    is a natural limit in every dataset is in italics."""
     sources = {
         "modernized": range_check.ends(analysis.MAIN),
-        "pilot": range_check.ends(pilot_dir),
+        "pilot": range_check.ends(pilot_dir, models),
     }
     percent = "{:.0f}".format
     lines = [
@@ -360,7 +360,7 @@ def main():
         arguments.out,
     )
     cost_table(complete, models, arguments.timing, arguments.memory, arguments.out)
-    range_ends_table(arguments.pilot, arguments.out)
+    range_ends_table(arguments.pilot, models, arguments.out)
 
 
 if __name__ == "__main__":

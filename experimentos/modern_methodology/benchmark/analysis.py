@@ -28,7 +28,6 @@ from pfc_shared.statistics import compare_with_focus, paired_comparisons
 ROOT = Path(__file__).resolve().parents[1]
 MAIN = ROOT / "results_main"
 PREVIOUS_PROTOCOL = ROOT / "results_previous_protocol"
-REAL = ROOT / "results_real"
 REAL_PILOT = ROOT / "results_real_pilot"  # the search alone, to check its ranges
 REAL_MAIN = ROOT / "results_real_main"
 TIMING_REAL = ROOT / "results_timing_real_main"

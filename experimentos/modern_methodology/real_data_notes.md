@@ -1,5 +1,10 @@
 # Real-data experiment: decisions and hand-off
 
+> Superseded in part (2026-10-24): the experiment now uses the real-data rules of
+> `benchmark/hyperparameters.py` (`real_ranges_of_categories`), checked by a pilot
+> (`run_real_pilot.sh`, `benchmark/range_check.py`), and MicroTEDAClus+ runs without its
+> noise label (`MicroTEDAClusPlusNoNoise`); it is launched by `run_real_main.sh`.
+
 Written while Eduardo was away (2026-10-15), on the branch `real-data`, for his review.
 Every decision below is flagged **[D#]** so that it can be discussed. Nothing was pushed.
 

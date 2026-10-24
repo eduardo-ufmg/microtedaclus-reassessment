@@ -27,12 +27,12 @@ REAL_SHORT_NAMES = {
 
 MODEL_NAMES = {
     "MicroTEDAClusPlus": "MicroTEDAClus+",
+    "MicroTEDAClusPlusNoNoise": "MicroTEDAClus+",
     "DenStream": "DenStream",
     "DBSTREAM": "DBSTREAM",
     "BIRCH": "BIRCH",
     "MiniBatchKMeans": "Mini-batch k-means",
     "BICO": "BICO",
-    "MicroTEDAClusPlusFinal": "MicroTEDAClus+",
 }
 
 

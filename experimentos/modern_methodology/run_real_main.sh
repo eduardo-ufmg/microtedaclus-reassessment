@@ -30,7 +30,7 @@ done
 
 datasets=(insects_abrupt insects_incremental insects_incremental_reoccurring gas_drift kddcup99
     covertype pendigits shuttle)
-models=(MicroTEDAClusPlus DenStream DBSTREAM BIRCH MiniBatchKMeans BICO)
+models=(MicroTEDAClusPlusNoNoise DenStream DBSTREAM BIRCH MiniBatchKMeans BICO)
 parallel=(--workers "$workers" --memory-limit "$memory_limit" --stall-limit 10800)
 
 .venv/bin/python -m benchmark.runner "$root/results_real_main" --protocol real \

@@ -7,10 +7,11 @@ more than half of the runs, as the comparison of the models keeps it. An end tha
 is a natural limit of its category is reported apart and never fails the check.
 
 Usage (from experimentos/modern_methodology):
-    python -m benchmark.range_check DIR [DIR ...]
+    python -m benchmark.range_check DIR [DIR ...] [--models M ...]
 Every DIR holds the tasks of an experiment, a tune-only pilot or a complete one.
 A model is judged on the tasks of the last DIR that holds it, so a later pilot of
-some models replaces their tasks of an earlier one. The check exits with status 1
+some models replaces their tasks of an earlier one; with --models, only the given
+models are judged. The check exits with status 1
 if an end that is not a natural limit binds.
 """
 
@@ -92,12 +93,14 @@ def ends(out: Path, models=None) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def combined_ends(directories) -> pd.DataFrame:
-    """The ends of every model, each from the last directory that holds it."""
+def combined_ends(directories, models=None) -> pd.DataFrame:
+    """The ends of every model, or of the given ones, each from the last directory that
+    holds it."""
     holder = {}
     for out in directories:
         for model in pd.read_csv(out / "tasks.csv").model.unique():
-            holder[model] = out
+            if models is None or model in models:
+                holder[model] = out
     by_directory = {}
     for model, out in holder.items():
         by_directory.setdefault(out, []).append(model)
@@ -107,9 +110,10 @@ def combined_ends(directories) -> pd.DataFrame:
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("directories", type=Path, nargs="+")
+    parser.add_argument("--models", nargs="+", default=None)
     arguments = parser.parse_args()
 
-    shares = combined_ends(arguments.directories)
+    shares = combined_ends(arguments.directories, arguments.models)
     largest = (
         shares.sort_values("share", ascending=False)
         .groupby(["model", "hyperparameter", "end"], sort=False)

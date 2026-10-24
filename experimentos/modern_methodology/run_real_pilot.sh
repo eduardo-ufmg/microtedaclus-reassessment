@@ -15,7 +15,7 @@ runs=(94 125)
 trials=100
 root=.
 out=results_real_pilot
-models=(MicroTEDAClusPlus DenStream DBSTREAM BIRCH MiniBatchKMeans BICO)
+models=(MicroTEDAClusPlusNoNoise DenStream DBSTREAM BIRCH MiniBatchKMeans BICO)
 while [ $# -gt 0 ]; do
     case "$1" in
         --workers) workers=$2; shift 2 ;;

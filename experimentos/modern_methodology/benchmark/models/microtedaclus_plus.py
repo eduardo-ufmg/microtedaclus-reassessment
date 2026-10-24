@@ -1,4 +1,6 @@
-"""MicroTEDAClus+, the model proposed by the thesis."""
+"""MicroTEDAClus+, the model proposed by the thesis, with and without its noise label."""
+
+import math
 
 import numpy as np
 
@@ -26,3 +28,20 @@ class MicroTEDAClusPlus:
 
     def summary_size(self):
         return self.core.microcluster_count()
+
+
+class MicroTEDAClusPlusNoNoise(MicroTEDAClusPlus):
+    """MicroTEDAClus+ without its noise label, for data whose classes cover every sample.
+
+    At an infinite noise distance, every sample goes to the macrocluster of its nearest
+    active microcluster; before any microcluster is active, every sample is noise, as
+    for every model.
+    """
+
+    HYPERPARAMETERS = {
+        "variance_limit": Category.RELATIVE_VARIANCE,
+        "decay": Category.HORIZON,
+    }
+
+    def __init__(self, variance_limit=0.01, decay=100):
+        super().__init__(variance_limit, decay, noise_distance=math.inf)
