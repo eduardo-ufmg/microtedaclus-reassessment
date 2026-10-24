@@ -1,14 +1,15 @@
 """Tables and figures of the experiment on the real datasets.
 
 Written under monografia/RealData/artifacts/ from the results of
-`run_real_experiment.sh`. A task fails when its model exceeds the limit of its
-summary or of its memory. A model that failed in more than half of the runs of
+`run_real_pilot.sh` and `run_real_main.sh`. A task fails when its model exceeds
+the limit of its summary or of its memory. A model that failed in more than half of the runs of
 a dataset is left out of that dataset, and the other models are compared over
 the runs that all of them finished on it, so a failed task removes its run from
 its dataset only.
 
 Usage (from experimentos/modern_methodology):
-    python -m benchmark.real_artifacts [--results DIR] [--out DIR]
+    python -m benchmark.real_artifacts [--results DIR] [--pilot DIR] [--timing DIR]
+                                       [--memory DIR] [--out DIR]
 """
 
 import argparse
@@ -22,17 +23,19 @@ import numpy as np
 import pandas as pd
 
 from benchmark import analysis, real_data
-from benchmark.artifacts import SUBJECT, _bands, _save, focus_panels
+from benchmark import range_check
+from benchmark.artifacts import SUBJECT, _bands, _in_kib, _in_ms, _save, focus_panels
 from benchmark.datasets import REAL_DATASETS, load_stream
 from benchmark.display import REAL_SHORT_NAMES, columns, model_label
 from benchmark.evaluation import BATCH_SIZE
+from benchmark.hyperparameters import Category
 from benchmark.models import MODELS
 from benchmark.runner import batches_file
 from benchmark.tuning import TUNING_LIMIT, split
 from pfc_shared.latex import panel_table, write_table
 
 DATASETS = list(REAL_DATASETS)
-RUNS = range(32)  # the runs of the experiment; later runs serve the final comparison
+RUNS = range(94)  # the runs of the experiment; the pilot has runs of its own
 # Name macro of the thesis, reference and order of every dataset
 DESCRIPTION = {
     "insects_abrupt": (r"\InsectsAbrupt", "souza2020challenges", "as recorded"),
@@ -224,6 +227,77 @@ def quality_table(results, models, runs, excluded, path, label, subject=SUBJECT)
     )
 
 
+def cost_table(complete, models, timing_dir, memory_dir, out):
+    """Time and memory, per dataset over the runs that every model kept in it finished."""
+    timing = analysis.timing_level(timing_dir)
+    memory = analysis.memory_level(memory_dir)
+    kept_timing, kept_memory, runs = [], [], {}
+    for dataset in DATASETS:
+        staying = [
+            m for m in models if m in set(complete[complete.dataset == dataset].model)
+        ]
+        t = analysis.on_complete_runs(timing, staying, [dataset])
+        m = analysis.on_complete_runs(memory, staying, [dataset])
+        shared = sorted(set(t.run) & set(m.run))
+        kept_timing.append(t[t.run.isin(shared)])
+        kept_memory.append(m[m.run.isin(shared)])
+        runs[dataset] = len(shared)
+    timing, memory = pd.concat(kept_timing), pd.concat(kept_memory)
+    title = f"Execution time and memory of {SUBJECT} on the real datasets"
+    panel_table(
+        out / "cost.tex",
+        f"{title}: medians over {run_text(runs)}. A dash marks a model left out of a dataset.",
+        "tab:real_cost",
+        columns(DATASETS),
+        focus_panels(timing, analysis.TIME_METRICS, models, DATASETS, _in_ms)
+        + focus_panels(memory, analysis.MEMORY_METRICS, models, DATASETS, _in_kib),
+        short=title,
+    )
+
+
+def range_ends_table(pilot_dir, out):
+    """The largest share of the runs at each end of the ranges, in the modernized experiment
+    and in the pilot; in the pilot, an end that is a natural limit in every dataset is in
+    italics."""
+    sources = {
+        "modernized": range_check.ends(analysis.MAIN),
+        "pilot": range_check.ends(pilot_dir),
+    }
+    percent = "{:.0f}".format
+    lines = [
+        r" & \multicolumn{2}{c}{Modernized experiment} & \multicolumn{2}{c}{Real-data pilot} \\",
+        r"\cmidrule(lr){2-3} \cmidrule(lr){4-5}",
+        r"Category & Lower end & Upper end & Lower end & Upper end \\",
+        r"\midrule",
+    ]
+    for category in Category:
+        cells = []
+        for source, shares in sources.items():
+            for end in ("lower", "upper"):
+                of_end = shares[
+                    (shares.category == category.value) & (shares.end == end)
+                ]
+                checked = of_end[~of_end.natural] if source == "pilot" else of_end
+                if len(checked):
+                    cells.append(percent(100 * checked.share.max()))
+                elif len(of_end):
+                    cells.append(rf"\textit{{{percent(100 * of_end.share.max())}}}")
+                else:
+                    cells.append("-")
+        lines.append(" & ".join([category.value.capitalize(), *cells]) + r" \\")
+    write_table(
+        out / "range_ends.tex",
+        "Largest share of the runs of a dataset in which the value that the search selects for "
+        "a hyperparameter lies at an end of its range, within a twentieth of its width, in the "
+        "modernized experiment and in the pilot of the real-data experiment: percentages. In "
+        "the pilot, a value in italics is that of a natural limit.",
+        "tab:real_range_ends",
+        "l c c c c",
+        lines,
+        "Selected values at the ends of their search ranges",
+    )
+
+
 def insects_abrupt_figure(results_dir, models, runs, out):
     """Batch ARI along the abrupt INSECTS stream, with its change points."""
     fig, ax = plt.subplots(figsize=(12, 4))
@@ -248,7 +322,10 @@ def insects_abrupt_figure(results_dir, models, runs, out):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("--results", type=Path, default=analysis.REAL)
+    parser.add_argument("--results", type=Path, default=analysis.REAL_MAIN)
+    parser.add_argument("--pilot", type=Path, default=analysis.REAL_PILOT)
+    parser.add_argument("--timing", type=Path, default=analysis.TIMING_REAL)
+    parser.add_argument("--memory", type=Path, default=analysis.MEMORY_REAL)
     parser.add_argument("--out", type=Path, default=OUT)
     arguments = parser.parse_args()
 
@@ -282,6 +359,8 @@ def main():
         sorted(abrupt.run.unique()),
         arguments.out,
     )
+    cost_table(complete, models, arguments.timing, arguments.memory, arguments.out)
+    range_ends_table(arguments.pilot, arguments.out)
 
 
 if __name__ == "__main__":

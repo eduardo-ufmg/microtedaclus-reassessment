@@ -1,9 +1,9 @@
 """Hyperparameter selection of a model on the first part of a stream.
 
-Three protocols select the hyperparameters: that of this experiment, by rules;
-the same with the widened rules, for the real datasets; and that of the
-previous experiment, kept to measure what the change of protocol does to the
-one model that both experiments share.
+Four protocols select the hyperparameters: that of this experiment, by rules;
+the same with the widened rules or with the real-data rules, for the real
+datasets; and that of the previous experiment, kept to measure what the change
+of protocol does to the one model that both experiments share.
 
 By rules, the search sees the tuning segment only, which is what a deployment has before
 the stream continues: its samples and their labels. The ranges come from the
@@ -62,12 +62,12 @@ def tune(
 
     The hyperparameters are None if every trial failed. They are kept as the
     model takes them, which differs from what the search samples for a range on
-    the logit scale. Under the widened rules, a trial whose summary exceeds the
+    the logit scale. Under the widened and the real-data rules, a trial whose summary exceeds the
     limit of `benchmark.hyperparameters.summary_limit` fails, and the summary of
     the search carries the limit for the evaluation.
     """
     space = search_space(model_class, X, y, RULES[rules])
-    limit = summary_limit(X, y) if rules == "widened" else None
+    limit = summary_limit(X, y) if rules in ("widened", "real") else None
 
     def objective(trial):
         hyperparameters = {
@@ -109,6 +109,11 @@ def tune_widened(model_class, X, y, search_seed, model_seed, trials=TRIALS):
     return tune(model_class, X, y, search_seed, model_seed, trials, rules="widened")
 
 
+def tune_real(model_class, X, y, search_seed, model_seed, trials=TRIALS):
+    """Selection by the real-data rules."""
+    return tune(model_class, X, y, search_seed, model_seed, trials, rules="real")
+
+
 def tune_previous(
     model_class, X, y, search_seed: int, model_seed: int, trials: int = TRIALS
 ):
@@ -144,4 +149,9 @@ def tune_previous(
     return (study.best_params if complete else None), summary
 
 
-PROTOCOLS = {"rules": tune, "widened": tune_widened, "previous": tune_previous}
+PROTOCOLS = {
+    "rules": tune,
+    "widened": tune_widened,
+    "real": tune_real,
+    "previous": tune_previous,
+}

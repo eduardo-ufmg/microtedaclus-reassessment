@@ -37,11 +37,24 @@ search; the minimum points and the ratio are the two exceptions:
 They also take the median distance between two samples from a fixed sample of
 pairs, because a long tuning segment has too many pairs to measure them all.
 
-Under the widened rules, no model may keep a larger summary than the largest that
-the summary-size rule allows, a quarter of the tuning segment: a configuration
-whose summary grows beyond it fails, in the search and in the evaluation alike.
-At the fine end of the widened ranges a summary can hold one structure per
-sample, and the cost of several models grows with the square of their summary.
+The real-data rules are the widened rules with two corrections:
+
+- relative variance: the squares of the widened distances, as fractions of the
+  total variance, so that on the scale of the search its range is that of the
+  distances;
+- clusters: up to 20 k, ten times the upper end of the synthetic rules, and no
+  more than the samples of a batch, the most clusters that a batch can show.
+
+The natural limits of the real-data rules are the ends that no widening moves:
+the longest horizon, n; the largest summary, the summary limit below; one
+minimum point; one standard deviation; and two clusters and the samples of a
+batch.
+
+Under the widened and the real-data rules, no model may keep a larger summary than
+the largest that the summary-size rule allows, a quarter of the tuning segment: a
+configuration whose summary grows beyond it fails, in the search and in the
+evaluation alike. At the fine end of these ranges a summary can hold one structure
+per sample, and the cost of several models grows with the square of their summary.
 """
 
 from dataclasses import dataclass
@@ -51,6 +64,8 @@ import numpy as np
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import pdist
 from scipy.special import expit, logit
+
+from benchmark.evaluation import BATCH_SIZE
 
 PAIRS = (
     1_000_000  # pairs of samples from which the widened rules take the median distance
@@ -176,7 +191,44 @@ def widened_ranges_of_categories(X: np.ndarray, y: np.ndarray) -> dict[Category,
     }
 
 
-RULES = {"rules": ranges_of_categories, "widened": widened_ranges_of_categories}
+def real_ranges_of_categories(X: np.ndarray, y: np.ndarray) -> dict[Category, Range]:
+    """Search range of every category by the real-data rules."""
+    of_category = widened_ranges_of_categories(X, y)
+    distance = of_category[Category.DISTANCE]
+    k = max(1, len(np.unique(y[y >= 0])))
+    total_variance = float(X.var(axis=0).sum())
+    return of_category | {
+        Category.RELATIVE_VARIANCE: Range(
+            distance.low**2 / total_variance,
+            distance.high**2 / total_variance,
+            log=True,
+            integer=False,
+        ),
+        Category.CLUSTERS: _integers(2, min(20 * k, BATCH_SIZE), log=False),
+    }
+
+
+RULES = {
+    "rules": ranges_of_categories,
+    "widened": widened_ranges_of_categories,
+    "real": real_ranges_of_categories,
+}
+
+NATURAL_LIMITS = {
+    (Category.HORIZON, "upper"),
+    (Category.SUMMARY_SIZE, "upper"),
+    (Category.MINIMUM_POINTS, "lower"),
+    (Category.MULTIPLIER, "lower"),
+    (Category.CLUSTERS, "lower"),
+}
+
+
+def natural_limit(category: Category, end: str, high: float) -> bool:
+    """Whether an end of a range of the real-data rules is a natural limit; the upper end
+    of the clusters is one where it reaches the samples of a batch."""
+    if category is Category.CLUSTERS and end == "upper":
+        return high >= BATCH_SIZE
+    return (category, end) in NATURAL_LIMITS
 
 
 def search_space(

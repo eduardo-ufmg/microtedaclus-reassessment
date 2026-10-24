@@ -6,13 +6,15 @@ evaluated prequentially on the rest. Tasks run in parallel processes, in the
 order of their run, so the experiment can stop after any run with the same runs
 complete for every dataset and model. A finished task is written at once, and a
 new call continues from the tasks that are missing. The run ends with an error
-if no task finishes within the stall limit.
+if no task finishes within the stall limit. With --tune-only, a task selects its
+hyperparameters and stops, without the evaluation, as the pilot that checks the
+search ranges does.
 
 Usage (from experimentos/modern_methodology):
     python -m benchmark.runner OUT [--runs FIRST LAST] [--models M ...] [--datasets D ...]
                                [--workers N] [--trials N] [--length-factor F]
-                               [--protocol rules|widened|previous] [--stall-limit SECONDS]
-                               [--memory-limit GIGABYTES]
+                               [--protocol rules|widened|real|previous] [--stall-limit SECONDS]
+                               [--memory-limit GIGABYTES] [--tune-only]
 OUT receives tasks.csv, with one row per task, and batches/DATASET/MODEL/RUN.csv.
 It holds the results of one configuration: a protocol, a number of trials and a
 length factor.
@@ -87,8 +89,9 @@ def run_task(
     protocol: str,
     trials: int,
     length_factor: int,
+    tune_only: bool = False,
 ):
-    """Tune and evaluate one task; its row of tasks.csv."""
+    """Tune and evaluate one task, or only tune it; its row of tasks.csv."""
     warnings.simplefilter("ignore")
     row = {"dataset": dataset, "model": model, "run": run}
     try:
@@ -104,6 +107,8 @@ def run_task(
         if hyperparameters is None:
             return row | {"status": "ERROR: every trial failed"}
         row["hyperparameters"] = json.dumps(hyperparameters)
+        if tune_only:
+            return row | {"status": "OK"}
 
         started = time.perf_counter()
         results = prequential(
@@ -156,6 +161,11 @@ def main():
         default=None,
         help="gigabytes of memory per worker; a task that needs more fails",
     )
+    parser.add_argument(
+        "--tune-only",
+        action="store_true",
+        help="select the hyperparameters of every task without evaluating it",
+    )
     arguments = parser.parse_args()
 
     configuration = {
@@ -163,6 +173,8 @@ def main():
         "trials": arguments.trials,
         "length_factor": arguments.length_factor,
     }
+    if arguments.tune_only:
+        configuration["tune_only"] = True
     if not configuration_matches(arguments.out, configuration):
         parser.error(f"{arguments.out} holds results of another configuration")
 
@@ -186,6 +198,7 @@ def main():
                 arguments.protocol,
                 arguments.trials,
                 arguments.length_factor,
+                arguments.tune_only,
             )
             for task in tasks
         ],
