@@ -299,32 +299,6 @@ def at_the_ends(results, ranges, tolerance=0.05) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def ends_table(ends, models, runs):
-    percent = "{:.0f}".format
-    panels = []
-    for end, title in (("lower", "At the lower end"), ("upper", "At the upper end")):
-        rows = []
-        for model in models:
-            for name in MODELS[model].HYPERPARAMETERS:
-                of_name = ends[(ends.model == model) & (ends.hyperparameter == name)]
-                values = (100 * of_name.set_index("dataset")[end]).to_dict()
-                escaped = name.replace("_", r"\_")
-                rows.append(
-                    (rf"{model_label(model)}, \texttt{{{escaped}}}", values, percent)
-                )
-        panels.append((title, rows))
-    panel_table(
-        ARTIFACT_DIR / "ends.tex",
-        f"Percentage of the {runs} runs in which the selected value of a hyperparameter lies within a "
-        "twentieth of the width of its search range from one of its ends, in the scale of the search.",
-        "tab:mod_ends",
-        columns(SHORT_NAMES),
-        panels,
-        first_column="Model and hyperparameter",
-        short="Selected values at the ends of their search ranges",
-    )
-
-
 def _bands(ax, x, values, model, focus):
     """Median of the columns of `values`, with its interquartile band for the model in focus."""
     q1, median, q3 = np.quantile(values, [0.25, 0.5, 0.75], axis=0)
@@ -439,7 +413,6 @@ def main():
     hyperparameter_table(models)
     ranges = analysis.search_ranges(analysis.MAIN, tuple(runs))
     range_table(ranges, len(runs))
-    ends_table(at_the_ends(complete, ranges), models, len(runs))
     quality_figure(complete, analysis.MAIN, models, runs)
 
     levels = cost_levels(models)
