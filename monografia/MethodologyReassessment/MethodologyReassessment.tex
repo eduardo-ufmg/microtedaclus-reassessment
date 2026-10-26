@@ -425,7 +425,7 @@ Every comparison of the thesis sets one model against references, as Dem\v{s}ar 
 
 \begin{itemize}
     \item \textbf{The model in focus against each other model}, in this chapter and whenever a model is compared with the benchmark models. In each dataset and metric, the model in focus is compared with each other model by the paired Wilcoxon signed-rank test~\cite{wilcoxon1945individual} over the runs that every model finished, and the $p$-values of these comparisons are adjusted by the Holm--Bonferroni procedure~\cite{holm1979simple}.
-    \item \textbf{A variant against its control}, in the improvement efforts of \cref{chap:ModelImprovement,chap:real_improvement}. In each metric, the variant is compared with its control by the same test in each dataset, over the runs that both finished, and the $p$-values of the datasets are adjusted together.
+    \item \textbf{A variant against its control}, in the improvement of \cref{chap:ModelImprovement}. In each metric, the variant is compared with its control by the same test in each dataset, over the runs that both finished, and the $p$-values of the datasets are adjusted together.
 \end{itemize}
 
 With 94 runs, the Wilcoxon test rejects the null hypothesis for differences of no practical consequence, so a difference counts only when it is also large enough. A model $m_i$ is distinguishable from its reference $m_{\text{ref}}$ if

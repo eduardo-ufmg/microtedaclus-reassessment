@@ -222,7 +222,6 @@ By the decision rule the wider range improves the corrected model, in \Chameleon
     \item \variant{m-asymptote}: the original sigmoid with its asymptote, $3$, searched in $[1.05, 10]$.
 \end{itemize}
 
-\Cref{sec:ri_rejected} tests several of these candidates again on real data.
 
 \subsection{Improvements One at a Time}
 
@@ -412,7 +411,7 @@ The probe does not change the model. It indicates that the most direct way of im
 \section{\MicroTEDAClusPlus}
 \label{sec:mi_final_model}
 
-\MicroTEDAClusPlus keeps the structure of \MicroTEDAClus: microclusters updated recursively with the TEDA statistics, macroclusters as connected components of the graph of intersecting active microclusters, and pruning of the inactive microclusters by vitality. It differs from the algorithm of the reference implementation in the five points that the experiments accepted, listed in \cref{tab:mi_final_differences}. It has three hyperparameters: the relative variance limit $r$, the decay, with $\rho = 1/\text{decay}$, and the noise distance $n_\sigma$. \Cref{chap:real_improvement} revises this model on real data. From that chapter on, the name \MicroTEDAClusPlus refers to the revised model, and the model defined here is called the \MicroTEDAClusPlus of \cref{chap:ModelImprovement}.
+\MicroTEDAClusPlus keeps the structure of \MicroTEDAClus: microclusters updated recursively with the TEDA statistics, macroclusters as connected components of the graph of intersecting active microclusters, and pruning of the inactive microclusters by vitality. It differs from the algorithm of the reference implementation in the five points that the experiments accepted, listed in \cref{tab:mi_final_differences}. It has three hyperparameters: the relative variance limit $r$, the decay, with $\rho = 1/\text{decay}$, and the noise distance $n_\sigma$.
 
 \begin{table}[htbp]
 \centering
@@ -513,7 +512,7 @@ The experiments above compare models that share one implementation, on runs rese
 
 \input{ModelImprovement/artifacts/comparison/quality.tex}
 
-Against \MicroTEDAClus, \MicroTEDAClusPlus is better in the Overall ARI of five datasets and indistinguishable in \Cassini, and better in the Steady-State ARI of all six (\cref{tab:mi_comparison_quality}). Against the benchmark models, it reverses the position of \MicroTEDAClus in the streams with concept drift. Its Overall ARI is better than that of every other model in \BenchmarkOne and \BenchmarkTwo, and than all but \TEDACloud in \RandomRBFGeneratorEvents, and no model is better than it at the penultimate batch of these streams. In the static shapes, it is better than \MicroTEDAClus, \DenStream and the TEDA-based models, but worse than \CluStream and \StreamKM in \Cassini and \ChameleonDSThree, on both metrics, and worse than \CluStream in the Overall ARI of \ChameleonDSFour.
+In the Overall ARI, \MicroTEDAClusPlus is better than \MicroTEDAClus in five datasets and indistinguishable from it in \Cassini, and in the Steady-State ARI it is better in all six (\cref{tab:mi_comparison_quality}). Against the benchmark models, it reverses the position of \MicroTEDAClus in the streams with concept drift. Its Overall ARI is better than that of every other model in \BenchmarkOne and \BenchmarkTwo, and than all but \TEDACloud in \RandomRBFGeneratorEvents, and no model is better than it at the penultimate batch of these streams. In the static shapes, it is better than \MicroTEDAClus, \DenStream and the TEDA-based models, but worse than \CluStream and \StreamKM in \Cassini and \ChameleonDSThree, on both metrics, and worse than \CluStream in the Overall ARI of \ChameleonDSFour.
 
 In \RandomRBFGeneratorEvents, \ChameleonDSThree and \ChameleonDSFour, the comparison with \MicroTEDAClus also carries a difference of search budget, since the reference implementation exhausts the time of the search before its trials in these datasets (\cref{tab:mi_optimization_trials}). The validation of \cref{sec:mi_validation}, in which every model completes its trials, shows that the gains over the \variant{vectorized} model do not depend on that difference.
 

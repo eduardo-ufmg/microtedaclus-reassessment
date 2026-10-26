@@ -209,7 +209,7 @@ as \cref{alg:macrocluster_update} describes. The formulation defines no decay of
 
 \paragraph{Order-dependent density.}
 \label{subsubsec:order_dependent_characteristics}
-The eccentricity and the typicality relate a sample to a microcluster, so the density $D^i_k = 1 / \zeta^i(x_k)$ relates them too, and should not be treated as a property of the microcluster. A microcluster with a small variance is dense for any standard clustering algorithm~\cite{ester1996density,aggarwal2003framework,cao2006density}, but if the current sample is far from its mean, $\zeta^i(x_k)$ is large and $D^i_k$ small, and the microcluster is less likely to be activated. Conversely, a microcluster with a large variance and a sample close to its mean has a large $D^i_k$ and is more likely to be activated, even if it is not dense at all. \Cref{sec:mi_corrections} tests two densities that do not depend on the current sample, and \cref{sec:ri_rejected} tests one of them again on real data.
+The eccentricity and the typicality relate a sample to a microcluster, so the density $D^i_k = 1 / \zeta^i(x_k)$ relates them too, and should not be treated as a property of the microcluster. A microcluster with a small variance is dense for any standard clustering algorithm~\cite{ester1996density,aggarwal2003framework,cao2006density}, but if the current sample is far from its mean, $\zeta^i(x_k)$ is large and $D^i_k$ small, and the microcluster is less likely to be activated. Conversely, a microcluster with a large variance and a sample close to its mean has a large $D^i_k$ and is more likely to be activated, even if it is not dense at all. \Cref{sec:mi_corrections} tests two densities that do not depend on the current sample, and \cref{subsec:mi_density_revisited} tests both again on \MicroTEDAClusPlus.
 
 \paragraph{Outlier condition for microclusters with two samples.}
 \label{subsubsec:incorrect_condition_logic}
@@ -308,7 +308,7 @@ Cardoso proposes an alternative to the intersection condition of \cref{eq:microc
     \label{eq:cardoso_intersection_condition}
 \end{equation}
 
-\Cref{subsec:mi_improvement_candidates} tests a factor of its own on the condition of \cref{eq:microcluster_intersection_condition}, which \cref{subsec:ri_link} keeps on real data.
+\Cref{subsec:mi_improvement_candidates} tests a factor of its own on the condition of \cref{eq:microcluster_intersection_condition}.
 
 The experiments of the thesis evaluate the clustering quality by the adjusted Rand index on seven static datasets of two dimensions, two of them taken from the original work. For each dataset and intersection condition, the model runs in the offline mode with random orders of the samples and with hyperparameters taken from a grid, and the thesis reports the lowest and the highest index and the highest mean index over the configurations~\cite[Section 4.3]{cardoso2022microtedaclus}. It concludes that the quality depends strongly on $r_0$ and $\phi$ and weakly on the decay of \cref{eq:decay_logic}, and that \cref{eq:cardoso_intersection_condition} is comparable to \cref{eq:microcluster_intersection_condition}, with a higher index in one dataset.
 
