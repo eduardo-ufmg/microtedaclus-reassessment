@@ -23,19 +23,28 @@ import numpy as np
 import pandas as pd
 
 from benchmark import analysis, real_data
-from benchmark import range_check
-from benchmark.artifacts import SUBJECT, _bands, _in_kib, _in_ms, _save, focus_panels
+from benchmark.artifacts import (
+    SUBJECT,
+    _bands,
+    _in_kib,
+    _in_ms,
+    _save,
+    complete_by_dataset,
+    cost_by_dataset,
+    failure_table,
+    focus_panels,
+    range_ends_table,
+    run_text,
+)
 from benchmark.datasets import REAL_DATASETS, load_stream
-from benchmark.display import REAL_SHORT_NAMES, columns, model_label
+from benchmark.display import REAL_SHORT_NAMES, columns
 from benchmark.evaluation import BATCH_SIZE
-from benchmark.hyperparameters import Category
 from benchmark.models import MODELS
-from benchmark.runner import batches_file
+from benchmark.runner import RUNS, batches_file
 from benchmark.tuning import TUNING_LIMIT, split
 from pfc_shared.latex import panel_table, write_table
 
 DATASETS = list(REAL_DATASETS)
-RUNS = range(126, 220)  # the runs of the experiment; the pilot has runs of its own
 # Name macro of the thesis, reference and order of every dataset
 DESCRIPTION = {
     "insects_abrupt": (r"\InsectsAbrupt", "souza2020challenges", "as recorded"),
@@ -65,71 +74,6 @@ OUT = analysis.ROOT.parent.parent / "monografia" / "RealData" / "artifacts"
 INSECTS_ABRUPT_CHANGES = (14352, 19500, 33240, 38682, 39510)
 
 
-def failures(tasks: pd.DataFrame) -> pd.DataFrame:
-    """Number of failed tasks of every model in every dataset."""
-    failed = tasks.assign(failed=tasks.status != "OK")
-    return failed.pivot_table(
-        index="model", columns="dataset", values="failed", aggfunc="sum"
-    )
-
-
-def complete_by_dataset(results, tasks, models):
-    """The results of each dataset over the runs that its models finished, the number of
-    those runs in each dataset where the first of `models`, in focus, stays, and the
-    datasets that leave it out.
-
-    A model that failed in more than half of the runs of a dataset is left out of it.
-    """
-    kept, runs, without_focus = [], {}, []
-    for dataset in DATASETS:
-        attempted = tasks[tasks.dataset == dataset]
-        finished = attempted[attempted.status == "OK"].groupby("model").size()
-        staying = [
-            m for m in models if finished.get(m, 0) > attempted.run.nunique() / 2
-        ]
-        of_dataset = analysis.on_complete_runs(results, staying, [dataset])
-        kept.append(of_dataset)
-        if models[0] in staying:
-            runs[dataset] = of_dataset.run.nunique()
-        else:
-            without_focus.append(dataset)
-    return pd.concat(kept), runs, without_focus
-
-
-def failure_table(tasks, models, out):
-    counts = failures(tasks)
-    kinds = set(
-        tasks.status[tasks.status != "OK"].str.extract(r"^ERROR: (\w+)", expand=False)
-    )
-    assert kinds <= {
-        "SummaryLimitExceeded"
-    }, f"the caption names only the summary limit: {kinds}"
-    rows = [
-        (
-            model_label(model),
-            counts.loc[model].to_dict() if model in counts.index else {},
-            "{:.0f}".format,
-        )
-        for model in models
-    ]
-    panel_table(
-        out / "failures.tex",
-        "Number of runs in which a model failed on a real dataset. Every failure is a summary "
-        "that exceeded a quarter of the tuning segment.",
-        "tab:real_failures",
-        columns(DATASETS),
-        [("Failed runs", rows)],
-        short="Failed runs on the real datasets",
-    )
-
-
-def run_text(runs: dict) -> str:
-    """The number of runs compared, with the datasets that have fewer."""
-    most = max(runs.values())
-    fewer = [f"{n} in {REAL_SHORT_NAMES[d]}" for d, n in runs.items() if n < most]
-    return f"{most} runs" + (f", except {', '.join(fewer)}" if fewer else "")
-
-
 def recorded_labels(dataset):
     """Labels of the stream in the order of its files, before any shuffle."""
     if dataset == "gas_drift":
@@ -145,7 +89,9 @@ def single_class(labels) -> np.ndarray:
     return np.array([len(np.unique(batch)) == 1 for batch in batches])
 
 
-def single_class_shares(datasets=DATASETS, runs=RUNS) -> pd.DataFrame:
+def single_class_shares(
+    datasets=DATASETS, runs=range(RUNS[0], RUNS[1] + 1)
+) -> pd.DataFrame:
     """Per dataset: the share of single-class batches in the recorded order and in the
     evaluated streams, and the share of runs whose penultimate batch holds one class."""
     rows = {}
@@ -236,21 +182,9 @@ def quality_table(results, models, runs, excluded, path, label, subject=SUBJECT)
 def cost_table(complete, models, without_focus, timing_dir, memory_dir, out):
     """Time and memory, per dataset over the runs that every model kept in it finished; no
     comparison in the datasets that leave the first of `models`, in focus, out."""
-    timing = analysis.timing_level(timing_dir)
-    memory = analysis.memory_level(memory_dir)
-    kept_timing, kept_memory, runs = [], [], {}
-    for dataset in DATASETS:
-        staying = [
-            m for m in models if m in set(complete[complete.dataset == dataset].model)
-        ]
-        t = analysis.on_complete_runs(timing, staying, [dataset])
-        m = analysis.on_complete_runs(memory, staying, [dataset])
-        shared = sorted(set(t.run) & set(m.run))
-        kept_timing.append(t[t.run.isin(shared)])
-        kept_memory.append(m[m.run.isin(shared)])
-        if dataset not in without_focus:
-            runs[dataset] = len(shared)
-    timing, memory = pd.concat(kept_timing), pd.concat(kept_memory)
+    timing, memory, runs = cost_by_dataset(
+        complete, models, DATASETS, without_focus, timing_dir, memory_dir
+    )
     title = f"Execution time and memory of {SUBJECT} on the real datasets"
     panel_table(
         out / "cost.tex",
@@ -261,50 +195,6 @@ def cost_table(complete, models, without_focus, timing_dir, memory_dir, out):
         focus_panels(timing, analysis.TIME_METRICS, models, DATASETS, _in_ms)
         + focus_panels(memory, analysis.MEMORY_METRICS, models, DATASETS, _in_kib),
         short=title,
-    )
-
-
-def range_ends_table(pilot_dirs, models, out):
-    """The largest share of the runs at each end of the ranges, in the modernized experiment
-    and, for the models of the real-data experiment, in its pilot, each model from the last
-    pilot directory that holds it; in the pilot, an end that is a natural limit in every
-    dataset is in italics."""
-    sources = {
-        "modernized": range_check.ends(analysis.MAIN),
-        "pilot": range_check.combined_ends(pilot_dirs, models),
-    }
-    percent = "{:.0f}".format
-    lines = [
-        r" & \multicolumn{2}{c}{Modernized experiment} & \multicolumn{2}{c}{Real-data pilot} \\",
-        r"\cmidrule(lr){2-3} \cmidrule(lr){4-5}",
-        r"Category & Lower end & Upper end & Lower end & Upper end \\",
-        r"\midrule",
-    ]
-    for category in Category:
-        cells = []
-        for source, shares in sources.items():
-            for end in ("lower", "upper"):
-                of_end = shares[
-                    (shares.category == category.value) & (shares.end == end)
-                ]
-                checked = of_end[~of_end.natural] if source == "pilot" else of_end
-                if len(checked):
-                    cells.append(percent(100 * checked.share.max()))
-                elif len(of_end):
-                    cells.append(rf"\textit{{{percent(100 * of_end.share.max())}}}")
-                else:
-                    cells.append("-")
-        lines.append(" & ".join([category.value.capitalize(), *cells]) + r" \\")
-    write_table(
-        out / "range_ends.tex",
-        "Largest share of the runs of a dataset in which the value that the search selects for "
-        "a hyperparameter lies at an end of its range, within a twentieth of its width, in the "
-        "modernized experiment and in the pilot of the real-data experiment: percentages. In "
-        "the pilot, a value in italics is that of a natural limit.",
-        "tab:real_range_ends",
-        "l c c c c",
-        lines,
-        "Selected values at the ends of their search ranges",
     )
 
 
@@ -345,11 +235,13 @@ def main():
     arguments = parser.parse_args()
 
     results = analysis.run_level(arguments.results)
-    results = results[results.run.isin(RUNS)]
+    results = results[results.run.between(*RUNS)]
     tasks = pd.read_csv(arguments.results / "tasks.csv")
-    tasks = tasks[tasks.run.isin(RUNS)]
+    tasks = tasks[tasks.run.between(*RUNS)]
     models = [m for m in MODELS if m in set(tasks.model)]
-    complete, runs, without_focus = complete_by_dataset(results, tasks, models)
+    complete, runs, without_focus = complete_by_dataset(
+        results, tasks, models, DATASETS
+    )
     print(f"{len(models)} models; complete runs by dataset: {runs}")
     print("datasets that leave the model in focus out:", without_focus)
 
@@ -359,7 +251,16 @@ def main():
     single_class_table(shares, arguments.out)
     excluded = set(shares.index[shares["penultimate"] > 0])
     print("single-batch metrics left out of:", sorted(excluded))
-    failure_table(tasks, models, arguments.out)
+    failure_table(
+        tasks,
+        models,
+        DATASETS,
+        arguments.out / "failures.tex",
+        "tab:real_failures",
+        "Number of runs in which a model failed on a real dataset. Every failure is a "
+        "summary that exceeded a quarter of the tuning segment.",
+        "Failed runs on the real datasets",
+    )
     quality_table(
         complete,
         models,
@@ -383,7 +284,17 @@ def main():
         arguments.memory,
         arguments.out,
     )
-    range_ends_table(arguments.pilot, models, arguments.out)
+    range_ends_table(
+        arguments.pilot,
+        models,
+        arguments.out / "range_ends.tex",
+        "tab:real_range_ends",
+        "Largest share of the runs of a dataset in which the value that the search "
+        "selects for a hyperparameter lies at an end of its range, within a twentieth "
+        "of its width, in the pilot of the real-data experiment: percentages. A value "
+        "in italics is that of a natural limit.",
+        "Selected values at the ends of their search ranges on the real datasets",
+    )
 
 
 if __name__ == "__main__":

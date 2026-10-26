@@ -1,9 +1,10 @@
 """Hyperparameter selection of a model on the first part of a stream.
 
-Four protocols select the hyperparameters: that of this experiment, by rules;
-the same with the widened rules or with the real-data rules, for the real
-datasets; and that of the previous experiment, kept to measure what the change
-of protocol does to the one model that both experiments share.
+Three protocols select the hyperparameters: that of the experiments, by the rules
+`real2`; the same by the first version of the rules, `real`, which the pilot of the
+real-data experiment used for some models; and that of the previous experiment,
+kept to measure what the change of protocol does to the one model that both
+experiments share.
 
 By rules, the search sees the tuning segment only, which is what a deployment has before
 the stream continues: its samples and their labels. The ranges come from the
@@ -56,18 +57,18 @@ def tune(
     search_seed: int,
     model_seed: int,
     trials: int = TRIALS,
-    rules: str = "rules",
+    rules: str = "real2",
 ):
     """Selection by rules: the hyperparameters and a summary of the search.
 
     The hyperparameters are None if every trial failed. They are kept as the
     model takes them, which differs from what the search samples for a range on
-    the logit scale. Under the widened and the real-data rules, a trial whose summary exceeds the
-    limit of `benchmark.hyperparameters.summary_limit` fails, and the summary of
-    the search carries the limit for the evaluation.
+    the logit scale. A trial whose summary exceeds the limit of
+    `benchmark.hyperparameters.summary_limit` fails, and the summary of the search
+    carries the limit for the evaluation.
     """
     space = search_space(model_class, X, y, RULES[rules])
-    limit = summary_limit(X, y) if rules in ("widened", "real", "real2") else None
+    limit = summary_limit(X, y)
 
     def objective(trial):
         hyperparameters = {
@@ -97,26 +98,15 @@ def tune(
         "failed_trials": failed,
         "objective": study.best_value,
         "tuning_seconds": time.perf_counter() - started,
+        "summary_limit": limit,
     }
-    if limit is not None:
-        summary["summary_limit"] = limit
     selected = study.best_trial.user_attrs["hyperparameters"]
     return (selected if failed < len(study.trials) else None), summary
 
 
-def tune_widened(model_class, X, y, search_seed, model_seed, trials=TRIALS):
-    """Selection by the widened rules, for the real datasets."""
-    return tune(model_class, X, y, search_seed, model_seed, trials, rules="widened")
-
-
 def tune_real(model_class, X, y, search_seed, model_seed, trials=TRIALS):
-    """Selection by the real-data rules."""
+    """Selection by the first version of the rules."""
     return tune(model_class, X, y, search_seed, model_seed, trials, rules="real")
-
-
-def tune_real2(model_class, X, y, search_seed, model_seed, trials=TRIALS):
-    """Selection by the second version of the real-data rules."""
-    return tune(model_class, X, y, search_seed, model_seed, trials, rules="real2")
 
 
 def tune_previous(
@@ -155,9 +145,7 @@ def tune_previous(
 
 
 PROTOCOLS = {
-    "rules": tune,
-    "widened": tune_widened,
+    "real2": tune,
     "real": tune_real,
-    "real2": tune_real2,
     "previous": tune_previous,
 }

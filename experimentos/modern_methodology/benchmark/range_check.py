@@ -20,14 +20,57 @@ import json
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
+from scipy.special import logit
 
 from benchmark import analysis
-from benchmark.artifacts import at_the_ends
 from benchmark.hyperparameters import Category, natural_limit
 
 TOLERANCE = 0.05  # of the width of a range, in the scale of the search
 BINDING_SHARE = 0.25  # of the runs of a dataset
+
+
+def at_the_ends(results, ranges, tolerance=0.05) -> pd.DataFrame:
+    """Share of the runs whose selected value lies at an end of its search range.
+
+    A value is at an end if it is within `tolerance` of the width of the range
+    from it, in the scale of the search.
+    """
+    rows = []
+    of_models = ranges[ranges.model.isin(set(results.model))]
+    for (model, name), of_name in of_models.groupby(["model", "hyperparameter"]):
+        column = f"param:{name}"
+        selected = results.loc[results.model == model, ["dataset", "run", column]]
+        merged = of_name.merge(selected, on=["dataset", "run"]).dropna(subset=[column])
+        if merged.empty:
+            continue
+        if "logit" in merged and merged["logit"].iloc[0]:
+            scale = logit
+        elif merged["log"].iloc[0]:
+            scale = np.log
+        else:
+            scale = lambda values: values  # noqa: E731
+        low, high, value = (
+            scale(merged[c].astype(float)) for c in ("low", "high", column)
+        )
+        width = (high - low).where(high > low)
+        position = (value - low) / width
+        merged = merged.assign(
+            lower=position <= tolerance, upper=position >= 1 - tolerance
+        )
+        shares = merged[width.notna()].groupby("dataset")[["lower", "upper"]].mean()
+        for dataset, row in shares.iterrows():
+            rows.append(
+                {
+                    "model": model,
+                    "hyperparameter": name,
+                    "dataset": dataset,
+                    "lower": row["lower"],
+                    "upper": row["upper"],
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 def selected_hyperparameters(out: Path) -> tuple[pd.DataFrame, pd.DataFrame]:

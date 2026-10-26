@@ -13,8 +13,10 @@ search ranges does.
 Usage (from experimentos/modern_methodology):
     python -m benchmark.runner OUT [--runs FIRST LAST] [--models M ...] [--datasets D ...]
                                [--workers N] [--trials N] [--length-factor F]
-                               [--protocol rules|widened|real|real2|previous] [--stall-limit SECONDS]
+                               [--protocol real2|real|previous] [--stall-limit SECONDS]
                                [--memory-limit GIGABYTES] [--tune-only]
+The runs default to those of the experiments, RUNS; their pilots, which only select the
+hyperparameters, take the runs PILOT_RUNS, which the experiments do not use.
 OUT receives tasks.csv, with one row per task, and batches/DATASET/MODEL/RUN.csv.
 It holds the results of one configuration: a protocol, a number of trials and a
 length factor.
@@ -48,8 +50,9 @@ from benchmark.parallel import STALL_LIMIT, finished_tasks, run_tasks
 from benchmark.preprocessing import segments
 from benchmark.tuning import PROTOCOLS, TRIALS
 
-N_RUNS = 94
-COST_RUNS = 10  # first runs whose tasks the timing and memory passes measure
+RUNS = (126, 219)  # first and last run of the experiments, 94 runs
+PILOT_RUNS = (94, 125)  # first and last run of their pilots, 32 runs
+COST_RUNS = (126, 157)  # first and last run of the timing and memory passes
 TASK_COLUMNS = [
     "dataset",
     "model",
@@ -143,7 +146,7 @@ def configuration_matches(out: Path, configuration: dict) -> bool:
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("out", type=Path)
-    parser.add_argument("--runs", type=int, nargs=2, default=[0, N_RUNS - 1])
+    parser.add_argument("--runs", type=int, nargs=2, default=list(RUNS))
     parser.add_argument(
         "--models", nargs="+", default=list(MODELS), choices=list(MODELS)
     )
@@ -153,7 +156,7 @@ def main():
     parser.add_argument("--workers", type=int, default=os.cpu_count())
     parser.add_argument("--trials", type=int, default=TRIALS)
     parser.add_argument("--length-factor", type=int, default=1)
-    parser.add_argument("--protocol", default="rules", choices=list(PROTOCOLS))
+    parser.add_argument("--protocol", default="real2", choices=list(PROTOCOLS))
     parser.add_argument("--stall-limit", type=int, default=STALL_LIMIT)
     parser.add_argument(
         "--memory-limit",

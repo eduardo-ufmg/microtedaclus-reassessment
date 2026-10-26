@@ -47,7 +47,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--results", type=Path, default=analysis.MAIN)
     parser.add_argument("--out", type=Path, default=OUT)
-    parser.add_argument("--runs", type=int, nargs=2, default=[0, COST_RUNS - 1])
+    parser.add_argument("--runs", type=int, nargs=2, default=list(COST_RUNS))
     parser.add_argument(
         "--models", nargs="+", default=list(MODELS), choices=list(MODELS)
     )
