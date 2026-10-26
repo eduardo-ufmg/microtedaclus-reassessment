@@ -74,11 +74,13 @@ def failures(tasks: pd.DataFrame) -> pd.DataFrame:
 
 
 def complete_by_dataset(results, tasks, models):
-    """The results of each dataset over the runs that its models finished, and their number.
+    """The results of each dataset over the runs that its models finished, the number of
+    those runs in each dataset where the first of `models`, in focus, stays, and the
+    datasets that leave it out.
 
     A model that failed in more than half of the runs of a dataset is left out of it.
     """
-    kept, runs = [], {}
+    kept, runs, without_focus = [], {}, []
     for dataset in DATASETS:
         attempted = tasks[tasks.dataset == dataset]
         finished = attempted[attempted.status == "OK"].groupby("model").size()
@@ -87,8 +89,11 @@ def complete_by_dataset(results, tasks, models):
         ]
         of_dataset = analysis.on_complete_runs(results, staying, [dataset])
         kept.append(of_dataset)
-        runs[dataset] = of_dataset.run.nunique()
-    return pd.concat(kept), runs
+        if models[0] in staying:
+            runs[dataset] = of_dataset.run.nunique()
+        else:
+            without_focus.append(dataset)
+    return pd.concat(kept), runs, without_focus
 
 
 def failure_table(tasks, models, out):
@@ -218,8 +223,9 @@ def quality_table(results, models, runs, excluded, path, label, subject=SUBJECT)
     panel_table(
         path,
         f"{title}: medians over {run_text(runs)}. A dash marks a value left out: the "
-        "Steady-State ARI of a stream whose penultimate batch holds a single class, or a model "
-        "that failed in more than half of the runs of a dataset.",
+        "Steady-State ARI of a stream whose penultimate batch holds a single class, a model "
+        "that failed in more than half of the runs of a dataset, and every model of a dataset "
+        r"that leaves \MicroTEDAClusPlus{} out, where no comparison is made.",
         label,
         columns(DATASETS),
         panels,
@@ -227,8 +233,9 @@ def quality_table(results, models, runs, excluded, path, label, subject=SUBJECT)
     )
 
 
-def cost_table(complete, models, timing_dir, memory_dir, out):
-    """Time and memory, per dataset over the runs that every model kept in it finished."""
+def cost_table(complete, models, without_focus, timing_dir, memory_dir, out):
+    """Time and memory, per dataset over the runs that every model kept in it finished; no
+    comparison in the datasets that leave the first of `models`, in focus, out."""
     timing = analysis.timing_level(timing_dir)
     memory = analysis.memory_level(memory_dir)
     kept_timing, kept_memory, runs = [], [], {}
@@ -241,12 +248,14 @@ def cost_table(complete, models, timing_dir, memory_dir, out):
         shared = sorted(set(t.run) & set(m.run))
         kept_timing.append(t[t.run.isin(shared)])
         kept_memory.append(m[m.run.isin(shared)])
-        runs[dataset] = len(shared)
+        if dataset not in without_focus:
+            runs[dataset] = len(shared)
     timing, memory = pd.concat(kept_timing), pd.concat(kept_memory)
     title = f"Execution time and memory of {SUBJECT} on the real datasets"
     panel_table(
         out / "cost.tex",
-        f"{title}: medians over {run_text(runs)}. A dash marks a model left out of a dataset.",
+        f"{title}: medians over {run_text(runs)}. A dash marks a model left out of a dataset, "
+        r"and every model of a dataset that leaves \MicroTEDAClusPlus{} out.",
         "tab:real_cost",
         columns(DATASETS),
         focus_panels(timing, analysis.TIME_METRICS, models, DATASETS, _in_ms)
@@ -340,8 +349,9 @@ def main():
     tasks = pd.read_csv(arguments.results / "tasks.csv")
     tasks = tasks[tasks.run.isin(RUNS)]
     models = [m for m in MODELS if m in set(tasks.model)]
-    complete, runs = complete_by_dataset(results, tasks, models)
+    complete, runs, without_focus = complete_by_dataset(results, tasks, models)
     print(f"{len(models)} models; complete runs by dataset: {runs}")
+    print("datasets that leave the model in focus out:", without_focus)
 
     arguments.out.mkdir(parents=True, exist_ok=True)
     dataset_table(arguments.out)
@@ -365,7 +375,14 @@ def main():
         sorted(abrupt.run.unique()),
         arguments.out,
     )
-    cost_table(complete, models, arguments.timing, arguments.memory, arguments.out)
+    cost_table(
+        complete,
+        models,
+        without_focus,
+        arguments.timing,
+        arguments.memory,
+        arguments.out,
+    )
     range_ends_table(arguments.pilot, models, arguments.out)
 
 
