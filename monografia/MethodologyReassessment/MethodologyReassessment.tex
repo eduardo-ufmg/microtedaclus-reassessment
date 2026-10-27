@@ -84,7 +84,7 @@ The static datasets \datasetname{ST-D1} and \datasetname{ST-D2} of the original 
     \label{fig:mr_ds3_preprocessing}
 \end{figure}
 
-Removing the samples labeled as noise is a severe leak~\cite{kaufman2012leakage,kapoor2023leakage}: a sample is noise only if it belongs to no cluster, which is known after the clustering, and in a stream the model itself must decide which samples are noise, from the samples it has seen, or not handle noise at all~\cite{akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline,zhang2022extension,zubaroglu2023emcstream}. Keeping a random half of the samples needs no information about them and is not a leak. Scaling is expected in any application, but the original work computes the minimum and the maximum of each feature over the whole dataset, which leaks the future of the stream; and the variance limit of the model follows the scale of the data, against the claim of the original work that the model is robust to it, as the sensitivity study of \cref{sec:c_implementation} also suggests. Ordering the samples by label is the most harmful step: it leaks the labels and discards the order of arrival, and, since consecutive samples then share their label, most 100-sample batches hold a single cluster.
+Removing the samples labeled as noise is a severe leak~\cite{kaufman2012leakage,kapoor2023leakage}: a sample is noise only if it belongs to no cluster, which is known after the clustering, and in a stream the model itself must decide which samples are noise, from the samples it has seen, or not handle noise at all~\cite{akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline,zhang2022extension,zubaroglu2023emcstream}. Keeping a random half of the samples needs no information about them and is not a leak. Scaling is expected in any application, but the original work computes the minimum and the maximum of each feature over the whole dataset, which leaks the future of the stream. The variance limit that the search selects also follows the scale of the data (\cref{tab:params_microtedaclus}), against the claim of the original work that the model is robust to it, and the sensitivity study of \cref{sec:c_implementation} finds the quality strongly dependent on it. Ordering the samples by label is the most harmful step: it leaks the labels and discards the order of arrival, and, since consecutive samples then share their label, most 100-sample batches hold a single cluster.
 
 The experiments of the original work on \datasetname{ST-D1} and \datasetname{ST-D2} therefore do not evaluate online stream clustering, and we use the raw \ChameleonDSThree and \ChameleonDSFour instead. The third static dataset, \Cassini, comes from the \codename{R} package \codename{mlbench} without preprocessing, but ordered by label; we shuffle it.
 
@@ -200,9 +200,16 @@ In the scalability streams, the Overall ARI of \MicroTEDAClus stays high at ever
 
 \MicroTEDAClus is slower than every benchmark model but \AutoCloud in the learning stage of every dataset, and slower than \StreamKM and \CEDAS in the prediction stage of every dataset (\cref{tab:mr_cost}). Its maximum memory footprint is larger than those of \DenStream, \StreamKM, \CEDAS and \TEDACloud in every dataset, and larger than that of \CluStream in the Chameleon datasets. These comparisons measure implementations as much as algorithms, and the times are taken inside the tasks, with other tasks running on the same machine.
 
+\subsection{Hyperparameters}
+\label{sec:parameter_variability}
+
+\input{MethodologyReassessment/artifacts/parameters/MicroTEDAClus_parameters.tex}
+
+The variance limit selected for \MicroTEDAClus spans four orders of magnitude across the datasets, following the scale of each of them (\cref{tab:params_microtedaclus}), which contradicts the claim of the original work that the model is robust to this hyperparameter. The dispersion of the selected decay is higher in the three streams with concept drift than in the static datasets.
+
 \section{Summary}
 \label{sec:reassessment_summary}
 
-The published results of \MicroTEDAClus come from an implementation that departs from its formulation, benchmark models executed through two layers of interface, datasets cleaned, scaled with the whole stream and ordered by label, and an evaluation that learns each batch before predicting it. Without these flaws, \MicroTEDAClus is not on par with the benchmark models of the original work, it does not adapt better to concept drift, it learns slowly, its quality collapses in high dimensions, and its variance limit depends on the scale of the data (\cref{subsubsec:scaling}). \Cref{chap:ModelImprovement} addresses these weaknesses.
+The published results of \MicroTEDAClus come from an implementation that departs from its formulation, benchmark models executed through two layers of interface, datasets cleaned, scaled with the whole stream and ordered by label, and an evaluation that learns each batch before predicting it. Without these flaws, \MicroTEDAClus is not on par with the benchmark models of the original work, it does not adapt better to concept drift, it learns slowly, its quality collapses in high dimensions, and its variance limit depends on the scale of the data (\cref{tab:params_microtedaclus}). \Cref{chap:ModelImprovement} addresses these weaknesses.
 
 \clearpage

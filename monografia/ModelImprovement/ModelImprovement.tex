@@ -401,7 +401,14 @@ In the scalability streams, \MicroTEDAClusPlus is better than every other model 
 
 Its memory footprint is smaller than those of \MicroTEDAClus and \CluStream in every dataset and larger than those of \CEDAS and \TEDACloud in every dataset. The model stores the microclusters in arrays that always have room for one new microcluster per sample of the next batch and that are enlarged to twice the required size when that room runs out, so the footprint we measure is that of the allocated capacity, the same for every run that never keeps more than 100 microclusters.
 
+\subsection{Hyperparameters of \MicroTEDAClusPlus}
+\label{subsec:mi_main_parameters}
+
+\input{ModelImprovement/artifacts/parameters/MicroTEDAClusPlus_parameters.tex}
+
+The relative variance limit selected for \MicroTEDAClusPlus spans about one order of magnitude across the datasets, against four for the absolute limit of \MicroTEDAClus (\cref{tab:params_microtedaclusplus,tab:params_microtedaclus}), and is nearly the same in the three static datasets, whose coordinates differ in scale by two orders of magnitude: the relative limit removes the dependence on the scale of the data. Its dispersion and the median decay are larger in the streams with concept drift, and the noise distance has a low dispersion in every dataset.
+
 \subsection{Summary}
 \label{subsec:mi_main_summary}
 
-In the main experiment, \MicroTEDAClusPlus improves on \MicroTEDAClus and changes its position among the benchmark models. It is better than \MicroTEDAClus in the Overall ARI of five of the six datasets and in the Steady-State ARI of all six. No benchmark model is better than it in the streams with concept drift, where \MicroTEDAClus was worse than most of them, and in the scalability streams it is better than every model but \CEDAS from two dimensions on, without the collapse of \MicroTEDAClus. It is the fastest model in both stages of every dataset, tied with \CEDAS in the learning stage of two, and its memory footprint is smaller than those of \MicroTEDAClus and \CluStream and larger than those of \CEDAS and \TEDACloud. The weakness that remains is the clustering of static shapes, where \CluStream and \StreamKM remain better.
+In the main experiment, \MicroTEDAClusPlus improves on \MicroTEDAClus and changes its position among the benchmark models. It is better than \MicroTEDAClus in the Overall ARI of five of the six datasets and in the Steady-State ARI of all six. No benchmark model is better than it in the streams with concept drift, where \MicroTEDAClus was worse than most of them, and in the scalability streams it is better than every model but \CEDAS from two dimensions on, without the collapse of \MicroTEDAClus. It is the fastest model in both stages of every dataset, tied with \CEDAS in the learning stage of two, and its memory footprint is smaller than those of \MicroTEDAClus and \CluStream and larger than those of \CEDAS and \TEDACloud. Its variance limit no longer depends on the scale of the data. The weakness that remains is the clustering of static shapes, where \CluStream and \StreamKM remain better.
