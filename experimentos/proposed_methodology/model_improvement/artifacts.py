@@ -382,6 +382,36 @@ def partition_table(
     )
 
 
+def degenerate_table(
+    folder, name, title, variants, runs=DEVELOPMENT_RUNS, stage_names=None
+):
+    """How often a model predicts a single cluster."""
+    shares, endings = [], []
+    for v in variants:
+        rl = analysis.run_level(v, runs).groupby("dataset")
+        shares.append(
+            (
+                model(v, stage_names),
+                100 * rl["single_cluster_share"].median(),
+                "{:.0f}".format,
+            )
+        )
+        endings.append(
+            (model(v, stage_names), rl["ends_single_cluster"].sum(), "{:.0f}".format)
+        )
+    panel_table(
+        folder,
+        name,
+        f"{title}: predictions of a single cluster. Median share of the batches after the first, and "
+        f"number of the {len(runs)} {run_set(runs)} whose penultimate batch holds a single cluster.",
+        f"{title}: predictions of a single cluster",
+        [
+            (r"Batches with a single predicted cluster [\%]", shares),
+            ("Runs that end with a single predicted cluster", endings),
+        ],
+    )
+
+
 def search_range_table(runs=DEVELOPMENT_RUNS):
     """Variance limits that the wider search range selects, and the degenerate endings they bring."""
     variants = [(model(v, STAGE_NAMES), v) for v in (CORRECTED, "c_nearest_wide")]
@@ -418,6 +448,53 @@ def search_range_table(runs=DEVELOPMENT_RUNS):
                 ],
             ),
         ],
+    )
+
+
+def noise_label_table(runs=DEVELOPMENT_RUNS):
+    """Hyperparameters selected for the noise-label variant and the noise it predicts."""
+    noise = {d: 100 * true_noise(d, runs) for d in DATASETS}
+    panels = [
+        (
+            "Variance limit selected, searched up to 100",
+            [
+                (
+                    model(v, STAGE_NAMES),
+                    run_medians(v, runs, "param:variance_limit"),
+                    "{:.3g}".format,
+                )
+                for v in (CORRECTED, "i_noise")
+            ],
+        ),
+        (
+            "Noise distance selected, searched up to 10",
+            [
+                (
+                    model("i_noise"),
+                    run_medians("i_noise", runs, "param:noise_m"),
+                    "{:.1f}".format,
+                )
+            ],
+        ),
+        (
+            r"Samples labeled as noise [\%]",
+            [
+                ("true noise", noise, "{:.1f}".format),
+                (
+                    model("i_noise"),
+                    100 * run_medians("i_noise", runs, "noise_pred"),
+                    "{:.1f}".format,
+                ),
+            ],
+        ),
+    ]
+    panel_table(
+        "improvements_single",
+        "noise_label",
+        r"Hyperparameters selected for \variant{noise-label} and share of the samples it labels as "
+        f"noise: medians over the {run_set(runs)}.",
+        r"Hyperparameters and noise of \variant{noise-label}",
+        panels,
     )
 
 
@@ -835,7 +912,15 @@ def main():
         "Combined corrections",
         ["c_nearest", "cc_nearest_nopen"],
     )
+    degenerate_table(
+        "improvements_single",
+        "degenerate",
+        "Improvements, one at a time",
+        [CORRECTED, "i_relative", "i_chi"],
+        stage_names=STAGE_NAMES,
+    )
     search_range_table()
+    noise_label_table()
     tuning_noise_table()
     if TUNING_FILE.exists():
         trials_table()

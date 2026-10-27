@@ -1,0 +1,23 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption[Improvements, one at a time: predictions of a single cluster]{Improvements, one at a time: predictions of a single cluster. Median share of the batches after the first, and number of the 32 development runs whose penultimate batch holds a single cluster.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
+\begin{tabular}{l c c c c c c c c }
+\toprule
+Model & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{9}{l}{\textit{Batches with a single predicted cluster [\%]}} \\
+\variant{corrected} & 44 & 0 & 0 & 0 & 0 & 5 & 0 & 0 \\
+\variant{relative-limit} & 26 & 0 & 0 & 0 & 0 & 2 & 0 & 0 \\
+\variant{chi-threshold} & 100 & 100 & 99 & 100 & 100 & 100 & 0 & 0 \\
+\midrule
+\multicolumn{9}{l}{\textit{Runs that end with a single predicted cluster}} \\
+\variant{corrected} & 24 & 12 & 8 & 5 & 0 & 0 & 0 & 0 \\
+\variant{relative-limit} & 16 & 3 & 9 & 5 & 4 & 10 & 0 & 0 \\
+\variant{chi-threshold} & 32 & 29 & 30 & 32 & 32 & 32 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_improvements_single_degenerate}
+\end{table}
