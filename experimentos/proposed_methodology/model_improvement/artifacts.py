@@ -1,8 +1,8 @@
 """LaTeX tables and figures of the Model Improvement chapter.
 
 Everything is written under monografia/ModelImprovement/artifacts/, one folder
-per experiment, from the result files of the runner and of the serial timing
-pass. In every table a value in bold is significantly
+per experiment, from the result files of the runner, of the serial timing pass
+and of the reachability probe. In every table a value in bold is significantly
 better than the value of its control and a value in red is significantly worse
 (see analysis.py for the test).
 
@@ -47,6 +47,7 @@ from streams import load_stream
 ROOT = Path(__file__).resolve().parent.parent
 ARTIFACT_DIR = ROOT.parent.parent / "monografia" / "ModelImprovement" / "artifacts"
 TIMING_FILE = RESULTS_DIR / "_timing" / "timing.csv"
+PROBE_DIR = RESULTS_DIR / "_probe"
 
 SHORT_NAMES = {
     "benchmark_1": "B1",
@@ -69,10 +70,12 @@ METRIC_TITLES = {
     "mc_steadystate": "Steady-state microcluster count",
 }
 CHAIN = ["vectorized", CORRECTED, IMPROVED, FINAL]
+PROBE_DATASETS = ["cassini", "chameleon_ds3", "chameleon_ds4"]
 QUALITY_METRICS = ["ari_overall", "ari_steadystate"]
 # The experiments whose cost the chapter cites; their cost tables go to its appendix.
 NOT_RETAINED = ("m_function", "geometry", "density_revisited")
 MODEL_NAMES = {"MicroTEDAClus", "MicroTEDAClus+"}
+PROBE_SPACES = {"final": "MicroTEDAClus+", "engine": "extended"}
 TUNING_FILE = RESULTS_DIR / "tuning.csv"
 # Hyperparameters of the sensitivity function that each variant of the m function tunes.
 CHAIN_COLORS = {
@@ -590,6 +593,81 @@ def serial_cost_table():
 # -----------------------------------------------------------------------------
 # Main experiment: the final model against the baseline, per dimension
 # -----------------------------------------------------------------------------
+def probe_configurations(space: str, dataset: str) -> pd.DataFrame:
+    """One row per probed configuration: its means over the probed streams."""
+    df = pd.read_csv(PROBE_DIR / f"{space}_{dataset}.csv")
+    complete = df.groupby("configuration").filter(
+        lambda rows: len(rows) == df["run"].nunique()
+    )
+    return complete.groupby("configuration").agg(
+        tuning_objective=("tuning_objective", "mean"),
+        ari_overall=("ari_overall", "mean"),
+        ari_steadystate=("ari_steadystate", "mean"),
+        microclusters=("microclusters", "median"),
+        variance_limit=("variance_limit", "first"),
+        decay=("decay", "first"),
+    )
+
+
+def probe_table():
+    """What the search space holds against what the tuning objective selects."""
+    lines = [
+        r"Dataset & Space & Configuration & Objective & Overall ARI & Steady-State ARI & "
+        r"Microclusters & $r$ & decay \\"
+    ]
+    summary = []
+    for dataset in PROBE_DATASETS:
+        lines.append(r"\midrule")
+        tuned = analysis.run_level(FINAL, DEVELOPMENT_RUNS)
+        tuned = tuned[tuned.dataset == dataset]
+        protocol_overall = tuned["ari_overall"].median()
+        lines.append(
+            rf"{SHORT_NAMES[dataset]} & final & tuned by the protocol & - & {protocol_overall:.3f} & "
+            rf"{tuned['ari_steadystate'].median():.3f} & {tuned['mc_steadystate'].median():.0f} & "
+            rf"{tuned['param:variance_limit'].median():.4f} & {tuned['param:decay'].median():.0f} \\"
+        )
+        for space, space_name in PROBE_SPACES.items():
+            configurations = probe_configurations(space, dataset)
+            picks = {
+                "highest objective": configurations["tuning_objective"].idxmax(),
+                "highest Overall ARI": configurations["ari_overall"].idxmax(),
+            }
+            for name, index in picks.items():
+                c = configurations.loc[index]
+                lines.append(
+                    rf" & {space_name} & {name} & {c.tuning_objective:.3f} & {c.ari_overall:.3f} & "
+                    rf"{c.ari_steadystate:.3f} & {c.microclusters:.0f} & {c.variance_limit:.4f} & "
+                    rf"{c.decay:.0f} \\"
+                )
+            above = configurations[configurations.ari_overall > protocol_overall]
+            summary.append(
+                {
+                    "dataset": dataset,
+                    "space": space_name,
+                    "configurations": len(configurations),
+                    "above_protocol": len(above),
+                    "above_protocol_over_100_microclusters": int(
+                        (above.microclusters > 100).sum()
+                    ),
+                    "spearman": configurations["tuning_objective"].corr(
+                        configurations["ari_overall"], method="spearman"
+                    ),
+                }
+            )
+    write_table(
+        ARTIFACT_DIR / "selection" / "probe.tex",
+        "Reachability probe: for each search space, the configuration of highest objective and the one "
+        "of highest Overall ARI. The first row of each dataset is \\MicroTEDAClusPlus{} as the protocol "
+        "tunes it, with medians over the development runs; the microcluster count is that of the "
+        "penultimate batch.",
+        "tab:mi_selection_probe",
+        "l l l c c c c c c",
+        lines,
+        "Reachability probe of two search spaces",
+    )
+    pd.DataFrame(summary).to_csv(PROBE_DIR / "summary.csv", index=False)
+
+
 def trajectories(models, runs, name, folder="validation"):
     """Median and interquartile range of the batch ARI of each model, per dataset."""
     fig, axes = plt.subplots(2, 4, figsize=(15, 6.5), sharey=True)
@@ -715,6 +793,13 @@ def main():
         speedup_table()
         serial_cost_table()
         print("serial timing: tables written")
+    if all(
+        (PROBE_DIR / f"{s}_{d}.csv").exists()
+        for s in PROBE_SPACES
+        for d in PROBE_DATASETS
+    ):
+        probe_table()
+        print("probe: table written")
 
 
 if __name__ == "__main__":

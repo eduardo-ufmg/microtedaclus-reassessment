@@ -174,7 +174,7 @@ So that no model is disadvantaged by its hyperparameters, even those whose paper
 \end{algorithmic}
 \end{algorithm}
 
-The search of each model ends at 100 trials or at 300 seconds, whichever comes first. The penalty and the time limit avoid configurations that buy a small gain in ARI with a large cost, and they keep the experiments feasible: some models are slow enough to make an unrestricted search impossible over the runs that the statistics require, so a slow model may complete fewer trials than a fast one. For the same reason, every dataset has at most 10{,}000 samples.
+The search of each model ends at 100 trials or at 300 seconds, whichever comes first. The penalty and the time limit avoid configurations that buy a small gain in ARI with a large cost, and they keep the experiments feasible: some models are slow enough to make an unrestricted search impossible over the runs that the statistics require, so a slow model may complete fewer trials than a fast one. For the same reason, every dataset has at most 10{,}000 samples. \Cref{sec:mi_selection} examines the limits of this search.
 
 \subsection{Multi-run Statistics}
 \label{subsec:multi_run_statistics}
