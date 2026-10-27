@@ -44,7 +44,16 @@ The implementation of the updated formulation, which Galindo provided to us, is 
 \section{Benchmark Models}
 \label{sec:benchmark_models}
 
-The original work compares \MicroTEDAClus with \DenStream~\cite{cao2006density}, \CluStream~\cite{aggarwal2003framework} and \StreamKM++~\cite{ackermann2012streamkmpp}, benchmarks common in the literature on stream clustering~\cite{hyde2017fully,akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline}. It executes them from \codename{Python} through \codename{rpy2}, which calls the \codename{R} package \codename{streamMOA}, itself a wrapper of the \codename{Java} framework MOA~\cite{streamMOA2024}. These two layers of interface add to the time and memory that the experiment measures, so the comparison of the original work measures the interfaces together with the models, and a fair comparison requires every model to run in the environment of the evaluated one. Since \MicroTEDAClus is implemented in \codename{Python}, we use the implementations of \DenStream, \CluStream and \StreamKM in the \codename{River} library~\cite{montiel2021river}.
+The original work compares \MicroTEDAClus with \DenStream~\cite{cao2006density}, \CluStream~\cite{aggarwal2003framework} and \StreamKM++~\cite{ackermann2012streamkmpp}, benchmarks common in the literature on stream clustering~\cite{hyde2017fully,akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline}. It executes them from \codename{Python} through \codename{rpy2}, which calls the \codename{R} package \codename{streamMOA}, itself a wrapper of the \codename{Java} framework MOA~\cite{streamMOA2024}. These two layers of interface add to the time and memory that the experiment measures. To quantify them, we timed each model and measured its memory on a stream of the Random RBF generator with 100{,}000 samples, 10 dimensions, five classes and 50 clusters, eight times, through the bridge and directly in \codename{Java}, with the settings of \codename{streamMOA}: \CluStream with 100 microclusters and five macroclusters, \DenStream with $\epsilon = 0.02$, $\mu = 1$, $\beta = 0.2$, $\lambda = 0.001$, 100 initial points and an offline factor of 2, and \StreamKM with a coreset of 10{,}000 samples and five clusters. Through the bridge, every model takes much longer, while its memory barely changes (\cref{fig:benchmark_java_bridge}). The comparison of the original work therefore measures the interfaces together with the models, and a fair comparison requires every model to run in the environment of the evaluated one.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{MethodologyReassessment/figures/benchmark_java_bridge.png}
+    \caption[Execution time and memory of the benchmark models of the original work through each interface]{Execution time, at left, and memory, at right, of the benchmark models of the original work through the \codename{rpy2} bridge and directly in \codename{Java}.}
+    \label{fig:benchmark_java_bridge}
+\end{figure}
+
+Since \MicroTEDAClus is implemented in \codename{Python}, we use the implementations of \DenStream, \CluStream and \StreamKM in the \codename{River} library~\cite{montiel2021river}.
 
 \section{Datasets}
 \label{sec:datasets}
