@@ -1,18 +1,28 @@
 \chapter{Conclusions}
 \label{chap:conclusions}
 
-In this work, we set out to reassess \MicroTEDAClus, an evolving clustering algorithm for data streams built on the eccentricity and typicality of the TEDA framework, and to propose an improved model from that reassessment. We then modernized the experiment and evaluated the improved model on real data.
+In this work, we set out to reassess \MicroTEDAClus, an evolving clustering algorithm for data streams built on the eccentricity and typicality of the TEDA framework, and to propose an improved model from that reassessment.
 
 \section{Final Remarks}
 \label{sec:final_remarks}
 
-The formulation of \MicroTEDAClus has issues of its own, an order-dependent density, an outlier condition that cannot hold for microclusters with two samples and an unjustified scaling by the dimension (\cref{subsubsec:order_dependent_characteristics,subsubsec:incorrect_condition_logic,subsubsec:dimensionality_penalty}), and the implementation that produced the published results departs from it (\cref{sec:model_implementation}). The methodology of the original experiments leaks information about the streams, makes most batches trivial to cluster and evaluates each batch after learning it (\cref{chap:methodology_reassessment}). Under a methodology without these flaws, the original model is not on par with the benchmark models of the original work, and it does not adapt better than them to concept drift (\cref{sec:disc_claims}).
+The formulation of \MicroTEDAClus has issues of its own, an order-dependent density, an outlier condition that cannot hold for microclusters with two samples and an unjustified scaling by the dimension (\cref{subsubsec:order_dependent_characteristics,subsubsec:incorrect_condition_logic,subsubsec:dimensionality_penalty}), and the implementation that produced the published results departs from it (\cref{sec:model_implementation}). The methodology of the original experiments leaks information about the streams, makes most batches trivial to cluster and evaluates each batch after learning it, and its benchmark models ran through layers of interface that inflated their times (\cref{chap:methodology_reassessment}). The published comparisons therefore measured these conditions together with the models. Under a methodology that removes them for every model alike, the original model is not on par with the benchmark models of the original work, and it does not adapt better than them to concept drift: at the penultimate batch it is better than none of the established benchmark models in any dataset, and in the scalability streams of high dimension its quality collapses, which we trace to the dimensionality penalty (\cref{sec:reassessment_results}).
 
-\MicroTEDAClusPlus, which we defined by controlled experiments on separate development and validation runs, differs from \MicroTEDAClus in the five points of \cref{tab:mi_final_differences}. On the synthetic datasets it improves on the original model in clustering quality, execution time and memory, no benchmark model is better than it in the datasets with concept drift, and it is the fastest model of the main experiment (\cref{sec:mi_main_experiment}). The modernized experiment, which runs in a single environment with benchmark models from maintained libraries, search ranges by rule and the cost measured with each task alone, changes that position. \MicroTEDAClusPlus is not worse than any benchmark model in the Overall ARI of \BenchmarkOne and \Cassini nor in any scalability stream, but most of them are better than it in \BenchmarkTwo, at the penultimate batch of \RandomRBFGeneratorEvents and in \ChameleonDSThree, and it no longer learns fastest. The protocol itself raises its results in several datasets (\cref{chap:modernization}).
+\MicroTEDAClusPlus, which we defined by controlled experiments on separate development and validation runs, differs from \MicroTEDAClus in the five points of \cref{tab:mi_final_differences}. It is better than \MicroTEDAClus in the Overall ARI of five of the six datasets and in the Steady-State ARI of all six, faster in both stages and smaller in memory; no benchmark model is better than it in the streams with concept drift, and it is the fastest model of the main experiment (\cref{subsec:mi_main_summary}). Its weakness is the static shapes, where \CluStream and \StreamKM remain better.
 
-On real datasets, with the same rules for the search ranges and without its noise label, since these datasets have no noise class, \MicroTEDAClusPlus is better than every benchmark model in \Shuttle and worse than most of them in four datasets. Its summary exceeds the limit in most runs of \Covertype, which leaves it out of that dataset (\cref{tab:real_quality,tab:real_failures}). It predicts at least as fast as every benchmark model, learns more slowly than the fastest of them, and reaches the largest peak of memory in three datasets (\cref{tab:real_cost}).
+We met the objectives of \cref{sec:objectives}. Our reassessment identified the issues of the formulation, of the implementation and of the methodology, and we replaced the latter by a methodology that evaluates every model alike. The improved model overcomes most weaknesses of the original one, within the limits that follow.
 
-We met the objectives of \cref{sec:objectives}. Our reassessment identified the issues of the formulation, of the implementation and of the methodology, and we replaced the latter by a methodology that evaluates every model alike. The improved model overcomes most weaknesses of the original one on synthetic data, and keeps part of its standing in the modernized experiment. On real data, the evaluation places it ahead of the benchmark models in one dataset and behind most of them in four, within the limits stated in \cref{sec:disc_limits}.
+\section{Limits of the Evidence}
+\label{sec:limits}
+
+Four limits qualify these results.
+
+\begin{itemize}
+    \item \textbf{Streams that repeat.} The Chameleon datasets are fixed files (\cref{subsec:mi_runs}). Their runs repeat the search and not the stream, so on them the dispersion over the runs is that of the search, and the validation of \cref{chap:ModelImprovement} confirms the outcome of the search more than that of the model.
+    \item \textbf{The search as a source of variation.} Every result measures a model as its protocol tunes it, which is why we tune every model of a comparison by the same protocol. Two searches of a single algorithm give medians that differ without significance (\cref{tab:mi_refinements_tuning_noise}), and differences of that size are not effects of a model; the tests over many runs are what separate the effects from this variation.
+    \item \textbf{Cost.} The execution time and the memory measure implementations and not only algorithms, as \cref{subsec:mi_main_cost} notes and as the reimplementation of \cref{sec:c_implementation} shows for a single algorithm, and the models of a comparison are implemented in different libraries.
+    \item \textbf{Datasets.} The datasets are streams and shapes of two dimensions and scalability streams of up to sixty-four, all synthetic. Our conclusions extend to data of that kind and not beyond.
+\end{itemize}
 
 \section{Future Work}
 \label{sec:future_work}
@@ -20,12 +30,10 @@ We met the objectives of \cref{sec:objectives}. Our reassessment identified the 
 The results point to the following directions.
 
 \begin{itemize}
-    \item \textbf{Hyperparameter selection.} The search selects configurations worse than those its space holds (\cref{sec:mi_selection}), and its outcome varies with its seed (\cref{sec:disc_protocol}). An objective that observes a longer segment of the stream, more trials, or repeated searches would reduce these effects, applied to every model of a comparison alike.
-    \item \textbf{One model for both kinds of data.} The noise label helps on data with noise, and on data whose classes cover every sample we run the model without it (\cref{sec:disc_data}). Searching whether to label noise, as one more hyperparameter, would let a single model serve both.
-    \item \textbf{The real streams with concept drift.} They are where the model stays behind several benchmark models, and along \InsectsAbrupt it falls below all of them after the first change point (\cref{tab:real_quality,fig:real_insects_abrupt}); they are the main case to understand.
-    \item \textbf{Size of the summary.} The summary of the model exceeds the limit in most runs of \Covertype and in some of \Pendigits, and its peak of memory is the largest of the models compared in three real datasets (\cref{tab:real_failures,tab:real_cost}). A bound on the number of microclusters that the model enforces itself would make its cost predictable.
-    \item \textbf{An improvement effort on real data.} The improvement of \cref{chap:ModelImprovement} rests on synthetic data only. An effort of the same kind on real data, with development runs of its own, could address the weaknesses above.
-    \item \textbf{Explore its strengths.} It predicts faster than every benchmark model in every real dataset compared, or as fast as one of them (\cref{tab:real_cost}), which suits applications in which labels must be returned quickly.
+    \item \textbf{Hyperparameter selection.} The outcome of the search varies with its seed (\cref{tab:mi_refinements_tuning_noise}). More trials, or repeated searches, would reduce this variation, applied to every model of a comparison alike.
+    \item \textbf{The static shapes.} They are where the model stays behind \CluStream and \StreamKM (\cref{tab:mi_comparison_quality}), and the main case to understand.
+    \item \textbf{The noise label.} It improved the model on streams that carry noise (\cref{sec:mi_improvements}). Searching whether to label noise, as one more hyperparameter, would let a single model serve data whose classes cover every sample.
+    \item \textbf{Explore its strengths.} It predicts faster than every benchmark model of the main experiment (\cref{tab:mi_comparison_cost}), which suits applications in which labels must be returned quickly.
 \end{itemize}
 
 \clearpage
