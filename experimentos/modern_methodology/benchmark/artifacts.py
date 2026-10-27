@@ -1,11 +1,10 @@
 """Tables and figures of the experiment, and the parts that those of the real data share.
 
 Written under monografia/Modernization/artifacts/experiment/ from the results of
-`run_modern_pilot.sh` and `run_modern_main.sh`. A task fails when its model exceeds
-the limit of its summary or of its memory. A model that failed in more than half of
-the runs of a dataset is left out of that dataset, and the other models are
-compared over the runs that all of them finished on it, so a failed task removes
-its run from its dataset only.
+`run_modern_main.sh`. A task fails when its model exceeds the limit of its summary or
+of its memory. A model that failed in more than half of the runs of a dataset is
+left out of that dataset, and the other models are compared over the runs that all
+of them finished on it, so a failed task removes its run from its dataset only.
 
 Usage (from experimentos/modern_methodology):
     python -m benchmark.artifacts [MODEL ...]
@@ -22,7 +21,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from benchmark import analysis, range_check
+from benchmark import analysis
 from benchmark.datasets import SCALABILITY_DIMENSIONS
 from benchmark.display import (
     MAIN_DATASETS,
@@ -193,28 +192,6 @@ def cost_by_dataset(complete, models, datasets, without_focus, timing_dir, memor
         if dataset not in without_focus:
             runs[dataset] = len(shared)
     return pd.concat(kept_timing), pd.concat(kept_memory), runs
-
-
-def range_ends_table(pilot_dirs, models, path, label, caption, short):
-    """The largest share of the runs of a dataset at each end of the ranges, in a pilot,
-    each model from the last pilot directory that holds it; an end that is a natural
-    limit in every dataset is in italics."""
-    shares = range_check.combined_ends(pilot_dirs, models)
-    percent = "{:.0f}".format
-    lines = [r"Category & Lower end & Upper end \\", r"\midrule"]
-    for category in Category:
-        cells = []
-        for end in ("lower", "upper"):
-            of_end = shares[(shares.category == category.value) & (shares.end == end)]
-            checked = of_end[~of_end.natural]
-            if len(checked):
-                cells.append(percent(100 * checked.share.max()))
-            elif len(of_end):
-                cells.append(rf"\textit{{{percent(100 * of_end.share.max())}}}")
-            else:
-                cells.append("-")
-        lines.append(" & ".join([category.value.capitalize(), *cells]) + r" \\")
-    write_table(path, caption, label, "l c c", lines, short)
 
 
 def quality_tables(results, models, runs, without_focus):
@@ -557,19 +534,6 @@ def main():
         focus = models[0]
         rules = results[(results.model == focus) & ~results.dataset.isin(without_focus)]
         protocol_table(rules, previous)
-
-    if (analysis.PILOT / "tasks.csv").exists():
-        range_ends_table(
-            [analysis.PILOT],
-            models,
-            ARTIFACT_DIR / "range_ends.tex",
-            "tab:mod_range_ends",
-            "Largest share of the runs of a dataset in which the value that the search "
-            "selects for a hyperparameter lies at an end of its range, within a twentieth "
-            "of its width, in the pilot: percentages. A value in italics is that of a "
-            "natural limit.",
-            "Selected values at the ends of their search ranges",
-        )
 
 
 if __name__ == "__main__":

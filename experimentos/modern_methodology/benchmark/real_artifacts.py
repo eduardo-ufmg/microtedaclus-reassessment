@@ -1,15 +1,14 @@
 """Tables and figures of the experiment on the real datasets.
 
-Written under monografia/RealData/artifacts/ from the results of
-`run_real_pilot.sh` and `run_real_main.sh`. A task fails when its model exceeds
-the limit of its summary or of its memory. A model that failed in more than half of the runs of
-a dataset is left out of that dataset, and the other models are compared over
-the runs that all of them finished on it, so a failed task removes its run from
-its dataset only.
+Written under monografia/RealData/artifacts/ from the results of `run_real_main.sh`.
+A task fails when its model exceeds the limit of its summary or of its memory. A
+model that failed in more than half of the runs of a dataset is left out of that
+dataset, and the other models are compared over the runs that all of them finished
+on it, so a failed task removes its run from its dataset only.
 
 Usage (from experimentos/modern_methodology):
-    python -m benchmark.real_artifacts [--results DIR] [--pilot DIR ...] [--timing DIR]
-                                       [--memory DIR] [--out DIR]
+    python -m benchmark.real_artifacts [--results DIR] [--timing DIR] [--memory DIR]
+                                       [--out DIR]
 """
 
 import argparse
@@ -33,7 +32,6 @@ from benchmark.artifacts import (
     cost_by_dataset,
     failure_table,
     focus_panels,
-    range_ends_table,
     run_text,
 )
 from benchmark.datasets import REAL_DATASETS, load_stream
@@ -223,12 +221,6 @@ def insects_abrupt_figure(results_dir, models, runs, out):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--results", type=Path, default=analysis.REAL_MAIN)
-    parser.add_argument(
-        "--pilot",
-        type=Path,
-        nargs="+",
-        default=[analysis.REAL_PILOT, analysis.REAL_PILOT_RATIO],
-    )
     parser.add_argument("--timing", type=Path, default=analysis.TIMING_REAL)
     parser.add_argument("--memory", type=Path, default=analysis.MEMORY_REAL)
     parser.add_argument("--out", type=Path, default=OUT)
@@ -283,17 +275,6 @@ def main():
         arguments.timing,
         arguments.memory,
         arguments.out,
-    )
-    range_ends_table(
-        arguments.pilot,
-        models,
-        arguments.out / "range_ends.tex",
-        "tab:real_range_ends",
-        "Largest share of the runs of a dataset in which the value that the search "
-        "selects for a hyperparameter lies at an end of its range, within a twentieth "
-        "of its width, in the pilot of the real-data experiment: percentages. A value "
-        "in italics is that of a natural limit.",
-        "Selected values at the ends of their search ranges on the real datasets",
     )
 
 
