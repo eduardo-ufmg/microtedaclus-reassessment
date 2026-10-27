@@ -1,29 +1,29 @@
 \begin{table}[htbp]
 \centering
 \small
-\caption[Clustering quality of \modelname{MicroTEDAClus+} and the benchmark models in the scalability streams]{Clustering quality of \modelname{MicroTEDAClus+} and the benchmark models in the scalability streams: medians over 94 runs.}
+\caption[Clustering quality of \modelname{MicroTEDAClus+} and the benchmark models in the scalability streams]{Clustering quality of \modelname{MicroTEDAClus+} and the benchmark models in the scalability streams: medians over 94 runs, except 93 in S1, 92 in S2, 63 in S4, 62 in S32, 65 in S64. A dash marks a model that failed in more than half of the runs of a dataset.}
 \adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
 \begin{tabular}{l c c c c c c c }
 \toprule
 Model & S1 & S2 & S4 & S8 & S16 & S32 & S64 \\
 \midrule
 \multicolumn{8}{l}{\textit{Overall ARI}} \\
-\modelname{MicroTEDAClus+} & 0.719 & 0.938 & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 \\
-Better/same/worse & 0/1/4 & 5/0/0 & 5/0/0 & 5/0/0 & 4/1/0 & 4/1/0 & 5/0/0 \\
-\modelname{DenStream} & 0.780 & \textbf{0.885} & \textbf{0.961} & \textbf{0.968} & \textbf{0.978} & \textbf{0.991} & \textbf{1.000} \\
-\modelname{DBSTREAM} & \textcolor{red}{0.776} & \textbf{0.928} & \textbf{0.966} & \textbf{0.975} & \textbf{0.975} & \textbf{0.982} & \textbf{0.986} \\
-\modelname{BIRCH} & \textcolor{red}{0.806} & \textbf{0.923} & \textbf{0.951} & \textbf{1.000} & 1.000 & \textbf{1.000} & \textbf{0.895} \\
-\modelname{Mini-batch k-means} & \textcolor{red}{0.779} & \textbf{0.855} & \textbf{0.901} & \textbf{0.948} & \textbf{0.981} & \textbf{1.000} & \textbf{1.000} \\
-\modelname{BICO} & \textcolor{red}{0.800} & \textbf{0.891} & \textbf{0.940} & \textbf{0.963} & \textbf{0.982} & 1.000 & \textbf{1.000} \\
+\modelname{MicroTEDAClus+} & 0.703 & 0.942 & 0.997 & 1.000 & 1.000 & 1.000 & 1.000 \\
+Better/same/worse & 0/5/0 & 5/0/0 & 5/0/0 & 4/0/0 & 4/0/0 & 4/1/0 & 4/1/0 \\
+\modelname{DenStream} & 0.785 & \textbf{0.863} & \textbf{0.951} & \textbf{0.968} & \textbf{0.978} & \textbf{0.893} & \textbf{0.992} \\
+\modelname{DBSTREAM} & 0.780 & \textbf{0.921} & \textbf{0.957} & \textbf{0.977} & \textbf{0.977} & \textbf{0.980} & \textbf{1.000} \\
+\modelname{BIRCH} & 0.781 & \textbf{0.929} & \textbf{0.971} & - & - & \textbf{0.862} & \textbf{0.861} \\
+\modelname{Mini-batch k-means} & 0.789 & \textbf{0.858} & \textbf{0.895} & \textbf{0.958} & \textbf{0.983} & \textbf{1.000} & \textbf{1.000} \\
+\modelname{BICO} & 0.800 & \textbf{0.878} & \textbf{0.893} & \textbf{0.962} & \textbf{0.982} & 1.000 & 1.000 \\
 \midrule
 \multicolumn{8}{l}{\textit{Steady-State ARI}} \\
-\modelname{MicroTEDAClus+} & 0.698 & 0.925 & 0.998 & 1.000 & 1.000 & 1.000 & 1.000 \\
-Better/same/worse & 0/1/4 & 3/2/0 & 5/0/0 & 5/0/0 & 4/1/0 & 4/1/0 & 3/2/0 \\
-\modelname{DenStream} & 0.748 & \textbf{0.875} & \textbf{0.957} & \textbf{0.968} & \textbf{0.972} & \textbf{0.999} & \textbf{1.000} \\
-\modelname{DBSTREAM} & \textcolor{red}{0.776} & 0.917 & \textbf{0.971} & \textbf{0.974} & \textbf{0.972} & \textbf{0.981} & \textbf{0.984} \\
-\modelname{BIRCH} & \textcolor{red}{0.792} & 0.913 & \textbf{0.954} & \textbf{1.000} & 1.000 & \textbf{1.000} & \textbf{0.881} \\
-\modelname{Mini-batch k-means} & \textcolor{red}{0.795} & \textbf{0.849} & \textbf{0.902} & \textbf{0.946} & \textbf{0.982} & \textbf{1.000} & 1.000 \\
-\modelname{BICO} & \textcolor{red}{0.758} & \textbf{0.888} & \textbf{0.933} & \textbf{0.965} & \textbf{0.983} & 1.000 & 1.000 \\
+\modelname{MicroTEDAClus+} & 0.721 & 0.909 & 0.983 & 1.000 & 1.000 & 1.000 & 1.000 \\
+Better/same/worse & 0/5/0 & 3/2/0 & 4/1/0 & 4/0/0 & 4/0/0 & 4/1/0 & 3/2/0 \\
+\modelname{DenStream} & 0.766 & \textbf{0.855} & \textbf{0.950} & \textbf{0.969} & \textbf{0.972} & \textbf{0.939} & \textbf{0.996} \\
+\modelname{DBSTREAM} & 0.759 & 0.899 & \textbf{0.941} & \textbf{0.982} & \textbf{0.976} & \textbf{0.988} & \textbf{1.000} \\
+\modelname{BIRCH} & 0.755 & 0.925 & 0.967 & - & - & \textbf{0.902} & \textbf{0.874} \\
+\modelname{Mini-batch k-means} & 0.777 & \textbf{0.838} & \textbf{0.893} & \textbf{0.935} & \textbf{0.982} & \textbf{1.000} & 1.000 \\
+\modelname{BICO} & 0.770 & \textbf{0.876} & \textbf{0.872} & \textbf{0.942} & \textbf{0.983} & 1.000 & 1.000 \\
 \bottomrule
 \end{tabular}
 }

@@ -53,23 +53,23 @@ The search remains the Bayesian optimization of \cref{subsec:hyperparameter_tuni
 \subsection{Ranges by Rule}
 \label{subsec:mod_ranges}
 
-Each hyperparameter belongs to a category, given in \cref{tab:mod_hyperparameters}, and each category has one rule that computes its range from the tuning segment, given in \cref{tab:mod_rules}. A rule uses only what a deployment of the model also has before the stream continues: the samples of the segment and their labels. Below the median distance from a sample to its nearest neighbor, a structure of that radius holds a single sample, and above the median distance between two samples it holds half of the segment, so the distances of the rules span the scales at which a structure can summarize the data. The longest horizon is the length of the segment, the longest that the segment can tell apart from not forgetting at all. The rules replace ranges set by hand, which \cref{tab:mi_search_range_selection} showed to depend on the scale of the data. \Cref{tab:mod_ranges} gives the ranges that they produce in each dataset, and \cref{sec:real_protocol} widens the rules for the real datasets.
+Each hyperparameter belongs to a category, given in \cref{tab:mod_hyperparameters}, and each category has one rule that computes its range from the tuning segment, given in \cref{tab:mod_rules}. A rule uses only what a deployment of the model also has before the stream continues: the samples of the segment and their labels. Below the median distance from a sample to its nearest neighbor, a structure of that radius holds a single sample, and above the median distance between two samples it holds half of the segment. The range of the distances extends a decade beyond both, so that the search reaches past the scales at which a structure summarizes the data, and the range of the relative variance is that of the distances, squared, so that in the logarithmic scale of the search both give the same room. The longest horizon is the length of the segment, the longest that the segment can tell apart from not forgetting at all. The minimum points start at one, the weight of a single sample, and we search the ratios in the logit scale, which gives every decade towards zero and towards one the same room. The number of clusters reaches twenty times the labeled clusters, since a model may represent a class by several clusters, and at most the samples of a batch, the most clusters that a batch can show. The rules replace ranges set by hand, which \cref{tab:mi_search_range_selection} showed to depend on the scale of the data. \Cref{tab:mod_ranges} gives the ranges that they produce in each dataset.
 
 \begin{table}[htbp]
 \centering
-\caption[Rule of each category of hyperparameter]{Rule of each category of hyperparameter, for a tuning segment of $n$ samples with $k$ labeled clusters. Horizons, summary sizes, minimum points and numbers of clusters are integers.}
+\caption[Rule of each category of hyperparameter]{Rule of each category of hyperparameter, for a tuning segment of $n$ samples with $k$ labeled clusters. Horizons, summary sizes and numbers of clusters are integers. We measure the median distance between two samples on at most a million pairs of samples drawn at random.}
 \begin{tabular}{p{0.16\textwidth} p{0.29\textwidth} p{0.29\textwidth} l}
 \toprule
 Category & Lower end & Upper end & Scale \\
 \midrule
-Distance & median distance from a sample to its nearest neighbor & median distance between two samples & logarithmic \\
+Distance & a tenth of the median distance from a sample to its nearest neighbor & ten times the median distance between two samples & logarithmic \\
 Relative variance & square of the lower distance, as a fraction of the total variance & square of the upper distance, as a fraction of the total variance & logarithmic \\
-Horizon & $n/100$ samples & $n$ samples & logarithmic \\
+Horizon & $n/1000$ samples & $n$ samples & logarithmic \\
 Summary size & $2k$ & $n/4$ & logarithmic \\
-Minimum points & $2$ & $\sqrt{n}$ & logarithmic \\
-Ratio & $0.01$ & $0.99$ & linear \\
+Minimum points & $1$ & $\sqrt{n}$ & logarithmic \\
+Ratio & $0.0001$ & $0.999$ & logit \\
 Multiplier & $1$ & $10$ & linear \\
-Clusters & $2$ & $2k$ & linear \\
+Clusters & $2$ & $20k$, and at most the $100$ samples of a batch & linear \\
 \bottomrule
 \end{tabular}
 \label{tab:mod_rules}
@@ -82,68 +82,82 @@ Clusters & $2$ & $2k$ & linear \\
 
 The objective is the median of the batch ARI over the second half of the tuning segment. It is the quantity that the Overall ARI reports, computed after the configuration has had the first half of the segment to form its summary, which addresses the slow maturation shown in \cref{tab:mi_selection_maturation}. It has no term of execution time.
 
-Every model receives 100 trials, without a time limit. The search of a task is seeded by its dataset, its model and its run, and its objective involves no measurement of time, so the selection depends neither on the speed of the machine nor on its load. To measure what the change of protocol does, we also tune \MicroTEDAClusPlus by the previous protocol of \cref{subsec:hyperparameter_tuning}, with its previous ranges, on the same streams.
+Every model receives 100 trials, without a time limit. The search of a task is seeded by its dataset, its model and its run, and its objective involves no measurement of time, so the selection depends neither on the speed of the machine nor on its load. What bounds the search instead is the size of the summary: no model may keep a summary of more structures than a quarter of the tuning segment, the upper end of the rule of the summary size. At the fine end of the ranges a model can keep one structure per sample, and a search over such configurations is not affordable. A configuration whose summary exceeds the limit fails, as one that raises an error does, and a selected model whose summary exceeds it during the evaluation fails its task. To measure what the change of protocol does, we also tune \MicroTEDAClusPlus by the previous protocol of \cref{subsec:hyperparameter_tuning}, with its previous ranges, on the same streams.
+
+\subsection{Range Check}
+\label{subsec:mod_range_check}
+
+We check the ranges by a pilot before the experiment: every model selects its hyperparameters on 32 runs that the experiment does not use, and nothing is evaluated. An end of a range binds when the selected value lies within a twentieth of the width of the range from it, in the scale of the search, in at least a quarter of the runs of a dataset. The natural limits of a category, beyond which no range can extend, are exempt: the longest horizon, the largest summary, one minimum point, one standard deviation, two clusters and the samples of a batch. Apart from them, three ends bind, each in a single dataset: the upper ends of the number of clusters of \BICO and of the noise distance of \MicroTEDAClusPlus, in \BenchmarkOne, and the lower end of the reassignment ratio of \MiniBatchKMeans, in the scalability stream with one dimension (\cref{tab:mod_range_ends}).
+
+\input{Modernization/artifacts/experiment/range_ends.tex}
 
 \section{Execution and Measurements}
 \label{sec:mod_measurements}
 
-A task is a dataset, a model and a run, and the experiment executes the tasks of 94 runs, 13 datasets and the six models in parallel processes, which give the quality of the models and the size of their summaries. Parallel execution disturbs the execution time, under which the main experiment of the previous chapters timed its tasks. We therefore measure time in a separate pass, by the procedure of \cref{subsec:mi_optimization_time}: we execute the tasks of the first ten runs again, one at a time, with their selected hyperparameters. A new model of the task first processes the first three batches of the evaluation segment and is discarded, so that what is created on first use is in place, and we then time another new model over the evaluation segment once. A single execution replaces the minimum of three, since the three executions of a task agree closely (\cref{tab:mi_validation_serial_cost}).
+A task is a dataset, a model and a run, and the experiment executes the tasks of 94 runs other than those of the pilot, 13 datasets and the six models in parallel processes, which give the quality of the models and the size of their summaries. Parallel execution disturbs the execution time, under which the main experiment of the previous chapters timed its tasks. We therefore measure time in a separate pass, by the procedure of \cref{subsec:mi_optimization_time}: we execute the tasks of the first 32 runs again, one at a time, with their selected hyperparameters. A new model of the task first processes the first three batches of the evaluation segment and is discarded, so that what is created on first use is in place, and we then time another new model over the evaluation segment once. A single execution replaces the minimum of three, since the three executions of a task agree closely (\cref{tab:mi_validation_serial_cost}).
 
-We measure memory in another pass, over the tasks of the same ten runs, by tracking every allocation of the process with \codename{memray} \cite{memray}, which counts the memory allocated by compiled code as well as that allocated by \codename{Python}. We keep two quantities: the memory still allocated when the stream ends, which is what the model holds, and the peak during the evaluation, which adds the working memory of its steps. Each task runs in a new process, so that it inherits nothing that an earlier task left allocated. A model of the task first processes the whole evaluation segment without tracking, so that what is created on first use is in place however late it is created, and we then track new models of the task three times and keep the smallest values. These quantities are not comparable with the memory reported in the previous chapters, which counted only the \codename{Python} objects of a model.
+We measure memory in another pass, over the tasks of the same 32 runs, by tracking every allocation of the process with \codename{memray} \cite{memray}, which counts the memory allocated by compiled code as well as that allocated by \codename{Python}. We keep two quantities: the memory still allocated when the stream ends, which is what the model holds, and the peak during the evaluation, which adds the working memory of its steps. Each task runs in a new process, so that it inherits nothing that an earlier task left allocated. A model of the task first processes the whole evaluation segment without tracking, so that what is created on first use is in place however late it is created, and we then track new models of the task three times and keep the smallest values. These quantities are not comparable with the memory reported in the previous chapters, which counted only the \codename{Python} objects of a model.
 
-We compare \MicroTEDAClusPlus with each benchmark model by the test of \cref{sec:statistical_significance}, whose conventions the tables follow, with the abbreviations of \cref{tab:synthetic_datasets}. The comparisons of time and memory rest on ten runs instead of 94, so they separate fewer models.
+We compare \MicroTEDAClusPlus with each benchmark model by the test of \cref{sec:statistical_significance}, whose conventions the tables follow, with the abbreviations of \cref{tab:synthetic_datasets}. We leave out of a dataset any model that failed in more than half of its runs, and compare the others over the runs that all of them finished. The comparisons of time and memory rest on 32 runs instead of 94, so they separate fewer models.
 
 \section{Results}
 \label{sec:mod_results}
+
+\subsection{Failures}
+\label{subsec:mod_failures}
+
+\input{Modernization/artifacts/experiment/failures.tex}
+
+Every failure is a summary that exceeded the limit, and nearly all are failures of \BIRCH (\cref{tab:mod_failures}). It fails in more than half of the runs of \BenchmarkOne and of the scalability streams with eight and sixteen dimensions, which leaves it out of them, and in fewer than half of those with four, thirty-two and sixty-four dimensions, which leaves their comparisons with fewer runs. Its tree of cluster features does not fade, unlike the microclusters of \DenStream and \DBSTREAM (\cref{sec:mod_models}), and in the scalability streams its largest summary grows with the dimension far faster than those of the other models, up to four dimensions (\cref{fig:mod_scalability_cost}).
 
 \subsection{Clustering Quality}
 \label{subsec:mod_quality}
 
 \input{Modernization/artifacts/experiment/quality.tex}
 
-\MicroTEDAClusPlus is better than every benchmark model in the Overall ARI of \BenchmarkOne, and than all but \BIRCH in that of \Cassini (\cref{tab:mod_quality}). It is worse than all of them in \BenchmarkTwo, on both metrics, and at the penultimate batch of \RandomRBFGeneratorEvents. In the Chameleon datasets, it is indistinguishable from most of them, worse than \BICO in \ChameleonDSThree and better than \DenStream and \DBSTREAM in the Overall ARI of \ChameleonDSFour. In \cref{subsec:mi_main_quality}, no benchmark model was better than \MicroTEDAClusPlus in the streams with concept drift. The benchmark models, the streams and the protocol all differ here, and the protocol alone changes its results in \BenchmarkTwo little (\cref{tab:mod_protocols}).
+\MicroTEDAClusPlus is better than \DenStream and \MiniBatchKMeans in the Overall ARI of \BenchmarkOne and than \DBSTREAM and \BICO in that of \Cassini, and worse than none in the Overall ARI of either (\cref{tab:mod_quality}). It is worse than every benchmark model but \DenStream in \BenchmarkTwo, on both metrics, worse than all five at the penultimate batch of \RandomRBFGeneratorEvents, and worse than three or four of them in \ChameleonDSThree. In the Overall ARI of \ChameleonDSFour, it is indistinguishable from all of them. In \cref{subsec:mi_main_quality}, no benchmark model was better than \MicroTEDAClusPlus in the streams with concept drift. The benchmark models, the streams and the protocol all differ here, and the protocol alone changes its results in \BenchmarkTwo little (\cref{tab:mod_protocols}).
 
 \input{Modernization/artifacts/experiment/scalability.tex}
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{Modernization/artifacts/experiment/plots/scalability_quality.png}
-    \caption[ARI of \MicroTEDAClusPlus and the benchmark models in the scalability streams of the modernized experiment]{ARI of \MicroTEDAClusPlus and the benchmark models in the scalability streams: along the stream with 2 and 64 dimensions, and the Overall and Steady-State ARI against the dimension. Medians, with the interquartile band of \MicroTEDAClusPlus, over 94 runs.}
+    \caption[ARI of \MicroTEDAClusPlus and the benchmark models in the scalability streams of the modernized experiment]{ARI of \MicroTEDAClusPlus and the benchmark models in the scalability streams: along the stream with 2 and 64 dimensions, and the Overall and Steady-State ARI against the dimension. Medians, with the interquartile band of \MicroTEDAClusPlus, over the runs of \cref{tab:mod_scalability}; \BIRCH, left out of two streams, has no point there.}
     \label{fig:mod_scalability_quality}
 \end{figure}
 
-In the scalability streams, no benchmark model is better than \MicroTEDAClusPlus from two dimensions on, and every one is worse in most of these streams (\cref{tab:mod_scalability,fig:mod_scalability_quality}). With one dimension, the stream that was already the exception in \cref{subsec:mi_main_quality}, it is worse than all but \DenStream.
+In the scalability streams, no benchmark model is better than \MicroTEDAClusPlus (\cref{tab:mod_scalability,fig:mod_scalability_quality}). From two dimensions on, it is better than most of them on both metrics, and than every one compared in the Overall ARI up to sixteen dimensions. With one dimension, the stream that was already the exception in \cref{subsec:mi_main_quality}, it is indistinguishable from all of them.
 
-Along the streams of \cref{fig:mod_scalability_quality}, \DenStream scores zero over the first several hundred samples or more: it labels every sample as noise until its initialization buffer is full, and the search selects long buffers. The objective scores only the second half of the tuning segment, where a late start costs nothing, while the Overall ARI counts the whole stream.
+Along the streams of \cref{fig:mod_scalability_quality}, \DenStream scores zero over the first several hundred samples: it labels every sample as noise until its initialization buffer, whose length the search selects, is full. The objective scores only the second half of the tuning segment, where a late start costs nothing, while the Overall ARI counts the whole stream.
 
 \subsection{The Change of Protocol}
 \label{subsec:mod_protocols}
 
 \input{Modernization/artifacts/experiment/protocols.tex}
 
-\Cref{tab:mod_protocols} compares \MicroTEDAClusPlus under the two protocols on the same streams. The protocol by rules raises its Overall ARI in six datasets and lowers it in \BenchmarkTwo, and raises its Steady-State ARI in five datasets without lowering it in any. The largest differences are at the penultimate batch of \BenchmarkOne and \Cassini. This agrees with \cref{subsec:mi_selection_consequences}, which located the most direct improvement of the model in the selection of its hyperparameters rather than in its algorithm.
+\Cref{tab:mod_protocols} compares \MicroTEDAClusPlus under the two protocols on the same streams. The protocol by rules raises its Overall ARI in \BenchmarkOne and \ChameleonDSThree and lowers it slightly in \BenchmarkTwo and in the scalability stream with four dimensions, and raises its Steady-State ARI in \BenchmarkOne, \Cassini and \ChameleonDSThree without lowering it in any dataset. The largest differences are at the penultimate batch of \BenchmarkOne and \Cassini. This agrees with \cref{subsec:mi_selection_consequences}, which located the most direct improvement of the model in the selection of its hyperparameters rather than in its algorithm.
 
 \subsection{Cost}
 \label{subsec:mod_cost}
 
 \input{Modernization/artifacts/experiment/cost.tex}
 
-\MicroTEDAClusPlus is faster than every benchmark model in the prediction stage of four datasets, and than three of the five in the other two (\cref{tab:mod_cost}). It has no such advantage in the learning stage, where it is slower than \BICO in five datasets and faster than \BIRCH in four. \MiniBatchKMeans, which keeps only its centroids, holds less memory and reaches a lower peak than \MicroTEDAClusPlus in every dataset. Against the other benchmark models, the memory that \MicroTEDAClusPlus holds is smaller in some datasets and larger in others, while its peak is larger than those of most of them in \Cassini and \ChameleonDSThree, the datasets in which its summary is largest.
+\MicroTEDAClusPlus is faster than every benchmark model compared in the prediction stage of every dataset (\cref{tab:mod_cost}). It has no such advantage in the learning stage, where it is slower than \BICO in five datasets and than \MiniBatchKMeans in all but \BenchmarkTwo, and faster than \DBSTREAM in four. \MiniBatchKMeans, which keeps only its centroids, holds less memory and reaches a lower peak than \MicroTEDAClusPlus in every dataset. Against the other benchmark models, the memory that \MicroTEDAClusPlus holds is smaller in some datasets and larger in others, while its peak is the largest of all models in \Cassini and the Chameleon datasets, in which it keeps more structures than four or all five of them (\cref{tab:mod_summary_size}).
 
 \input{Modernization/artifacts/experiment/summary_size.tex}
 
-In the three static datasets, \MicroTEDAClusPlus keeps more structures than \DenStream, \DBSTREAM, \MiniBatchKMeans and \BICO (\cref{tab:mod_summary_size}). In the Chameleon datasets, whose streams have the same length in both experiments, it keeps over a hundred microclusters where the main experiment selected configurations with tens (\cref{tab:mi_comparison_microclusters}). The protocol by rules thus selects there the fine-grained configurations that \cref{sec:mi_selection} found to score better, and the Overall ARI of these datasets rises with them (\cref{tab:mod_protocols}).
+In the three static datasets, \MicroTEDAClusPlus keeps more structures than \DenStream, \DBSTREAM, \BIRCH and \MiniBatchKMeans (\cref{tab:mod_summary_size}). In the Chameleon datasets, whose streams have the same length in both experiments, it keeps more microclusters than the configurations that the main experiment selected, most of all in \ChameleonDSThree (\cref{tab:mi_comparison_microclusters}). The protocol by rules thus selects there the finer configurations that \cref{sec:mi_selection} found to score better, and the Overall ARI of \ChameleonDSThree rises with them (\cref{tab:mod_protocols}).
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{Modernization/artifacts/experiment/plots/cost_scalability.png}
-    \caption[Execution time, memory and summary size of \MicroTEDAClusPlus and the benchmark models in the scalability streams of the modernized experiment]{Execution time and memory of \MicroTEDAClusPlus and the benchmark models in the scalability streams, over ten runs, and their summary sizes, over 94 runs, against the dimension. Medians, with the interquartile band of \MicroTEDAClusPlus.}
+    \caption[Execution time, memory and summary size of \MicroTEDAClusPlus and the benchmark models in the scalability streams of the modernized experiment]{Execution time and memory of \MicroTEDAClusPlus and the benchmark models in the scalability streams, and their summary sizes, against the dimension. Medians over the runs that every model kept in a stream finished, out of 32 for time and memory and 94 for the summary sizes, with the interquartile band of \MicroTEDAClusPlus; \BIRCH, left out of two streams, has no point there.}
     \label{fig:mod_scalability_cost}
 \end{figure}
 
-In the scalability streams, the prediction time of \MicroTEDAClusPlus stays at about 10 ms at every dimension, below those of every benchmark model, and its learning time stays below those of \BIRCH and \DBSTREAM (\cref{fig:mod_scalability_cost}). The memory it holds grows with the dimension and stays above that of \MiniBatchKMeans at every dimension and below that of \BIRCH from two dimensions on.
+In the scalability streams, the prediction time of \MicroTEDAClusPlus stays nearly constant across the dimensions, below those of every benchmark model, and its learning time stays below that of \DBSTREAM at every dimension and below that of \BIRCH wherever it is compared (\cref{fig:mod_scalability_cost}). The memory it holds grows with the dimension and stays above that of \MiniBatchKMeans at every dimension.
 
 \section{Summary}
 \label{sec:mod_summary}
 
-The modernized experiment runs in \codename{Python} only, on ported generators validated against those of \codename{R} (\cref{subsec:mod_generators}), with five benchmark models imported from maintained libraries. Its hyperparameter selection takes its ranges from the tuning segment by rule and measures no time, so it depends neither on the speed nor on the load of the machine. Under it, \MicroTEDAClusPlus is better than every benchmark model in the Overall ARI of \BenchmarkOne, not worse than any in that of \Cassini, and not worse than any in the scalability streams from two dimensions on, but worse than all of them in \BenchmarkTwo and at the penultimate batch of \RandomRBFGeneratorEvents. It predicts faster than every benchmark model in most datasets, but does not learn faster. The protocol itself improves its results, most of all at the penultimate batch, with the fine-grained configurations that \cref{sec:mi_selection} anticipated (\cref{tab:mod_protocols}). Several of its ranges limited the search, most often those of the cluster counts and the distances, which only benchmark models use (\cref{tab:real_range_ends}), and \cref{sec:real_protocol} widens them for the real datasets.
+The modernized experiment runs in \codename{Python} only, on ported generators validated against those of \codename{R} (\cref{subsec:mod_generators}), with five benchmark models imported from maintained libraries. Its hyperparameter selection takes its ranges from the tuning segment by rule, checked by a pilot, and measures no time, so it depends neither on the speed nor on the load of the machine (\cref{sec:mod_selection}). Under it, \MicroTEDAClusPlus is not worse than any benchmark model in the Overall ARI of \BenchmarkOne and \Cassini nor in any scalability stream, and better than every one compared in the Overall ARI of those from two to sixteen dimensions, but worse than most of them in \BenchmarkTwo, at the penultimate batch of \RandomRBFGeneratorEvents and in \ChameleonDSThree. It predicts faster than every benchmark model compared in every dataset, but does not learn faster. The protocol itself improves its results in several datasets, most of all at the penultimate batch of \BenchmarkOne and \Cassini (\cref{tab:mod_protocols}).

@@ -1,19 +1,19 @@
 \begin{table}[htbp]
 \centering
 \small
-\caption[\MicroTEDAClusPlus{} under the two protocols of hyperparameter selection]{\MicroTEDAClusPlus{} with its hyperparameters selected by the previous protocol and by the protocol by rules, on the same streams: medians over 94 runs.}
+\caption[\MicroTEDAClusPlus{} under the two protocols of hyperparameter selection]{\MicroTEDAClusPlus{} with its hyperparameters selected by the previous protocol and by the protocol by rules, on the same streams: medians over 94 runs, except 92 in DS3, 92 in DS4, 93 in S32.}
 \adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
 \begin{tabular}{l c c c c c c c c c c c c c }
 \toprule
 Selection & B1 & B2 & RBF & CSN & DS3 & DS4 & S1 & S2 & S4 & S8 & S16 & S32 & S64 \\
 \midrule
 \multicolumn{14}{l}{\textit{Overall ARI}} \\
-Previous protocol & 0.897 & 0.605 & 0.573 & 0.607 & 0.295 & 0.345 & 0.702 & 0.942 & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 \\
-Protocol by rules & 0.889 & \textcolor{red}{0.599} & \textbf{0.653} & \textbf{0.916} & \textbf{0.347} & \textbf{0.378} & 0.719 & 0.938 & 1.000 & 1.000 & 1.000 & \textbf{1.000} & \textbf{1.000} \\
+Previous protocol & 0.867 & 0.606 & 0.546 & 0.575 & 0.283 & 0.338 & 0.716 & 0.937 & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 \\
+Protocol by rules & \textbf{0.895} & \textcolor{red}{0.598} & 0.600 & 0.917 & \textbf{0.332} & 0.356 & 0.704 & 0.942 & \textcolor{red}{1.000} & 1.000 & 1.000 & 1.000 & 1.000 \\
 \midrule
 \multicolumn{14}{l}{\textit{Steady-State ARI}} \\
-Previous protocol & 0.223 & 0.573 & 0.215 & 0.421 & 0.279 & 0.324 & 0.595 & 0.924 & 0.998 & 1.000 & 1.000 & 1.000 & 1.000 \\
-Protocol by rules & \textbf{0.790} & 0.567 & 0.466 & \textbf{0.792} & \textbf{0.348} & \textbf{0.367} & 0.698 & 0.925 & 0.998 & 1.000 & 1.000 & \textbf{1.000} & 1.000 \\
+Previous protocol & 0.216 & 0.565 & 0.274 & 0.482 & 0.264 & 0.325 & 0.663 & 0.926 & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 \\
+Protocol by rules & \textbf{0.780} & 0.565 & 0.186 & \textbf{0.794} & \textbf{0.308} & 0.337 & 0.730 & 0.909 & 0.996 & 1.000 & 1.000 & 1.000 & 1.000 \\
 \bottomrule
 \end{tabular}
 }
