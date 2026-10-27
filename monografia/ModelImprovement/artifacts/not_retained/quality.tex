@@ -1,0 +1,35 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption[Variants not retained: clustering quality]{Variants not retained: clustering quality, medians over the development runs. Each variant is marked against the control of its row.}
+\adjustbox{max width=\textwidth, max totalheight=0.82\textheight}{%
+\begin{tabular}{l l c c c c c c c c}
+\toprule
+Model & Control & B1 & B2 & RBF & CSN & DS3 & DS4 & S32 & S64 \\
+\midrule
+\multicolumn{10}{l}{\textit{Overall ARI}} \\
+\variant{corrected} &  & 0.037 & 0.578 & 0.498 & 0.599 & 0.239 & 0.242 & 0.964 & 0.856 \\
+\modelname{MicroTEDAClus+} &  & 0.864 & 0.696 & 0.508 & 0.454 & 0.304 & 0.255 & 1.000 & 1.000 \\
+\variant{m-reparam} & \variant{corrected} & 0.009 & 0.544 & 0.407 & 0.581 & 0.234 & 0.246 & \textcolor{red}{0.857} & \textcolor{red}{0.853} \\
+\variant{m-constant} & \variant{corrected} & \textbf{0.224} & 0.613 & 0.431 & \textcolor{red}{0.282} & \textcolor{red}{0.000} & \textcolor{red}{0.203} & \textcolor{red}{0.855} & \textcolor{red}{0.853} \\
+\variant{m-asymptote} & \variant{corrected} & 0.048 & 0.561 & 0.445 & \textcolor{red}{0.450} & \textcolor{red}{0.196} & \textcolor{red}{0.230} & \textcolor{red}{0.859} & 0.858 \\
+\variant{covariance, directional link} & \modelname{MicroTEDAClus+} & 0.897 & \textcolor{red}{0.607} & 0.524 & 0.467 & 0.303 & 0.239 & 1.000 & 1.000 \\
+\variant{covariance, Bhattacharyya link} & \modelname{MicroTEDAClus+} & 0.899 & \textcolor{red}{0.628} & 0.551 & 0.396 & 0.310 & 0.227 & 1.000 & 1.000 \\
+\variant{peak-density} & \modelname{MicroTEDAClus+} & 0.852 & 0.625 & 0.508 & 0.577 & \textcolor{red}{0.208} & 0.359 & 1.000 & 1.000 \\
+\variant{volume-density} & \modelname{MicroTEDAClus+} & \textcolor{red}{0.589} & \textcolor{red}{0.631} & 0.435 & \textcolor{red}{0.312} & \textcolor{red}{0.156} & 0.229 & 1.000 & 1.000 \\
+\midrule
+\multicolumn{10}{l}{\textit{Steady-State ARI}} \\
+\variant{corrected} &  & 0.000 & 0.680 & 0.180 & 0.593 & 0.185 & 0.201 & 0.897 & 0.848 \\
+\modelname{MicroTEDAClus+} &  & 0.783 & 0.913 & 0.395 & 0.461 & 0.338 & 0.320 & 1.000 & 1.000 \\
+\variant{m-reparam} & \variant{corrected} & 0.000 & 0.471 & 0.235 & 0.502 & 0.182 & 0.194 & \textcolor{red}{0.831} & \textcolor{red}{0.821} \\
+\variant{m-constant} & \variant{corrected} & \textbf{0.110} & \textbf{0.892} & 0.487 & \textcolor{red}{0.326} & 0.000 & \textcolor{red}{0.147} & 0.856 & 0.823 \\
+\variant{m-asymptote} & \variant{corrected} & 0.010 & 0.499 & 0.307 & 0.421 & \textcolor{red}{0.113} & 0.218 & 0.847 & 0.831 \\
+\variant{covariance, directional link} & \modelname{MicroTEDAClus+} & 0.881 & \textcolor{red}{0.748} & 0.434 & 0.479 & 0.331 & 0.233 & 1.000 & 1.000 \\
+\variant{covariance, Bhattacharyya link} & \modelname{MicroTEDAClus+} & 0.865 & 0.863 & 0.404 & 0.381 & 0.335 & 0.245 & 1.000 & 1.000 \\
+\variant{peak-density} & \modelname{MicroTEDAClus+} & 0.742 & 0.828 & 0.347 & 0.558 & \textcolor{red}{0.000} & 0.345 & 1.000 & 1.000 \\
+\variant{volume-density} & \modelname{MicroTEDAClus+} & 0.592 & 0.716 & 0.333 & \textcolor{red}{0.326} & \textcolor{red}{0.120} & \textcolor{red}{0.195} & 1.000 & 1.000 \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:mi_not_retained_quality}
+\end{table}

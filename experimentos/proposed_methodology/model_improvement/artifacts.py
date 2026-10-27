@@ -1,8 +1,8 @@
 """LaTeX tables and figures of the Model Improvement chapter.
 
 Everything is written under monografia/ModelImprovement/artifacts/, one folder
-per experiment, from the result files of the runner, of the serial timing pass
-and of the reachability probe. In every table a value in bold is significantly
+per experiment, from the result files of the runner and of the serial timing
+pass. In every table a value in bold is significantly
 better than the value of its control and a value in red is significantly worse
 (see analysis.py for the test).
 
@@ -19,7 +19,6 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.ticker import NullFormatter, ScalarFormatter
 import numpy as np
 import pandas as pd
 
@@ -48,7 +47,6 @@ from streams import load_stream
 ROOT = Path(__file__).resolve().parent.parent
 ARTIFACT_DIR = ROOT.parent.parent / "monografia" / "ModelImprovement" / "artifacts"
 TIMING_FILE = RESULTS_DIR / "_timing" / "timing.csv"
-PROBE_DIR = RESULTS_DIR / "_probe"
 
 SHORT_NAMES = {
     "benchmark_1": "B1",
@@ -71,25 +69,12 @@ METRIC_TITLES = {
     "mc_steadystate": "Steady-state microcluster count",
 }
 CHAIN = ["vectorized", CORRECTED, IMPROVED, FINAL]
-PROBE_DATASETS = ["cassini", "chameleon_ds3", "chameleon_ds4"]
 QUALITY_METRICS = ["ari_overall", "ari_steadystate"]
-COST_METRICS = [
-    "mc_max",
-    "mc_steadystate",
-    "memory_max_bytes",
-    "memory_steadystate_bytes",
-]
 # The experiments whose cost the chapter cites; their cost tables go to its appendix.
-APPENDIX_COSTS = {"optimization", "geometry"}
+NOT_RETAINED = ("m_function", "geometry", "density_revisited")
 MODEL_NAMES = {"MicroTEDAClus", "MicroTEDAClus+"}
 TUNING_FILE = RESULTS_DIR / "tuning.csv"
 # Hyperparameters of the sensitivity function that each variant of the m function tunes.
-M_PARAMETERS = {
-    "m_reparam": (("m_up", r"$m_{\max}$"), ("m_a", r"$S_{95}$")),
-    "m_constant": (("m_up", r"$m$"),),
-    "m_asymptote": (("m_up", "asymptote"),),
-}
-PROBE_SPACES = {"final": "MicroTEDAClus+", "engine": "extended"}
 CHAIN_COLORS = {
     "original": "xkcd:grey",
     "vectorized": "xkcd:blue",
@@ -192,7 +177,7 @@ def comparison_table(experiment, metrics, name, caption, short):
 
 
 def experiment_tables(experiment):
-    """Clustering quality for the chapter; the cost for its appendix, if the chapter cites it."""
+    """Clustering quality of an experiment, for the chapter."""
     runs = run_set(experiment.runs)
     comparison_table(
         experiment,
@@ -201,15 +186,28 @@ def experiment_tables(experiment):
         f"{experiment.title}: clustering quality, medians over the {runs}.",
         f"{experiment.title}: clustering quality",
     )
-    if experiment.key in APPENDIX_COSTS:
-        comparison_table(
-            experiment,
-            ["mc_steadystate", "memory_steadystate_bytes"],
-            "cost",
-            f"{experiment.title}: steady-state microcluster count and memory footprint, "
-            f"medians over the {runs}.",
-            f"{experiment.title}: microcluster count and memory footprint",
-        )
+
+
+def not_retained_table():
+    """The families of variants that improved no control, each variant against its own
+    control, in one table."""
+    families = [EXPERIMENT_BY_KEY[key] for key in NOT_RETAINED]
+    combined = type(families[0])(
+        "not_retained",
+        "Variants not retained",
+        "",
+        tuple(pair for family in families for pair in family.comparisons),
+        DEVELOPMENT_RUNS,
+        {key: name for family in families for key, name in family.stage_names.items()},
+    )
+    comparison_table(
+        combined,
+        QUALITY_METRICS,
+        "quality",
+        "Variants not retained: clustering quality, medians over the development runs. "
+        "Each variant is marked against the control of its row.",
+        "Variants not retained: clustering quality",
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -266,15 +264,6 @@ def validation_tables():
         "quality",
         f"Clustering quality of the accepted models: {note}",
         "Clustering quality of the accepted models",
-    )
-    chain_table(
-        CHAIN,
-        COST_METRICS,
-        runs,
-        "validation",
-        "cost",
-        f"Microcluster count and memory footprint of the accepted models: {note}",
-        "Microcluster count and memory footprint of the accepted models",
     )
     end_to_end = type(experiment)(
         "validation",
@@ -345,81 +334,6 @@ def diagnosis_table(variant, runs, folder="diagnosis"):
     )
 
 
-def partition_table(
-    folder, name, title, variants, runs=DEVELOPMENT_RUNS, stage_names=None
-):
-    """Shape of the partitions predicted by several models."""
-    labelled = [(model(v, stage_names), v) for v in variants]
-    panels = [
-        (
-            "Predicted clusters",
-            [
-                (
-                    "true clusters",
-                    run_medians(variants[0], runs, "n_true"),
-                    "{:.1f}".format,
-                )
-            ]
-            + [
-                (label, run_medians(v, runs, "n_pred"), "{:.1f}".format)
-                for label, v in labelled
-            ],
-        ),
-        (
-            "Homogeneity",
-            [
-                (label, run_medians(v, runs, "homogeneity"), "{:.2f}".format)
-                for label, v in labelled
-            ],
-        ),
-        (
-            "Completeness",
-            [
-                (label, run_medians(v, runs, "completeness"), "{:.2f}".format)
-                for label, v in labelled
-            ],
-        ),
-    ]
-    panel_table(
-        folder,
-        name,
-        f"{title}: predicted partitions, medians over the {run_set(runs)} of the means over the "
-        "batches.",
-        f"{title}: predicted partitions",
-        panels,
-    )
-
-
-def degenerate_table(
-    folder, name, title, variants, runs=DEVELOPMENT_RUNS, stage_names=None
-):
-    """How often a model predicts a single cluster."""
-    shares, endings = [], []
-    for v in variants:
-        rl = analysis.run_level(v, runs).groupby("dataset")
-        shares.append(
-            (
-                model(v, stage_names),
-                100 * rl["single_cluster_share"].median(),
-                "{:.0f}".format,
-            )
-        )
-        endings.append(
-            (model(v, stage_names), rl["ends_single_cluster"].sum(), "{:.0f}".format)
-        )
-    panel_table(
-        folder,
-        name,
-        f"{title}: predictions of a single cluster. Median share of the batches after the first, and "
-        f"number of the {len(runs)} {run_set(runs)} whose penultimate batch holds a single cluster.",
-        f"{title}: predictions of a single cluster",
-        [
-            (r"Batches with a single predicted cluster [\%]", shares),
-            ("Runs that end with a single predicted cluster", endings),
-        ],
-    )
-
-
 def search_range_table(runs=DEVELOPMENT_RUNS):
     """Variance limits that the wider search range selects, and the degenerate endings they bring."""
     variants = [(model(v, STAGE_NAMES), v) for v in (CORRECTED, "c_nearest_wide")]
@@ -456,75 +370,6 @@ def search_range_table(runs=DEVELOPMENT_RUNS):
                 ],
             ),
         ],
-    )
-
-
-def noise_label_table(runs=DEVELOPMENT_RUNS):
-    """Hyperparameters selected for the noise-label variant and the noise it predicts."""
-    noise = {d: 100 * true_noise(d, runs) for d in DATASETS}
-    panels = [
-        (
-            "Variance limit selected, searched up to 100",
-            [
-                (
-                    model(v, STAGE_NAMES),
-                    run_medians(v, runs, "param:variance_limit"),
-                    "{:.3g}".format,
-                )
-                for v in (CORRECTED, "i_noise")
-            ],
-        ),
-        (
-            "Noise distance selected, searched up to 10",
-            [
-                (
-                    model("i_noise"),
-                    run_medians("i_noise", runs, "param:noise_m"),
-                    "{:.1f}".format,
-                )
-            ],
-        ),
-        (
-            r"Samples labeled as noise [\%]",
-            [
-                ("true noise", noise, "{:.1f}".format),
-                (
-                    model("i_noise"),
-                    100 * run_medians("i_noise", runs, "noise_pred"),
-                    "{:.1f}".format,
-                ),
-            ],
-        ),
-    ]
-    panel_table(
-        "improvements_single",
-        "noise_label",
-        r"Hyperparameters selected for \variant{noise-label} and share of the samples it labels as "
-        f"noise: medians over the {run_set(runs)}.",
-        r"Hyperparameters and noise of \variant{noise-label}",
-        panels,
-    )
-
-
-def m_tuned_table(runs=DEVELOPMENT_RUNS):
-    """Values that the search selects for the hyperparameters of the sensitivity function."""
-    rows = [
-        (
-            f"{model(v)}: {name}",
-            run_medians(v, runs, f"param:{parameter}"),
-            "{:.3g}".format,
-        )
-        for v, parameters in M_PARAMETERS.items()
-        for parameter, name in parameters
-    ]
-    panel_table(
-        "m_function",
-        "tuned",
-        "Values selected for the hyperparameters of the sensitivity function: medians over the "
-        f"{run_set(runs)}.",
-        "Hyperparameters selected for the sensitivity function",
-        [("Selected value", rows)],
-        first_column="Model and hyperparameter",
     )
 
 
@@ -689,52 +534,6 @@ def speedup_table():
     )
 
 
-def speedup_figure():
-    """Speedup of each run against the number of microclusters of its configuration."""
-    times = serial_times()
-    colors = plt.get_cmap("tab10")
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), sharex=True, sharey=True)
-    for ax, source in zip(axes, ("original", "vectorized")):
-        shared = times[times.hyperparameters == source]
-        total = shared.pivot(
-            index=["dataset", "run"], columns="model", values="time_total_ms"
-        )
-        count = shared[shared.model == "vectorized"].set_index(["dataset", "run"])[
-            "microclusters"
-        ]
-        for position, dataset in enumerate(DATASETS):
-            ax.scatter(
-                count.loc[dataset].clip(lower=1),
-                (total["original"] / total["vectorized"]).loc[dataset],
-                s=14,
-                color=colors(position),
-                label=SHORT_NAMES[dataset],
-            )
-        ax.set_xscale("log")
-        ax.set_yscale("log")
-        ax.set_yticks([5, 10, 20, 50, 100])
-        ax.yaxis.set_major_formatter(ScalarFormatter())
-        ax.yaxis.set_minor_formatter(NullFormatter())
-        ax.set_title(
-            f"Hyperparameters tuned for the {VARIANTS[source].label} model", fontsize=10
-        )
-        ax.set_xlabel("Microclusters at the penultimate batch")
-    axes[0].set_ylabel("Speedup")
-    handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(
-        handles,
-        labels,
-        loc="upper center",
-        ncol=len(DATASETS),
-        bbox_to_anchor=(0.5, 1.05),
-    )
-    plt.tight_layout(rect=(0, 0, 1, 0.97))
-    out = ARTIFACT_DIR / "optimization" / "plots" / "speedup.png"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out, dpi=300, bbox_inches="tight")
-    plt.close(fig)
-
-
 def serial_cost_table():
     """Cost of the original implementation and of the accepted models, each as tuned for its runs."""
     times = serial_times()
@@ -788,174 +587,6 @@ def serial_cost_table():
 # -----------------------------------------------------------------------------
 # Reachability probe (probe.py)
 # -----------------------------------------------------------------------------
-def probe_configurations(space: str, dataset: str) -> pd.DataFrame:
-    """One row per probed configuration: its means over the probed streams."""
-    df = pd.read_csv(PROBE_DIR / f"{space}_{dataset}.csv")
-    complete = df.groupby("configuration").filter(
-        lambda rows: len(rows) == df["run"].nunique()
-    )
-    return complete.groupby("configuration").agg(
-        tuning_objective=("tuning_objective", "mean"),
-        ari_overall=("ari_overall", "mean"),
-        ari_steadystate=("ari_steadystate", "mean"),
-        microclusters=("microclusters", "median"),
-        variance_limit=("variance_limit", "first"),
-        decay=("decay", "first"),
-    )
-
-
-def probe_table():
-    """What the search space holds against what the tuning objective selects."""
-    lines = [
-        r"Dataset & Space & Configuration & Objective & Overall ARI & Steady-State ARI & "
-        r"Microclusters & $r$ & decay \\"
-    ]
-    summary = []
-    for dataset in PROBE_DATASETS:
-        lines.append(r"\midrule")
-        tuned = analysis.run_level(FINAL, DEVELOPMENT_RUNS)
-        tuned = tuned[tuned.dataset == dataset]
-        protocol_overall = tuned["ari_overall"].median()
-        lines.append(
-            rf"{SHORT_NAMES[dataset]} & final & tuned by the protocol & - & {protocol_overall:.3f} & "
-            rf"{tuned['ari_steadystate'].median():.3f} & {tuned['mc_steadystate'].median():.0f} & "
-            rf"{tuned['param:variance_limit'].median():.4f} & {tuned['param:decay'].median():.0f} \\"
-        )
-        for space, space_name in PROBE_SPACES.items():
-            configurations = probe_configurations(space, dataset)
-            picks = {
-                "highest objective": configurations["tuning_objective"].idxmax(),
-                "highest Overall ARI": configurations["ari_overall"].idxmax(),
-            }
-            for name, index in picks.items():
-                c = configurations.loc[index]
-                lines.append(
-                    rf" & {space_name} & {name} & {c.tuning_objective:.3f} & {c.ari_overall:.3f} & "
-                    rf"{c.ari_steadystate:.3f} & {c.microclusters:.0f} & {c.variance_limit:.4f} & "
-                    rf"{c.decay:.0f} \\"
-                )
-            above = configurations[configurations.ari_overall > protocol_overall]
-            summary.append(
-                {
-                    "dataset": dataset,
-                    "space": space_name,
-                    "configurations": len(configurations),
-                    "above_protocol": len(above),
-                    "above_protocol_over_100_microclusters": int(
-                        (above.microclusters > 100).sum()
-                    ),
-                    "spearman": configurations["tuning_objective"].corr(
-                        configurations["ari_overall"], method="spearman"
-                    ),
-                }
-            )
-    write_table(
-        ARTIFACT_DIR / "selection" / "probe.tex",
-        "Reachability probe: for each search space, the configuration of highest objective and the one "
-        "of highest Overall ARI. The first row of each dataset is \\MicroTEDAClusPlus{} as the protocol "
-        "tunes it, with medians over the development runs; the microcluster count is that of the "
-        "penultimate batch.",
-        "tab:mi_selection_probe",
-        "l l l c c c c c c",
-        lines,
-        "Reachability probe of two search spaces",
-    )
-    pd.DataFrame(summary).to_csv(PROBE_DIR / "summary.csv", index=False)
-
-
-def probe_figure():
-    """Tuning objective against Overall ARI of the configurations of the space of MicroTEDAClus+."""
-    fig, axes = plt.subplots(1, 3, figsize=(15, 4.6), sharey=True)
-    tuned = analysis.run_level(FINAL, DEVELOPMENT_RUNS)
-    for ax, dataset in zip(axes, PROBE_DATASETS):
-        c = probe_configurations("final", dataset)
-        points = ax.scatter(
-            c["tuning_objective"],
-            c["ari_overall"],
-            c=np.log10(c["microclusters"].clip(lower=1)),
-            cmap="viridis",
-            vmin=0,
-            vmax=3.2,
-            s=14,
-        )
-        for index, marker, label in (
-            (c["tuning_objective"].idxmax(), "s", "Highest objective"),
-            (c["ari_overall"].idxmax(), "^", "Highest Overall ARI"),
-        ):
-            ax.scatter(
-                c.loc[index, "tuning_objective"],
-                c.loc[index, "ari_overall"],
-                marker=marker,
-                s=110,
-                facecolors="none",
-                edgecolors="xkcd:red",
-                linewidths=1.8,
-                label=label,
-            )
-        ax.axhline(
-            tuned[tuned.dataset == dataset]["ari_overall"].median(),
-            color="xkcd:grey",
-            linestyle="--",
-            linewidth=1.2,
-            label="Tuned by the protocol (median)",
-        )
-        ax.set_title(dataset_display_name(dataset), fontsize=10)
-        ax.set_xlabel("Tuning objective")
-    axes[0].set_ylabel("Overall ARI")
-    handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="upper center", ncol=3, bbox_to_anchor=(0.5, 1.04))
-    plt.tight_layout(rect=(0, 0, 1, 0.95))
-    bar = fig.colorbar(points, ax=axes, pad=0.01, ticks=[0, 1, 2, 3])
-    bar.ax.set_yticklabels(["1", "10", "100", "1000"])
-    bar.set_label("Microclusters")
-    out = ARTIFACT_DIR / "selection" / "plots" / "probe.png"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out, dpi=300, bbox_inches="tight")
-    plt.close(fig)
-
-
-def maturation_table():
-    """Quality and structure along the stream of the two configurations singled out by the probe."""
-    df = pd.read_csv(PROBE_DIR / "maturation.csv")
-    segments = sorted(int(c.split("_")[1]) for c in df.columns if c.startswith("ari_"))
-    means = df.groupby(["dataset", "configuration"], sort=False).mean(numeric_only=True)
-    width = 100 // len(segments)
-    spans = [f"{(i - 1) * width}--{i * width}\\%" for i in segments]
-    lines = ["Dataset & Configuration & " + " & ".join(spans) + r" \\"]
-    panels = [
-        ("Median batch ARI", "ari", "{:.3f}".format),
-        ("Median number of predicted clusters", "clusters", "{:.1f}".format),
-        ("Microclusters at the end of the segment", "microclusters", "{:.0f}".format),
-    ]
-    for title, column, fmt in panels:
-        lines.append(r"\midrule")
-        lines.append(
-            rf"\multicolumn{{{2 + len(segments)}}}{{l}}{{\textit{{{title}}}}} \\"
-        )
-        for dataset in PROBE_DATASETS:
-            rows = list(means.loc[dataset].iterrows())
-            if column == "clusters":
-                first = rows[0][1]
-                true = pd.Series(
-                    {f"clusters_{i}": first[f"true_clusters_{i}"] for i in segments}
-                )
-                rows.insert(0, ("true clusters", true))
-            for position, (name, row) in enumerate(rows):
-                cells = [SHORT_NAMES[dataset] if position == 0 else "", name]
-                cells += [fmt(row[f"{column}_{i}"]) for i in segments]
-                lines.append(" & ".join(cells) + r" \\")
-    write_table(
-        ARTIFACT_DIR / "selection" / "maturation.tex",
-        "The two configurations of the search space of \\MicroTEDAClusPlus{} in "
-        "\\cref{tab:mi_selection_probe} along the stream, in fifths, when the model learns the whole "
-        "stream from its first sample. The first fifth is the segment that the hyperparameter search sees.",
-        "tab:mi_selection_maturation",
-        "l l " + "c " * len(segments),
-        lines,
-        "The two probed configurations of \\MicroTEDAClusPlus{} along the stream",
-    )
-
-
 # -----------------------------------------------------------------------------
 # Main experiment: the final model against the baseline, per dimension
 # -----------------------------------------------------------------------------
@@ -1060,6 +691,8 @@ def main():
         return
 
     for experiment in EXPERIMENTS:
+        if experiment.key in NOT_RETAINED:
+            continue
         if not available(experiment):
             print(f"{experiment.key}: results missing, tables skipped")
             continue
@@ -1069,49 +702,19 @@ def main():
         else:
             experiment_tables(experiment)
         print(f"{experiment.key}: tables written")
+    if all(available(EXPERIMENT_BY_KEY[key]) for key in NOT_RETAINED):
+        not_retained_table()
+        print("not retained: table written")
     diagnosis_table(CORRECTED, DEVELOPMENT_RUNS)
-    degenerate_table(
-        "corrections_single",
-        "degenerate",
-        "Corrections, one at a time",
-        ["vectorized", "c_nopen", "c_nearest"],
-    )
-    partition_table(
-        "corrections_combined",
-        "partitions",
-        "Combined corrections",
-        ["c_nearest", "cc_nearest_nopen"],
-    )
-    degenerate_table(
-        "improvements_single",
-        "degenerate",
-        "Improvements, one at a time",
-        [CORRECTED, "i_relative", "i_chi"],
-        stage_names=STAGE_NAMES,
-    )
     search_range_table()
-    noise_label_table()
-    m_tuned_table()
     tuning_noise_table()
     if TUNING_FILE.exists():
         trials_table()
 
     if TIMING_FILE.exists():
         speedup_table()
-        speedup_figure()
         serial_cost_table()
         print("serial timing: tables written")
-    if all(
-        (PROBE_DIR / f"{s}_{d}.csv").exists()
-        for s in PROBE_SPACES
-        for d in PROBE_DATASETS
-    ):
-        probe_table()
-        probe_figure()
-        print("probe: table and figure written")
-    if (PROBE_DIR / "maturation.csv").exists():
-        maturation_table()
-        print("probe: maturation table written")
 
 
 if __name__ == "__main__":
