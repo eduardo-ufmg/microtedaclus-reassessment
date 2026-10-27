@@ -79,54 +79,30 @@ The reduction is what makes the remaining stages affordable: the experiments of 
 
 The candidate corrections come from the issues raised in the previous chapters and from two behaviors of the reference implementation that we noticed while reimplementing it. The incorrect condition for microclusters with two samples, \cref{subsubsec:incorrect_condition_logic}, is not among them, because the reference implementation already applies \cref{eq:corrected_condition_logic_for_outliers}.
 
-\subsection{Candidate Corrections}
-\label{subsec:mi_correction_candidates}
+\Cref{tab:mi_correction_candidates} lists the candidates: five memberships that replace that of the implementation (\cref{sec:model_implementation}), two densities that do not depend on the current sample (\cref{subsubsec:order_dependent_characteristics}), two changes of the activation and the removal of the dimensionality penalty (\cref{subsubsec:dimensionality_penalty}).
 
-\paragraph{Membership.} The reference implementation assigns a sample $x$ to the macrocluster that maximizes $\sum_{l} w^l \left(1 - \zeta^l(x)\right)$ over its active microclusters, see \cref{snippet:maia_implementation_calculate_membership}, where $w^l$ is the share of the microcluster in the density of the macrocluster. For a microcluster with $S$ samples, mean $\mu$ and variance $\sigma^2$,
-
-\begin{equation}
-    1 - \zeta(x) = 1 - \frac{1}{2S} \left( 1 + \frac{\lVert x - \mu \rVert^2}{\sigma^2} \right)
-    \label{eq:mi_implemented_typicality}
-\end{equation}
-
-The standardized squared distance is divided by the number of samples, so the more samples a microcluster has, the less the distance to it matters. A sample five standard deviations away from a microcluster with 500 samples scores $0.974$ in \cref{eq:mi_implemented_typicality}, more than the $0.950$ scored by a sample one standard deviation away from a microcluster with 20 samples. Replacing $1 - \zeta$ by the normalized typicality of the formulation, $t = (1 - \xi)/(S - 2)$, reverses the bias instead of removing it: the values scale with $1/S$, and the microclusters with few samples dominate. The quantity that does not depend on the number of samples is the standardized squared distance itself,
-
-\begin{equation}
-    q(x) = S\,\xi(x) - 1 = \frac{\lVert x - \mu \rVert^2}{\sigma^2}
-    \label{eq:mi_standardized_distance}
-\end{equation}
-
-which the outlier condition also thresholds, since \cref{eq:outlier_condition} is equivalent to $q(x) > m^2$. We evaluate five alternatives to the membership of the implementation:
-
-\begin{itemize}
-    \item \variant{norm-typicality}: the implemented weights with the normalized typicality $t^l(x)$, as in \cref{eq:macrocluster_typicality}.
-    \item \variant{local-weights}: \cref{eq:macrocluster_typicality} with the density of each microcluster evaluated at the sample being classified, $D^l(x) = 1/\zeta^l(x)$, which is how the formulation defines the density in \cref{subsubsec:order_dependent_characteristics}.
-    \item \variant{density-sum}: the sum of the densities at the sample, $\sum_l D^l(x)$, with $D^l(x) = 2S^l / (1 + q^l(x))$.
-    \item \variant{density-max}: the largest density at the sample, $\max_l D^l(x)$.
-    \item \variant{nearest}: the smallest standardized distance, $\min_l q^l(x)$. The sample is assigned to the macrocluster of the active microcluster it is closest to in standard deviations.
-\end{itemize}
-
-\paragraph{Density.} \Cref{subsubsec:order_dependent_characteristics} shows that the density kept by each microcluster is the density of the last sample it absorbed. We evaluate two densities that are properties of the microcluster. The first, \variant{peak-density}, is the density of the formulation evaluated at the mean of the microcluster: since $\xi(\mu) = 1/S$,
-
-\begin{equation}
-    D = \frac{1}{\zeta(\mu)} = 2S
-    \label{eq:mi_peak_density}
-\end{equation}
-
-It is the largest value the density of the formulation can take, and it depends on the number of samples alone. This is a property of the TEDA variables and not of this particular choice: with the variance $\sigma^2 = \frac{1}{S} \sum_{j} \lVert x_j - \mu \rVert^2$, the mean eccentricity of the samples of a microcluster is
-
-\begin{equation}
-    \frac{1}{S} \sum_{j=1}^{S} \xi(x_j) = \frac{1}{S} \sum_{j=1}^{S} \left( \frac{1}{S} + \frac{\lVert x_j - \mu \rVert^2}{S \sigma^2} \right) = \frac{2}{S}
-    \label{eq:mi_mean_eccentricity}
-\end{equation}
-
-whatever its dispersion. The second, \variant{volume-density}, divides the number of samples by the variance, $D = S/(\sigma^2 + \epsilon)$, so that dispersion counts. In both, a microcluster with fewer than three samples has no density.
-
-\paragraph{Activation mean.} The reference implementation activates a microcluster whose density is not below the mean density of its component of the intersection graph, and computes that mean over all the microclusters of the component, including those with fewer than three samples, which can never be active. \variant{mature-mean} computes it over the microclusters with at least three samples.
-
-\paragraph{Initial state.} The reference implementation creates a microcluster flagged as active. Since only inactive microclusters lose vitality, a new microcluster is exempt from the decay until the next macrocluster update. \variant{born-inactive} creates it inactive.
-
-\paragraph{Dimensionality penalty.} \variant{no-penalty} removes the factor $2/d$ of \cref{critique:dimensionality_penalty}. The factor cancels in the eccentricity, where it multiplies both the distance and the variance. It acts on the variance that is compared with $r_0$, on the standard deviations of the intersection condition, \cref{eq:microcluster_intersection_condition}, and on the radius of the vitality update of the reference implementation.
+\begin{table}[htbp]
+\centering
+\small
+\caption[Candidate corrections]{Candidate corrections, each a change of the \variant{vectorized} model; $q$ is the standardized squared distance of \cref{eq:mi_standardized_distance}.}
+\begin{tabular}{l p{0.68\textwidth}}
+\toprule
+Variant & Change \\
+\midrule
+\variant{norm-typicality} & membership by the implemented weights with the normalized typicality of \cref{eq:macrocluster_typicality} \\
+\variant{local-weights} & membership by \cref{eq:macrocluster_typicality} with each density evaluated at the sample, $D^l(x) = 1/\zeta^l(x)$ \\
+\variant{density-sum} & membership by the sum of the densities at the sample, $\sum_l 2S^l/(1 + q^l(x))$ \\
+\variant{density-max} & membership by the largest density at the sample \\
+\variant{nearest} & membership by the smallest standardized distance $q$ to an active microcluster \\
+\variant{peak-density} & density of a microcluster at its mean, $2S$, instead of the density of its last sample \\
+\variant{volume-density} & density $S/(\sigma^2 + \epsilon)$ \\
+\variant{mature-mean} & mean density of the activation computed over the microclusters with three samples or more \\
+\variant{born-inactive} & new microclusters created inactive, so that they decay from the start \\
+\variant{no-penalty} & factor $2/d$ of \cref{critique:dimensionality_penalty} removed \\
+\bottomrule
+\end{tabular}
+\label{tab:mi_correction_candidates}
+\end{table}
 
 \subsection{Corrections One at a Time}
 
@@ -143,6 +119,26 @@ Neither order-independent density improves the model. \variant{peak-density} is 
 \input{ModelImprovement/artifacts/corrections_combined/quality.tex}
 
 With \variant{nearest} as the new control, \cref{tab:mi_corrections_combined_quality} evaluates whether a second correction improves it. None does. Adding \variant{peak-density} repeats the loss in \ChameleonDSThree. Adding \variant{no-penalty}, which improved the \variant{vectorized} model on its own, lowers the Overall ARI of \datasetname{SCL-32}. The combinations of three and four corrections inherit these losses.
+
+
+\subsection{The Corrected Model}
+\label{subsec:mi_corrected_model}
+
+The reference implementation assigns a sample $x$ to the macrocluster that maximizes $\sum_{l} w^l \left(1 - \zeta^l(x)\right)$ over its active microclusters, see \cref{sec:model_implementation}, where $w^l$ is the share of the microcluster in the density of the macrocluster. For a microcluster with $S$ samples, mean $\mu$ and variance $\sigma^2$,
+
+\begin{equation}
+    1 - \zeta(x) = 1 - \frac{1}{2S} \left( 1 + \frac{\lVert x - \mu \rVert^2}{\sigma^2} \right)
+    \label{eq:mi_implemented_typicality}
+\end{equation}
+
+The standardized squared distance is divided by the number of samples, so the more samples a microcluster has, the less the distance to it matters. A sample five standard deviations away from a microcluster with 500 samples scores $0.974$ in \cref{eq:mi_implemented_typicality}, more than the $0.950$ scored by a sample one standard deviation away from a microcluster with 20 samples. Replacing $1 - \zeta$ by the normalized typicality of the formulation, $t = (1 - \xi)/(S - 2)$, reverses the bias instead of removing it: the values scale with $1/S$, and the microclusters with few samples dominate. The quantity that does not depend on the number of samples is the standardized squared distance itself,
+
+\begin{equation}
+    q(x) = S\,\xi(x) - 1 = \frac{\lVert x - \mu \rVert^2}{\sigma^2}
+    \label{eq:mi_standardized_distance}
+\end{equation}
+
+which the outlier condition also thresholds, since \cref{eq:outlier_condition} is equivalent to $q(x) > m^2$. \variant{nearest} assigns a sample to the macrocluster of the active microcluster it is closest to in standard deviations.
 
 The corrected model is therefore the \variant{vectorized} model with the \variant{nearest} membership, and it is the control of the experiments that follow. The order-dependent density and the dimensionality penalty remain in it: the experiments support replacing neither.
 
@@ -162,38 +158,35 @@ A second limitation concerns the hyperparameter search. \Cref{tab:mi_search_rang
 
 By the decision rule the wider range improves the corrected model, in \ChameleonDSThree and \ChameleonDSFour, whose selected limits are far above the original bound and orders of magnitude above those of the other two-dimensional datasets (\cref{tab:mi_search_range_selection}): the variance limit depends on the scale of the data. We do not adopt the wider range. It changes the search and not the model, no fixed range suits every scale, and with limits of that size more than half of the runs of \ChameleonDSFour end with a single predicted cluster. One of the candidates of this section removes the dependence on the scale in the model instead.
 
-\subsection{Candidate Improvements}
-\label{subsec:mi_improvement_candidates}
+\Cref{tab:mi_improvement_candidates} lists the candidates. They change the formation of the microclusters, the pruning, the formation of the macroclusters and the prediction, and three of them reparameterize the sensitivity function.
 
-\paragraph{Formation of the microclusters.}
-\begin{itemize}
-    \item \variant{variance-cap}: the variance limit $r_0$ only constrains a microcluster with two samples; from the third sample on, a microcluster grows for as long as the samples pass the eccentricity test. This variant also treats as an outlier any sample that would raise the variance of a microcluster above $r_0$, whatever its size, which bounds every microcluster.
-    \item \variant{relative-limit}: $r_0$ becomes a fraction of the variance of the stream, estimated recursively from the samples seen so far, and is searched in $[10^{-6}, 1]$. The hyperparameter no longer depends on the scale of the data, the limitation that \cref{tab:mi_search_range_selection} exposes.
-    \item \variant{single-assign}: a sample updates every microcluster that accepts it, so overlapping microclusters absorb the same samples. This variant updates only the accepting microcluster whose mean is nearest.
-    \item \variant{forgetting}: the sample count used by the recursive mean and variance is capped at $S_{\max}$, searched in $[10, 10^4]$, which makes them exponentially weighted estimates able to follow a moving cluster.
-    \item \variant{chi-threshold}: for a Gaussian cluster in $d$ dimensions, the standardized distance $q$ of \cref{eq:mi_standardized_distance} has mean $1$ and standard deviation $\sqrt{2/d}$. This variant replaces the outlier condition $q > m^2$ by $q > 1 + m\sqrt{2/d}$ and removes the dimensionality penalty, as a principled treatment of the dimension.
-\end{itemize}
-
-\paragraph{Pruning.}
-\begin{itemize}
-    \item \variant{recency}: the rule of Galindo~\cite{galindo2021lastmile}, \cref{eq:decay_logic}: every microcluster that the current sample does not update loses vitality, and a microcluster that absorbs a sample recovers it in full.
-    \item \variant{recency-inactive}: the same rule restricted to the inactive microclusters.
-\end{itemize}
-
-\paragraph{Formation of the macroclusters.}
-\begin{itemize}
-    \item \variant{soft-activation}: a microcluster is active if its density is at least $f$ times the mean density of its component, with $f$ searched in $[0, 1.5]$. The original criterion is $f = 1$.
-    \item \variant{no-activation}: every microcluster with at least three samples is active.
-    \item \variant{single-graph}: the macroclusters are the components of the intersection graph $\mathbb{G}_0$ that contain active microclusters, instead of the components of the active graph $\mathbb{G}_1$ of \cref{alg:microcluster_activation_criterion_pseudocode}.
-    \item \variant{link-factor}: the factor $2$ of the intersection condition, \cref{eq:microcluster_intersection_condition}, becomes a hyperparameter $\ell$, searched in $[0.5, 4]$. Cardoso~\cite{cardoso2022microtedaclus} proposes an earlier condition with a factor, \cref{eq:cardoso_intersection_condition}, which scales the sum of the radii $m\sigma$ of the two microclusters instead of the sum of their standard deviations.
-\end{itemize}
-
-\paragraph{Prediction.}
-\begin{itemize}
-    \item \variant{noise-label}: a sample whose standardized distance to every active microcluster exceeds $n_\sigma^2$ is labeled as noise, with $n_\sigma$ searched in $[1, 10]$.
-\end{itemize}
-
-\paragraph{Sensitivity function.} Three variants replace fixed constants of the function $m$ of \cref{eq:m_function} by hyperparameters: \variant{m-reparam} parameterizes it by its maximum and by the number of samples at which it reaches 95\% of it, \variant{m-constant} makes $m$ a constant, and \variant{m-asymptote} searches the asymptote of the original sigmoid.
+\begin{table}[htbp]
+\centering
+\small
+\caption[Candidate improvements]{Candidate improvements, each a change of the corrected model.}
+\begin{tabular}{l p{0.68\textwidth}}
+\toprule
+Variant & Change \\
+\midrule
+\variant{variance-cap} & any sample that would raise the variance of a microcluster above $r_0$ is an outlier to it, whatever its size \\
+\variant{relative-limit} & $r_0$ a fraction of the variance of the stream, estimated recursively, searched in $[10^{-6}, 1]$ \\
+\variant{single-assign} & only the accepting microcluster with the nearest mean absorbs a sample \\
+\variant{forgetting} & sample count of the recursive mean and variance capped at $S_{\max} \in [10, 10^4]$ \\
+\variant{chi-threshold} & outlier condition $q > 1 + m\sqrt{2/d}$ instead of $q > m^2$, without the dimensionality penalty \\
+\variant{recency} & pruning rule of Galindo, \cref{eq:decay_logic}, for every microcluster \\
+\variant{recency-inactive} & the same rule for the inactive microclusters \\
+\variant{soft-activation} & a microcluster is active if its density reaches $f \in [0, 1.5]$ times the mean density of its component \\
+\variant{no-activation} & every microcluster with three samples or more is active \\
+\variant{single-graph} & macroclusters as the components of $\mathbb{G}_0$ with active microclusters, instead of those of $\mathbb{G}_1$ \\
+\variant{link-factor} & factor $\ell \in [0.5, 4]$ instead of $2$ in \cref{eq:microcluster_intersection_condition}, as Cardoso proposes in \cref{eq:cardoso_intersection_condition} for the radii \\
+\variant{noise-label} & a sample whose distance $q$ to every active microcluster exceeds $n_\sigma^2$, $n_\sigma \in [1, 10]$, is noise \\
+\variant{m-reparam} & function $m$ of \cref{eq:m_function} parameterized by its maximum and by the count at which it reaches 95\% of it \\
+\variant{m-constant} & a constant $m \in [1, 5]$ \\
+\variant{m-asymptote} & the asymptote of the original $m$ searched in $[1.05, 10]$ \\
+\bottomrule
+\end{tabular}
+\label{tab:mi_improvement_candidates}
+\end{table}
 
 \subsection{Improvements One at a Time}
 
@@ -222,7 +215,7 @@ Since several combinations improve the control, we choose the improved model in 
 
 \variant{single + noise + relative} improves \variant{single + relative}, in \BenchmarkOne, and no combination improves it; its comparison with \variant{noise + relative} is mixed, and adding \variant{variance-cap} to it regresses in \ChameleonDSThree. The only other combination that no other improves, \variant{cap + noise + relative}, has seven gains over the corrected model, and the two differ by a trade-off that the rule does not resolve: the first is better in \BenchmarkOne, the second in \ChameleonDSFour.
 
-The improved model is therefore the corrected model with \variant{single-assign}, \variant{noise-label} and \variant{relative-limit}. Compared with the corrected model, it gains in the Overall ARI of \BenchmarkOne, \BenchmarkTwo, \ChameleonDSThree, \datasetname{SCL-32} and \datasetname{SCL-64} and in the Steady-State ARI of every dataset except \Cassini, where its medians are lower without the difference being significant.
+The improved model is therefore the corrected model with \variant{single-assign}, \variant{noise-label} and \variant{relative-limit}. \variant{single-assign} keeps overlapping microclusters from absorbing the same samples, \variant{noise-label} lets the model recognize noise, which the corrected model never does (\cref{tab:mi_diagnosis_c_nearest}), and \variant{relative-limit} frees the variance limit from the scale of the data (\cref{tab:mi_search_range_selection}); \cref{sec:mi_final_model} describes the resulting model in full. Compared with the corrected model, it gains in the Overall ARI of \BenchmarkOne, \BenchmarkTwo, \ChameleonDSThree, \datasetname{SCL-32} and \datasetname{SCL-64} and in the Steady-State ARI of every dataset except \Cassini, where its medians are lower without the difference being significant.
 
 \subsection{Refinements of the Improved Model}
 \label{subsec:mi_refinements}
