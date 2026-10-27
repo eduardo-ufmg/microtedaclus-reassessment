@@ -337,6 +337,51 @@ def diagnosis_table(variant, runs, folder="diagnosis"):
     )
 
 
+def partition_table(
+    folder, name, title, variants, runs=DEVELOPMENT_RUNS, stage_names=None
+):
+    """Shape of the partitions predicted by several models."""
+    labelled = [(model(v, stage_names), v) for v in variants]
+    panels = [
+        (
+            "Predicted clusters",
+            [
+                (
+                    "true clusters",
+                    run_medians(variants[0], runs, "n_true"),
+                    "{:.1f}".format,
+                )
+            ]
+            + [
+                (label, run_medians(v, runs, "n_pred"), "{:.1f}".format)
+                for label, v in labelled
+            ],
+        ),
+        (
+            "Homogeneity",
+            [
+                (label, run_medians(v, runs, "homogeneity"), "{:.2f}".format)
+                for label, v in labelled
+            ],
+        ),
+        (
+            "Completeness",
+            [
+                (label, run_medians(v, runs, "completeness"), "{:.2f}".format)
+                for label, v in labelled
+            ],
+        ),
+    ]
+    panel_table(
+        folder,
+        name,
+        f"{title}: predicted partitions, medians over the {run_set(runs)} of the means over the "
+        "batches.",
+        f"{title}: predicted partitions",
+        panels,
+    )
+
+
 def search_range_table(runs=DEVELOPMENT_RUNS):
     """Variance limits that the wider search range selects, and the degenerate endings they bring."""
     variants = [(model(v, STAGE_NAMES), v) for v in (CORRECTED, "c_nearest_wide")]
@@ -784,6 +829,12 @@ def main():
         not_retained_table()
         print("not retained: table written")
     diagnosis_table(CORRECTED, DEVELOPMENT_RUNS)
+    partition_table(
+        "corrections_combined",
+        "partitions",
+        "Combined corrections",
+        ["c_nearest", "cc_nearest_nopen"],
+    )
     search_range_table()
     tuning_noise_table()
     if TUNING_FILE.exists():

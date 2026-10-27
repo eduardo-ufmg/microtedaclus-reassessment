@@ -120,6 +120,10 @@ Neither order-independent density improves the model. \variant{peak-density} is 
 
 With \variant{nearest} as the new control, \cref{tab:mi_corrections_combined_quality} evaluates whether a second correction improves it. None does. Adding \variant{peak-density} repeats the loss in \ChameleonDSThree. Adding \variant{no-penalty}, which improved the \variant{vectorized} model on its own, lowers the Overall ARI of \datasetname{SCL-32}. The combinations of three and four corrections inherit these losses.
 
+\input{ModelImprovement/artifacts/corrections_combined/partitions.tex}
+
+\Cref{tab:mi_corrections_combined_partitions} shows what \variant{no-penalty} loses in \datasetname{SCL-32}, through the partitions that the two models predict. It reports their homogeneity, which is one when every predicted cluster contains samples of a single true class, and their completeness, which is one when every true class is contained in a single predicted cluster \cite{rosenberg2007vmeasure}. The stream has three clusters and noise, which counts as a fourth class. With the penalty, the model predicts more clusters than that, with a high homogeneity: part of the noise forms macroclusters of its own. Without the penalty it predicts about three clusters and its homogeneity falls, because the noise is absorbed by the clusters. The ARI rewards the first behavior, but the benefit is accidental, since the penalty is not a treatment of noise.
+
 
 \subsection{The Corrected Model}
 \label{subsec:mi_corrected_model}
@@ -140,7 +144,7 @@ The standardized squared distance is divided by the number of samples, so the mo
 
 which the outlier condition also thresholds, since \cref{eq:outlier_condition} is equivalent to $q(x) > m^2$. \variant{nearest} assigns a sample to the macrocluster of the active microcluster it is closest to in standard deviations.
 
-The corrected model is therefore the \variant{vectorized} model with the \variant{nearest} membership, and it is the control of the experiments that follow. The order-dependent density and the dimensionality penalty remain in it: the experiments support replacing neither.
+The corrected model is therefore the \variant{vectorized} model with the \variant{nearest} membership, and it is the control of the experiments that follow. The order-dependent density and the dimensionality penalty remain in it: the experiments do not support replacing the former, and removing the latter costs the accidental separation of the noise.
 
 \section{Improvements}
 \label{sec:mi_improvements}
@@ -220,7 +224,7 @@ The improved model is therefore the corrected model with \variant{single-assign}
 \subsection{Refinements of the Improved Model}
 \label{subsec:mi_refinements}
 
-We evaluate four further changes on the improved model. \variant{forgetting} and \variant{recency} did not help the corrected model, but they target the tracking of moving clusters, which the improved model now does better. The removal of the dimensionality penalty improved the \variant{vectorized} model but lowered the Overall ARI of \datasetname{SCL-32} combined with \variant{nearest} (\cref{sec:mi_corrections}); we reconsider it now that the model labels the noise explicitly. \variant{persistent-labels} makes each macrocluster keep the label of the macrocluster with which it shares most of its mass, instead of being renumbered at every update: the partition of a batch does not change, but the objective of the search computes the ARI over all batches together (\cref{subsec:hyperparameter_tuning}), where a renumbering counts as a disagreement.
+We evaluate four further changes on the improved model. \variant{forgetting} and \variant{recency} did not help the corrected model, but they target the tracking of moving clusters, which the improved model now does better. The removal of the dimensionality penalty improved the \variant{vectorized} model, but we rejected it in \cref{sec:mi_corrections} because the penalty accidentally separated part of the noise; we reconsider it now that the model labels the noise explicitly. \variant{persistent-labels} makes each macrocluster keep the label of the macrocluster with which it shares most of its mass, instead of being renumbered at every update: the partition of a batch does not change, but the objective of the search computes the ARI over all batches together (\cref{subsec:hyperparameter_tuning}), where a renumbering counts as a disagreement.
 
 \input{ModelImprovement/artifacts/refinements/quality.tex}
 
