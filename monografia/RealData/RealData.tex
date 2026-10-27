@@ -41,37 +41,17 @@ Three of the streams evaluated still hold some batches of a single class, and in
 \section{Protocol}
 \label{sec:real_protocol}
 
-The protocol is that of \cref{chap:modernization}, with the changes that this section describes.
+The protocol is that of \cref{chap:modernization}: its rules for the search ranges, its limit on the summary, its runs and its rule for failed runs. This section describes what these datasets add.
 
-\paragraph{Search ranges.} The rules of \cref{tab:mod_rules} limited the search of the modernized experiment: the values that it selects for several hyperparameters lie at an end of their range in many runs, most of all at the lower end of the distances and at the upper end of the clusters (\cref{tab:real_range_ends}). For the real datasets, we widen the ranges as \cref{tab:real_rules} gives. The range of the relative variance is that of the distances, squared, so that in the logarithmic scale of the search both give the same room. The minimum points start at one, the weight of a single sample, and we search the ratios in the logit scale, which gives every decade towards zero and towards one the same room in the search. No widening moves the natural limits of a category: the longest horizon, the largest summary, which is the limit below, one minimum point, two clusters and the samples of a batch.
-
-\begin{table}[htbp]
-\centering
-\caption[Widened rules of the search ranges for the real datasets]{Widened rules of the categories of hyperparameter that change, for a tuning segment of $n$ samples with $k$ labeled clusters; the summary size keeps the rule of \cref{tab:mod_rules}, and no model uses the multiplier on the real datasets. We measure the median distance between two samples on a million pairs of samples drawn at random.}
-\begin{tabular}{p{0.2\textwidth} p{0.27\textwidth} p{0.27\textwidth} l}
-\toprule
-Category & Lower end & Upper end & Scale \\
-\midrule
-Distance & a tenth of the median distance from a sample to its nearest neighbor & ten times the median distance between two samples & logarithmic \\
-Relative variance & square of the lower distance, as a fraction of the total variance & square of the upper distance, as a fraction of the total variance & logarithmic \\
-Horizon & $n/1000$ samples & $n$ samples & logarithmic \\
-Minimum points & $1$ & $\sqrt{n}$ & logarithmic \\
-Ratio & $0.0001$ & $0.999$ & logit \\
-Clusters & $2$ & $20k$, and at most the $100$ samples of a batch & linear \\
-\bottomrule
-\end{tabular}
-\label{tab:real_rules}
-\end{table}
+\paragraph{Range check.} A pilot checks the ranges on these datasets as \cref{subsec:mod_range_check} describes. Apart from the natural limits, the only ends that bind are the lower ends of the reassignment ratio of \MiniBatchKMeans, in \Shuttle and \KDDCup, and of the cleanup interval of \DBSTREAM, in \InsectsAbrupt (\cref{tab:real_range_ends}).
 
 \input{RealData/artifacts/range_ends.tex}
 
-We check the widened ranges by a pilot: every model selects its hyperparameters on 32 runs that the experiment does not use, and nothing is evaluated. An end binds when the selected value lies within a twentieth of the width of its range in at least a quarter of the runs of a dataset. Apart from the natural limits, the only ends that bind are the lower ends of the reassignment ratio of \MiniBatchKMeans, in \Shuttle and \KDDCup, and of the cleanup interval of \DBSTREAM, in \InsectsAbrupt (\cref{tab:real_range_ends}).
-
 \paragraph{Noise label.} The real datasets have no noise class: every sample belongs to a class. Once they have a cluster, the benchmark models assign every sample to one, so on these datasets \MicroTEDAClusPlus assigns every sample to the macrocluster of its nearest active microcluster, without the noise label of \cref{eq:mi_final_prediction}, and the noise distance is no longer a hyperparameter. Before any microcluster is active, it labels every sample as noise, as every model does before it has a cluster. On the synthetic datasets, whose streams carry noise, the label stays (\cref{sec:mi_improvements}).
 
-\paragraph{Tuning segment and summary.} The tuning segment is the first fifth of the stream, up to 10000 samples, the longest tuning segment of \cref{chap:modernization}, because a search over the whole first fifth of the longest of these streams is not affordable. The evaluation segment is the rest of the stream. No model may keep a summary of more structures than a quarter of the tuning segment, the upper end of the rule of the summary size. A model with a fine configuration can keep one structure per sample, and a search over such configurations is not affordable either. A configuration whose summary exceeds the limit fails, as one that raises an error does, and a selected model whose summary exceeds it during the evaluation fails its task.
+\paragraph{Tuning segment.} The tuning segment is the first fifth of the stream, up to 10000 samples, the longest tuning segment of \cref{chap:modernization}, because a search over the whole first fifth of the longest of these streams is not affordable. The evaluation segment is the rest of the stream, and the limit on the summary remains a quarter of the tuning segment (\cref{subsec:mod_objective}).
 
-\paragraph{Runs and comparison.} We evaluate each dataset over 94 runs, the number of \cref{subsec:multi_run_statistics}, and measure the time and the memory of 32 of them by the procedure of \cref{sec:mod_measurements}. We compare \MicroTEDAClusPlus with each benchmark model by the test of \cref{sec:statistical_significance}. We leave out of a dataset any model that failed in more than half of its runs, and compare the others over the runs that all of them finished; a dataset that leaves \MicroTEDAClusPlus out has no comparison.
+\paragraph{Comparison.} A dataset that leaves \MicroTEDAClusPlus out, by the rule for failed runs of \cref{sec:mod_measurements}, has no comparison.
 
 \section{Results}
 \label{sec:real_results}
@@ -81,7 +61,7 @@ We check the widened ranges by a pilot: every model selects its hyperparameters 
 
 \input{RealData/artifacts/failures.tex}
 
-\BIRCH fails in most datasets, most often in \GasDrift, but in fewer than half of the runs of any of them, so it stays in every dataset and leaves their comparisons with fewer runs (\cref{tab:real_failures}). Its tree of cluster features does not fade, unlike the microclusters of \DenStream and \DBSTREAM (\cref{sec:mod_models}), and it already held over a thousand subclusters in the scalability streams of \cref{chap:modernization} (\cref{fig:mod_scalability_cost}). \MicroTEDAClusPlus fails in 51 of the 94 runs of \Covertype, which leaves it out of that dataset. Its summary passes the limit late in the stream, in the median failing run after about two thirds of the evaluation segment, which is some 57 times as long as the tuning segment on which the configuration was selected. It also fails in some runs of \Pendigits, the shortest stream and therefore the one with the smallest limit, and in a few runs of \InsectsAbrupt and \InsectsIncremental. Every failure is a summary that exceeded the limit.
+\BIRCH fails in most datasets, most often in \GasDrift, but in fewer than half of the runs of any of them, so it stays in every dataset and leaves their comparisons with fewer runs (\cref{tab:real_failures}). It also failed most often on the synthetic datasets, where its tree of cluster features, which does not fade, grew past the limit (\cref{subsec:mod_failures}). \MicroTEDAClusPlus fails in 51 of the 94 runs of \Covertype, which leaves it out of that dataset. Its summary passes the limit late in the stream, in the median failing run after about two thirds of the evaluation segment, which is some 57 times as long as the tuning segment on which the configuration was selected. It also fails in some runs of \Pendigits, the shortest stream and therefore the one with the smallest limit, and in a few runs of \InsectsAbrupt and \InsectsIncremental. Every failure is a summary that exceeded the limit.
 
 \subsection{Clustering Quality}
 \label{subsec:real_quality}
@@ -109,4 +89,4 @@ We check the widened ranges by a pilot: every model selects its hyperparameters 
 \section{Summary}
 \label{sec:real_summary}
 
-The real datasets add drifts that come from the conditions of the recording, classes that are not drawn from chosen distributions, and up to 128 dimensions. Evaluating on them required standardizing the features by the tuning segment, an order for each stream, search ranges widened and checked by a pilot, \MicroTEDAClusPlus without its noise label, and a limit on the tuning segment and on the size of the summaries. On them, \MicroTEDAClusPlus is better than every benchmark model in \Shuttle, worse than most of them in four datasets, and left out of \Covertype, where its summary exceeds the limit in most runs (\cref{tab:real_quality,tab:real_failures}). It predicts at least as fast as every benchmark model, learns more slowly than the fastest of them, and reaches the largest peak of memory in three datasets (\cref{tab:real_cost}).
+The real datasets add drifts that come from the conditions of the recording, classes that are not drawn from chosen distributions, and up to 128 dimensions. Evaluating on them required standardizing the features by the tuning segment, an order for each stream, a pilot that checks the search ranges on them, \MicroTEDAClusPlus without its noise label, and a limit on the tuning segment. On them, \MicroTEDAClusPlus is better than every benchmark model in \Shuttle, worse than most of them in four datasets, and left out of \Covertype, where its summary exceeds the limit in most runs (\cref{tab:real_quality,tab:real_failures}). It predicts at least as fast as every benchmark model, learns more slowly than the fastest of them, and reaches the largest peak of memory in three datasets (\cref{tab:real_cost}).
