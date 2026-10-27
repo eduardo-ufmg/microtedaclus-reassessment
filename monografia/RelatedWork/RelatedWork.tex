@@ -124,37 +124,7 @@ where $d$ is the dimension of the data, and a sample that is an outlier to every
     S^i_k = 1, \quad \mu^i_k = x_k, \quad (\sigma^i_k)^2 = 0, \label{eq:initial_microcluster_parameters}
 \end{equation}
 
-as \cref{alg:microcluster_update} describes.
-
-\begin{algorithm}[htbp]
-\caption{Update of the microclusters in the original formulation}
-\label{alg:microcluster_update}
-\begin{algorithmic}[1]
-\Require $x_k$, $r_0$
-\Ensure $m_i$, $i = 1, 2, \dots, n$
-\While{new samples are available}
-    \If{$k = 1$}
-        \State Create $m_1$ by \cref{eq:initial_microcluster_parameters}
-    \Else
-        \State $\text{flag} \gets \text{true}$
-        \For{$i = 1$ to $n$}
-            \If{$S^i_k = 2$}
-                \State Decide whether $x_k$ is an outlier to $m_i$ by \cref{critique:incorrect_condition_logic}
-            \Else
-                \State Decide whether $x_k$ is an outlier to $m_i$ by \cref{eq:outlier_condition}
-            \EndIf
-            \If{$x_k$ is not an outlier to $m_i$}
-                \State Update $m_i$ by \cref{critique:dimensionality_penalty}
-                \State $\text{flag} \gets \text{false}$
-            \EndIf
-        \EndFor
-        \If{$\text{flag}$}
-            \State Create $m_{n+1}$ by \cref{eq:initial_microcluster_parameters}
-        \EndIf
-    \EndIf
-\EndWhile
-\end{algorithmic}
-\end{algorithm}
+and the first sample of the stream creates the first microcluster in the same way.
 
 The macroclusters are the connected components of the graph whose vertices are the microclusters and whose edges join the microclusters that satisfy
 
@@ -188,22 +158,7 @@ and the sample is assigned to the macrocluster of highest typicality,
     \label{eq:macrocluster_prediction}
 \end{equation}
 
-as \cref{alg:macrocluster_update} describes. The formulation defines no decay of the microclusters, although the public implementation has one (\cref{sec:model_implementation}).
-
-\begin{algorithm}[htbp]
-\caption{Update of the macroclusters in the original formulation}
-\label{alg:macrocluster_update}
-\begin{algorithmic}[1]
-\Require $x_k$, $m_i$, $i = 1, 2, \dots, n$
-\Ensure the macrocluster of $x_k$
-\While{new samples are available}
-    \State Group the microclusters that satisfy \cref{eq:microcluster_intersection_condition} into macroclusters $\mathcal{M}_j$
-    \State Find the active microclusters of each macrocluster by \cref{critique:use_of_unstable_density}
-    \State Compute the typicality of $x_k$ to each macrocluster by \cref{eq:macrocluster_typicality}
-    \State Assign $x_k$ to the macrocluster of highest typicality
-\EndWhile
-\end{algorithmic}
-\end{algorithm}
+The formulation defines no decay of the microclusters, although the public implementation has one (\cref{sec:model_implementation}).
 
 \subsection{Issues of the Original Formulation}
 
@@ -299,23 +254,15 @@ The rest of the algorithm, including the formation of the macroclusters, is unch
 \section{A \texttt{C} Implementation of MicroTEDAClus}
 \label{sec:c_implementation}
 
-In the undergraduate thesis \textit{Implementação do algoritmo MicroTEDAclus para classificação de dados}, Cardoso~\cite{cardoso2022microtedaclus} reimplements the original \MicroTEDAClus in \codename{C}, a language chosen for its speed and for its use in embedded platforms. Along the way, the thesis documents the TEDA expressions that the model uses, with proofs and unit tests, and finds that the recursive eccentricity of \cref{eq:recursive_eccentricity} corresponds to the eccentricity computed over the squared Euclidean distance, as the recursive expressions of \cref{eq:recursive_sum_pi} assume. It also distinguishes two modes of operation: in the online mode, the model updates its macroclusters along the stream and labels each sample as it arrives; in the offline mode, it learns the whole dataset, builds its macroclusters once and then labels every sample.
-
-Cardoso proposes an alternative to the intersection condition of \cref{eq:microcluster_intersection_condition}. The alternative takes $m^i_k(S^i_k)\,\sigma^i_k$ as the radius of a microcluster, the distance from its mean beyond which a sample is an outlier to it, and compares the distance between the means of two microclusters with the sum of their radii, scaled by a factor $\phi$ that loosens the condition relative to that sum:
+In the undergraduate thesis \textit{Implementação do algoritmo MicroTEDAclus para classificação de dados}, Cardoso~\cite{cardoso2022microtedaclus} reimplements the original \MicroTEDAClus in \codename{C}, a language chosen for its speed and for its use in embedded platforms. The thesis documents the TEDA expressions that the model uses, with proofs and unit tests, and proposes an alternative to the intersection condition of \cref{eq:microcluster_intersection_condition}, which compares the distance between the means of two microclusters with the sum of their radii $m^i_k(S^i_k)\,\sigma^i_k$, scaled by a factor $\phi$:
 
 \begin{equation}
     \text{dist}(\mu^i_k, \mu^j_k) < \phi \left( m^i_k(S^i_k)\,\sigma^i_k + m^j_k(S^j_k)\,\sigma^j_k \right), \quad \phi \ge 1, \quad i \neq j.
     \label{eq:cardoso_intersection_condition}
 \end{equation}
 
-\Cref{subsec:mi_improvement_candidates} tests a factor of its own on the condition of \cref{eq:microcluster_intersection_condition}.
-
-The experiments of the thesis evaluate the clustering quality by the adjusted Rand index on seven static datasets of two dimensions, two of them taken from the original work. For each dataset and intersection condition, the model runs in the offline mode with random orders of the samples and with hyperparameters taken from a grid, and the thesis reports the lowest and the highest index and the highest mean index over the configurations~\cite[Section 4.3]{cardoso2022microtedaclus}. It concludes that the quality depends strongly on $r_0$ and $\phi$ and weakly on the decay of \cref{eq:decay_logic}, and that \cref{eq:cardoso_intersection_condition} is comparable to \cref{eq:microcluster_intersection_condition}, with a higher index in one dataset.
-
-The thesis also compares the execution time of the reimplementation with that of the \codename{Python} implementation of the original work. It measures each whole program, including the reading of the data, with the \codename{time} command of the operating system on a single machine, and reports no repetitions~\cite[Section 4.4]{cardoso2022microtedaclus}. It reports that the reimplementation runs much faster than the original one, and that its execution time grows steeply with the number of samples, which it attributes to the construction of the macroclusters, quadratic in the number of microclusters~\cite[Sections 4.4 and 4.5]{cardoso2022microtedaclus}.
+Its experiments evaluate the clustering quality by the adjusted Rand index on seven static datasets of two dimensions. The model learns each whole dataset before labeling it, in random orders of the samples and with hyperparameters taken from a grid, and the thesis reports the lowest and the highest index and the highest mean index over the configurations~\cite[Section 4.3]{cardoso2022microtedaclus}. It concludes that the quality depends strongly on $r_0$ and $\phi$, and that \cref{eq:cardoso_intersection_condition} is comparable to \cref{eq:microcluster_intersection_condition}. The reimplementation runs much faster than the \codename{Python} implementation of the original work, measured over each whole program on a single machine and without repetitions~\cite[Section 4.4]{cardoso2022microtedaclus}.
 
 \subsection{Issues of the Evaluation of the C Implementation}
 
-\paragraph{Hyperparameters selected with the labels of the evaluated data.} The highest index and the highest mean index belong to the configurations of the grid that best fit the labels of the evaluated data, and are therefore optimistic estimates of the quality that the model reaches when its hyperparameters are chosen without those labels. The lowest index is no better than chance in every dataset~\cite[Tables 4.1 and 4.2]{cardoso2022microtedaclus}, so the quality reported depends on a choice made with the labels. The comparison between the two intersection conditions rests on these best cases, without a statistical test.
-
-\paragraph{Scope of the comparison.} The model is compared with no benchmark model, and none of the datasets has concept drift, which the thesis leaves out of its scope and expects the model to handle because the original work reports that it does~\cite[Section 4.2]{cardoso2022microtedaclus}. The claims of the original work about the benchmark models and about concept drift therefore remain untested.
+The highest indices belong to the configurations of the grid that best fit the labels of the evaluated data, and are therefore optimistic estimates of the quality that the model reaches when its hyperparameters are chosen without those labels. The lowest index is no better than chance in every dataset~\cite[Tables 4.1 and 4.2]{cardoso2022microtedaclus}, and the comparison between the two intersection conditions rests on the best cases, without a statistical test. The model is compared with no benchmark model, and none of the datasets has concept drift, which the thesis expects the model to handle because the original work reports that it does~\cite[Section 4.2]{cardoso2022microtedaclus}.
