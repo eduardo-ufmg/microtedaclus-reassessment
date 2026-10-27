@@ -10,7 +10,7 @@ The formulation of \MicroTEDAClus has issues of its own, an order-dependent dens
 
 \MicroTEDAClusPlus, which we defined by controlled experiments on separate development and validation runs, differs from \MicroTEDAClus in the five points of \cref{tab:mi_final_differences}. It is better than \MicroTEDAClus in the Overall ARI of five of the six datasets and in the Steady-State ARI of all six, faster in both stages and smaller in memory; no benchmark model is better than it in the streams with concept drift, and it is the fastest model of the main experiment (\cref{subsec:mi_main_summary}). Its weakness is the static shapes, where \CluStream and \StreamKM remain better.
 
-We met the objectives of \cref{sec:objectives}. Our reassessment identified the issues of the formulation, of the implementation and of the methodology, and we replaced the latter by a methodology that evaluates every model alike. The improved model overcomes most weaknesses of the original one, within the limits that follow.
+We thus met the objectives of \cref{sec:objectives}, within the limits that follow.
 
 \section{Limits of the Evidence}
 \label{sec:limits}
@@ -19,15 +19,13 @@ Four limits qualify these results.
 
 \begin{itemize}
     \item \textbf{Streams that repeat.} The Chameleon datasets are fixed files (\cref{subsec:mi_runs}). Their runs repeat the search and not the stream, so on them the dispersion over the runs is that of the search, and the validation of \cref{chap:ModelImprovement} confirms the outcome of the search more than that of the model.
-    \item \textbf{The search as a source of variation.} Every result measures a model as its protocol tunes it, which is why we tune every model of a comparison by the same protocol. Two searches of a single algorithm give medians that differ without significance (\cref{tab:mi_refinements_tuning_noise}), and differences of that size are not effects of a model; the tests over many runs are what separate the effects from this variation.
+    \item \textbf{The search as a source of variation.} Every result measures a model as its protocol tunes it. Two searches of a single algorithm give medians that differ without significance (\cref{tab:mi_refinements_tuning_noise}): differences of that size are not effects of a model, and only the tests over many runs separate the effects from this variation.
     \item \textbf{Cost.} The execution time and the memory measure implementations and not only algorithms, as \cref{subsec:mi_main_cost} notes and as the reimplementation of \cref{sec:c_implementation} shows for a single algorithm, and the models of a comparison are implemented in different libraries.
     \item \textbf{Datasets.} The datasets are streams and shapes of two dimensions and scalability streams of up to sixty-four, all synthetic. Our conclusions extend to data of that kind and not beyond.
 \end{itemize}
 
 \section{Future Work}
 \label{sec:future_work}
-
-The results point to the following directions.
 
 \begin{itemize}
     \item \textbf{Hyperparameter selection.} The outcome of the search varies with its seed (\cref{tab:mi_refinements_tuning_noise}). More trials, or repeated searches, would reduce this variation, applied to every model of a comparison alike.

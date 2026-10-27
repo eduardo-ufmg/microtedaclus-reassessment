@@ -1,7 +1,7 @@
 \chapter{Methodology Reassessment}
 \label{chap:methodology_reassessment}
 
-Maia et al.~\cite{maia2020evolvclus} report that \MicroTEDAClus performs on par with established stream clustering algorithms and adapts better than them to concept drift. In this chapter, we examine what produced those results: the implementation of the model (\cref{sec:model_implementation}), the benchmark models and how they were executed (\cref{sec:benchmark_models}), the preprocessing of the datasets (\cref{sec:datasets}) and the evaluation protocol (\cref{sec:prequential_sequential_offline_evaluation}). We then define the methodology that the rest of the thesis uses: the metrics (\cref{sec:evaluation_metrics}), the selection of hyperparameters and the number of runs (\cref{sec:tuning_and_runs}), and the statistical comparison (\cref{sec:statistical_significance}). Finally, we evaluate \MicroTEDAClus against six benchmark models under that methodology (\cref{sec:reassessment_results}).
+Maia et al.~\cite{maia2020evolvclus} report that \MicroTEDAClus performs on par with established stream clustering algorithms and adapts better than them to concept drift. In this chapter, we examine what produced those results, from the implementation of the model to the evaluation protocol, define the methodology that the rest of the thesis uses, and evaluate \MicroTEDAClus against six benchmark models under it.
 
 \section{Model Implementation}
 \label{sec:model_implementation}
@@ -128,7 +128,7 @@ The original work compares \MicroTEDAClus with \DenStream~\cite{cao2006density},
 \section{Datasets}
 \label{sec:datasets}
 
-The original work evaluates the models on static datasets, on streams with concept drift and on synthetic streams of increasing dimension for its scalability experiments. These datasets are common in the literature~\cite{bezerra2016tedacloud,bezerra2020autocloud,zhang2022extension,nguyenLe2026beyondbinary,zubaroglu2023emcstream}, but the files of the original work hide preprocessing decisions that change the results and that a stream does not allow. \Cref{tab:synthetic_datasets} lists the datasets that we use instead, with the abbreviations of the tables.
+The original work evaluates the models on static datasets, streams with concept drift and scalability streams of increasing dimension, common in the literature~\cite{bezerra2016tedacloud,bezerra2020autocloud,zhang2022extension,nguyenLe2026beyondbinary,zubaroglu2023emcstream}, but the files of the original work hide preprocessing decisions that change the results and that a stream does not allow. \Cref{tab:synthetic_datasets} lists the datasets that we use instead, with the abbreviations of the tables.
 
 \begin{table}[htbp]
     \centering
@@ -153,7 +153,7 @@ The original work evaluates the models on static datasets, on streams with conce
 \subsection{Static Datasets}
 \label{subsubsec:scaling}
 
-According to the original work, its static datasets \datasetname{ST-D1} and \datasetname{ST-D2} are datasets introduced to evaluate the Chameleon algorithm~\cite{karypis1999chameleon}. Its repository holds the files \codename{chameleon-ds3-clean.csv} and \codename{chameleon-ds4-clean.csv}, while the Chameleon paper names the corresponding raw patterns, of 10{,}000 and 8{,}000 samples, \ChameleonDSThree and \ChameleonDSFour. We use the raw files \codename{cluto-t7-10k.arff} and \codename{cluto-t8-8k.arff}, and those names. The files of the repository are cleaned of noise, downsampled, scaled and ordered by label. To measure what each of these steps does, we applied them in turn to \ChameleonDSThree, and tuned and evaluated \MicroTEDAClus on the result of each step by the protocol of this chapter (\cref{fig:mr_preprocessing_stages}).
+The static datasets \datasetname{ST-D1} and \datasetname{ST-D2} of the original work come from the evaluation of the Chameleon algorithm~\cite{karypis1999chameleon}, whose paper names the raw patterns, of 10{,}000 and 8{,}000 samples, \ChameleonDSThree and \ChameleonDSFour. We use the raw files \codename{cluto-t7-10k.arff} and \codename{cluto-t8-8k.arff}, and those names. The files of the original repository, \codename{chameleon-ds3-clean.csv} and \codename{chameleon-ds4-clean.csv}, are cleaned of noise, downsampled, scaled and ordered by label. To measure what each of these steps does, we applied them in turn to \ChameleonDSThree, and tuned and evaluated \MicroTEDAClus on the result of each step by the protocol of this chapter (\cref{fig:mr_preprocessing_stages}).
 
 \begin{figure}[htbp]
     \centering
@@ -183,7 +183,7 @@ The scalability experiments of the original work, which profile memory and time 
 \section{Evaluation Protocol}
 \label{sec:prequential_sequential_offline_evaluation}
 
-The original work states that it applies prequential evaluation, in which ``each instance can be used to test before it is used for training'' (Maia et al.~\cite[Section 5.2.1]{maia2020evolvclus}). That is the standard practice for stream clustering~\cite{akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline}, in line with Dawid's view of inference as forecasting future observations~\cite{dawid1984prequential}. Its code, however, implements no prequential evaluation.
+The original work states that it applies prequential evaluation, in which ``each instance can be used to test before it is used for training''~\cite[Section 5.2.1]{maia2020evolvclus}, the standard practice for stream clustering~\cite{akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline}, in line with Dawid's view of inference as forecasting future observations~\cite{dawid1984prequential}. Its code, however, implements no prequential evaluation.
 
 For \datasetname{ST-D1} and \datasetname{ST-D2}, it learns the whole dataset and then predicts the same samples (\cref{snippet:original_work_static_evaluation_protocol}). Even for offline clustering, that is not standard practice~\cite{kaufman2012leakage,kapoor2023leakage,arias2024improved,halkidi2001validation}, which prefers cross-validation~\cite{stone1974cross,kohavi1995study}. The evaluation of the \codename{C} reimplementation of \cref{sec:c_implementation} follows the same protocol for all of its datasets. For the other datasets, a function named \codename{prequential\_evaluation} learns each batch before predicting it (\cref{snippet:original_work_prequential_evaluation_function_steps}), the opposite of prequential evaluation.
 
@@ -232,7 +232,7 @@ For the scalability streams, we report the quality per dimension and plot the co
 \subsection{Hyperparameter Tuning}
 \label{subsec:hyperparameter_tuning}
 
-Every model has hyperparameters that can be tuned, even those whose papers use default values. So that no model is disadvantaged by its hyperparameters, every run begins with a search on the first 20\% of its stream, by Bayesian optimization~\cite{ozaki2025optunahub}, and the tuned model is evaluated on the remaining 80\%, which the search never sees~\cite{kaufman2012leakage,kapoor2023leakage}. The original work, in contrast, selects the parameters that maximize the score over the whole dataset. The search maximizes the objective of \cref{alg:hyperparameter_tuning_objective_function}: the ARI of a prequential execution on the tuning segment, without its first 5\% of predictions, less a penalty of $\lambda = 10^{-3}$ per second of execution.
+So that no model is disadvantaged by its hyperparameters, even those whose papers use default values, every run begins with a search on the first 20\% of its stream, by Bayesian optimization~\cite{ozaki2025optunahub}, and the tuned model is evaluated on the remaining 80\%, which the search never sees~\cite{kaufman2012leakage,kapoor2023leakage}. The original work, in contrast, selects the parameters that maximize the score over the whole dataset. The search maximizes the objective of \cref{alg:hyperparameter_tuning_objective_function}: the ARI of a prequential execution on the tuning segment, without its first 5\% of predictions, less a penalty of $\lambda = 10^{-3}$ per second of execution.
 
 \begin{algorithm}[htbp]
 \caption{Objective of the hyperparameter search}
@@ -338,7 +338,7 @@ We evaluate \MicroTEDAClus against the six benchmark models of \cref{sec:benchma
 
 \input{MethodologyReassessment/artifacts/reassessment/quality.tex}
 
-The results do not support the claims of the original work (\cref{tab:mr_quality}). Against its benchmark models, \MicroTEDAClus is not on par: in the Overall ARI, it is worse than \CluStream and \StreamKM in the three static datasets and worse than \DenStream in \BenchmarkOne, and it is better than \DenStream only in \BenchmarkTwo and \ChameleonDSThree, than \StreamKM only in \BenchmarkTwo and than \CluStream only in \RandomRBFGeneratorEvents. Nor does it adapt better to concept drift. At the penultimate batch, it is better than none of the three in any dataset and worse than \StreamKM in all six. In \BenchmarkOne and \RandomRBFGeneratorEvents, two of the streams with concept drift, its median Steady-State ARI is zero, and it is worse than five and three of the six benchmark models, respectively. In the Overall ARI, it is better than most benchmark models only in \BenchmarkTwo and \ChameleonDSThree, mainly the TEDA-based models \AutoCloud, \CEDAS and \TEDACloud, which it beats in every static dataset.
+The results do not support the claims of the original work (\cref{tab:mr_quality}). Against its benchmark models, \MicroTEDAClus is not on par: in the Overall ARI, it is worse than \CluStream and \StreamKM in the three static datasets and than \DenStream in \BenchmarkOne, and better than each of the three in at most two datasets. Nor does it adapt better to concept drift. At the penultimate batch, it is better than none of the three in any dataset and worse than \StreamKM in all six. In \BenchmarkOne and \RandomRBFGeneratorEvents, two of the streams with concept drift, its median Steady-State ARI is zero, and it is worse than five and three of the six benchmark models, respectively. In the Overall ARI, it is better than most benchmark models only in \BenchmarkTwo and \ChameleonDSThree, mainly the TEDA-based models \AutoCloud, \CEDAS and \TEDACloud, which it beats in every static dataset.
 
 \input{MethodologyReassessment/artifacts/reassessment/scalability.tex}
 
@@ -348,11 +348,11 @@ In the scalability streams, the Overall ARI of \MicroTEDAClus stays high at ever
 
 \input{MethodologyReassessment/artifacts/reassessment/cost.tex}
 
-\MicroTEDAClus is slower than every benchmark model but \AutoCloud in the learning stage of every dataset, and slower than \StreamKM and \CEDAS in the prediction stage of every dataset (\cref{tab:mr_cost}). Its maximum memory footprint is larger than those of \DenStream, \StreamKM, \CEDAS and \TEDACloud in every dataset, and larger than that of \CluStream in the Chameleon datasets. These comparisons measure implementations as much as algorithms, and the times are measured inside the tasks, with other tasks running on the same machine.
+\MicroTEDAClus is slower than every benchmark model but \AutoCloud in the learning stage of every dataset, and slower than \StreamKM and \CEDAS in the prediction stage of every dataset (\cref{tab:mr_cost}). Its maximum memory footprint is larger than those of \DenStream, \StreamKM, \CEDAS and \TEDACloud in every dataset, and larger than that of \CluStream in the Chameleon datasets. These comparisons measure implementations as much as algorithms, and the times are taken inside the tasks, with other tasks running on the same machine.
 
 \section{Summary}
 \label{sec:reassessment_summary}
 
-The published results of \MicroTEDAClus come from an implementation that departs from its formulation, from benchmark models executed through two layers of interface, from datasets cleaned, scaled with information from the whole stream and ordered by label, and from an evaluation that learns each batch before predicting it. Under a methodology without these flaws, \MicroTEDAClus is not on par with the benchmark models of the original work, it does not adapt better to concept drift, it learns slowly, its quality collapses in high dimensions, and its variance limit depends on the scale of the data (\cref{subsubsec:scaling}). \Cref{chap:ModelImprovement} addresses these weaknesses.
+The published results of \MicroTEDAClus come from an implementation that departs from its formulation, benchmark models executed through two layers of interface, datasets cleaned, scaled with the whole stream and ordered by label, and an evaluation that learns each batch before predicting it. Without these flaws, \MicroTEDAClus is not on par with the benchmark models of the original work, it does not adapt better to concept drift, it learns slowly, its quality collapses in high dimensions, and its variance limit depends on the scale of the data (\cref{subsubsec:scaling}). \Cref{chap:ModelImprovement} addresses these weaknesses.
 
 \clearpage
