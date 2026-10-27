@@ -399,7 +399,14 @@ In \RandomRBFGeneratorEvents, \ChameleonDSThree and \ChameleonDSFour, the compar
 
 \input{ModelImprovement/artifacts/comparison/scalability.tex}
 
-In the scalability streams, \MicroTEDAClusPlus is better than every other model from two dimensions on, on both metrics, except \CEDAS, which reaches the same median of $1.000$ and is indistinguishable from it from four or eight dimensions on (\cref{tab:mi_comparison_scalability}). The collapse of \MicroTEDAClus at the end of the streams of high dimension does not occur. The stream with one dimension is the exception: there, \MicroTEDAClusPlus is indistinguishable from \MicroTEDAClus, \CluStream and \StreamKM, with a lower median than \MicroTEDAClus. No one-dimensional stream took part in the development of the model.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{ModelImprovement/artifacts/comparison/plots/scalability_quality.png}
+    \caption[ARI of \MicroTEDAClusPlus, \MicroTEDAClus and the benchmark models in the scalability streams]{ARI of \MicroTEDAClusPlus, \MicroTEDAClus and the benchmark models in the scalability streams: along the stream with 2 and 64 dimensions, and the Overall and Steady-State ARI against the dimension. Medians, with the interquartile band of \MicroTEDAClusPlus, over 94 runs.}
+    \label{fig:mi_main_scalability_quality}
+\end{figure}
+
+In the scalability streams, \MicroTEDAClusPlus is better than every other model from two dimensions on, on both metrics, except \CEDAS, which reaches the same median of $1.000$ and is indistinguishable from it from four or eight dimensions on (\cref{tab:mi_comparison_scalability}). Along the stream with 64 dimensions, the ARI of \MicroTEDAClus collapses before the end, and that of \MicroTEDAClusPlus does not (\cref{fig:mi_main_scalability_quality}). The stream with one dimension is the exception: there, \MicroTEDAClusPlus is indistinguishable from \MicroTEDAClus, \CluStream and \StreamKM, with a lower median than \MicroTEDAClus. No one-dimensional stream took part in the development of the model.
 
 \subsection{Cost}
 \label{subsec:mi_main_cost}

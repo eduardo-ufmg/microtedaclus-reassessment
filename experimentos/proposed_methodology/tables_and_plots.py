@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 from editorial_config import (
@@ -26,6 +27,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPOSITORY_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "../.."))
 
 DIR_METRICS_NON_SCL = os.path.join(SCRIPT_DIR, "metrics", "non_scalability")
+DIR_METRICS_SCL = os.path.join(SCRIPT_DIR, "metrics", "scalability")
 DIR_STATS_BASE = os.path.join(SCRIPT_DIR, "statistical_analysis")
 
 QUALITY_METRICS = ("ari_overall", "ari_steadystate")
@@ -148,6 +150,64 @@ def draw(ax, frame: pd.DataFrame, metric: str, x: str, comparison, scale=1.0):
         )
 
 
+def quantiles(per_run: pd.DataFrame, metric: str) -> pd.DataFrame:
+    """Median and quartiles of a metric over the runs, per model and dimension."""
+    grouped = per_run.groupby(["model", "dim"])[metric]
+    return pd.DataFrame(
+        {
+            f"{metric}_median": grouped.median(),
+            f"{metric}_q1": grouped.quantile(0.25),
+            f"{metric}_q3": grouped.quantile(0.75),
+        }
+    ).reset_index()
+
+
+def dimension_axis(ax, dimensions):
+    ax.set_xscale("log", base=2)
+    ax.set_xticks(dimensions)
+    ax.set_xticklabels([str(d) for d in dimensions])
+    ax.set_xlabel("Dimension")
+
+
+def save(fig, axes, path: str):
+    """One legend above the panels, with every model drawn in any of them."""
+    entries = {}
+    for ax in np.ravel(axes):
+        for handle, label in zip(*ax.get_legend_handles_labels()):
+            entries.setdefault(label, handle)
+    handles, labels = list(entries.values()), list(entries)
+    fig.legend(handles, labels, loc="upper center", ncol=4, bbox_to_anchor=(0.5, 1.06))
+    fig.tight_layout()
+    fig.savefig(path, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+
+
+def scalability_quality_figure(comparison, out_dir: str):
+    """ARI of the models of a comparison in the scalability streams: along the stream in the
+    lowest and the highest dimension, and the Overall and Steady-State ARI per run against the
+    dimension."""
+    by_batch = pd.read_parquet(
+        os.path.join(DIR_METRICS_SCL, "aggregated_by_batch.parquet")
+    )
+    by_batch = by_batch.assign(samples=by_batch["batch"] * 100)
+    per_run = pd.read_parquet(os.path.join(DIR_METRICS_SCL, "run_metrics.parquet"))
+    dimensions = sorted(per_run["dim"].unique())
+    os.makedirs(os.path.join(out_dir, "plots"), exist_ok=True)
+
+    fig, axes = plt.subplots(2, 2, figsize=(10, 7))
+    for ax, dimension in zip(axes[0], (2, 64)):
+        draw(ax, by_batch[by_batch["dim"] == dimension], "ari", "samples", comparison)
+        ax.set_title(f"Along the stream, {dimension} dimensions")
+        ax.set_xlabel("Samples")
+        ax.set_ylabel("ARI")
+    for ax, metric in zip(axes[1], QUALITY_METRICS):
+        draw(ax, quantiles(per_run, metric), metric, "dim", comparison)
+        ax.set_title(TITLES[metric])
+        ax.set_ylabel("ARI")
+        dimension_axis(ax, dimensions)
+    save(fig, axes, os.path.join(out_dir, "plots", "scalability_quality.png"))
+
+
 def plot_internal_inspection(comparison, out_dir: str):
     df = pd.read_parquet(
         os.path.join(DIR_METRICS_NON_SCL, "aggregated_by_batch.parquet")
@@ -190,6 +250,8 @@ def main():
         out_dir = output_dir(comparison)
         os.makedirs(out_dir, exist_ok=True)
         generate_tables(comparison, out_dir)
+        if comparison.chapter == "ModelImprovement":
+            scalability_quality_figure(comparison, out_dir)
         plot_internal_inspection(comparison, os.path.join(out_dir, "plots", "internal"))
         print(f"Generated tables and plots for: {comparison.name}")
 
