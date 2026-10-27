@@ -37,86 +37,7 @@ def update_life(self, xk, micro_cluster):
         micro_cluster["life"] = 1
 \end{lstlisting}
 
-\paragraph{Activation.} The paper activates the microclusters whose density is not below the mean density of their macrocluster (\cref{info:microcluster_activation_criterion,critique:use_of_unstable_density}). The implementation builds the macroclusters twice, as \cref{alg:microcluster_activation_criterion_pseudocode} describes in our reading of the code: it groups the intersecting microclusters into the components of a graph $\mathbb{G}_0$, activates microclusters within each component, removes the inactive ones to obtain a graph $\mathbb{G}_1$, and returns the components of $\mathbb{G}_1$ as the macroclusters. The second pass guards against the collapse of overlapping microclusters into a single macrocluster, which the original work anticipates. \Cref{snippet:maia_implementation_define_activations} also shows that only microclusters with more than two samples can be active, while the mean density is computed over all the microclusters of the component.
-
-\begin{algorithm}[htbp]
-\caption{Construction of the macroclusters in the public implementation of \MicroTEDAClus}
-\label{alg:microcluster_activation_criterion_pseudocode}
-\begin{algorithmic}[1]
-\Require the microclusters $m_i$, $i = 1, 2, \dots, n$
-\Ensure the macroclusters $\mathcal{M}_j$, $j = 1, 2, \dots, m$
-\State Build the graph $\mathbb{G}_0$ whose edges join the microclusters that satisfy \cref{eq:microcluster_intersection_condition}
-\State Build a macrocluster $\mathcal{M}_j$ for each connected component of $\mathbb{G}_0$
-\For{each macrocluster $\mathcal{M}_j$}
-    \State Activate its microclusters by \cref{critique:use_of_unstable_density}
-\EndFor
-\State Remove the inactive microclusters from $\mathbb{G}_0$ to obtain $\mathbb{G}_1$
-\State Build a macrocluster $\mathcal{M}_j$ for each connected component of $\mathbb{G}_1$
-\end{algorithmic}
-\end{algorithm}
-
-\begin{lstlisting}[float, language=Python, caption={Activation of the microclusters in the public implementation of \MicroTEDAClus}, label={snippet:maia_implementation_define_activations}]
-def define_activations(self):
-    self.active_graph = self.graph.copy()
-    for mg in self.macro_clusters:
-        num_micro = len(mg)
-        total_density = 0
-        for i in mg:
-            dens = next(item["density"] for item in self.micro_clusters if item["id"] == i)
-            total_density += dens
-        mean_density = total_density / num_micro
-        for i in mg:
-            mi = next(item for item in self.micro_clusters if item["id"] == i)
-            mi["active"] = (mi["num_samples"] > 2) and (mi["density"] >= mean_density)
-            if not mi["active"]:
-                self.active_graph.remove_node(mi["id"])
-    self.active_macro_clusters = list(nx.connected_components(self.active_graph))
-\end{lstlisting}
-
-\paragraph{Outlier test.} \Cref{snippet:maia_implementation_is_outlier} applies \cref{eq:outlier_condition} to microclusters with three samples or more, and, below three, the test of the variance alone of \cref{eq:corrected_condition_logic_for_outliers}, which replaces the conjunction of \cref{critique:incorrect_condition_logic}.
-
-\begin{lstlisting}[float, language=Python, caption={Outlier test in the public implementation of \MicroTEDAClus}, label={snippet:maia_implementation_is_outlier}]
-def is_outlier(self, s_ik, var_ik, norm_ecc):
-    if s_ik < 3:
-        outlier = (var_ik > self.variance_limit)
-    else:
-        mik_sik = 3 / (1 + math.exp(-0.007 * (s_ik - 100)))
-        outlier_limit = ((mik_sik ** 2) + 1) / (2 * s_ik)
-        outlier = (norm_ecc > outlier_limit)
-    return outlier
-\end{lstlisting}
-
-\paragraph{Eccentricity.} The eccentricity of \cref{snippet:maia_implementation_get_eccentricity} expands to \cref{eq:maia_implementation_eccentricity_eq}, which differs from the recursive eccentricity of \cref{eq:recursive_eccentricity} by the factor $4/d^2$ on its second term.
-
-\begin{lstlisting}[float, language=Python, caption={Eccentricity in the public implementation of \MicroTEDAClus}, label={snippet:maia_implementation_get_eccentricity}]
-def get_eccentricity(x, num_samples, mean, var):
-    if var == 0 and num_samples > 1:
-        result = (1/num_samples)
-    else:
-        a = mean - x
-        result = ((1 / num_samples) + ((np.linalg.norm(a) * 2 / len(a)) ** 2 / (num_samples * var)))
-    return result
-\end{lstlisting}
-
-\begin{equation}
-    \xi^i\left(x\right) = \frac{1}{S^i_k} + \frac{4\lVert\mu^i_k - x\rVert^2}{d^2S^i_k\left(\sigma^i_k\right)^2}
-    \label{eq:maia_implementation_eccentricity_eq}
-\end{equation}
-
-\paragraph{Membership.} The membership of a sample to a macrocluster (\cref{snippet:maia_implementation_calculate_membership}) weighs $1 - \zeta$ by the densities of the active microclusters, an expression that cannot be rewritten as the normalized typicality of \cref{eq:normalized_typicality}.
-
-\begin{lstlisting}[float, language=Python, caption={Membership in the public implementation of \MicroTEDAClus}, label={snippet:maia_implementation_calculate_membership}]
-def calculate_membership(x, active_micro_clusters):
-    total_density = 0
-    for m in active_micro_clusters:
-        total_density += m["density"]
-    mb = 0
-    for m in active_micro_clusters:
-        d = m["density"]
-        t = 1 - EvolvingClustering.get_normalized_eccentricity(x, m["num_samples"], m["mean"], m["variance"])
-        mb += (d / total_density) * t
-    return mb
-\end{lstlisting}
+\paragraph{Other departures.} The implementation departs from the paper in four more places, all in the file of the model in the forked repository~\cite{eduardo2026evolvingclustering}. It builds the macroclusters in two passes: it groups the intersecting microclusters into the components of a graph $\mathbb{G}_0$, activates microclusters within each component by \cref{critique:use_of_unstable_density}, removes the inactive ones to obtain a graph $\mathbb{G}_1$, and returns the components of $\mathbb{G}_1$ as the macroclusters, which guards against the collapse of overlapping microclusters into a single macrocluster that the original work anticipates (\cref{info:microcluster_activation_criterion}). Only microclusters with more than two samples can be active, while the mean density is computed over all the microclusters of the component. Its outlier test applies \cref{eq:outlier_condition} from three samples on and, below three, the test of the variance alone of \cref{eq:corrected_condition_logic_for_outliers}. Its eccentricity differs from \cref{eq:recursive_eccentricity} by a factor $4/d^2$ on the second term. Its membership weighs $1 - \zeta$ by the densities of the active microclusters, an expression that cannot be rewritten as the normalized typicality of \cref{eq:normalized_typicality}.
 
 The implementation of the updated formulation, which Galindo provided to us, is not public. It adds partial support for the cosine similarity, refactors the decay and moves the microclusters into a class of their own.
 
@@ -153,22 +74,17 @@ The original work evaluates the models on static datasets, streams with concept 
 \subsection{Static Datasets}
 \label{subsubsec:scaling}
 
-The static datasets \datasetname{ST-D1} and \datasetname{ST-D2} of the original work come from the evaluation of the Chameleon algorithm~\cite{karypis1999chameleon}, whose paper names the raw patterns, of 10{,}000 and 8{,}000 samples, \ChameleonDSThree and \ChameleonDSFour. We use the raw files \codename{cluto-t7-10k.arff} and \codename{cluto-t8-8k.arff}, and those names. The files of the original repository, \codename{chameleon-ds3-clean.csv} and \codename{chameleon-ds4-clean.csv}, are cleaned of noise, downsampled, scaled and ordered by label. To measure what each of these steps does, we applied them in turn to \ChameleonDSThree, and tuned and evaluated \MicroTEDAClus on the result of each step by the protocol of this chapter (\cref{fig:mr_preprocessing_stages}).
+The static datasets \datasetname{ST-D1} and \datasetname{ST-D2} of the original work come from the evaluation of the Chameleon algorithm~\cite{karypis1999chameleon}, whose paper names the raw patterns, of 10{,}000 and 8{,}000 samples, \ChameleonDSThree and \ChameleonDSFour. We use the raw files \codename{cluto-t7-10k.arff} and \codename{cluto-t8-8k.arff}, and those names. The files of the original repository, \codename{chameleon-ds3-clean.csv} and \codename{chameleon-ds4-clean.csv}, are cleaned of noise, downsampled, scaled and ordered by label (\cref{fig:mr_ds3_preprocessing}).
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth]{MethodologyReassessment/artifacts/preprocessing/stages.png}
-    \caption[ARI and execution time of \MicroTEDAClus on \ChameleonDSThree after each preprocessing step]{ARI and execution time per batch of \MicroTEDAClus on \ChameleonDSThree after each preprocessing step, with the hyperparameters selected for it: medians and interquartile bands over 94 runs.}
-    \label{fig:mr_preprocessing_stages}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/figures/raw_ds3.png}
+    \includegraphics[width=0.48\textwidth]{MethodologyReassessment/figures/scaled_ds3.png}
+    \caption[\ChameleonDSThree raw and after the preprocessing of the original work]{\ChameleonDSThree raw, at left, and after the noise removal, the downsampling to half of its samples and the min-max scaling of the original work, at right. Noise samples are black.}
+    \label{fig:mr_ds3_preprocessing}
 \end{figure}
 
-\paragraph{Noise removal.} Removing the samples labeled as noise changes the ARI little. It is, however, a severe leak~\cite{kaufman2012leakage,kapoor2023leakage}: a sample is noise only if it belongs to no cluster, which is known after the clustering. In a stream, the model itself must decide which samples are noise, from the samples it has seen, or not handle noise at all~\cite{akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline,zhang2022extension,zubaroglu2023emcstream}.
-
-\paragraph{Downsampling.} Keeping a random half of the samples needs no information about them and is not a leak. It lowers the ARI slightly and the learning time by about half.
-
-\paragraph{Scaling.} Min-max scaling reduces the execution time by an order of magnitude and moves the variance limit that the search selects from a median of about 5 to about 0.01. The model is therefore not robust to the choice of this hyperparameter, as the original work claims: the limit follows the scale of the data. The sensitivity study of \cref{sec:c_implementation} also finds the quality strongly dependent on it. Scaling is expected in any application, but the original work computes the minimum and the maximum of each feature over the whole dataset, which leaks the future of the stream.
-
-\paragraph{Ordering.} Ordering the samples by label is the most harmful step. It leaks the labels and discards the order of arrival, and, since consecutive samples then share their label, most 100-sample batches hold a single cluster. The ARI then reaches 1 in most batches, and the learning time falls below a millisecond per batch over most of the stream (\cref{fig:mr_preprocessing_stages}).
+Removing the samples labeled as noise is a severe leak~\cite{kaufman2012leakage,kapoor2023leakage}: a sample is noise only if it belongs to no cluster, which is known after the clustering, and in a stream the model itself must decide which samples are noise, from the samples it has seen, or not handle noise at all~\cite{akinosho2023comparative,wang2023data,rezaei2025,mutambik2024,jahn2026goingoffline,zhang2022extension,zubaroglu2023emcstream}. Keeping a random half of the samples needs no information about them and is not a leak. Scaling is expected in any application, but the original work computes the minimum and the maximum of each feature over the whole dataset, which leaks the future of the stream; and the variance limit of the model follows the scale of the data, against the claim of the original work that the model is robust to it, as the sensitivity study of \cref{sec:c_implementation} also suggests. Ordering the samples by label is the most harmful step: it leaks the labels and discards the order of arrival, and, since consecutive samples then share their label, most 100-sample batches hold a single cluster.
 
 The experiments of the original work on \datasetname{ST-D1} and \datasetname{ST-D2} therefore do not evaluate online stream clustering, and we use the raw \ChameleonDSThree and \ChameleonDSFour instead. The third static dataset, \Cassini, comes from the \codename{R} package \codename{mlbench} without preprocessing, but ordered by label; we shuffle it.
 
@@ -254,78 +170,12 @@ The search of each model ends at 100 trials or at 300 seconds, whichever comes f
 \subsection{Multi-run Statistics}
 \label{subsec:multi_run_statistics}
 
-A run generates its stream from its seed, tunes the model and evaluates it. We aggregate the runs by the median and the interquartile range, and not by the mean and the standard deviation, because the search may end in a poor local optimum and produce outlier runs, to which the median is robust.
-
-We take $N = 1000$ runs as a stable reference, and choose the number of runs $k^*$ that approximates it at the point beyond which more runs bring diminishing returns, \cref{eq:kneedle}, which the Kneedle algorithm~\cite{satopaa2011kneedle} finds as the point of maximum distance to the secant joining the ends of the min--max normalized curve
-
-\begin{equation}
-k^* = \operatorname*{argmax}_k\frac{|(\tilde k_{\max}-\tilde k_{\min})(\tilde Y(k)-\tilde Y_{\min}) - (\tilde Y_{\max}-\tilde Y_{\min})(\tilde k(k)-\tilde k_{\min})|}{\sqrt{(\tilde k_{\max}-\tilde k_{\min})^2 + (\tilde Y_{\max}-\tilde Y_{\min})^2}},
-\label{eq:kneedle}
-\end{equation}
-
-\begin{align}
-\tilde k(k) &= \frac{k - k_{\min}}{k_{\max}-k_{\min}}, &
-\tilde Y(k) &= \frac{\hat Y_{\mathrm{med}}(k) - \hat Y_{\mathrm{med}}(k_{\min})}{\hat Y_{\mathrm{med}}(k_{\max}) - \hat Y_{\mathrm{med}}(k_{\min})},
-\end{align}
-
-where $\hat Y_{\mathrm{med}}$ is a non-increasing isotonic regression~\cite{barlow1972statistical} of the worst-case convergence curve of the median
-
-\begin{equation}
-\begin{gathered}
-Y_{\mathrm{med}}(k) = \max_{c \in \mathcal{C}} \mathrm{NMAE}^{\mathrm{med}}_c(k), \\
-\mathcal{C} = \{\datasetname{SCL-2}, \BenchmarkOne, \BenchmarkTwo\} \\
-\times \{\text{ARI}, \text{time}, \text{memory}, \text{microcluster count}\}.
-\end{gathered}
-\end{equation}
-
-For a configuration $c \in \mathcal{C}$ and a subset size $k \in \{k_{\min},\dots,N\}$, let $S_{c,k,1},\dots,S_{c,k,B}$ be $B$ independent draws, uniform over the size-$k$ subsets of $\{1,\dots,N\}$, with subsample statistics
-
-\begin{equation}
-m_{c,k,b} = \operatorname{median}(\mathcal{D}_c[S_{c,k,b}]), \qquad
-q_{c,k,b} = Q_3(\mathcal{D}_c[S_{c,k,b}]) - Q_1(\mathcal{D}_c[S_{c,k,b}]), \qquad b=1,\dots,B.
-\end{equation}
-
-The normalized mean absolute errors
-
-\begin{align}
-\mathrm{NMAE}^{\mathrm{med}}_c(k) = \frac{1}{s_c B}\sum_{b=1}^{B} |m_{c,k,b}-\tilde m_c|, \qquad
-\mathrm{NMAE}^{\mathrm{iqr}}_c(k) = \frac{1}{s_c B}\sum_{b=1}^{B} |q_{c,k,b}-\tilde q_c|
-\end{align}
-
-are Monte Carlo estimates~\cite{robert2004monte}, with the reference statistics and scale
-
-\begin{align}
-\tilde m_c &= \operatorname{median}(\mathcal{D}_c), &
-\tilde q_c &= Q_3(\mathcal{D}_c) - Q_1(\mathcal{D}_c), &
-s_c &= \tilde q_c,
-\end{align}
-
-where $\mathcal{D}_c = \{x_{c,i}\}_{i=1}^{N}$ holds the value of the metric of configuration $c$ in each run $i$, taken at the middle batch of the stream. With $N = 1000$, $B = 10^4$ and $k_{\min} = 3$, $k^* = 94$.
+A run generates its stream from its seed, tunes the model and evaluates it. We aggregate the runs by the median and the interquartile range, and not by the mean and the standard deviation, because the search may end in a poor local optimum and produce outlier runs, to which the median is robust. We choose the number of runs from 1000 runs of \datasetname{SCL-2}, \BenchmarkOne and \BenchmarkTwo, in the ARI, the time, the memory and the microcluster count: for each number of runs $k$, we draw $10^4$ subsets of $k$ runs and measure the mean absolute error of their median against the median of the 1000 runs, normalized by its interquartile range. The number of runs is the knee of the worst of these curves, beyond which more runs bring diminishing returns, as the Kneedle algorithm~\cite{satopaa2011kneedle} finds it: $k^* = 94$.
 
 \section{Statistical Comparison}
 \label{sec:statistical_significance}
 
-Before any test, we discretize the metrics to thresholds of practical relevance, so that floating-point noise and hardware jitter do not inflate the power of the rank-based tests:
-
-\begin{align}
-\text{ARI}_\text{disc} &= 10^{-3} \lfloor 10^3 \cdot \text{ARI} \rceil, & \text{Time}_\text{disc} \left[\text{ms}\right] &= 10 \lfloor \text{Time} \left[\text{ms}\right] / 10 \rceil, \nonumber \\
-\text{Memory}_\text{disc} \left[\text{B}\right] &= 1024 \lfloor \text{Memory} \left[\text{B}\right] / 1024 \rceil, & \text{MC}_\text{disc} &= \lfloor \text{MC} \rceil.
-\end{align}
-
-Every comparison of the thesis sets one model against references, as Dem\v{s}ar recommends when a model is compared with others~\cite{demsar2006statistical}. Two kinds occur:
-
-\begin{itemize}
-    \item \textbf{The model in focus against each other model}, in this chapter and whenever a model is compared with the benchmark models. In each dataset and metric, the model in focus is compared with each other model by the paired Wilcoxon signed-rank test~\cite{wilcoxon1945individual} over the runs that every model finished, and the $p$-values of these comparisons are adjusted by the Holm--Bonferroni procedure~\cite{holm1979simple}.
-    \item \textbf{A variant against its control}, in the improvement of \cref{chap:ModelImprovement}. In each metric, the variant is compared with its control by the same test in each dataset, over the runs that both finished, and the $p$-values of the datasets are adjusted together.
-\end{itemize}
-
-With 94 runs, the Wilcoxon test rejects the null hypothesis for differences of no practical consequence, so a difference counts only when it is also large enough. A model $m_i$ is distinguishable from its reference $m_{\text{ref}}$ if
-
-\begin{equation}
-D(m_i, m_{\text{ref}}) \iff (p_{\text{adj}} < \alpha) \land (\vert d \vert \ge 0.147),
-\end{equation}
-
-where $\alpha = 0.05$, $p_{\text{adj}}$ is the adjusted $p$-value, $d$ is Cliff's delta~\cite{cliff1993dominance}, and $\vert d \vert \ge 0.147$ is the boundary of a non-negligible effect~\cite{romano2006appropriate}.
+Before any test, we discretize the metrics to thresholds of practical relevance, the ARI to $10^{-3}$, the times to 10 ms, the memory to 1 KiB and the microcluster count to integers, so that floating-point noise and hardware jitter do not inflate the power of the rank-based tests. Every comparison sets one model against references~\cite{demsar2006statistical}: the model in focus against each other model, wherever a model is compared with the benchmark models, and a variant against its control, in the improvement of \cref{chap:ModelImprovement}. In each dataset and metric, the paired Wilcoxon signed-rank test~\cite{wilcoxon1945individual} compares them over the runs that both finished, and the Holm--Bonferroni procedure~\cite{holm1979simple} adjusts the $p$-values of the comparisons of a model in focus, or of the datasets of a variant, together. With 94 runs, the test rejects the null hypothesis for differences of no practical consequence, so a model is distinguishable from its reference only if the adjusted $p$-value is below $\alpha = 0.05$ and Cliff's delta~\cite{cliff1993dominance} reaches $\vert d \vert \ge 0.147$, the boundary of a non-negligible effect~\cite{romano2006appropriate}.
 
 \paragraph{Reading the tables.} The tables give medians over the runs. In a comparison with the benchmark models, the model in focus comes first, followed by a row that counts the models it is significantly better than, indistinguishable from and worse than. The median of another model is in bold where the model in focus is significantly better than it, and in red where the model in focus is significantly worse. In the tables of a variant and its control, the value of the variant is in bold where it is significantly better than its control, and in red where it is significantly worse. Higher is better for the ARI; lower is better for the execution time, the memory and the size of a summary.
 
