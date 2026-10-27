@@ -12,6 +12,7 @@
 \usepackage[colorlinks]{hyperref}
 \usepackage{abntex2abrev}
 \usepackage{setspace}
+\usepackage{etoolbox}
 \usepackage[toc,page]{appendix}
 
 \usepackage{listings}         % Code blocks
@@ -91,10 +92,8 @@
 \include{ModelImprovement/ModelImprovement}
 \include{Conclusions/Conclusions}
 
-\clearpage
-\phantomsection
-\addcontentsline{toc}{chapter}{References}
 \renewcommand{\bibname}{References}
+\apptocmd{\thebibliography}{\phantomsection\addcontentsline{toc}{chapter}{\bibname}}{}{}
 
 \bibliographystyle{abntex2-num}
 \begin{small}
