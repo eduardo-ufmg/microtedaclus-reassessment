@@ -142,7 +142,7 @@ The standardized squared distance is divided by the number of samples, so the mo
     \label{eq:mi_standardized_distance}
 \end{equation}
 
-which the outlier condition also thresholds, since \cref{eq:outlier_condition} is equivalent to $q(x) > m^2$. \variant{nearest} assigns a sample to the macrocluster of the active microcluster it is closest to in standard deviations.
+which the outlier condition also thresholds, since \cref{eq:outlier_condition} is equivalent to $q(x) > m^2$. The membership \variant{nearest} assigns a sample to the macrocluster of the active microcluster it is closest to in standard deviations.
 
 The corrected model is therefore the \variant{vectorized} model with the \variant{nearest} membership, and it is the control of the experiments that follow. The order-dependent density and the dimensionality penalty remain in it: the experiments do not support replacing the former, and removing the latter costs the accidental separation of the noise.
 
