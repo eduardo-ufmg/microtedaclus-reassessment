@@ -13,11 +13,12 @@ MicroTEDAClus+, by controlled experiments.
 
 | Tag | Document |
 |---|---|
-| `thesis-defense` | The thesis as submitted for the defense. Its PDF is `monografia/UndergradThesis.pdf` at that tag. |
+| `thesis-defense` | The thesis as submitted for the defense. Its PDF is attached to the [thesis-defense release](https://github.com/eduardo-ufmg/microtedaclus-reassessment/releases/tag/thesis-defense). |
 | `v1.0` | An extended version of the work, with two more chapters: the experiment repeated in a Python-only environment, and an evaluation on real datasets. Its PDF is attached to the [v1.0 release](https://github.com/eduardo-ufmg/microtedaclus-reassessment/releases/tag/v1.0). |
 
-The branch `defense-edition` holds the thesis, and `main` holds `v1.0`. The other branches keep
-earlier stages of the work.
+The branch `defense-edition` holds the thesis, and `main` holds `v1.0`. The tag
+`pre-model-improvement` keeps an earlier stage of the work: the iterative experiments that preceded
+the chapter *Model Improvement*.
 
 ## Layout
 
@@ -29,10 +30,9 @@ earlier stages of the work.
 | `experimentos/preprocessing/` | The effect of the preprocessing of the original work on MicroTEDAClus. |
 | `experimentos/multiple_runs/` | The choice of the number of runs. |
 | `experimentos/shared/` | The package `pfc_shared`, code shared by the experiments. |
+| `experimentos/interface_measurement/` | The measurement of the interface to the benchmark models in Java, of the chapter *Methodology Reassessment*. |
 | `experimentos/modern_methodology/` | The two additional experiments of `v1.0`. |
 | `experimentos/datasets/`, `experimentos/metrics/` | Figures of the datasets and of the metrics. |
-| `testes_preeliminares/` | Preliminary tests, among them the measurement of the interface to the benchmark models in Java. |
-| `referencia/` | Earlier work, superseded; see its README. |
 
 ## Reproducing the results
 
@@ -62,7 +62,6 @@ environment.
 ```bash
 python -m streams 0 93          # generate and cache the streams of the 94 runs (needs R)
 python main_experiment.py       # every model on every dataset and run; resumes where it stopped
-python check_for_completion.py
 python compute_metrics.py
 python statistic_analysis.py
 python tables_and_plots.py
@@ -83,6 +82,21 @@ cd experimentos/multiple_runs
 ../proposed_methodology/.venv/bin/python statistical_power_investigation.py
 ```
 
+The interface measurement has its own environment, and needs Java, Maven, GNU `time` and the R
+packages `stream` and `streamMOA`. The thesis uses its results through
+`monografia/MethodologyReassessment/data/`.
+
+```bash
+cd experimentos/interface_measurement
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+./prepare_java.sh          # builds the Java benchmark and copies its dependencies
+python generate_stream.py
+python orchestrator.py     # every model in Java, through the bridge from Python, and in River
+python visualize.py
+```
+
 ### Model Improvement
 
 The comparisons and their runs are registered in `model_improvement/experiments.py`: development
@@ -95,6 +109,26 @@ python -m model_improvement.harness --all         # every comparison, on its reg
 python -m model_improvement.timing                # serial timing pass, on an otherwise idle machine
 python -m model_improvement.probe SPACE DATASET   # reachability probe
 python -m model_improvement.artifacts --summary   # tables, figures and decisions
+```
+
+### The two additional experiments of `v1.0`
+
+They run on `main`, from `experimentos/modern_methodology`, with an environment of their own and no
+R or Java. The validation of the generators compares them with the streams that R generated, which
+`python -m streams 94 219` caches in `experimentos/proposed_methodology`.
+
+```bash
+cd experimentos/modern_methodology
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/pip install --no-deps bico==0.1.5
+.venv/bin/python -m benchmark.validation.fingerprints   # does this machine generate the streams?
+./run_modern_main.sh                                    # the experiment in a Python-only environment
+./run_real_main.sh                                      # the evaluation on real datasets
+.venv/bin/python -m benchmark.validation.generators
+.venv/bin/python -m benchmark.validation.artifacts
+.venv/bin/python -m benchmark.artifacts
+.venv/bin/python -m benchmark.real_artifacts
 ```
 
 ### The thesis

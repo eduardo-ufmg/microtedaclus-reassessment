@@ -127,11 +127,16 @@ _texpad_tmp/
 
 # Custom
 modelo_PFC_latex
-testes_preeliminares/java_r_python/target/
+experimentos/interface_measurement/target/
 experimentos/**/plots/**
 **/plots/internal/**
 
 # ---------------------------
-# Local copies of the cited works
+# Local files that are not published
 # ---------------------------
+# The cited works, the course's regulation and the editor settings
 bibliografia/
+RegEngenharia*.pdf
+.vscode/
+# The thesis PDF, which the releases carry
+monografia/UndergradThesis.pdf
