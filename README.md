@@ -150,6 +150,17 @@ latexmk -pdf UndergradThesis.tex
 }
 ```
 
+## Use of artificial intelligence
+
+In accordance with the [recommendations of UFMG](https://www.ufmg.br/ia/recomendacoes/) for the use
+of artificial intelligence tools in academic activities: Claude Code, by Anthropic, GitHub Copilot
+and Gemini, by Google, assisted in writing and maintaining the code of the experiments and of the
+analyses, in revising and editing the text of the thesis, including drafting passages under the
+author's direction, and in organizing this repository and its version control. The questions, the
+methodology, the decisions on the experiments and the interpretation of their results are the
+author's, who reviewed everything these tools produced. The appendix *Use of Artificial
+Intelligence Tools* of the thesis as submitted for the defense describes this use.
+
 ## License
 
 The code is under the MIT License (`LICENSE`). The text of the thesis and the tables and figures
