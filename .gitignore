@@ -134,9 +134,10 @@ experimentos/**/plots/**
 # ---------------------------
 # Local files that are not published
 # ---------------------------
-# The cited works, the course's regulation and the editor settings
+# The cited works, the course's regulation, AI guidance, and the editor settings
 bibliografia/
 RegEngenharia*.pdf
+Uso-de-Ferramentas-de-IA*.pdf
 .vscode/
 # The thesis PDF, which the releases carry
 monografia/UndergradThesis.pdf
