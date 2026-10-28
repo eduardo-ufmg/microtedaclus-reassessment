@@ -6,52 +6,14 @@ This chapter presents the eccentricity and the typicality of the TEDA framework 
 \section{Typicality and Eccentricity-Based Data Analytics}
 \label{sec:teda}
 
-Angelov~\cite{angelov2014outside} introduces the TEDA framework as an alternative to probability theory for data in non-deterministic settings, built on two metrics, the eccentricity and the typicality. Let
+Angelov~\cite{angelov2014outside} introduces the TEDA framework as an alternative to probability theory for data in non-deterministic settings, built on two metrics. The eccentricity $\xi^k_j$ of a sample $j$ at moment $k$, twice the sum $\pi^k_j$ of its distances to all the samples seen up to $k$ divided by the sum of these sums over all the samples, measures how much the sample deviates from the others, and its typicality $\tau^k_j = 1 - \xi^k_j$ how well it fits among them; both lie between zero and one once $k > 2$ and the sums are positive. Their normalized forms are
 
 \begin{equation}
-    C = \{ \sum_{i=1}^{k} \pi^k_i > 0,\quad j > 1,\quad k > 2 \}
-\end{equation}
-
-be the conditions under which the metrics of a sample $j$ are computed at moment $k$, where $\pi^k_j$ is the sum of the distances from sample $j$ to all the samples seen up to $k$. The eccentricity, which measures how much a sample deviates from the others, and the typicality, which measures how well it fits among them, are
-
-\begin{equation}
-    \xi^k_j = \frac{2\pi^k_j}{\sum_{i=1}^{k} \pi^k_i}, \quad C
-    \label{eq:eccentricity_definition}
-\end{equation}
-
-\begin{equation}
-    \tau^k_j = 1 - \xi^k_j, \quad C
-    \label{eq:typicality_definition}
-\end{equation}
-
-Both are bounded, $0 < \xi^k_j < 1$ and $0 < \tau^k_j < 1$, and their normalized forms are
-
-\begin{equation}
-    \zeta^k_j = \frac{\xi^k_j}{2}, \quad \sum_{i=1}^{k} \zeta^k_i = 1, \quad 0 < \zeta^k_j < \frac{1}{2}, \quad C
-    \label{eq:normalized_eccentricity}
-\end{equation}
-
-\begin{equation}
-    t^k_j = \frac{\tau^k_j}{k - 2}, \quad \sum_{i=1}^{k} t^k_i = 1, \quad 0 < t^k_j < \frac{1}{k - 2}, \quad C
+    \zeta^k_j = \frac{\xi^k_j}{2}, \qquad t^k_j = \frac{\tau^k_j}{k - 2}, \qquad \sum_{i=1}^{k} \zeta^k_i = \sum_{i=1}^{k} t^k_i = 1,
     \label{eq:normalized_typicality}
 \end{equation}
 
-A sample is anomalous if $\zeta^k_j > 1/k$ and typical if $t^k_j > 1/k$. For the squared Euclidean distance, the sum of the distances can be updated recursively from the mean and the mean squared norm of the samples,
-
-\begin{equation}
-\begin{gathered}
-    \mu^k = \frac{k - 1}{k} \mu^{k-1} + \frac{1}{k} x_k, \qquad
-    X^k = \frac{k - 1}{k} X^{k-1} + \frac{1}{k} \lVert x_k \rVert^2,
-\end{gathered} \label{eq:recursive_mu_X}
-\end{equation}
-
-since
-
-\begin{equation}
-    \pi^k_j = k \left(\lVert x_j - \mu^k \rVert^2 + X^k - \lVert \mu^k \rVert^2\right), \qquad
-    \sum_{i=1}^{k} \pi^k_i = \sum_{i=1}^{k-1} \pi^{k-1}_i + 2 \pi^k_k.
-    \label{eq:recursive_sum_pi}
-\end{equation}
+and a sample is anomalous if $\zeta^k_j > 1/k$ and typical if $t^k_j > 1/k$. For the squared Euclidean distance, the sums of the distances can be updated recursively from the mean and the mean squared norm of the samples.
 
 Angelov also states that \labeltext[Angelov's statement about the use of other proximity functions]{the metrics suit other proximity functions, among them the cosine similarity and the Mahalanobis distance}{info:mahalanobis_as_teda_metric}~\cite{mahalanobis1936generalized}.
 
@@ -71,31 +33,14 @@ with
     \sigma^2_k = \frac{k - 1}{k} \sigma^2_{k-1} + \frac{1}{k - 1} \lVert x_k - \mu_k \rVert^2,
 \end{gather}
 
-and consider a sample an outlier if
-
-\begin{equation}
-    \zeta(x_k) > \frac{m^2 + 1}{2k}, \quad m > 0, \label{eq:angelovs_outlier}
-\end{equation}
-
-where $m$ is a function of the number of samples chosen by the authors,
+and consider a sample an outlier if $\zeta(x_k) > (m^2 + 1)/(2k)$, with $m > 0$ a function of the number of samples chosen by the authors,
 
 \begin{equation}
     m(k) = \frac{3}{1 + e^{-0.007(k - 100)}}.
     \label{eq:m_function}
 \end{equation}
 
-A microcluster $i$ at moment $k$ is described by:
-
-\begin{itemize}
-    \item $S^i_k$, its number of samples;
-    \item $\mu^i_k$ and $(\sigma^i_k)^2$, the mean and the variance of its samples;
-    \item $\xi^i(x_k)$ and $\zeta^i(x_k)$, the eccentricity and the normalized eccentricity of sample $x_k$ to it;
-    \item $\tau^i(x_k)$ and $t^i(x_k)$, the typicality and the normalized typicality of $x_k$ to it;
-    \item $D^i_k = 1 / \zeta^i(x_k)$, \labeltext[order-dependent parameter handled as a characteristic of the microcluster]{its density}{critique:density_as_microcluster_characteristic};
-    \item $m^i_k(S^i_k)$, its threshold function.
-\end{itemize}
-
-The metrics apply to each microcluster as to the whole data. For $S^i_k > 2$, a sample $x_k$ is an outlier to microcluster $i$ if
+A microcluster $i$ at moment $k$ is described by its number of samples $S^i_k$, the mean $\mu^i_k$ and the variance $(\sigma^i_k)^2$ of its samples, the eccentricity $\xi^i(x_k)$, the typicality $\tau^i(x_k)$ and their normalized forms $\zeta^i(x_k)$ and $t^i(x_k)$ of a sample $x_k$ to it, \labeltext[order-dependent parameter handled as a characteristic of the microcluster]{its density $D^i_k = 1 / \zeta^i(x_k)$}{critique:density_as_microcluster_characteristic}, and its threshold function $m^i_k(S^i_k)$. The metrics apply to each microcluster as to the whole data. For $S^i_k > 2$, a sample $x_k$ is an outlier to microcluster $i$ if
 
 \begin{equation}
     \zeta^i(x_k) > \frac{m^i_k(S^i_k)^2 + 1}{2S^i_k}, \label{eq:outlier_condition}
@@ -118,13 +63,7 @@ where $r_0$ is a hyperparameter, the variance limit. Every microcluster to which
 \end{gathered} \label{critique:dimensionality_penalty}
 \end{equation}
 
-where $d$ is the dimension of the data, and a sample that is an outlier to every microcluster creates a new one with
-
-\begin{equation}
-    S^i_k = 1, \quad \mu^i_k = x_k, \quad (\sigma^i_k)^2 = 0, \label{eq:initial_microcluster_parameters}
-\end{equation}
-
-and the first sample of the stream creates the first microcluster in the same way.
+where $d$ is the dimension of the data. A sample that is an outlier to every microcluster creates a new one, with one sample, its mean at the sample and no variance, as the first sample of the stream does.
 
 The macroclusters are the connected components of the graph whose vertices are the microclusters and whose edges join the microclusters that satisfy
 
@@ -138,27 +77,13 @@ The macroclusters are the connected components of the graph whose vertices are t
     D^l_k \ge \text{mean}\left(D^l_k\right), \quad l = 1,\dots,N_j. \label{critique:use_of_unstable_density}
 \end{equation}
 
-Each active microcluster weighs in its macrocluster by its share of the density of the active microclusters,
+Each active microcluster weighs in its macrocluster by its share of the density of the active microclusters, and the typicality of a sample $x_k$ to a macrocluster is the weighted sum of its typicalities to them,
 
 \begin{equation}
-    w^l_k = \frac{D^l_k}{\sum_{l\in\mathcal{M}_j} D^l_k},
-    \label{eq:macrocluster_density}
+    \mathcal{T}_j(x_k) = \sum_{l\in\mathcal{M}_j} \frac{D^l_k}{\sum_{l'\in\mathcal{M}_j} D^{l'}_k}\, t^l_k(x_k), \label{eq:macrocluster_typicality}
 \end{equation}
 
-the typicality of a sample $x_k$ to a macrocluster is the weighted sum of its typicalities to the active microclusters,
-
-\begin{equation}
-    \mathcal{T}_j(x_k) = \sum_{l\in\mathcal{M}_j} w^l_k t^l_k(x_k), \label{eq:macrocluster_typicality}
-\end{equation}
-
-and the sample is assigned to the macrocluster of highest typicality,
-
-\begin{equation}
-    j = \arg\max_j \mathcal{T}_j(x_k),
-    \label{eq:macrocluster_prediction}
-\end{equation}
-
-The formulation defines no decay of the microclusters, although the public implementation has one (\cref{sec:model_implementation}).
+the sample being assigned to the macrocluster of highest typicality. The formulation defines no decay of the microclusters, although the public implementation has one (\cref{sec:model_implementation}).
 
 \subsection{Issues of the Original Formulation}
 
@@ -168,7 +93,7 @@ The eccentricity and the typicality relate a sample to a microcluster, so the de
 
 \paragraph{Outlier condition for microclusters with two samples.}
 \label{subsubsec:incorrect_condition_logic}
-For $S^i_k = 2$, the expressions of \cref{sec:teda} give
+For $S^i_k = 2$, \cref{eq:recursive_eccentricity} and the recursion of the mean and the variance give
 
 \begin{gather}
     \mu_2 = \frac{1}{2} \left( x_1 + x_2 \right), \qquad
@@ -206,50 +131,14 @@ Cardoso~\cite{cardoso2022microtedaclus} reached the same conclusion earlier, pro
 \section{Updated MicroTEDAClus}
 \label{sec:updated_formulation}
 
-In the PhD thesis \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística}, Galindo~\cite{galindo2021lastmile} updates \MicroTEDAClus to apply it to the last-mile problem in logistics; we describe only the changes. The condition for microclusters with two samples becomes
-
-\begin{equation}
-    \left( \zeta^i_2(x_2)  > \frac{m^i(2)^2+1}{4} \right) \land \left( \left( \sigma^i_k \right)^2 > r_0 \right),
-    \label{eq:updated_condition_logic_for_two_samples}
-\end{equation}
-
-which corrects the direction of the comparison with $r_0$ but keeps the conjunction.
-
-An explicit decay is introduced. Each microcluster has a vitality $v^i_k$, set to one when it is created and lowered by
+In the PhD thesis \textit{Mineração de Dados Aplicada a Problemas de Last-Mile na Logística}, Galindo~\cite{galindo2021lastmile} updates \MicroTEDAClus to apply it to the last-mile problem in logistics; we describe only the changes. It introduces an explicit decay: each microcluster has a vitality $v^i_k$, set to one when it is created and lowered by
 
 \begin{equation}
     v^i_k = v^i_{k-1} - \rho
     \label{eq:decay_logic}
 \end{equation}
 
-whenever the sample $x_k$ is an outlier to it, where $\rho = 1/\text{decay}$ and \textit{decay} is a hyperparameter. A microcluster is removed when $v^i_k \le 0$. \Cref{sec:mi_improvements} tests this rule as the candidate \variant{recency}.
-
-To suit the data of the problem, the Euclidean distance is replaced by the cosine similarity, which Angelov~\cite{angelov2014outside} accepts for the TEDA metrics. The outlier condition becomes
-
-\begin{equation}
-    \left(x_k - \mu^i_k\right)^2 > \left(m^i_k\right)^2\left(\sigma^i_k\right)^2, \label{critique:imports_euclidean_condition_from_angelov}
-\end{equation}
-
-and the update of a microcluster becomes
-
-\begin{equation}
-\begin{gathered}
-    S^i_k = S^i_{k-1} + 1, \qquad
-    \mu^i_k = \frac{S^i_k - 1}{S^i_k} \mu^i_{k-1} + \frac{1}{S^i_k} \frac{x_k}{\lVert x_k \rVert}, \quad \lVert x_k \rVert \neq 0, \\
-    \left(\sigma^i_k\right)^2 = \frac{S^i_k - 1}{S^i_k} \left(\sigma^i_{k-1}\right)^2 + \frac{1}{S^i_k - 1} \left( \frac{2\lVert x_k - \mu^i_k \rVert}{d} \right)^2, \label{critique:euclidean_variance} \\
-    \xi^i(x_k) = \frac{1 - \mu^i_k\frac{x_k}{\lVert x_k \rVert}}{1 + k\left(\mu^i_k\right)^2}, \quad \lVert x_k \rVert \neq 0.
-\end{gathered}
-\end{equation}
-
-The rest of the algorithm, including the formation of the macroclusters, is unchanged.
-
-\subsection{Issues of the Updated Formulation}
-
-\paragraph{Issues that remain.} The order-dependent density and the dimensionality penalty remain, and the condition for microclusters with two samples keeps its conjunction.
-
-\paragraph{An outlier condition derived for another distance.} Angelov~\cite{angelov2014anomaly} derives \cref{eq:angelovs_outlier} from \cref{critique:imports_euclidean_condition_from_angelov} for the Euclidean distance, and states that a similar condition can be derived for the cosine similarity without deriving it. The updated model uses the Euclidean condition with the cosine similarity without justification.
-
-\paragraph{A Euclidean variance with the cosine similarity.} The eccentricity is adapted to the cosine similarity, but the variance of \cref{critique:euclidean_variance} is still the Euclidean one, and nothing shows that it is compatible with the cosine similarity.
+whenever the sample $x_k$ is an outlier to it, where $\rho = 1/\text{decay}$ and \textit{decay} is a hyperparameter, and a microcluster is removed when $v^i_k \le 0$. \Cref{sec:mi_improvements} tests this rule as the candidate \variant{recency}. The update also corrects the direction of the comparison with $r_0$ in the condition for microclusters with two samples, but keeps its conjunction, and replaces the Euclidean distance by the cosine similarity, with the outlier condition that Angelov~\cite{angelov2014anomaly} derives for the Euclidean distance and a variance that remains Euclidean, neither of them justified for the new distance. The order-dependent density and the dimensionality penalty remain, and the rest of the algorithm is unchanged.
 
 \section{A \texttt{C} Implementation of MicroTEDAClus}
 \label{sec:c_implementation}
