@@ -11,9 +11,10 @@ and, for each stage, produces one metric figure:
 
 Tuned-hyperparameter summaries (median [Q1,Q3] for numeric, mode for
 categorical) are shown as text on the figure. It also writes the figure of the
-thesis, every stage in one figure, in the order of the preprocessing:
+thesis, DS3 raw and as the original work used it, each with its samples, its ARI
+per batch and the variance limit selected for it, and its times per batch:
 
-    monografia/MethodologyReassessment/artifacts/preprocessing/stages.png
+    monografia/MethodologyReassessment/artifacts/preprocessing/ds3.png
 """
 
 import glob
@@ -24,31 +25,32 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy.io import arff
 
 from pfc_shared.figures import FOCUS_COLOR
+from run_preprocessing_experiment import LABEL_PALETTE, build_pipeline
 
 RESULTS_DIR = "./results"
 PLOTS_DIR = "./plots/preprocessing_study"
 os.makedirs(PLOTS_DIR, exist_ok=True)
 
 STAGES = ["raw", "noise_removed", "downsampled", "ordered", "scaled"]
-# the stages in the order in which the preprocessing applies them, with their titles
-PIPELINE = [
-    ("raw", "Raw"),
-    ("noise_removed", "Noise removed"),
-    ("downsampled", "Downsampled"),
-    ("scaled", "Scaled"),
-    ("ordered", "Ordered by label"),
-]
+# the rows of the thesis figure: the raw file, and the file as the original work used it,
+# after every step of its preprocessing
+THESIS_ROWS = [("raw", "Raw"), ("ordered", "As used by the original work")]
+HERE = os.path.dirname(os.path.abspath(__file__))
+DATA_FILE = os.path.join(
+    HERE, "..", "proposed_methodology", "data_samples", "cluto-t7-10k.arff"
+)
 THESIS_FIGURE = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
+    HERE,
     "..",
     "..",
     "monografia",
     "MethodologyReassessment",
     "artifacts",
     "preprocessing",
-    "stages.png",
+    "ds3.png",
 )
 
 
@@ -253,29 +255,56 @@ def plot_metrics(ari_runs, tp_runs, tf_runs, params_text, stage, out_dir):
     )
 
 
-def plot_pipeline(path=THESIS_FIGURE):
-    """Every stage in one figure: its ARI per batch, with the hyperparameters selected
-    for it, and its learning and prediction times per batch; medians and
-    interquartile bands over the runs."""
-    fig, axes = plt.subplots(len(PIPELINE), 2, figsize=(12, 15))
-    for (ax_ari, ax_time), (stage, title) in zip(axes, PIPELINE):
-        params_runs, ari_runs, tp_runs, tf_runs = load_stage(stage)
-        summary, n_valid = aggregate_params(params_runs)
-        batches = np.arange(len(ari_runs[0]))
+def load_chameleon(path=DATA_FILE):
+    """DS3 from its local file, decoded as run_preprocessing_experiment.get_chameleon
+    decodes the downloaded one."""
+    data, _ = arff.loadarff(path)
+    df = pd.DataFrame(data)
+    target = df.columns[-1]
+    y = df[target].str.decode("utf-8").replace("noise", "-1").astype(int).values
+    X = df.drop(columns=[target]).values
+    return X, y
 
+
+def selected_variance_limit(params_runs):
+    """Median and quartiles of the variance limit that the search selected."""
+    values = [p["variance_limit"] for p in params_runs if p and "variance_limit" in p]
+    q1, median, q3 = np.percentile(values, [25, 50, 75])
+    return f"selected variance limit\n{median:.2g} [{q1:.2g}, {q3:.2g}]"
+
+
+def plot_thesis_figure(path=THESIS_FIGURE):
+    """DS3 raw and as the original work used it: its samples, its ARI per batch with
+    the variance limit that the search selected, and its learning and prediction
+    times per batch; medians and interquartile bands over the runs."""
+    datasets = build_pipeline(*load_chameleon())
+    fig, axes = plt.subplots(len(THESIS_ROWS), 3, figsize=(15, 8))
+    for (ax_data, ax_ari, ax_time), (stage, title) in zip(axes, THESIS_ROWS):
+        X, y = datasets[stage]
+        colors = [
+            "#202020" if label == -1 else LABEL_PALETTE((int(label) % 20) / 19)
+            for label in y
+        ]
+        ax_data.scatter(X[:, 0], X[:, 1], c=colors, s=2, linewidths=0)
+        ax_data.set_title(f"{title}: {len(X)} samples", fontsize=10)
+        ax_data.set_xlabel("$x_0$")
+        ax_data.set_ylabel("$x_1$")
+
+        params_runs, ari_runs, tp_runs, tf_runs = load_stage(stage)
+        batches = np.arange(len(ari_runs[0]))
         median, q1, q3 = aggregate_curves_medianiqr(ari_runs)
         ax_ari.plot(batches, median, color=FOCUS_COLOR, linewidth=1.8)
         ax_ari.fill_between(batches, q1, q3, color=FOCUS_COLOR, alpha=0.25, linewidth=0)
         ax_ari.set_ylim(-0.1, 1.05)
-        ax_ari.set_title(f"{title}: ARI", fontsize=10)
+        ax_ari.set_title(f"{title}: ARI per batch", fontsize=10)
         ax_ari.set_ylabel("ARI")
         ax_ari.text(
             0.98,
-            0.95,
-            format_params_text(summary, n_valid, len(params_runs)),
+            0.05,
+            selected_variance_limit(params_runs),
             transform=ax_ari.transAxes,
             ha="right",
-            va="top",
+            va="bottom",
             fontsize=8,
             bbox=dict(boxstyle="round,pad=0.3", facecolor="white", edgecolor="gray"),
         )
@@ -299,7 +328,7 @@ def plot_pipeline(path=THESIS_FIGURE):
         ax_time.set_yscale("log")
         ax_time.set_title(f"{title}: time per batch [ms]", fontsize=10)
         ax_time.legend(fontsize=8, loc="upper right")
-    for ax in axes[-1]:
+    for ax in axes[-1][1:]:
         ax.set_xlabel("Batch")
     plt.tight_layout()
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -331,7 +360,7 @@ def main():
             f"[{stage}] {len(ari_runs)} runs loaded ({n_valid} valid) — plots written."
         )
 
-    plot_pipeline()
+    plot_thesis_figure()
     print(f"Done. Analysis plots written to {PLOTS_DIR}/ and {THESIS_FIGURE}")
 
 
