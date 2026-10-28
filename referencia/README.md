@@ -4,9 +4,8 @@ This directory keeps the work that preceded `\chapter{Model Improvement}`. Nothi
 compiled into the thesis or imported by the live code. It mirrors the original paths, so
 `referencia/<path>` used to live at `<path>`.
 
-Everything here was last in place, and runnable, at the tag `pre-model-improvement`
-(commit `c49275d`). To run any of it, check that tag out; the scripts are not expected to
-work from this directory.
+Everything here was last in place, and runnable, at the tag `pre-model-improvement`. To run
+any of it, check that tag out; the scripts are not expected to work from this directory.
 
 ## Contents
 
