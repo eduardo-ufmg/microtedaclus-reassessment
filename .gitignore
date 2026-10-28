@@ -130,3 +130,8 @@ modelo_PFC_latex
 testes_preeliminares/java_r_python/target/
 experimentos/**/plots/**
 **/plots/internal/**
+
+# ---------------------------
+# Local copies of the cited works
+# ---------------------------
+bibliografia/
