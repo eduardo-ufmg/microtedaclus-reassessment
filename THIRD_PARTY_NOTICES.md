@@ -11,8 +11,7 @@ is the base of:
 
 - `experimentos/proposed_methodology/models/MicroTEDAClus/MicroTEDAClus.py`;
 - `experimentos/preprocessing/MicroTEDAClus/MicroTEDAClus.py`;
-- `experimentos/multiple_runs/MicroTEDAClus/MicroTEDAClus.py`;
-- the models in `referencia/experimentos/proposed_methodology/models/MicroTEDAClusCorrected/`.
+- `experimentos/multiple_runs/MicroTEDAClus/MicroTEDAClus.py`.
 
 Its license:
 
@@ -38,10 +37,3 @@ other streams are generated or downloaded when the experiments run.
 
 On the branch `main`, `monografia/MethodologyReassessment/figures/original_curves.png` reproduces
 the published curves of Maia et al. (2020), which the thesis credits in its caption.
-
-## Other files
-
-- `RegEngenhariaControleeAutomação.pdf`: the regulation of the final project of the course, a
-  document of the Federal University of Minas Gerais.
-- `testes_preeliminares/java_r_python/target/dependency/all-1.1.2.pom`: Maven metadata of
-  netlib-java (`com.github.fommil.netlib`).
