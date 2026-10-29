@@ -141,3 +141,6 @@ Uso-de-Ferramentas-de-IA*.pdf
 .vscode/
 # The thesis PDF, which the releases carry
 monografia/UndergradThesis.pdf
+# The presentation's PDF, and the third-party material it shows
+apresentacao/presentation.pdf
+apresentacao/third_party/
