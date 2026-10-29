@@ -27,7 +27,7 @@ import numpy as np
 import pandas as pd
 from scipy.io import arff
 
-from pfc_shared.figures import FOCUS_COLOR
+from pfc_shared.figures import MODEL_COLORS
 from run_preprocessing_experiment import LABEL_PALETTE, build_pipeline
 
 RESULTS_DIR = "./results"
@@ -293,8 +293,15 @@ def plot_thesis_figure(path=THESIS_FIGURE):
         params_runs, ari_runs, tp_runs, tf_runs = load_stage(stage)
         batches = np.arange(len(ari_runs[0]))
         median, q1, q3 = aggregate_curves_medianiqr(ari_runs)
-        ax_ari.plot(batches, median, color=FOCUS_COLOR, linewidth=1.8)
-        ax_ari.fill_between(batches, q1, q3, color=FOCUS_COLOR, alpha=0.25, linewidth=0)
+        ax_ari.plot(batches, median, color=MODEL_COLORS["MicroTEDAClus"], linewidth=1.8)
+        ax_ari.fill_between(
+            batches,
+            q1,
+            q3,
+            color=MODEL_COLORS["MicroTEDAClus"],
+            alpha=0.25,
+            linewidth=0,
+        )
         ax_ari.set_ylim(-0.1, 1.05)
         ax_ari.set_title(f"{title}: ARI per batch", fontsize=10)
         ax_ari.set_ylabel("ARI")
@@ -317,13 +324,18 @@ def plot_thesis_figure(path=THESIS_FIGURE):
             ax_time.plot(
                 batches,
                 median,
-                color=FOCUS_COLOR,
+                color=MODEL_COLORS["MicroTEDAClus"],
                 linestyle=style,
                 linewidth=1.5,
                 label=label,
             )
             ax_time.fill_between(
-                batches, q1, q3, color=FOCUS_COLOR, alpha=0.15, linewidth=0
+                batches,
+                q1,
+                q3,
+                color=MODEL_COLORS["MicroTEDAClus"],
+                alpha=0.15,
+                linewidth=0,
             )
         ax_time.set_yscale("log")
         ax_time.set_title(f"{title}: time per batch [ms]", fontsize=10)

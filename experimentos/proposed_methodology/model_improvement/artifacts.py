@@ -40,6 +40,7 @@ from model_improvement.experiments import (
 from model_improvement.harness import RESULTS_DIR, result_paths
 from model_improvement.variants import VARIANTS
 from pfc_shared import latex
+from pfc_shared.figures import STAGE_COLORS, STAGE_STYLES
 from pfc_shared.latex import marked, write_table
 from statistic_analysis import METRICS
 from streams import load_stream
@@ -77,13 +78,13 @@ NOT_RETAINED = ("m_function", "geometry", "density_revisited")
 MODEL_NAMES = {"MicroTEDAClus", "MicroTEDAClus+"}
 PROBE_SPACES = {"final": "MicroTEDAClus+", "engine": "extended"}
 TUNING_FILE = RESULTS_DIR / "tuning.csv"
-# Hyperparameters of the sensitivity function that each variant of the m function tunes.
-CHAIN_COLORS = {
-    "original": "xkcd:grey",
-    "vectorized": "xkcd:blue",
-    CORRECTED: "xkcd:orange",
-    IMPROVED: "xkcd:green",
-    FINAL: "xkcd:red",
+# The stage of the chain from MicroTEDAClus to MicroTEDAClus+ that each variant draws.
+CHAIN_STAGES = {
+    "original": "original",
+    "vectorized": "vectorized",
+    CORRECTED: "corrected",
+    IMPROVED: "improved",
+    FINAL: "final",
 }
 
 
@@ -812,11 +813,14 @@ def trajectories(models, runs, name, folder="validation"):
             ax.plot(
                 batches,
                 med,
-                color=CHAIN_COLORS[key],
+                color=STAGE_COLORS[CHAIN_STAGES[key]],
+                linestyle=STAGE_STYLES[CHAIN_STAGES[key]],
                 linewidth=1.5,
                 label=STAGE_NAMES.get(key, VARIANTS[key].label),
             )
-            ax.fill_between(batches, q1, q3, color=CHAIN_COLORS[key], alpha=0.15)
+            ax.fill_between(
+                batches, q1, q3, color=STAGE_COLORS[CHAIN_STAGES[key]], alpha=0.15
+            )
         ax.set_title(dataset_display_name(dataset), fontsize=10)
         ax.set_xlabel("Evaluation Batch")
     for ax in axes[:, 0]:
