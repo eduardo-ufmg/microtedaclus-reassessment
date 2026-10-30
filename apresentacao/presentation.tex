@@ -16,6 +16,7 @@
 \usepackage{qrcode}
 \usepackage{appendixnumberbeamer}
 \usepackage[overridenote]{pdfpc}
+
 \pdfpcsetup{duration=20, lastminutes=3}
 
 \input{../monografia/NamedMacros}
@@ -61,19 +62,30 @@
 % -----------------------------------------------------------------------------
 \section{The online stream clustering problem}
 
-\begin{frame}{Clustering a data stream}
-  \begin{columns}[c]
-    \column{0.45\textwidth}
-    \begin{itemize}
-      \item Samples arrive without a known end
-      \item Each batch: predict its labels, then learn it
-      \item A bounded summary instead of the data
-      \item The process may change: concept drift
-    \end{itemize}
-    \column{0.5\textwidth}
-    \placeholder{\linewidth}{0.6\textheight}{Batches of a stream with concept drift\\(slide figure to make from the datasets)}
-  \end{columns}
-  \note{- Superficial: the board knows it\\- Stress predict-then-learn: it returns in the critiques}
+\begin{frame}{Handling a data stream}
+
+  When processing must happen before all samples are collected
+
+  \begin{itemize}
+    \item Predict, then learn:
+      \begin{itemize}
+          \item Must decide as soon as each sample arrives
+          \item Learning requires multiple samples
+      \end{itemize}
+  \end{itemize}
+
+  \note{A robot that needs to sort items moving along a conveyor belt and is unable to pick them up once they leave its workspace.}
+\end{frame}
+
+\begin{frame}{Concept Drift}
+
+  Distribution parameters change over time
+
+  \placeholder{0.45\linewidth}{0.6\textheight}{Rolling window of a stream with concept drift\\(gif)}
+  \placeholder{0.45\linewidth}{0.6\textheight}{Static capture of all the samples of the stream\\(static)}
+
+  \note{- Left is what an online model captures\\- Right is what an offline model captures}
+
 \end{frame}
 
 \begin{frame}{Microclusters, macroclusters and the ARI}
@@ -81,14 +93,8 @@
     \column{0.5\textwidth}
     \begin{itemize}
       \item Microclusters summarize regions of the stream
-      \item Macroclusters join intersecting microclusters: the clusters
-      \item Quality of a batch: the adjusted Rand index
-    \end{itemize}
-    \[
-      \mathrm{ARI} = \frac{\mathrm{RI} - \mathbb{E}[\mathrm{RI}]}{\max \mathrm{RI} - \mathbb{E}[\mathrm{RI}]}
-    \]
-    \begin{itemize}
-      \item 1: perfect agreement; about 0: chance
+      \item Macroclusters join intersecting microclusters: the groups
+      \item Quality of a batch: ARI, the Adjusted Rand index \\ 1: perfect agreement\\ 0: chance
     \end{itemize}
     \column{0.45\textwidth}
     \placeholder{\linewidth}{0.6\textheight}{Microclusters and their macroclusters\\(diagram to make)}
@@ -100,22 +106,17 @@
 \section{Motivation}
 
 \begin{frame}{MicroTEDAClus and the works built on it}
+
+\begin{figure}
+  \includegraphics[height=0.4\textheight]{third_party/maia2020.png}\\
+  \footnotesize Maia et al.~\cite{maia2020evolvclus} presents the model
+\end{figure}
+
   \begin{columns}[t]
-    \column{0.32\textwidth}
-    \centering
-    \maybegraphics{\linewidth}{0.38\textheight}{third_party/maia2020.png}{Title of Maia et al.\\(your screenshot)}\\[4pt]
-    \footnotesize Maia et al.~\cite{maia2020evolvclus}\\
-    on par with established algorithms; adapts better to concept drift
-    \column{0.32\textwidth}
-    \centering
-    \maybegraphics{\linewidth}{0.38\textheight}{third_party/galindo2021.png}{Title of Galindo\\(your screenshot)}\\[4pt]
-    \footnotesize Galindo~\cite{galindo2021lastmile}\\
-    updates the algorithm; applies it to last-mile logistics
-    \column{0.32\textwidth}
-    \centering
-    \maybegraphics{\linewidth}{0.38\textheight}{third_party/cardoso2022.png}{Title of Cardoso\\(your screenshot)}\\[4pt]
-    \footnotesize Cardoso~\cite{cardoso2022microtedaclus}\\
-    reimplements it in C; expects it to handle drift
+    \column{0.45\textwidth}
+    \footnotesize Galindo~\cite{galindo2021lastmile} updates the algorithm; applies it to last-mile logistics
+    \column{0.45\textwidth}
+    \footnotesize Cardoso~\cite{cardoso2022microtedaclus} reimplements it in C; expects it to handle drift
   \end{columns}
   \note{- The published results are the basis of later work\\- A model whose evaluation supports further work must be verified}
 \end{frame}
@@ -125,7 +126,7 @@
     \item Examine the formulation of \MicroTEDAClus and its public implementation
     \item Examine the methodology of the original experiments, and define one without its flaws
     \item Evaluate \MicroTEDAClus against benchmark models under that methodology
-    \item Propose an improved model, and evaluate it under the same methodology
+    \item Propose an improved model, and evaluate it under the new methodology
   \end{enumerate}
   \note{- Objectives a and b: the critiques\\- Objective c: Chapter 3\\- Objective d: Chapter 4}
 \end{frame}
@@ -144,7 +145,7 @@
     \xi^i(x_k) = \frac{1}{S^i_k} + \frac{2(\mu^i_k - x_k)^T(\mu^i_k - x_k)}{S^i_k(\sigma^i_k)^2\,\hl{d}}
   \end{gather*}
   \begin{itemize}
-    \item No paper of the TEDA metrics scales by the dimension $d$, and the original work does not justify it
+    \item No paper of the TEDA metrics scales by the dimension $d$, and \cite{maia2020evolvclus} does not justify it
     \item The normalized eccentricity can exceed its bound of one half
     \item Its consequence: the collapse in high dimensions, later
   \end{itemize}
@@ -166,7 +167,6 @@ def update_life(self, xk, micro_cluster):
     micro_cluster["life"] = micro_cluster["life"] + (((rt - dist) / rt) * self.fading_factor)
 \end{lstlisting}
   \begin{itemize}
-    \item The hyperparameter \texttt{decay} becomes \texttt{fading\_factor} $= 1/\text{decay}$
     \item The paper reports no decay; the code that produced its results prunes microclusters
     \item The same rate $\rho = 1/\text{decay}$ appears later in Galindo~\cite{galindo2021lastmile}
   \end{itemize}
@@ -176,17 +176,10 @@ def update_life(self, xk, micro_cluster):
 % -----------------------------------------------------------------------------
 \section{The methodology of the original experiments}
 
-\begin{frame}{Preprocessing that leaks}
+\begin{frame}{Preprocessing that leaks data}
   \centering
-  \includegraphics[height=0.62\textheight]{MethodologyReassessment/artifacts/preprocessing/ds3.png}
-  \vfill
-  \footnotesize
-  \begin{columns}[t]
-    \column{0.3\textwidth}\centering Noise removed:\\needs the labels
-    \column{0.3\textwidth}\centering Min--max scaling over the stream:\\uses the future
-    \column{0.3\textwidth}\centering Ordered by label:\\one cluster per batch
-  \end{columns}
-  \note{- Top: raw DS3; bottom: as the original work used it\\- ARI one in most batches, faster, a smaller variance limit\\- Downsampling alone does not leak}
+  \includegraphics[width=0.99\textwidth]{MethodologyReassessment/artifacts/preprocessing/ds3.png}
+  \note{- Scaling the complete dataset makes each sample hold information about all the other samples;\\- Ordering by label makes each batch contain a single cluster or a transition;\\- The hyperparameter Maia says to be robust is actually dependent on data range}
 \end{frame}
 
 \begin{frame}[fragile]{Learn, then predict}
@@ -405,6 +398,12 @@ error = adjusted_rand_score(y, y_hat)
 % -----------------------------------------------------------------------------
 \appendix
 \section{Appendix}
+
+\begin{frame}{ARI}
+  \[
+    \mathrm{ARI} = \frac{\mathrm{RI} - \mathbb{E}[\mathrm{RI}]}{\max \mathrm{RI} - \mathbb{E}[\mathrm{RI}]}
+  \]
+\end{frame}
 
 \begin{frame}{Corrections}
   \placeholder{\textwidth}{0.75\textheight}{Correction candidates and their results\\(from the tables of Section 4.3)}
